@@ -35,7 +35,9 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/actuator/health/**", "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
-				.requestMatchers(HttpMethod.GET, "/api/v1/venues", "/api/v1/venues/*", "/api/v1/venues/*/availability", "/api/v1/venues/*/reviews", "/api/v1/venues/*/reviews/summary", "/api/v1/amenities").permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/v1/venues", "/api/v1/venues/*", "/api/v1/venues/*/availability",
+						"/api/v1/venues/*/reviews", "/api/v1/venues/*/reviews/summary",
+						"/api/v1/venues/*/membership-plans", "/api/v1/amenities").permitAll()
 				.anyRequest().authenticated())
 			.oauth2ResourceServer(oauth2 -> oauth2
 				.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));

@@ -14,13 +14,14 @@ import com.futslot.TestcontainersConfiguration;
 /**
  * Full application against a real PostgreSQL. Every class using this shares one Spring context
  * (and one database container), so tests must not depend on the database being empty. Scheduled jobs
- * (bookings maintenance, reminders, weekly top-up) are off so they can't change data
+ * (bookings maintenance, reminders, weekly top-up, membership expiry) are off so they can't change data
  * mid-test; tests run them explicitly when needed.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest(properties = { "futslot.bookings.maintenance.enabled=false",
-		"futslot.notifications.reminders.enabled=false", "futslot.bookings.recurring.enabled=false" })
+		"futslot.notifications.reminders.enabled=false", "futslot.bookings.recurring.enabled=false",
+		"futslot.memberships.expiry.enabled=false" })
 @AutoConfigureMockMvc
 @Import({ TestcontainersConfiguration.class, TestSupportConfig.class })
 public @interface IntegrationTest {

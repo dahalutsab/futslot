@@ -68,6 +68,21 @@ FutSlot does not hold money. Players pay the venue directly, and FutSlot records
 
 Gateway checkout (eSewa / Khalti merchant APIs) can be added later as another way to create verified payments.
 
+### Memberships and discount codes
+
+Venues sell **membership plans**: a `GAME_PACK` (N games, each booking uses one and costs nothing) or a
+`MONTHLY_PASS` (a percentage off every booking, optionally capped at N games), valid for a number of days.
+Players buy one by paying the venue and submitting the transaction id (`POST /api/v1/me/memberships`); it
+starts when staff approve the payment, alongside booking payments in `/payments/pending`. Staff can also
+sell one at the counter. Once a plan has been sold, its games, discount and validity can't change.
+
+Venues create **discount codes** (percent with an optional cap, or a fixed amount) with optional dates,
+minimum booking amount, total and per-player limits. Players enter one when booking in the app.
+
+A booking takes either a `membershipId` or a `discountCode`, not both. `POST /api/v1/bookings/quote` shows
+the price, discount and advance before booking. If the booking is cancelled or expires, the code's use is
+given back, and so is the membership game, unless the player cancelled inside the free-cancellation window.
+
 ### Reviews and favourites
 
 Players review a venue once per completed booking, up to 30 days after playing

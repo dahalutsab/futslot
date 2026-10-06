@@ -11,6 +11,7 @@ import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
 
 import com.futslot.booking.Booking;
+import com.futslot.membership.Membership;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,9 +25,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 /**
- * Money paid to a venue. Today players pay the venue's own wallet/QR or cash, so FutSlot only records
- * and verifies payments; {@code transactionId} is the wallet's transaction id (unique per method, so the
- * same receipt can't be claimed twice).
+ * Money paid to a venue for a booking or a membership. Today players pay the venue's own wallet/QR or
+ * cash, so FutSlot only records and verifies payments; {@code transactionId} is the wallet's transaction
+ * id (unique per method, so the same receipt can't be claimed twice).
  */
 @Entity
 @Table(name = "payments")
@@ -44,6 +45,10 @@ public class Payment {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "booking_id", updatable = false)
 	private Booking booking;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "membership_id", updatable = false)
+	private Membership membership;
 
 	@Column(updatable = false)
 	private UUID venueId;
@@ -86,11 +91,12 @@ public class Payment {
 	protected Payment() {
 	}
 
-	private Payment(Booking booking, UUID payerUserId, BigDecimal amount, PaymentMethod method, String transactionId,
-			TransactionStatus status) {
-		this.purpose = PaymentPurpose.BOOKING;
+	private Payment(PaymentPurpose purpose, Booking booking, Membership membership, UUID venueId, UUID payerUserId,
+			BigDecimal amount, PaymentMethod method, String transactionId, TransactionStatus status) {
+		this.purpose = purpose;
 		this.booking = booking;
-		this.venueId = booking.getVenue().getId();
+		this.membership = membership;
+		this.venueId = venueId;
 		this.payerUserId = payerUserId;
 		this.amount = amount;
 		this.method = method;
@@ -101,16 +107,30 @@ public class Payment {
 	/** A player says they paid the venue; staff verify it against their wallet. */
 	static Payment claimed(Booking booking, UUID payerUserId, BigDecimal amount, PaymentMethod method,
 			String transactionId) {
-		return new Payment(booking, payerUserId, amount, method, transactionId, TransactionStatus.PENDING);
+		return new Payment(PaymentPurpose.BOOKING, booking, null, booking.getVenue().getId(), payerUserId, amount,
+				method, transactionId, TransactionStatus.PENDING);
 	}
 
 	/** Staff recorded money they received (cash at the counter, or a transfer they can see). */
 	static Payment received(Booking booking, BigDecimal amount, PaymentMethod method, String transactionId,
 			UUID recordedBy, Instant at) {
-		Payment payment = new Payment(booking, booking.getCustomer().getUserId(), amount, method, transactionId,
-				TransactionStatus.SUCCEEDED);
-		payment.recordedBy = recordedBy;
-		payment.paidAt = at;
+		Payment payment = new Payment(PaymentPurpose.BOOKING, booking, null, booking.getVenue().getId(),
+				booking.getCustomer().getUserId(), amount, method, transactionId, TransactionStatus.SUCCEEDED);
+		payment.approve(recordedBy, at);
+		return payment;
+	}
+
+	static Payment membershipClaimed(Membership membership, UUID payerUserId, BigDecimal amount, PaymentMethod method,
+			String transactionId) {
+		return new Payment(PaymentPurpose.MEMBERSHIP, null, membership, membership.getVenue().getId(), payerUserId,
+				amount, method, transactionId, TransactionStatus.PENDING);
+	}
+
+	static Payment membershipReceived(Membership membership, BigDecimal amount, PaymentMethod method,
+			String transactionId, UUID recordedBy, Instant at) {
+		Payment payment = new Payment(PaymentPurpose.MEMBERSHIP, null, membership, membership.getVenue().getId(),
+				membership.getCustomer().getUserId(), amount, method, transactionId, TransactionStatus.SUCCEEDED);
+		payment.approve(recordedBy, at);
 		return payment;
 	}
 
@@ -140,8 +160,16 @@ public class Payment {
 		return this.id;
 	}
 
+	public PaymentPurpose getPurpose() {
+		return this.purpose;
+	}
+
 	public Booking getBooking() {
 		return this.booking;
+	}
+
+	public Membership getMembership() {
+		return this.membership;
 	}
 
 	public UUID getVenueId() {

@@ -13,6 +13,7 @@ import com.futslot.booking.BookingEvent;
 import com.futslot.booking.BookingSource;
 import com.futslot.booking.BookingStatus;
 import com.futslot.booking.RecurringBookingEvent;
+import com.futslot.payment.MembershipPaymentEvent;
 import com.futslot.payment.PaymentEvent;
 import com.futslot.review.ReviewEvent;
 import com.futslot.venue.StaffAdded;
@@ -151,6 +152,39 @@ class NotificationListener {
 					this.notifications.send(event.playerUserId(), NotificationType.REFUND_SENT, "Refund sent",
 							event.venueName() + " refunded " + amount + " for " + slot + ".", data);
 				}
+			}
+		}
+	}
+
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(MembershipPaymentEvent event) {
+		String amount = Messages.rupees(event.amount());
+		Map<String, String> data = Map.of("membershipId", event.membershipId().toString(), "venueId",
+				event.venueId().toString());
+		switch (event.type()) {
+			case SUBMITTED -> this.access.usersWith(event.venueId(), VenuePermission.MANAGE_BOOKINGS)
+				.forEach(userId -> this.notifications.send(userId, NotificationType.PAYMENT_TO_VERIFY, "Payment to verify",
+						event.customerName() + " paid " + amount + " by " + event.method() + " for " + event.planName()
+								+ ". Check your wallet, then approve or reject.",
+						data));
+			case RECEIVED -> {
+				if (event.playerUserId() != null && !event.playerUserId().equals(event.actorUserId())) {
+					this.notifications.send(event.playerUserId(), NotificationType.MEMBERSHIP_ACTIVATED,
+							"Membership active", event.planName() + " at " + event.venueName() + " is valid until "
+									+ Messages.date(event.expiresOn()) + ".",
+							data);
+				}
+			}
+			case REJECTED -> {
+				if (event.playerUserId() != null) {
+					this.notifications.send(event.playerUserId(), NotificationType.PAYMENT_REJECTED, "Payment not found",
+							event.venueName() + " couldn't find your " + amount + " payment for " + event.planName()
+									+ ": " + event.reason() + ".",
+							data);
+				}
+			}
+			default -> {
 			}
 		}
 	}
