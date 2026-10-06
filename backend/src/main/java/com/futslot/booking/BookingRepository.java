@@ -63,7 +63,7 @@ interface BookingRepository extends JpaRepository<Booking, UUID> {
 	@Query("""
 			select count(b) from Booking b
 			where b.bookedByUserId = :userId and b.status = com.futslot.booking.BookingStatus.PENDING_PAYMENT
-			  and b.holdExpiresAt > :now""")
+			  and (b.holdExpiresAt > :now or b.holdExpiresAt is null)""")
 	long countActiveHolds(UUID userId, Instant now);
 
 }

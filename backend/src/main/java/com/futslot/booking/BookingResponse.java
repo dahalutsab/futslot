@@ -13,7 +13,7 @@ public record BookingResponse(UUID id, String reference, VenueRef venue, CourtRe
 		PaymentStatus paymentStatus, Instant holdExpiresAt, String notes, Instant cancelledAt,
 		String cancellationReason, Instant createdAt) {
 
-	static BookingResponse from(Booking booking) {
+	public static BookingResponse from(Booking booking) {
 		ZoneId zone = ZoneId.of(booking.getVenue().getTimezone());
 		return new BookingResponse(booking.getId(), booking.getReference(),
 				new VenueRef(booking.getVenue().getId(), booking.getVenue().getName(), booking.getVenue().getSlug()),

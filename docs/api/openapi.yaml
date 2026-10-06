@@ -128,6 +128,31 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/VenueResponse"
+  /api/v1/owner/venues/{venueId}/payment-instructions:
+    put:
+      tags:
+      - owner-venue-controller
+      operationId: updatePaymentInstructions
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentInstructionsRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueResponse"
   /api/v1/owner/venues/{venueId}/operating-hours:
     put:
       tags:
@@ -369,6 +394,36 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/StaffResponse"
+  /api/v1/owner/venues/{venueId}/refunds/{refundId}/complete:
+    post:
+      tags:
+      - payment-controller
+      operationId: completeRefund
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: refundId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteRefund"
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RefundResponse"
   /api/v1/owner/venues/{venueId}/recurring-bookings:
     get:
       tags:
@@ -489,6 +544,62 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/RecurringBookingResponse"
+  /api/v1/owner/venues/{venueId}/payments/{paymentId}/reject:
+    post:
+      tags:
+      - payment-controller
+      operationId: reject
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Reject"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+  /api/v1/owner/venues/{venueId}/payments/{paymentId}/approve:
+    post:
+      tags:
+      - payment-controller
+      operationId: approve
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
   /api/v1/owner/venues/{venueId}/courts:
     post:
       tags:
@@ -696,6 +807,61 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/BookingResponse"
+  /api/v1/owner/venues/{venueId}/bookings/{bookingId}/payments:
+    get:
+      tags:
+      - payment-controller
+      operationId: bookingPayments
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingPaymentsResponse"
+    post:
+      tags:
+      - payment-controller
+      operationId: record
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Record"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
   /api/v1/owner/venues/{venueId}/bookings/{bookingId}/no-show:
     post:
       tags:
@@ -880,6 +1046,49 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/BookingResponse"
+  /api/v1/bookings/{bookingId}/payments:
+    get:
+      tags:
+      - payment-controller
+      operationId: myPayments
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingPaymentsResponse"
+    post:
+      tags:
+      - payment-controller
+      operationId: claim
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Claim"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
   /api/v1/bookings/{bookingId}/cancel:
     post:
       tags:
@@ -1005,7 +1214,7 @@ paths:
     post:
       tags:
       - admin-venue-controller
-      operationId: reject
+      operationId: reject_1
       parameters:
       - name: venueId
         in: path
@@ -1049,7 +1258,7 @@ paths:
     post:
       tags:
       - admin-venue-controller
-      operationId: approve
+      operationId: approve_1
       parameters:
       - name: venueId
         in: path
@@ -1233,6 +1442,39 @@ paths:
               schema:
                 $ref: "#/components/schemas/AvailabilityResponse"
       security: []
+  /api/v1/owner/venues/{venueId}/refunds:
+    get:
+      tags:
+      - payment-controller
+      operationId: refunds
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          default: REQUESTED
+          enum:
+          - REQUESTED
+          - PROCESSING
+          - SUCCEEDED
+          - FAILED
+          - REJECTED
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RefundResponse"
   /api/v1/owner/venues/{venueId}/recurring-bookings/{seriesId}:
     get:
       tags:
@@ -1258,6 +1500,27 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/RecurringBookingResponse"
+  /api/v1/owner/venues/{venueId}/payments/pending:
+    get:
+      tags:
+      - payment-controller
+      operationId: pending
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentResponse"
   /api/v1/owner/venues/{venueId}/customers:
     get:
       tags:
@@ -1765,6 +2028,8 @@ components:
           type: string
         policy:
           $ref: "#/components/schemas/VenuePolicy"
+        paymentInstructions:
+          type: string
         averageRating:
           type: number
         reviewCount:
@@ -1841,6 +2106,13 @@ components:
         createdAt:
           type: string
           format: date-time
+    PaymentInstructionsRequest:
+      type: object
+      properties:
+        instructions:
+          type: string
+          maxLength: 1000
+          minLength: 0
     CourtRequest:
       type: object
       properties:
@@ -1962,6 +2234,58 @@ components:
       - fullName
       - phone
       - role
+    CompleteRefund:
+      type: object
+      properties:
+        reference:
+          type: string
+          maxLength: 100
+          minLength: 0
+    RefundResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        bookingReference:
+          type: string
+        customerName:
+          type: string
+        customerPhone:
+          type: string
+        amount:
+          type: number
+        originalMethod:
+          type: string
+          enum:
+          - CASH
+          - ESEWA
+          - KHALTI
+          - FONEPAY
+          - BANK_TRANSFER
+          - CARD
+          - MEMBERSHIP_CREDIT
+        reason:
+          type: string
+        status:
+          type: string
+          enum:
+          - REQUESTED
+          - PROCESSING
+          - SUCCEEDED
+          - FAILED
+          - REJECTED
+        reference:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        processedAt:
+          type: string
+          format: date-time
     RecurringBookingRequest:
       type: object
       properties:
@@ -2161,6 +2485,60 @@ components:
           type: string
         slug:
           type: string
+    Reject:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+          minLength: 0
+      required:
+      - reason
+    PaymentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        bookingReference:
+          type: string
+        customerName:
+          type: string
+        amount:
+          type: number
+        method:
+          type: string
+          enum:
+          - CASH
+          - ESEWA
+          - KHALTI
+          - FONEPAY
+          - BANK_TRANSFER
+          - CARD
+          - MEMBERSHIP_CREDIT
+        status:
+          type: string
+          enum:
+          - INITIATED
+          - PENDING
+          - SUCCEEDED
+          - FAILED
+          - CANCELLED
+          - PARTIALLY_REFUNDED
+          - REFUNDED
+        transactionId:
+          type: string
+        failureReason:
+          type: string
+        paidAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
     CourtBlockRequest:
       type: object
       properties:
@@ -2266,6 +2644,29 @@ components:
           format: date-time
       required:
       - startsAt
+    Record:
+      type: object
+      properties:
+        method:
+          type: string
+          enum:
+          - CASH
+          - ESEWA
+          - KHALTI
+          - FONEPAY
+          - BANK_TRANSFER
+          - CARD
+          - MEMBERSHIP_CREDIT
+        transactionId:
+          type: string
+          maxLength: 100
+          minLength: 0
+        amount:
+          type: number
+          minimum: 1
+      required:
+      - amount
+      - method
     CancelRequest:
       type: object
       properties:
@@ -2298,6 +2699,12 @@ components:
           - RECURRING_BOOKING_CREATED
           - RECURRING_BOOKING_CANCELLED
           - RECURRING_BOOKING_SKIPPED
+          - PAYMENT_TO_VERIFY
+          - PAYMENT_RECEIVED
+          - PAYMENT_REJECTED
+          - REFUND_DUE
+          - REFUND_TO_PAY
+          - REFUND_SENT
         title:
           type: string
         body:
@@ -2343,6 +2750,30 @@ components:
       required:
       - courtId
       - startsAt
+    Claim:
+      type: object
+      properties:
+        method:
+          type: string
+          enum:
+          - CASH
+          - ESEWA
+          - KHALTI
+          - FONEPAY
+          - BANK_TRANSFER
+          - CARD
+          - MEMBERSHIP_CREDIT
+        transactionId:
+          type: string
+          maxLength: 100
+          minLength: 0
+        amount:
+          type: number
+          minimum: 1
+      required:
+      - amount
+      - method
+      - transactionId
     RefreshRequest:
       type: object
       properties:
@@ -2685,6 +3116,35 @@ components:
         totalPages:
           type: integer
           format: int32
+    BookingPaymentsResponse:
+      type: object
+      properties:
+        totalAmount:
+          type: number
+        advanceRequired:
+          type: number
+        paidAmount:
+          type: number
+        amountDue:
+          type: number
+        paymentStatus:
+          type: string
+          enum:
+          - UNPAID
+          - PARTIALLY_PAID
+          - PAID
+          - PARTIALLY_REFUNDED
+          - REFUNDED
+        paymentInstructions:
+          type: string
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentResponse"
+        refunds:
+          type: array
+          items:
+            $ref: "#/components/schemas/RefundResponse"
     PageResponseNotificationResponse:
       type: object
       properties:

@@ -42,7 +42,8 @@ class VenueMapper {
 		return new VenueResponse(venue.getId(), venue.getSlug(), venue.getName(), venue.getDescription(),
 				venue.getPhone(), venue.getEmail(), venue.getAddressLine(), venue.getArea(), venue.getCity(),
 				venue.getLatitude(), venue.getLongitude(), venue.getTimezone(), venue.getStatus(),
-				ownerView ? venue.getRejectionReason() : null, venue.policy(), venue.getAverageRating(),
+				ownerView ? venue.getRejectionReason() : null, venue.policy(), venue.getPaymentInstructions(),
+				venue.getAverageRating(),
 				venue.getReviewCount(), fromPrice(venue), hours, amenities, courts);
 	}
 

@@ -62,6 +62,12 @@ class OwnerVenueController {
 		return this.venueService.updatePolicy(CurrentUser.id(jwt), venueId, request);
 	}
 
+	@PutMapping("/{venueId}/payment-instructions")
+	VenueResponse updatePaymentInstructions(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID venueId,
+			@Valid @RequestBody PaymentInstructionsRequest request) {
+		return this.venueService.updatePaymentInstructions(CurrentUser.id(jwt), venueId, request.instructions());
+	}
+
 	@PutMapping("/{venueId}/operating-hours")
 	VenueResponse replaceOperatingHours(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID venueId,
 			@RequestBody List<@Valid DayHours> request) {

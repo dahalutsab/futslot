@@ -91,6 +91,13 @@ public class VenueService {
 	}
 
 	@Transactional
+	public VenueResponse updatePaymentInstructions(UUID ownerId, UUID venueId, String instructions) {
+		Venue venue = owned(ownerId, venueId);
+		venue.setPaymentInstructions(instructions);
+		return this.mapper.toResponse(venue, true);
+	}
+
+	@Transactional
 	public VenueResponse replaceOperatingHours(UUID ownerId, UUID venueId, List<DayHours> days) {
 		Venue venue = owned(ownerId, venueId);
 		Set<DayOfWeek> seen = EnumSet.noneOf(DayOfWeek.class);

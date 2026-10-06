@@ -152,7 +152,41 @@ public class Booking {
 		this.holdExpiresAt = expiresAt;
 	}
 
-	boolean isLive() {
+	/**
+	 * Money the venue received for this booking. Paying at least the advance confirms a held booking.
+	 */
+	public void recordPayment(BigDecimal amount) {
+		this.paidAmount = this.paidAmount.add(amount);
+		this.paymentStatus = (this.paidAmount.compareTo(this.totalAmount) >= 0) ? PaymentStatus.PAID
+				: PaymentStatus.PARTIALLY_PAID;
+		if (this.status == BookingStatus.PENDING_PAYMENT && this.paidAmount.compareTo(this.advanceRequired) >= 0) {
+			this.status = BookingStatus.CONFIRMED;
+			this.holdExpiresAt = null;
+		}
+	}
+
+	/** Money the venue paid back. */
+	public void recordRefund(BigDecimal amount) {
+		this.paidAmount = this.paidAmount.subtract(amount).max(BigDecimal.ZERO);
+		this.paymentStatus = (this.paidAmount.signum() == 0) ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
+	}
+
+	/** While a submitted payment is being verified the slot stays held with no deadline. */
+	public void pauseHold() {
+		this.holdExpiresAt = null;
+	}
+
+	public void resumeHold(Instant until) {
+		if (this.status == BookingStatus.PENDING_PAYMENT) {
+			this.holdExpiresAt = until;
+		}
+	}
+
+	public BigDecimal amountDue() {
+		return this.totalAmount.subtract(this.paidAmount).max(BigDecimal.ZERO);
+	}
+
+	public boolean isLive() {
 		return this.status == BookingStatus.PENDING_PAYMENT || this.status == BookingStatus.CONFIRMED;
 	}
 
