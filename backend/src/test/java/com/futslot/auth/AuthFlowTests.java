@@ -7,30 +7,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import com.futslot.TestcontainersConfiguration;
+import com.futslot.support.IntegrationTest;
+import com.futslot.support.RecordingSmsSender;
+import com.futslot.support.TestUsers;
 import com.jayway.jsonpath.JsonPath;
 
-@Import({ TestcontainersConfiguration.class, AuthFlowTests.SmsConfig.class })
-@SpringBootTest
-@AutoConfigureMockMvc
+@IntegrationTest
 class AuthFlowTests {
-
-	// Each test uses its own phone number so OTP cooldowns don't interfere
-	private static final AtomicInteger phoneSequence = new AtomicInteger(1000);
 
 	@Autowired
 	MockMvc mvc;
@@ -140,6 +129,9 @@ class AuthFlowTests {
 		verify("9800000000", "12ab", null).andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
 			.andExpect(jsonPath("$.errors.code").exists());
+		this.mvc.perform(post("/api/v1/auth/otp/request").contentType(MediaType.APPLICATION_JSON).content("{\"phone\":"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value("MALFORMED_REQUEST"));
 	}
 
 	private String login(String name) throws Exception {
@@ -166,18 +158,7 @@ class AuthFlowTests {
 	}
 
 	private static String nextLocalPhone() {
-		return "981" + "%07d".formatted(phoneSequence.incrementAndGet());
-	}
-
-	@TestConfiguration(proxyBeanMethods = false)
-	static class SmsConfig {
-
-		@Bean
-		@Primary
-		RecordingSmsSender recordingSmsSender() {
-			return new RecordingSmsSender();
-		}
-
+		return TestUsers.nextLocalPhone();
 	}
 
 }

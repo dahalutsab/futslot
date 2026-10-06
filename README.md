@@ -38,6 +38,19 @@ Use the returned `accessToken` as `Authorization: Bearer <token>` (valid 15 minu
 
 Set `JWT_SECRET` and `OTP_SECRET` (32+ random bytes each) in every deployed environment.
 
+### Venue onboarding
+
+Any signed-in user can create a venue (`POST /api/v1/owner/venues`) and becomes its owner. After adding
+opening hours, at least one court and pricing for each court, the owner submits it for approval. Venues
+appear in the public `GET /api/v1/venues` listing only after an admin approves them.
+
+There is no sign-up path for admins. Promote an existing user directly in the database, then have them
+refresh their token:
+
+```sql
+INSERT INTO user_roles (user_id, role) SELECT id, 'ADMIN' FROM users WHERE phone = '+9779800000000';
+```
+
 ### API contract
 
 `docs/api/openapi.yaml` is exported from the running API. After changing endpoints, start the API

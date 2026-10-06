@@ -24,6 +24,11 @@ public class UserService {
 	}
 
 	@Transactional
+	public void grantRole(UUID id, Role role) {
+		get(id).getRoles().add(role);
+	}
+
+	@Transactional
 	public User updateProfile(UUID id, UpdateProfileRequest request) {
 		User user = get(id);
 		if (request.fullName() != null) {

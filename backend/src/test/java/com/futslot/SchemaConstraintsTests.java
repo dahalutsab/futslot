@@ -8,18 +8,18 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.futslot.support.IntegrationTest;
+
 /**
  * Guards the rules the database itself enforces, so they keep holding no matter which code path writes.
- * Each test runs in a transaction that is rolled back afterwards.
+ * Each test runs in a transaction that is rolled back afterwards; queries are scoped to the test's venue
+ * because the database is shared with other integration tests.
  */
-@Import(TestcontainersConfiguration.class)
-@SpringBootTest
+@IntegrationTest
 @Transactional
 class SchemaConstraintsTests {
 
@@ -36,7 +36,7 @@ class SchemaConstraintsTests {
 		ownerId = insert("INSERT INTO users (full_name, phone) VALUES ('Owner', '+9779800000001') RETURNING id");
 		venueId = insert("""
 				INSERT INTO venues (owner_id, name, slug, address_line, city)
-				VALUES (?, 'Test Futsal', 'test-futsal', 'Baneshwor', 'Kathmandu') RETURNING id""", ownerId);
+				VALUES (?, 'Schema Test Futsal', 'schema-test-futsal', 'Baneshwor', 'Kathmandu') RETURNING id""", ownerId);
 		courtId = insert("INSERT INTO courts (venue_id, name) VALUES (?, 'Court A') RETURNING id", venueId);
 		customerId = insert("""
 				INSERT INTO venue_customers (venue_id, name, phone)
@@ -48,7 +48,7 @@ class SchemaConstraintsTests {
 		book("FS-1", "2026-11-01 18:00+05:45", "2026-11-01 19:00+05:45", "CONFIRMED");
 		book("FS-2", "2026-11-01 19:00+05:45", "2026-11-01 20:00+05:45", "CONFIRMED");
 
-		assertThat(jdbc.queryForObject("SELECT count(*) FROM bookings", Integer.class)).isEqualTo(2);
+		assertThat(jdbc.queryForObject("SELECT count(*) FROM bookings WHERE venue_id = ?", Integer.class, venueId)).isEqualTo(2);
 	}
 
 	@Test
@@ -70,7 +70,7 @@ class SchemaConstraintsTests {
 
 		book("FS-2", "2026-11-01 18:00+05:45", "2026-11-01 19:00+05:45", "CONFIRMED");
 
-		assertThat(jdbc.queryForObject("SELECT count(*) FROM bookings", Integer.class)).isEqualTo(2);
+		assertThat(jdbc.queryForObject("SELECT count(*) FROM bookings WHERE venue_id = ?", Integer.class, venueId)).isEqualTo(2);
 	}
 
 	@Test
@@ -84,7 +84,7 @@ class SchemaConstraintsTests {
 				VALUES ('FS-2', ?, ?, ?, 'WALK_IN', 'CONFIRMED', '2026-11-01 18:00+05:45', '2026-11-01 19:00+05:45',
 				        1500, 1500)""", venueId, courtB, customerId);
 
-		assertThat(jdbc.queryForObject("SELECT count(*) FROM bookings", Integer.class)).isEqualTo(2);
+		assertThat(jdbc.queryForObject("SELECT count(*) FROM bookings WHERE venue_id = ?", Integer.class, venueId)).isEqualTo(2);
 	}
 
 	@Test

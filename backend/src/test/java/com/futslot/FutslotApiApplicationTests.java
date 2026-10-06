@@ -1,11 +1,10 @@
 package com.futslot;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
-@Import(TestcontainersConfiguration.class)
-@SpringBootTest
+import com.futslot.support.IntegrationTest;
+
+@IntegrationTest
 class FutslotApiApplicationTests {
 
 	@Test
