@@ -98,6 +98,23 @@ posted again.
 Players save approved venues with `PUT /api/v1/me/favourites/{venueId}` and list them with
 `GET /api/v1/me/favourites`.
 
+### Reports
+
+Venue reports live under `/api/v1/owner/venues/{venueId}/reports` and take `from` / `to` local dates (both
+included, default the last 30 days, at most 366 days):
+
+- `summary`: bookings by status and source, cancellation and no-show rates, booked value, discounts,
+  what's still owed, money collected (by method, including membership sales), refunds paid and owed,
+  and occupancy overall and per court.
+- `daily`: one row per day for charts.
+- `peak-hours`: played bookings by weekday and start hour.
+- `top-customers`: most frequent customers and what they spent.
+- `bookings.csv`: every booking in the period, for spreadsheets.
+
+Bookings count by start time; money counts by when it was paid or refunded. Reports need the
+`VIEW_REPORTS` permission (owners and managers by default). Admins get FutSlot-wide totals from
+`GET /api/v1/admin/reports/summary`.
+
 ### Notifications
 
 Booking and venue changes create in-app notifications (`GET /api/v1/notifications`) and push them to the
