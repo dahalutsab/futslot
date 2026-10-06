@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import java.util.UUID;
 
 import com.futslot.booking.Booking;
+import com.futslot.common.Names;
 
 /**
  * {@code bookingId} is only filled in for the review's author, the venue and admins. The reviewer is
@@ -28,16 +29,8 @@ public record ReviewResponse(UUID id, UUID venueId, String venueName, UUID booki
 		LocalDate playedOn = booking.getStartsAt().atZone(ZoneId.of(booking.getVenue().getTimezone())).toLocalDate();
 		return new ReviewResponse(review.getId(), review.getVenueId(), booking.getVenue().getName(),
 				detailed ? booking.getId() : null, playedOn, review.getRating(), review.getComment(),
-				shortName(review.getUser().getFullName()), review.getUser().getAvatarUrl(), review.getOwnerReply(),
+				Names.shortName(review.getUser().getFullName()), review.getUser().getAvatarUrl(), review.getOwnerReply(),
 				review.getOwnerRepliedAt(), review.getStatus(), review.getCreatedAt());
-	}
-
-	static String shortName(String fullName) {
-		String[] parts = fullName.strip().split("\\s+");
-		if (parts.length == 1) {
-			return parts[0];
-		}
-		return parts[0] + " " + parts[parts.length - 1].charAt(0) + ".";
 	}
 
 }

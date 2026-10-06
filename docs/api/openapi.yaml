@@ -9,6 +9,62 @@ servers:
 security:
 - bearerAuth: []
 paths:
+  /api/v1/teams/{teamId}:
+    put:
+      tags:
+      - team-controller
+      operationId: update
+      parameters:
+      - name: teamId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TeamResponse"
+  /api/v1/teams/{teamId}/members/{userId}/role:
+    put:
+      tags:
+      - team-controller
+      operationId: changeRole
+      parameters:
+      - name: teamId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeRole"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TeamResponse"
   /api/v1/owner/venues/{venueId}:
     get:
       tags:
@@ -56,7 +112,7 @@ paths:
     put:
       tags:
       - staff-controller
-      operationId: update
+      operationId: update_1
       parameters:
       - name: venueId
         in: path
@@ -270,7 +326,7 @@ paths:
     put:
       tags:
       - discount-code-controller
-      operationId: update_1
+      operationId: update_2
       parameters:
       - name: venueId
         in: path
@@ -416,6 +472,35 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/VenueResponse"
+  /api/v1/me/player-profile:
+    get:
+      tags:
+      - player-controller
+      operationId: mine
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PlayerCard"
+    put:
+      tags:
+      - player-controller
+      operationId: save
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlayerProfileRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PlayerCard"
   /api/v1/me/favourites/{venueId}:
     put:
       tags:
@@ -467,7 +552,7 @@ paths:
     put:
       tags:
       - review-controller
-      operationId: update_2
+      operationId: update_3
       parameters:
       - name: bookingId
         in: path
@@ -526,6 +611,137 @@ paths:
       responses:
         "204":
           description: No Content
+  /api/v1/teams:
+    get:
+      tags:
+      - team-controller
+      operationId: search
+      parameters:
+      - name: city
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          maximum: 50
+          minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseTeamSummary"
+    post:
+      tags:
+      - team-controller
+      operationId: create_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TeamResponse"
+  /api/v1/teams/{teamId}/leave:
+    post:
+      tags:
+      - team-controller
+      operationId: leave
+      parameters:
+      - name: teamId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/v1/teams/{teamId}/invitations:
+    post:
+      tags:
+      - team-controller
+      operationId: invite
+      parameters:
+      - name: teamId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Invite"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TeamResponse"
+  /api/v1/teams/{teamId}/invitation/decline:
+    post:
+      tags:
+      - team-controller
+      operationId: decline
+      parameters:
+      - name: teamId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/v1/teams/{teamId}/invitation/accept:
+    post:
+      tags:
+      - team-controller
+      operationId: accept
+      parameters:
+      - name: teamId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TeamResponse"
   /api/v1/owner/venues:
     get:
       tags:
@@ -543,7 +759,7 @@ paths:
     post:
       tags:
       - owner-venue-controller
-      operationId: create_1
+      operationId: create_2
       requestBody:
         content:
           application/json:
@@ -675,7 +891,7 @@ paths:
     post:
       tags:
       - recurring-booking-controller
-      operationId: create_2
+      operationId: create_3
       parameters:
       - name: venueId
         in: path
@@ -991,7 +1207,7 @@ paths:
     post:
       tags:
       - discount-code-controller
-      operationId: create_3
+      operationId: create_4
       parameters:
       - name: venueId
         in: path
@@ -1392,7 +1608,7 @@ paths:
     get:
       tags:
       - membership-controller
-      operationId: mine
+      operationId: mine_1
       responses:
         "200":
           description: OK
@@ -1433,6 +1649,195 @@ paths:
       responses:
         "204":
           description: No Content
+  /api/v1/match-posts:
+    get:
+      tags:
+      - matchmaking-controller
+      operationId: browse
+      parameters:
+      - name: city
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - NEED_PLAYERS
+          - FIND_OPPONENT
+      - name: date
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: skillLevel
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - BEGINNER
+          - INTERMEDIATE
+          - ADVANCED
+          - PRO
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          maximum: 50
+          minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseMatchPostView"
+    post:
+      tags:
+      - matchmaking-controller
+      operationId: create_5
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchPostRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MatchPostView"
+  /api/v1/match-posts/{postId}/requests:
+    post:
+      tags:
+      - matchmaking-controller
+      operationId: ask
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinRequestBody"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MatchPostView"
+  /api/v1/match-posts/{postId}/requests/{requestId}/decline:
+    post:
+      tags:
+      - matchmaking-controller
+      operationId: decline_1
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: requestId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MatchPostView"
+  /api/v1/match-posts/{postId}/requests/{requestId}/accept:
+    post:
+      tags:
+      - matchmaking-controller
+      operationId: accept_1
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: requestId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MatchPostView"
+  /api/v1/match-posts/{postId}/requests/withdraw:
+    post:
+      tags:
+      - matchmaking-controller
+      operationId: withdraw
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MatchPostView"
+  /api/v1/match-posts/{postId}/cancel:
+    post:
+      tags:
+      - matchmaking-controller
+      operationId: cancel_2
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MatchPostView"
   /api/v1/bookings:
     get:
       tags:
@@ -1536,7 +1941,7 @@ paths:
     post:
       tags:
       - booking-controller
-      operationId: cancel_2
+      operationId: cancel_3
       parameters:
       - name: bookingId
         in: path
@@ -1787,7 +2192,7 @@ paths:
     patch:
       tags:
       - customer-controller
-      operationId: update_3
+      operationId: update_4
       parameters:
       - name: venueId
         in: path
@@ -1829,7 +2234,7 @@ paths:
     patch:
       tags:
       - me-controller
-      operationId: update_4
+      operationId: update_5
       requestBody:
         content:
           application/json:
@@ -1847,7 +2252,7 @@ paths:
     get:
       tags:
       - public-venue-controller
-      operationId: search
+      operationId: search_1
       parameters:
       - name: city
         in: query
@@ -2014,6 +2419,43 @@ paths:
               schema:
                 $ref: "#/components/schemas/AvailabilityResponse"
       security: []
+  /api/v1/teams/{slug}:
+    get:
+      tags:
+      - team-controller
+      operationId: get_3
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TeamResponse"
+  /api/v1/players/{userId}:
+    get:
+      tags:
+      - player-controller
+      operationId: player
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PlayerCard"
   /api/v1/owner/venues/{venueId}/reviews:
     get:
       tags:
@@ -2264,7 +2706,7 @@ paths:
     get:
       tags:
       - recurring-booking-controller
-      operationId: get_3
+      operationId: get_4
       parameters:
       - name: venueId
         in: path
@@ -2310,7 +2752,7 @@ paths:
     get:
       tags:
       - customer-controller
-      operationId: search_1
+      operationId: search_2
       parameters:
       - name: venueId
         in: path
@@ -2452,11 +2894,25 @@ paths:
                 additionalProperties:
                   type: integer
                   format: int64
+  /api/v1/me/teams:
+    get:
+      tags:
+      - team-controller
+      operationId: mine_2
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeamResponse"
   /api/v1/me/reviews:
     get:
       tags:
       - review-controller
-      operationId: mine_1
+      operationId: mine_3
       parameters:
       - name: page
         in: query
@@ -2496,6 +2952,66 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/BookingResponse"
+  /api/v1/me/match-requests:
+    get:
+      tags:
+      - matchmaking-controller
+      operationId: myRequests
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          maximum: 50
+          minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseMatchPostView"
+  /api/v1/me/match-posts:
+    get:
+      tags:
+      - matchmaking-controller
+      operationId: mine_4
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          maximum: 50
+          minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseMatchPostView"
   /api/v1/me/favourites:
     get:
       tags:
@@ -2510,6 +3026,25 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/VenueSummaryResponse"
+  /api/v1/match-posts/{postId}:
+    get:
+      tags:
+      - matchmaking-controller
+      operationId: get_5
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MatchPostView"
   /api/v1/bookings/{bookingId}:
     get:
       tags:
@@ -2590,7 +3125,7 @@ paths:
     get:
       tags:
       - admin-venue-controller
-      operationId: get_4
+      operationId: get_6
       parameters:
       - name: venueId
         in: path
@@ -2670,6 +3205,31 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PlatformReport"
+  /api/v1/teams/{teamId}/members/{userId}:
+    delete:
+      tags:
+      - team-controller
+      operationId: remove_2
+      parameters:
+      - name: teamId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TeamResponse"
   /api/v1/owner/venues/{venueId}/courts/{courtId}/blocks/{blockId}:
     delete:
       tags:
@@ -2713,6 +3273,112 @@ paths:
           description: No Content
 components:
   schemas:
+    TeamRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 60
+          minLength: 2
+        city:
+          type: string
+          maxLength: 60
+          minLength: 0
+        skillLevel:
+          type: string
+          enum:
+          - BEGINNER
+          - INTERMEDIATE
+          - ADVANCED
+          - PRO
+        logoUrl:
+          type: string
+          maxLength: 500
+          minLength: 0
+        isPublic:
+          type: boolean
+      required:
+      - name
+    Member:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        avatarUrl:
+          type: string
+        role:
+          type: string
+          enum:
+          - CAPTAIN
+          - VICE_CAPTAIN
+          - MEMBER
+        status:
+          type: string
+          enum:
+          - INVITED
+          - ACTIVE
+          - LEFT
+          - REMOVED
+    TeamResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        logoUrl:
+          type: string
+        city:
+          type: string
+        skillLevel:
+          type: string
+          enum:
+          - BEGINNER
+          - INTERMEDIATE
+          - ADVANCED
+          - PRO
+        isPublic:
+          type: boolean
+        captainId:
+          type: string
+          format: uuid
+        memberCount:
+          type: integer
+          format: int32
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/Member"
+        myRole:
+          type: string
+          enum:
+          - CAPTAIN
+          - VICE_CAPTAIN
+          - MEMBER
+        myStatus:
+          type: string
+          enum:
+          - INVITED
+          - ACTIVE
+          - LEFT
+          - REMOVED
+    ChangeRole:
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+          - CAPTAIN
+          - VICE_CAPTAIN
+          - MEMBER
+      required:
+      - role
     VenueDetails:
       type: object
       properties:
@@ -3317,6 +3983,78 @@ components:
           uniqueItems: true
       required:
       - codes
+    PlayerProfileRequest:
+      type: object
+      properties:
+        position:
+          type: string
+          enum:
+          - GOALKEEPER
+          - DEFENDER
+          - MIDFIELDER
+          - FORWARD
+          - ANY
+        skillLevel:
+          type: string
+          enum:
+          - BEGINNER
+          - INTERMEDIATE
+          - ADVANCED
+          - PRO
+        preferredFoot:
+          type: string
+          enum:
+          - LEFT
+          - RIGHT
+          - BOTH
+        city:
+          type: string
+          maxLength: 60
+          minLength: 0
+        bio:
+          type: string
+          maxLength: 500
+          minLength: 0
+        isPublic:
+          type: boolean
+    PlayerCard:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        avatarUrl:
+          type: string
+        position:
+          type: string
+          enum:
+          - GOALKEEPER
+          - DEFENDER
+          - MIDFIELDER
+          - FORWARD
+          - ANY
+        skillLevel:
+          type: string
+          enum:
+          - BEGINNER
+          - INTERMEDIATE
+          - ADVANCED
+          - PRO
+        preferredFoot:
+          type: string
+          enum:
+          - LEFT
+          - RIGHT
+          - BOTH
+        city:
+          type: string
+        bio:
+          type: string
+        gamesPlayed:
+          type: integer
+          format: int64
     Write:
       type: object
       properties:
@@ -3331,6 +4069,14 @@ components:
           minLength: 0
       required:
       - rating
+    Invite:
+      type: object
+      properties:
+        phone:
+          type: string
+          minLength: 1
+      required:
+      - phone
     StaffRequest:
       type: object
       properties:
@@ -3942,6 +4688,15 @@ components:
           - NEW_REVIEW
           - REVIEW_REPLY
           - MEMBERSHIP_ACTIVATED
+          - TEAM_INVITE
+          - TEAM_MEMBER_JOINED
+          - TEAM_MEMBER_REMOVED
+          - TEAM_CAPTAIN_CHANGED
+          - MATCH_REQUEST
+          - MATCH_REQUEST_ACCEPTED
+          - MATCH_REQUEST_DECLINED
+          - MATCH_PLAYER_WITHDREW
+          - MATCH_POST_CANCELLED
         title:
           type: string
         body:
@@ -3996,6 +4751,177 @@ components:
       required:
       - platform
       - token
+    MatchPostRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - NEED_PLAYERS
+          - FIND_OPPONENT
+        teamId:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        venueId:
+          type: string
+          format: uuid
+        city:
+          type: string
+          maxLength: 60
+          minLength: 0
+        startsAt:
+          type: string
+          format: date-time
+        playersNeeded:
+          type: integer
+          format: int32
+          maximum: 20
+          minimum: 1
+        skillLevel:
+          type: string
+          enum:
+          - BEGINNER
+          - INTERMEDIATE
+          - ADVANCED
+          - PRO
+        costPerPlayer:
+          type: number
+          minimum: 0
+        note:
+          type: string
+          maxLength: 500
+          minLength: 0
+      required:
+      - type
+    MatchPostView:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+          - NEED_PLAYERS
+          - FIND_OPPONENT
+        status:
+          type: string
+          enum:
+          - OPEN
+          - FILLED
+          - CANCELLED
+          - EXPIRED
+        postedBy:
+          $ref: "#/components/schemas/Person"
+        team:
+          $ref: "#/components/schemas/TeamRef"
+        venue:
+          $ref: "#/components/schemas/VenueRef"
+        city:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        playersNeeded:
+          type: integer
+          format: int32
+        placesTaken:
+          type: integer
+          format: int64
+        skillLevel:
+          type: string
+          enum:
+          - BEGINNER
+          - INTERMEDIATE
+          - ADVANCED
+          - PRO
+        costPerPlayer:
+          type: number
+        note:
+          type: string
+        mine:
+          type: boolean
+        myRequest:
+          $ref: "#/components/schemas/MyRequest"
+        contactPhone:
+          type: string
+        requests:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequestView"
+        createdAt:
+          type: string
+          format: date-time
+    MyRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - PENDING
+          - ACCEPTED
+          - DECLINED
+          - WITHDRAWN
+        team:
+          $ref: "#/components/schemas/TeamRef"
+    Person:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        name:
+          type: string
+    RequestView:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        player:
+          $ref: "#/components/schemas/PlayerCard"
+        team:
+          $ref: "#/components/schemas/TeamRef"
+        message:
+          type: string
+        status:
+          type: string
+          enum:
+          - PENDING
+          - ACCEPTED
+          - DECLINED
+          - WITHDRAWN
+        phone:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    TeamRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+    JoinRequestBody:
+      type: object
+      properties:
+        teamId:
+          type: string
+          format: uuid
+        message:
+          type: string
+          maxLength: 300
+          minLength: 0
     PlayerBookingRequest:
       type: object
       properties:
@@ -4389,6 +5315,49 @@ components:
           - BOOKED
           - BLOCKED
           - PAST
+    PageResponseTeamSummary:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamSummary"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    TeamSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        logoUrl:
+          type: string
+        city:
+          type: string
+        skillLevel:
+          type: string
+          enum:
+          - BEGINNER
+          - INTERMEDIATE
+          - ADVANCED
+          - PRO
+        memberCount:
+          type: integer
+          format: int64
     MyVenueResponse:
       type: object
       properties:
@@ -4661,6 +5630,25 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/NotificationResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseMatchPostView:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/MatchPostView"
         page:
           type: integer
           format: int32
