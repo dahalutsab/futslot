@@ -398,6 +398,248 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/CourtBlockResponse"
+  /api/v1/owner/venues/{venueId}/bookings:
+    get:
+      tags:
+      - booking-controller
+      operationId: venueBookings
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: date
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BookingResponse"
+    post:
+      tags:
+      - booking-controller
+      operationId: bookForCustomer
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OwnerBookingRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingResponse"
+  /api/v1/owner/venues/{venueId}/bookings/{bookingId}/reschedule:
+    post:
+      tags:
+      - booking-controller
+      operationId: reschedule
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RescheduleRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingResponse"
+  /api/v1/owner/venues/{venueId}/bookings/{bookingId}/no-show:
+    post:
+      tags:
+      - booking-controller
+      operationId: noShow
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingResponse"
+  /api/v1/owner/venues/{venueId}/bookings/{bookingId}/complete:
+    post:
+      tags:
+      - booking-controller
+      operationId: complete
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingResponse"
+  /api/v1/owner/venues/{venueId}/bookings/{bookingId}/cancel:
+    post:
+      tags:
+      - booking-controller
+      operationId: cancelForCustomer
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingResponse"
+  /api/v1/bookings:
+    get:
+      tags:
+      - booking-controller
+      operationId: myBookings
+      parameters:
+      - name: scope
+        in: query
+        required: false
+        schema:
+          type: string
+          default: upcoming
+          pattern: upcoming|past
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          maximum: 50
+          minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BookingResponse"
+    post:
+      tags:
+      - booking-controller
+      operationId: book
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlayerBookingRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingResponse"
+  /api/v1/bookings/{bookingId}/cancel:
+    post:
+      tags:
+      - booking-controller
+      operationId: cancel
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingResponse"
   /api/v1/auth/refresh:
     post:
       tags:
@@ -672,6 +914,31 @@ paths:
               schema:
                 $ref: "#/components/schemas/AvailabilityResponse"
       security: []
+  /api/v1/owner/venues/{venueId}/bookings/{bookingId}:
+    get:
+      tags:
+      - booking-controller
+      operationId: venueBooking
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingResponse"
   /api/v1/owner/venues/{venueId}/availability:
     get:
       tags:
@@ -697,6 +964,25 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/AvailabilityResponse"
+  /api/v1/bookings/{bookingId}:
+    get:
+      tags:
+      - booking-controller
+      operationId: myBooking
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookingResponse"
   /api/v1/amenities:
     get:
       tags:
@@ -1185,6 +1471,179 @@ components:
           - OTHER
         note:
           type: string
+    OwnerBookingRequest:
+      type: object
+      properties:
+        courtId:
+          type: string
+          format: uuid
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        customerName:
+          type: string
+          maxLength: 100
+          minLength: 0
+        customerPhone:
+          type: string
+          minLength: 1
+        source:
+          type: string
+          enum:
+          - APP
+          - WALK_IN
+          - PHONE
+          - RECURRING
+          - TOURNAMENT
+          - ADMIN
+        price:
+          type: number
+          minimum: 0
+        notes:
+          type: string
+          maxLength: 500
+          minLength: 0
+      required:
+      - courtId
+      - customerName
+      - customerPhone
+      - source
+      - startsAt
+    BookingResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        reference:
+          type: string
+        venue:
+          $ref: "#/components/schemas/VenueRef"
+        court:
+          $ref: "#/components/schemas/CourtRef"
+        customer:
+          $ref: "#/components/schemas/CustomerRef"
+        source:
+          type: string
+          enum:
+          - APP
+          - WALK_IN
+          - PHONE
+          - RECURRING
+          - TOURNAMENT
+          - ADMIN
+        status:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - CONFIRMED
+          - COMPLETED
+          - CANCELLED
+          - NO_SHOW
+          - EXPIRED
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        priceAmount:
+          type: number
+        totalAmount:
+          type: number
+        advanceRequired:
+          type: number
+        paidAmount:
+          type: number
+        paymentStatus:
+          type: string
+          enum:
+          - UNPAID
+          - PARTIALLY_PAID
+          - PAID
+          - PARTIALLY_REFUNDED
+          - REFUNDED
+        holdExpiresAt:
+          type: string
+          format: date-time
+        notes:
+          type: string
+        cancelledAt:
+          type: string
+          format: date-time
+        cancellationReason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CourtRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    CustomerRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type: string
+    VenueRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+    RescheduleRequest:
+      type: object
+      properties:
+        courtId:
+          type: string
+          format: uuid
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+      required:
+      - startsAt
+    CancelRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+          minLength: 0
+    PlayerBookingRequest:
+      type: object
+      properties:
+        courtId:
+          type: string
+          format: uuid
+        startsAt:
+          type: string
+          format: date-time
+        notes:
+          type: string
+          maxLength: 500
+          minLength: 0
+      required:
+      - courtId
+      - startsAt
     RefreshRequest:
       type: object
       properties:

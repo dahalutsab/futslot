@@ -13,11 +13,12 @@ import com.futslot.TestcontainersConfiguration;
 
 /**
  * Full application against a real PostgreSQL. Every class using this shares one Spring context
- * (and one database container), so tests must not depend on the database being empty.
+ * (and one database container), so tests must not depend on the database being empty. The bookings
+ * maintenance job is off so it can't change bookings mid-test; tests run it explicitly when needed.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@SpringBootTest
+@SpringBootTest(properties = "futslot.bookings.maintenance.enabled=false")
 @AutoConfigureMockMvc
 @Import({ TestcontainersConfiguration.class, TestSupportConfig.class })
 public @interface IntegrationTest {
