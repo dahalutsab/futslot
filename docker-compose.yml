@@ -1,0 +1,35 @@
+name: futslot
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-futslot}
+      POSTGRES_USER: ${DB_USERNAME:-futslot}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-futslot}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Run the API in a container too: docker compose --profile full up
+  api:
+    profiles: ["full"]
+    build: ./backend
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-futslot}
+      DB_USERNAME: ${DB_USERNAME:-futslot}
+      DB_PASSWORD: ${DB_PASSWORD:-futslot}
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:
