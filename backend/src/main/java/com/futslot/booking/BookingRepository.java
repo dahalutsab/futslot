@@ -1,5 +1,6 @@
 package com.futslot.booking;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +36,23 @@ interface BookingRepository extends JpaRepository<Booking, UUID> {
 			where b.venue.id = :venueId and b.startsAt < :to and b.endsAt > :from
 			order by b.startsAt, b.court.sortOrder""")
 	List<Booking> findForVenueBetween(UUID venueId, Instant from, Instant to);
+
+	List<Booking> findByCustomerIdOrderByStartsAtDesc(UUID customerId, Pageable pageable);
+
+	@Query("""
+			select b.status as status, count(b) as bookings, coalesce(sum(b.totalAmount), 0) as amount
+			from Booking b where b.customer.id = :customerId group by b.status""")
+	List<StatusTotal> totalsByStatus(UUID customerId);
+
+	interface StatusTotal {
+
+		BookingStatus getStatus();
+
+		long getBookings();
+
+		BigDecimal getAmount();
+
+	}
 
 	@Query("""
 			select count(b) from Booking b
