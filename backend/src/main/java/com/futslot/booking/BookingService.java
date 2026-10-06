@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +27,7 @@ import com.futslot.slot.CourtBlockRepository;
 import com.futslot.slot.Slot;
 import com.futslot.slot.SlotStatus;
 import com.futslot.user.User;
+import com.futslot.user.UserRepository;
 import com.futslot.user.UserService;
 import com.futslot.venue.Court;
 import com.futslot.venue.CourtRepository;
@@ -64,16 +65,20 @@ public class BookingService {
 
 	private final UserService userService;
 
+	private final UserRepository users;
+
 	private final BookingReferences references;
 
-	private final JdbcClient jdbc;
+	private final HoldExpiry holdExpiry;
+
+	private final ApplicationEventPublisher events;
 
 	private final Clock clock;
 
 	BookingService(BookingRepository bookings, VenueCustomerRepository customers, VenueRepository venues,
 			CourtRepository courts, CourtBlockRepository blocks, BookedRanges bookedRanges,
-			AvailabilityService availability, UserService userService, BookingReferences references, JdbcClient jdbc,
-			Clock clock) {
+			AvailabilityService availability, UserService userService, UserRepository users,
+			BookingReferences references, HoldExpiry holdExpiry, ApplicationEventPublisher events, Clock clock) {
 		this.bookings = bookings;
 		this.customers = customers;
 		this.venues = venues;
@@ -82,8 +87,10 @@ public class BookingService {
 		this.bookedRanges = bookedRanges;
 		this.availability = availability;
 		this.userService = userService;
+		this.users = users;
 		this.references = references;
-		this.jdbc = jdbc;
+		this.holdExpiry = holdExpiry;
+		this.events = events;
 		this.clock = clock;
 	}
 
@@ -129,7 +136,9 @@ public class BookingService {
 				.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 			booking.holdForPayment(advance, now.plus(Duration.ofMinutes(venue.policy().bookingHoldMinutes())));
 		}
-		return BookingResponse.from(save(booking, customer, now));
+		save(booking, customer, now);
+		publish(BookingEventType.CREATED, booking, userId, null);
+		return BookingResponse.from(booking);
 	}
 
 	@Transactional
@@ -150,11 +159,15 @@ public class BookingService {
 		ensureFree(court, start, end, now, null);
 
 		BigDecimal price = (request.price() != null) ? request.price() : priceOfSlots(venue, court, start, end);
-		VenueCustomer customer = customerFor(venue, PhoneNumbers.normalize(request.customerPhone()),
-				request.customerName().strip());
+		String phone = PhoneNumbers.normalize(request.customerPhone());
+		VenueCustomer customer = customerFor(venue, phone, request.customerName().strip());
+		// A walk-in who also has the app gets the booking in their app
+		this.users.findByPhone(phone).ifPresent(user -> customer.linkUser(user.getId()));
 		Booking booking = new Booking(this.references.next(), venue, court, customer, null, request.source(), start,
 				end, price, ownerId, request.notes());
-		return BookingResponse.from(save(booking, customer, now));
+		save(booking, customer, now);
+		publish(BookingEventType.CREATED, booking, ownerId, null);
+		return BookingResponse.from(booking);
 	}
 
 	@Transactional
@@ -174,12 +187,13 @@ public class BookingService {
 		ensureFree(court, start, end, now, booking.getId());
 		booking.moveTo(court, start, end);
 		flush();
+		publish(BookingEventType.RESCHEDULED, booking, ownerId, null);
 		return BookingResponse.from(booking);
 	}
 
 	@Transactional
 	public BookingResponse cancelAsPlayer(UUID userId, UUID bookingId, String reason) {
-		Booking booking = this.bookings.findByIdAndBookedByUserId(bookingId, userId)
+		Booking booking = this.bookings.findByIdAndCustomerUserId(bookingId, userId)
 			.orElseThrow(BookingService::bookingNotFound);
 		requireLive(booking);
 		Instant now = this.clock.instant();
@@ -188,6 +202,7 @@ public class BookingService {
 					"This booking has started. Contact the venue");
 		}
 		booking.cancel(userId, reason, now);
+		publish(BookingEventType.CANCELLED, booking, userId, reason);
 		return BookingResponse.from(booking);
 	}
 
@@ -197,6 +212,7 @@ public class BookingService {
 		Booking booking = venueBooking(venueId, bookingId);
 		requireLive(booking);
 		booking.cancel(ownerId, reason, this.clock.instant());
+		publish(BookingEventType.CANCELLED, booking, ownerId, reason);
 		return BookingResponse.from(booking);
 	}
 
@@ -225,7 +241,7 @@ public class BookingService {
 
 	@Transactional(readOnly = true)
 	public BookingResponse getForPlayer(UUID userId, UUID bookingId) {
-		return this.bookings.findByIdAndBookedByUserId(bookingId, userId)
+		return this.bookings.findByIdAndCustomerUserId(bookingId, userId)
 			.map(BookingResponse::from)
 			.orElseThrow(BookingService::bookingNotFound);
 	}
@@ -250,7 +266,12 @@ public class BookingService {
 
 	private void lockAndExpireHolds(Court court, Instant now) {
 		this.courts.lockById(court.getId());
-		BookingMaintenance.expireLapsedHolds(this.jdbc, court.getId(), now);
+		this.holdExpiry.expire(court.getId(), now);
+	}
+
+	/** Listeners act after commit, so a rolled-back change never notifies anyone. */
+	private void publish(BookingEventType type, Booking booking, UUID actorUserId, String reason) {
+		this.events.publishEvent(BookingEvent.of(type, booking, actorUserId, reason));
 	}
 
 	/** Finds the slot starting at {@code start}; late-night slots belong to the previous operating day. */
@@ -307,11 +328,10 @@ public class BookingService {
 		}
 	}
 
-	private Booking save(Booking booking, VenueCustomer customer, Instant now) {
+	private void save(Booking booking, VenueCustomer customer, Instant now) {
 		customer.recordBooking(now);
 		this.bookings.save(booking);
 		flush();
-		return booking;
 	}
 
 	private void flush() {

@@ -3,6 +3,7 @@ package com.futslot.venue;
 import java.time.Clock;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,14 @@ class AdminVenueService {
 
 	private final VenueMapper mapper;
 
+	private final ApplicationEventPublisher events;
+
 	private final Clock clock;
 
-	AdminVenueService(VenueRepository venues, VenueMapper mapper, Clock clock) {
+	AdminVenueService(VenueRepository venues, VenueMapper mapper, ApplicationEventPublisher events, Clock clock) {
 		this.venues = venues;
 		this.mapper = mapper;
+		this.events = events;
 		this.clock = clock;
 	}
 
@@ -41,27 +45,32 @@ class AdminVenueService {
 	VenueResponse approve(UUID adminId, UUID venueId) {
 		Venue venue = venueIn(venueId, VenueStatus.PENDING_APPROVAL);
 		venue.approve(adminId, this.clock.instant());
-		return this.mapper.toResponse(venue, true);
+		return moderated(venue);
 	}
 
 	@Transactional
 	VenueResponse reject(UUID venueId, String reason) {
 		Venue venue = venueIn(venueId, VenueStatus.PENDING_APPROVAL);
 		venue.reject(reason.strip());
-		return this.mapper.toResponse(venue, true);
+		return moderated(venue);
 	}
 
 	@Transactional
 	VenueResponse suspend(UUID venueId, String reason) {
 		Venue venue = venueIn(venueId, VenueStatus.ACTIVE);
 		venue.suspend(reason.strip());
-		return this.mapper.toResponse(venue, true);
+		return moderated(venue);
 	}
 
 	@Transactional
 	VenueResponse reinstate(UUID adminId, UUID venueId) {
 		Venue venue = venueIn(venueId, VenueStatus.SUSPENDED);
 		venue.approve(adminId, this.clock.instant());
+		return moderated(venue);
+	}
+
+	private VenueResponse moderated(Venue venue) {
+		this.events.publishEvent(VenueModerated.of(venue));
 		return this.mapper.toResponse(venue, true);
 	}
 

@@ -51,6 +51,14 @@ refresh their token:
 INSERT INTO user_roles (user_id, role) SELECT id, 'ADMIN' FROM users WHERE phone = '+9779800000000';
 ```
 
+### Notifications
+
+Booking and venue changes create in-app notifications (`GET /api/v1/notifications`) and push them to the
+user's registered devices (`POST /api/v1/me/devices`). Notifications are sent only after the change
+commits. Players get a reminder 2 hours before a confirmed booking
+(`futslot.notifications.reminders.*`). Until Firebase is configured, pushes are written to the API log
+(`Push to N device(s): ...`).
+
 ### API contract
 
 `docs/api/openapi.yaml` is exported from the running API. After changing endpoints, start the API

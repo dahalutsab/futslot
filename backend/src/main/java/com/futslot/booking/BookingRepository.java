@@ -13,19 +13,20 @@ interface BookingRepository extends JpaRepository<Booking, UUID> {
 
 	boolean existsByReference(String reference);
 
-	Optional<Booking> findByIdAndBookedByUserId(UUID id, UUID userId);
+	/** A player's bookings are those of every venue customer record linked to them, however they were made. */
+	Optional<Booking> findByIdAndCustomerUserId(UUID id, UUID userId);
 
 	Optional<Booking> findByIdAndVenueId(UUID id, UUID venueId);
 
 	@Query("""
 			select b from Booking b
-			where b.bookedByUserId = :userId and b.endsAt > :now and b.status in :statuses
+			where b.customer.userId = :userId and b.endsAt > :now and b.status in :statuses
 			order by b.startsAt""")
 	List<Booking> findUpcomingForUser(UUID userId, Instant now, List<BookingStatus> statuses, Pageable pageable);
 
 	@Query("""
 			select b from Booking b
-			where b.bookedByUserId = :userId and (b.endsAt <= :now or b.status not in :statuses)
+			where b.customer.userId = :userId and (b.endsAt <= :now or b.status not in :statuses)
 			order by b.startsAt desc""")
 	List<Booking> findPastForUser(UUID userId, Instant now, List<BookingStatus> statuses, Pageable pageable);
 
