@@ -149,7 +149,7 @@ public class Venue {
 		this.maxAdvanceBookingDays = policy.maxAdvanceBookingDays();
 	}
 
-	VenuePolicy policy() {
+	public VenuePolicy policy() {
 		return new VenuePolicy(this.advancePercent, this.bookingHoldMinutes, this.freeCancelHours,
 				this.lateCancelRefundPct, this.maxAdvanceBookingDays);
 	}
