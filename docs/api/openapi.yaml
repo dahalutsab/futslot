@@ -329,6 +329,75 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PricingRuleResponse"
+  /api/v1/owner/venues/{venueId}/courts/{courtId}/blocks:
+    get:
+      tags:
+      - availability-controller
+      operationId: listBlocks
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: courtId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: from
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CourtBlockResponse"
+    post:
+      tags:
+      - availability-controller
+      operationId: createBlock
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: courtId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourtBlockRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CourtBlockResponse"
   /api/v1/auth/refresh:
     post:
       tags:
@@ -578,6 +647,56 @@ paths:
               schema:
                 $ref: "#/components/schemas/VenueResponse"
       security: []
+  /api/v1/venues/{slug}/availability:
+    get:
+      tags:
+      - availability-controller
+      operationId: forPlayers
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: date
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AvailabilityResponse"
+      security: []
+  /api/v1/owner/venues/{venueId}/availability:
+    get:
+      tags:
+      - availability-controller
+      operationId: forOwner
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: date
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AvailabilityResponse"
   /api/v1/amenities:
     get:
       tags:
@@ -654,6 +773,33 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/VenueResponse"
+  /api/v1/owner/venues/{venueId}/courts/{courtId}/blocks/{blockId}:
+    delete:
+      tags:
+      - availability-controller
+      operationId: deleteBlock
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: courtId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: blockId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No Content
 components:
   schemas:
     VenueDetails:
@@ -989,6 +1135,56 @@ components:
           uniqueItems: true
       required:
       - codes
+    CourtBlockRequest:
+      type: object
+      properties:
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        reason:
+          type: string
+          enum:
+          - MAINTENANCE
+          - PRIVATE_EVENT
+          - HOLIDAY
+          - TOURNAMENT
+          - OTHER
+        note:
+          type: string
+          maxLength: 500
+          minLength: 0
+      required:
+      - endsAt
+      - reason
+      - startsAt
+    CourtBlockResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        courtId:
+          type: string
+          format: uuid
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        reason:
+          type: string
+          enum:
+          - MAINTENANCE
+          - PRIVATE_EVENT
+          - HOLIDAY
+          - TOURNAMENT
+          - OTHER
+        note:
+          type: string
     RefreshRequest:
       type: object
       properties:
@@ -1157,6 +1353,68 @@ components:
           type: array
           items:
             type: string
+    AvailabilityResponse:
+      type: object
+      properties:
+        venueId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        timezone:
+          type: string
+        courts:
+          type: array
+          items:
+            $ref: "#/components/schemas/CourtSlots"
+    CourtSlots:
+      type: object
+      properties:
+        courtId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        format:
+          type: string
+          enum:
+          - FIVE_A_SIDE
+          - SIX_A_SIDE
+          - SEVEN_A_SIDE
+        slotDurationMinutes:
+          type: integer
+          format: int32
+        slots:
+          type: array
+          items:
+            $ref: "#/components/schemas/Slot"
+    Slot:
+      type: object
+      properties:
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        price:
+          type: number
+        label:
+          type: string
+          enum:
+          - STANDARD
+          - PEAK
+          - OFF_PEAK
+          - WEEKEND
+          - HOLIDAY
+        status:
+          type: string
+          enum:
+          - AVAILABLE
+          - BOOKED
+          - BLOCKED
+          - PAST
   securitySchemes:
     bearerAuth:
       type: http

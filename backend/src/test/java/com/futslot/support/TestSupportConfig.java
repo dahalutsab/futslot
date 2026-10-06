@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
 @TestConfiguration(proxyBeanMethods = false)
-@Import(TestUsers.class)
+@Import({ TestUsers.class, TestVenues.class })
 public class TestSupportConfig {
 
 	@Bean
