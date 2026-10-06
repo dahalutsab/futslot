@@ -9,6 +9,326 @@ servers:
 security:
 - bearerAuth: []
 paths:
+  /api/v1/owner/venues/{venueId}:
+    get:
+      tags:
+      - owner-venue-controller
+      operationId: get
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueResponse"
+    put:
+      tags:
+      - owner-venue-controller
+      operationId: updateDetails
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VenueDetails"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueResponse"
+  /api/v1/owner/venues/{venueId}/policy:
+    put:
+      tags:
+      - owner-venue-controller
+      operationId: updatePolicy
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VenuePolicy"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueResponse"
+  /api/v1/owner/venues/{venueId}/operating-hours:
+    put:
+      tags:
+      - owner-venue-controller
+      operationId: replaceOperatingHours
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/DayHours"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueResponse"
+  /api/v1/owner/venues/{venueId}/courts/{courtId}:
+    put:
+      tags:
+      - owner-venue-controller
+      operationId: updateCourt
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: courtId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourtRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CourtResponse"
+  /api/v1/owner/venues/{venueId}/courts/{courtId}/pricing-rules/{ruleId}:
+    put:
+      tags:
+      - owner-venue-controller
+      operationId: updatePricingRule
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: courtId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: ruleId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PricingRuleRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PricingRuleResponse"
+    delete:
+      tags:
+      - owner-venue-controller
+      operationId: deletePricingRule
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: courtId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: ruleId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/v1/owner/venues/{venueId}/amenities:
+    put:
+      tags:
+      - owner-venue-controller
+      operationId: replaceAmenities
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AmenitiesRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueResponse"
+  /api/v1/owner/venues:
+    get:
+      tags:
+      - owner-venue-controller
+      operationId: list
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VenueSummaryResponse"
+    post:
+      tags:
+      - owner-venue-controller
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VenueDetails"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueResponse"
+  /api/v1/owner/venues/{venueId}/submit:
+    post:
+      tags:
+      - owner-venue-controller
+      operationId: submit
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueResponse"
+  /api/v1/owner/venues/{venueId}/courts:
+    post:
+      tags:
+      - owner-venue-controller
+      operationId: addCourt
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourtRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CourtResponse"
+  /api/v1/owner/venues/{venueId}/courts/{courtId}/pricing-rules:
+    post:
+      tags:
+      - owner-venue-controller
+      operationId: addPricingRule
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: courtId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PricingRuleRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PricingRuleResponse"
   /api/v1/auth/refresh:
     post:
       tags:
@@ -81,6 +401,94 @@ paths:
         "204":
           description: No Content
       security: []
+  /api/v1/admin/venues/{venueId}/suspend:
+    post:
+      tags:
+      - admin-venue-controller
+      operationId: suspend
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModerationRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueResponse"
+  /api/v1/admin/venues/{venueId}/reject:
+    post:
+      tags:
+      - admin-venue-controller
+      operationId: reject
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModerationRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueResponse"
+  /api/v1/admin/venues/{venueId}/reinstate:
+    post:
+      tags:
+      - admin-venue-controller
+      operationId: reinstate
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueResponse"
+  /api/v1/admin/venues/{venueId}/approve:
+    post:
+      tags:
+      - admin-venue-controller
+      operationId: approve
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueResponse"
   /api/v1/me:
     get:
       tags:
@@ -110,8 +518,477 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/UserResponse"
+  /api/v1/venues:
+    get:
+      tags:
+      - public-venue-controller
+      operationId: search
+      parameters:
+      - name: city
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          maximum: 50
+          minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseVenueSummaryResponse"
+      security: []
+  /api/v1/venues/{slug}:
+    get:
+      tags:
+      - public-venue-controller
+      operationId: get_1
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueResponse"
+      security: []
+  /api/v1/amenities:
+    get:
+      tags:
+      - public-venue-controller
+      operationId: amenities
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AmenityResponse"
+      security: []
+  /api/v1/admin/venues:
+    get:
+      tags:
+      - admin-venue-controller
+      operationId: list_1
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          default: PENDING_APPROVAL
+          enum:
+          - DRAFT
+          - PENDING_APPROVAL
+          - ACTIVE
+          - SUSPENDED
+          - REJECTED
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          maximum: 100
+          minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseVenueSummaryResponse"
+  /api/v1/admin/venues/{venueId}:
+    get:
+      tags:
+      - admin-venue-controller
+      operationId: get_2
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueResponse"
 components:
   schemas:
+    VenueDetails:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+          minLength: 0
+        description:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          minLength: 0
+        addressLine:
+          type: string
+          maxLength: 200
+          minLength: 0
+        area:
+          type: string
+          maxLength: 80
+          minLength: 0
+        city:
+          type: string
+          maxLength: 80
+          minLength: 0
+        latitude:
+          type: number
+          maximum: 90
+          minimum: -90
+        longitude:
+          type: number
+          maximum: 180
+          minimum: -180
+      required:
+      - addressLine
+      - city
+      - name
+    AmenityResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        icon:
+          type: string
+    CourtResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        format:
+          type: string
+          enum:
+          - FIVE_A_SIDE
+          - SIX_A_SIDE
+          - SEVEN_A_SIDE
+        surface:
+          type: string
+          enum:
+          - ARTIFICIAL_TURF
+          - HARDWOOD
+          - CONCRETE
+          - RUBBER
+        indoor:
+          type: boolean
+        slotDurationMinutes:
+          type: integer
+          format: int32
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+        sortOrder:
+          type: integer
+          format: int32
+        pricingRules:
+          type: array
+          items:
+            $ref: "#/components/schemas/PricingRuleResponse"
+    DayHours:
+      type: object
+      properties:
+        day:
+          type: string
+          enum:
+          - MONDAY
+          - TUESDAY
+          - WEDNESDAY
+          - THURSDAY
+          - FRIDAY
+          - SATURDAY
+          - SUNDAY
+        openTime:
+          type: string
+          format: time-local
+        closeTime:
+          type: string
+          format: time-local
+        closed:
+          type: boolean
+      required:
+      - day
+    PricingRuleResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+          enum:
+          - STANDARD
+          - PEAK
+          - OFF_PEAK
+          - WEEKEND
+          - HOLIDAY
+        dayOfWeek:
+          type: string
+          enum:
+          - MONDAY
+          - TUESDAY
+          - WEDNESDAY
+          - THURSDAY
+          - FRIDAY
+          - SATURDAY
+          - SUNDAY
+        startTime:
+          type: string
+          format: time-local
+        endTime:
+          type: string
+          format: time-local
+        price:
+          type: number
+        priority:
+          type: integer
+          format: int32
+        validFrom:
+          type: string
+          format: date
+        validTo:
+          type: string
+          format: date
+        active:
+          type: boolean
+    VenuePolicy:
+      type: object
+      properties:
+        advancePercent:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 0
+        bookingHoldMinutes:
+          type: integer
+          format: int32
+          maximum: 120
+          minimum: 5
+        freeCancelHours:
+          type: integer
+          format: int32
+          maximum: 168
+          minimum: 0
+        lateCancelRefundPct:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 0
+        maxAdvanceBookingDays:
+          type: integer
+          format: int32
+          maximum: 180
+          minimum: 1
+    VenueResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        addressLine:
+          type: string
+        area:
+          type: string
+        city:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        timezone:
+          type: string
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - PENDING_APPROVAL
+          - ACTIVE
+          - SUSPENDED
+          - REJECTED
+        rejectionReason:
+          type: string
+        policy:
+          $ref: "#/components/schemas/VenuePolicy"
+        averageRating:
+          type: number
+        reviewCount:
+          type: integer
+          format: int32
+        fromPrice:
+          type: number
+        operatingHours:
+          type: array
+          items:
+            $ref: "#/components/schemas/DayHours"
+        amenities:
+          type: array
+          items:
+            $ref: "#/components/schemas/AmenityResponse"
+        courts:
+          type: array
+          items:
+            $ref: "#/components/schemas/CourtResponse"
+    CourtRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 60
+          minLength: 0
+        format:
+          type: string
+          enum:
+          - FIVE_A_SIDE
+          - SIX_A_SIDE
+          - SEVEN_A_SIDE
+        surface:
+          type: string
+          enum:
+          - ARTIFICIAL_TURF
+          - HARDWOOD
+          - CONCRETE
+          - RUBBER
+        indoor:
+          type: boolean
+        slotDurationMinutes:
+          type: integer
+          format: int32
+          maximum: 240
+          minimum: 15
+        sortOrder:
+          type: integer
+          format: int32
+        active:
+          type: boolean
+      required:
+      - format
+      - name
+      - surface
+    PricingRuleRequest:
+      type: object
+      properties:
+        label:
+          type: string
+          enum:
+          - STANDARD
+          - PEAK
+          - OFF_PEAK
+          - WEEKEND
+          - HOLIDAY
+        dayOfWeek:
+          type: string
+          enum:
+          - MONDAY
+          - TUESDAY
+          - WEDNESDAY
+          - THURSDAY
+          - FRIDAY
+          - SATURDAY
+          - SUNDAY
+        startTime:
+          type: string
+          format: time-local
+        endTime:
+          type: string
+          format: time-local
+        price:
+          type: number
+          minimum: 0
+        priority:
+          type: integer
+          format: int32
+        validFrom:
+          type: string
+          format: date
+        validTo:
+          type: string
+          format: date
+        active:
+          type: boolean
+      required:
+      - endTime
+      - price
+      - startTime
+    AmenitiesRequest:
+      type: object
+      properties:
+        codes:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+      required:
+      - codes
     RefreshRequest:
       type: object
       properties:
@@ -197,6 +1074,15 @@ components:
         resendAfterSeconds:
           type: integer
           format: int64
+    ModerationRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+          minLength: 0
+      required:
+      - reason
     UpdateProfileRequest:
       type: object
       properties:
@@ -212,6 +1098,65 @@ components:
         preferredLanguage:
           type: string
           pattern: en|ne
+    PageResponseVenueSummaryResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/VenueSummaryResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    VenueSummaryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        name:
+          type: string
+        area:
+          type: string
+        city:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - PENDING_APPROVAL
+          - ACTIVE
+          - SUSPENDED
+          - REJECTED
+        averageRating:
+          type: number
+        reviewCount:
+          type: integer
+          format: int32
+        fromPrice:
+          type: number
+        courtCount:
+          type: integer
+          format: int32
+        amenities:
+          type: array
+          items:
+            type: string
   securitySchemes:
     bearerAuth:
       type: http

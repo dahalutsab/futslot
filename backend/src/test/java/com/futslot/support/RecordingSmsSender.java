@@ -1,12 +1,14 @@
-package com.futslot.auth;
+package com.futslot.support;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.futslot.auth.SmsSender;
+
 /** Captures outgoing SMS so tests can read the OTP that was "sent". */
-class RecordingSmsSender implements SmsSender {
+public class RecordingSmsSender implements SmsSender {
 
 	private static final Pattern CODE = Pattern.compile("\\b(\\d{6})\\b");
 
@@ -17,7 +19,7 @@ class RecordingSmsSender implements SmsSender {
 		this.lastMessageByPhone.put(phone, message);
 	}
 
-	String lastCodeFor(String phone) {
+	public String lastCodeFor(String phone) {
 		Matcher matcher = CODE.matcher(this.lastMessageByPhone.get(phone));
 		if (!matcher.find()) {
 			throw new IllegalStateException("No code in SMS to " + phone);

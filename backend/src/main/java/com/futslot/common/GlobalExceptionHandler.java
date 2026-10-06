@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -39,6 +40,25 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		problem.setProperty("code", "VALIDATION_FAILED");
 		problem.setProperty("errors", errors);
 		return handleExceptionInternal(ex, problem, headers, status, request);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
+			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(status,
+				"Request body is missing or malformed: " + rootMessage(ex));
+		problem.setProperty("code", "MALFORMED_REQUEST");
+		return handleExceptionInternal(ex, problem, headers, status, request);
+	}
+
+	private static String rootMessage(Throwable ex) {
+		Throwable cause = ex;
+		while (cause.getCause() != null) {
+			cause = cause.getCause();
+		}
+		String message = (cause.getMessage() != null) ? cause.getMessage() : cause.getClass().getSimpleName();
+		// Jackson messages end with a source-location dump after a newline; the first line is enough
+		return message.lines().findFirst().orElse(message);
 	}
 
 }
