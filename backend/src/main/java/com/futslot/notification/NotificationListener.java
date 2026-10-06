@@ -2,6 +2,7 @@ package com.futslot.notification;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -11,6 +12,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import com.futslot.booking.BookingEvent;
 import com.futslot.booking.BookingSource;
 import com.futslot.booking.BookingStatus;
+import com.futslot.booking.RecurringBookingEvent;
 import com.futslot.venue.StaffAdded;
 import com.futslot.venue.VenueAccess;
 import com.futslot.venue.VenueModerated;
@@ -60,6 +62,44 @@ class NotificationListener {
 			case SUSPENDED -> this.notifications.send(event.ownerId(), NotificationType.VENUE_SUSPENDED,
 					"Venue suspended", event.venueName() + " is hidden from players: " + event.reason(), data);
 			default -> {
+			}
+		}
+	}
+
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(RecurringBookingEvent event) {
+		String weekly = Messages.weekly(event.dayOfWeek(), event.startTime(), event.endTime());
+		Map<String, String> data = Map.of("recurringBookingId", event.seriesId().toString(), "venueId",
+				event.venueId().toString());
+		String skipped = event.skippedDates().stream().map(Messages::day).collect(Collectors.joining(", "));
+		switch (event.type()) {
+			case CREATED -> {
+				if (event.playerUserId() != null && !event.playerUserId().equals(event.actorUserId())) {
+					this.notifications.send(event.playerUserId(), NotificationType.RECURRING_BOOKING_CREATED,
+							"Weekly booking at " + event.venueName(),
+							weekly + " on " + event.courtName() + ", from " + Messages.date(event.startsOn()) + "."
+									+ (skipped.isEmpty() ? "" : " Not available: " + skipped + "."),
+							data);
+				}
+			}
+			case CANCELLED -> {
+				if (event.playerUserId() != null && !event.playerUserId().equals(event.actorUserId())) {
+					this.notifications.send(event.playerUserId(), NotificationType.RECURRING_BOOKING_CANCELLED,
+							event.venueName() + " ended your weekly booking", weekly + " on " + event.courtName() + ".",
+							data);
+				}
+			}
+			case SKIPPED -> {
+				String body = event.courtName() + " was taken or blocked on " + skipped + ", so " + weekly
+						+ " wasn't booked those weeks.";
+				this.access.usersWith(event.venueId(), VenuePermission.MANAGE_BOOKINGS)
+					.forEach(userId -> this.notifications.send(userId, NotificationType.RECURRING_BOOKING_SKIPPED,
+							"Weekly slot for " + event.customerName() + " not booked", body, data));
+				if (event.playerUserId() != null) {
+					this.notifications.send(event.playerUserId(), NotificationType.RECURRING_BOOKING_SKIPPED,
+							"Weekly slot at " + event.venueName() + " not booked", body, data);
+				}
 			}
 		}
 	}

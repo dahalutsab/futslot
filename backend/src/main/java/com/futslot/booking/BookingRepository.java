@@ -37,6 +37,12 @@ interface BookingRepository extends JpaRepository<Booking, UUID> {
 			order by b.startsAt, b.court.sortOrder""")
 	List<Booking> findForVenueBetween(UUID venueId, Instant from, Instant to);
 
+	@Query("""
+			select b from Booking b
+			where b.recurringBookingId = :seriesId and b.startsAt > :after and b.status in :statuses
+			order by b.startsAt""")
+	List<Booking> findOccurrencesAfter(UUID seriesId, Instant after, List<BookingStatus> statuses);
+
 	List<Booking> findByCustomerIdOrderByStartsAtDesc(UUID customerId, Pageable pageable);
 
 	@Query("""
