@@ -14,6 +14,7 @@ import com.futslot.booking.BookingSource;
 import com.futslot.booking.BookingStatus;
 import com.futslot.booking.RecurringBookingEvent;
 import com.futslot.payment.PaymentEvent;
+import com.futslot.review.ReviewEvent;
 import com.futslot.venue.StaffAdded;
 import com.futslot.venue.VenueAccess;
 import com.futslot.venue.VenueModerated;
@@ -151,6 +152,24 @@ class NotificationListener {
 							event.venueName() + " refunded " + amount + " for " + slot + ".", data);
 				}
 			}
+		}
+	}
+
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(ReviewEvent event) {
+		Map<String, String> data = Map.of("reviewId", event.reviewId().toString(), "venueId", event.venueId().toString());
+		switch (event.type()) {
+			case CREATED -> {
+				String comment = (event.comment() != null) ? ": \"" + Messages.excerpt(event.comment()) + "\"" : ".";
+				this.access.usersWith(event.venueId(), VenuePermission.MANAGE_VENUE)
+					.forEach(userId -> this.notifications.send(userId, NotificationType.NEW_REVIEW,
+							"New " + event.rating() + "-star review",
+							event.authorName() + " rated " + event.venueName() + " " + event.rating() + "/5" + comment,
+							data));
+			}
+			case REPLIED -> this.notifications.send(event.authorUserId(), NotificationType.REVIEW_REPLY,
+					event.venueName() + " replied to your review", "Tap to read their reply.", data);
 		}
 	}
 

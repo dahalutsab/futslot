@@ -68,6 +68,21 @@ FutSlot does not hold money. Players pay the venue directly, and FutSlot records
 
 Gateway checkout (eSewa / Khalti merchant APIs) can be added later as another way to create verified payments.
 
+### Reviews and favourites
+
+Players review a venue once per completed booking, up to 30 days after playing
+(`POST /api/v1/bookings/{id}/review`), so every review comes from someone who played there.
+`GET /api/v1/me/reviews/pending` lists bookings still waiting for one. Reviews show the reviewer as
+first name and last initial. The venue's `averageRating` and `reviewCount` count published reviews only
+and are recomputed on every change.
+
+Venues can reply (owners and managers) but cannot hide reviews; admins publish, hide or remove them
+(`POST /api/v1/admin/reviews/{id}/status`). A removed review can't be edited or deleted, so it can't be
+posted again.
+
+Players save approved venues with `PUT /api/v1/me/favourites/{venueId}` and list them with
+`GET /api/v1/me/favourites`.
+
 ### Notifications
 
 Booking and venue changes create in-app notifications (`GET /api/v1/notifications`) and push them to the
