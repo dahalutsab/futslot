@@ -1,5 +1,6 @@
 package com.futslot.slot;
 
+import java.sql.Types;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -27,6 +28,12 @@ public class BookedRanges {
 	}
 
 	public Map<UUID, List<TimeRange>> byCourt(Collection<UUID> courtIds, Instant from, Instant to, Instant now) {
+		return byCourt(courtIds, from, to, now, null);
+	}
+
+	/** As {@link #byCourt(Collection, Instant, Instant, Instant)}, ignoring one booking (the one being moved). */
+	public Map<UUID, List<TimeRange>> byCourt(Collection<UUID> courtIds, Instant from, Instant to, Instant now,
+			UUID excludeBookingId) {
 		Map<UUID, List<TimeRange>> result = new HashMap<>();
 		if (courtIds.isEmpty()) {
 			return result;
@@ -35,11 +42,13 @@ public class BookedRanges {
 				SELECT court_id, starts_at, ends_at FROM bookings
 				WHERE court_id IN (:courtIds) AND starts_at < :to AND ends_at > :from
 				  AND status NOT IN ('CANCELLED', 'EXPIRED')
-				  AND NOT (status = 'PENDING_PAYMENT' AND hold_expires_at <= :now)""")
+				  AND NOT (status = 'PENDING_PAYMENT' AND hold_expires_at <= :now)
+				  AND id IS DISTINCT FROM :excludeId""")
 			.param("courtIds", courtIds)
 			.param("from", utc(from))
 			.param("to", utc(to))
 			.param("now", utc(now))
+			.param("excludeId", excludeBookingId, Types.OTHER)
 			.query((rs, row) -> {
 				UUID courtId = rs.getObject("court_id", UUID.class);
 				TimeRange range = new TimeRange(rs.getObject("starts_at", OffsetDateTime.class).toInstant(),
