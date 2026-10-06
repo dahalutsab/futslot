@@ -20,7 +20,10 @@ import com.futslot.common.CurrentUser;
 
 import jakarta.validation.Valid;
 
-/** Venue setup for owners. Any signed-in user can create a venue and becomes its owner. */
+/**
+ * Venue management for owners and their staff (what staff may do depends on their permissions).
+ * Any signed-in user can create a venue and becomes its owner.
+ */
 @RestController
 @RequestMapping("/api/v1/owner/venues")
 class OwnerVenueController {
@@ -38,13 +41,13 @@ class OwnerVenueController {
 	}
 
 	@GetMapping
-	List<VenueSummaryResponse> list(@AuthenticationPrincipal Jwt jwt) {
-		return this.venueService.listOwned(CurrentUser.id(jwt));
+	List<MyVenueResponse> list(@AuthenticationPrincipal Jwt jwt) {
+		return this.venueService.listManaged(CurrentUser.id(jwt));
 	}
 
 	@GetMapping("/{venueId}")
 	VenueResponse get(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID venueId) {
-		return this.venueService.getOwned(CurrentUser.id(jwt), venueId);
+		return this.venueService.getManaged(CurrentUser.id(jwt), venueId);
 	}
 
 	@PutMapping("/{venueId}")

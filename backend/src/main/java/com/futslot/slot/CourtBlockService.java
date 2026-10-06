@@ -12,12 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.futslot.common.ApiException;
 import com.futslot.venue.Court;
 import com.futslot.venue.CourtRepository;
-import com.futslot.venue.VenueRepository;
+import com.futslot.venue.VenueAccess;
+import com.futslot.venue.VenuePermission;
 
 @Service
 class CourtBlockService {
 
-	private final VenueRepository venues;
+	private final VenueAccess access;
 
 	private final CourtRepository courts;
 
@@ -27,9 +28,9 @@ class CourtBlockService {
 
 	private final Clock clock;
 
-	CourtBlockService(VenueRepository venues, CourtRepository courts, CourtBlockRepository blocks,
+	CourtBlockService(VenueAccess access, CourtRepository courts, CourtBlockRepository blocks,
 			BookedRanges bookedRanges, Clock clock) {
-		this.venues = venues;
+		this.access = access;
 		this.courts = courts;
 		this.blocks = blocks;
 		this.bookedRanges = bookedRanges;
@@ -75,8 +76,7 @@ class CourtBlockService {
 	}
 
 	private Court ownedCourt(UUID ownerId, UUID venueId, UUID courtId) {
-		this.venues.findByIdAndOwnerId(venueId, ownerId)
-			.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "VENUE_NOT_FOUND", "Venue not found"));
+		this.access.require(ownerId, venueId, VenuePermission.MANAGE_BLOCKS);
 		return this.courts.findByIdAndVenueId(courtId, venueId)
 			.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "COURT_NOT_FOUND", "Court not found"));
 	}

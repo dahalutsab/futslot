@@ -37,15 +37,18 @@ public class VenueService {
 
 	private final UserService userService;
 
+	private final VenueAccess access;
+
 	private final VenueMapper mapper;
 
 	VenueService(VenueRepository venues, CourtRepository courts, PricingRuleRepository pricingRules,
-			AmenityRepository amenities, UserService userService, VenueMapper mapper) {
+			AmenityRepository amenities, UserService userService, VenueAccess access, VenueMapper mapper) {
 		this.venues = venues;
 		this.courts = courts;
 		this.pricingRules = pricingRules;
 		this.amenities = amenities;
 		this.userService = userService;
+		this.access = access;
 		this.mapper = mapper;
 	}
 
@@ -58,14 +61,19 @@ public class VenueService {
 		return this.mapper.toResponse(venue, true);
 	}
 
+	/** Venues the user owns or works at. */
 	@Transactional(readOnly = true)
-	public List<VenueSummaryResponse> listOwned(UUID ownerId) {
-		return this.venues.findByOwnerIdOrderByCreatedAt(ownerId).stream().map(this.mapper::toSummary).toList();
+	public List<MyVenueResponse> listManaged(UUID userId) {
+		return this.access.memberships(userId)
+			.stream()
+			.map(membership -> new MyVenueResponse(this.mapper.toSummary(membership.venue()),
+					(membership.staffRole() != null) ? membership.staffRole().name() : "OWNER", membership.permissions()))
+			.toList();
 	}
 
 	@Transactional(readOnly = true)
-	public VenueResponse getOwned(UUID ownerId, UUID venueId) {
-		return this.mapper.toResponse(owned(ownerId, venueId), true);
+	public VenueResponse getManaged(UUID userId, UUID venueId) {
+		return this.mapper.toResponse(this.access.require(userId, venueId, null), true);
 	}
 
 	@Transactional
@@ -215,9 +223,9 @@ public class VenueService {
 		return this.amenities.findAll().stream().map(AmenityResponse::from).toList();
 	}
 
-	private Venue owned(UUID ownerId, UUID venueId) {
-		// 404 rather than 403 so other owners can't probe which venue ids exist
-		return this.venues.findByIdAndOwnerId(venueId, ownerId).orElseThrow(VenueService::venueNotFound);
+	/** Venue settings, courts and pricing need MANAGE_VENUE (owners and managers). */
+	private Venue owned(UUID userId, UUID venueId) {
+		return this.access.require(userId, venueId, VenuePermission.MANAGE_VENUE);
 	}
 
 	private Court ownedCourt(UUID ownerId, UUID venueId, UUID courtId) {

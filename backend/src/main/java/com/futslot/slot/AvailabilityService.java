@@ -18,6 +18,7 @@ import com.futslot.venue.Court;
 import com.futslot.venue.OperatingHours;
 import com.futslot.venue.PricingRule;
 import com.futslot.venue.Venue;
+import com.futslot.venue.VenueAccess;
 import com.futslot.venue.VenueRepository;
 import com.futslot.venue.VenueStatus;
 
@@ -30,10 +31,14 @@ public class AvailabilityService {
 
 	private final CourtBlockRepository blocks;
 
+	private final VenueAccess access;
+
 	private final Clock clock;
 
-	AvailabilityService(VenueRepository venues, BookedRanges bookedRanges, CourtBlockRepository blocks, Clock clock) {
+	AvailabilityService(VenueRepository venues, BookedRanges bookedRanges, CourtBlockRepository blocks,
+			VenueAccess access, Clock clock) {
 		this.venues = venues;
+		this.access = access;
 		this.bookedRanges = bookedRanges;
 		this.blocks = blocks;
 		this.clock = clock;
@@ -53,12 +58,10 @@ public class AvailabilityService {
 		return compute(venue, date);
 	}
 
-	/** The owner's calendar: any date, any venue status. */
+	/** The venue calendar for its owner and staff: any date, any venue status. */
 	@Transactional(readOnly = true)
-	public AvailabilityResponse forOwner(UUID ownerId, UUID venueId, LocalDate date) {
-		Venue venue = this.venues.findByIdAndOwnerId(venueId, ownerId)
-			.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "VENUE_NOT_FOUND", "Venue not found"));
-		return compute(venue, date);
+	public AvailabilityResponse forOwner(UUID userId, UUID venueId, LocalDate date) {
+		return compute(this.access.require(userId, venueId, null), date);
 	}
 
 	/** Slots of one court for an operating day; used by bookings to validate and price a requested slot. */

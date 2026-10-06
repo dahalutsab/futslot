@@ -35,7 +35,11 @@ public class TestUsers {
 	}
 
 	public TestUser signUp(String fullName) throws Exception {
-		String phone = nextLocalPhone();
+		return logIn(nextLocalPhone(), fullName);
+	}
+
+	/** Logs in with a specific local phone number; {@code fullName} only matters if the account is new. */
+	public TestUser logIn(String phone, String fullName) throws Exception {
 		this.mvc.perform(post("/api/v1/auth/otp/request").contentType(MediaType.APPLICATION_JSON)
 			.content("{\"phone\":\"%s\"}".formatted(phone))).andExpect(status().isAccepted());
 		String code = this.sms.lastCodeFor("+977" + phone);
