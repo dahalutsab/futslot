@@ -1,16 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Check, LoaderCircle, LucideAngularModule, Phone, X } from 'lucide-angular';
+import { Check, LoaderCircle, LucideAngularModule, Minus, Phone, Plus, X } from 'lucide-angular';
 
 import { problemOf } from '../../core/api-error';
-import { Booking, Payment, PaymentMethod } from '../../core/api.types';
+import { AddOnItem, Booking, Payment, PaymentMethod } from '../../core/api.types';
 import { localClock, methodLabel, phone, rupees } from '../../shared/format';
 import { Sheet } from '../../shared/sheet';
 import { StatusChip } from '../../shared/status-chip';
 import { ScheduleApi } from './schedule-api';
 import { stateOf } from './schedule-model';
 
-type Step = 'view' | 'take-payment' | 'reject' | 'cancel';
+type Step = 'view' | 'take-payment' | 'reject' | 'cancel' | 'extras';
 
 const SOURCES: Record<string, string> = {
   APP: 'Booked in the app',
@@ -47,7 +47,7 @@ export class BookingPanel implements OnInit {
 
   readonly closed = output<void>();
 
-  protected readonly icons = { Check, LoaderCircle, Phone, X };
+  protected readonly icons = { Check, LoaderCircle, Minus, Phone, Plus, X };
 
   protected readonly rupees = rupees;
 
@@ -73,6 +73,12 @@ export class BookingPanel implements OnInit {
 
   protected readonly reason = signal('');
 
+  /** The venue's extras on sale, with how many of each are on this booking. */
+  protected readonly extras = signal<{ item: AddOnItem; quantity: number }[] | null>(null);
+
+  protected readonly extrasTotal = computed(() =>
+    (this.extras() ?? []).reduce((sum, line) => sum + line.item.price * line.quantity, 0));
+
   protected readonly state = computed(() => stateOf(this.booking()));
 
   protected readonly due = computed(() => Math.max(0, this.booking().totalAmount - this.booking().paidAmount));
@@ -85,6 +91,9 @@ export class BookingPanel implements OnInit {
   protected readonly live = computed(() => ['PENDING_PAYMENT', 'CONFIRMED'].includes(this.booking().status));
 
   protected readonly started = computed(() => new Date(this.booking().startsAt) <= new Date());
+
+  protected readonly canEditExtras = computed(() =>
+    this.canManage() && ['PENDING_PAYMENT', 'CONFIRMED', 'COMPLETED'].includes(this.booking().status));
 
   protected readonly canTakePayment = computed(() =>
     this.canManage() && this.due() > 0 && this.state() !== 'verify'
@@ -134,6 +143,32 @@ export class BookingPanel implements OnInit {
 
   protected cancel(): Promise<void> {
     return this.run(() => this.api.cancel(this.venueId(), this.booking().id, this.reason().trim()));
+  }
+
+  protected async openExtras(): Promise<void> {
+    this.go('extras');
+    try {
+      const items = await this.api.addOns(this.venueId());
+      const onBooking = new Map(this.booking().addOns.map((line) => [line.itemId, line.quantity]));
+      this.extras.set(items
+        .filter((item) => item.active || onBooking.has(item.id))
+        .map((item) => ({ item, quantity: onBooking.get(item.id) ?? 0 })));
+    }
+    catch (error) {
+      this.error.set(problemOf(error).message);
+    }
+  }
+
+  protected adjust(itemId: string, change: number): void {
+    this.extras.update((lines) => (lines ?? []).map((line) =>
+      line.item.id === itemId ? { ...line, quantity: Math.max(0, Math.min(50, line.quantity + change)) } : line));
+  }
+
+  protected saveExtras(): Promise<void> {
+    const lines = (this.extras() ?? [])
+      .filter((line) => line.quantity > 0)
+      .map((line) => ({ itemId: line.item.id, quantity: line.quantity }));
+    return this.run(() => this.api.setAddOns(this.venueId(), this.booking().id, lines));
   }
 
   protected go(step: Step): void {

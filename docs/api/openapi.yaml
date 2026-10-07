@@ -4454,6 +4454,32 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/BookingResponse"
+  /api/v1/owner/venues/{venueId}/bookings/search:
+    get:
+      tags:
+      - booking-controller
+      operationId: search_3
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BookingResponse"
   /api/v1/owner/venues/{venueId}/availability:
     get:
       tags:

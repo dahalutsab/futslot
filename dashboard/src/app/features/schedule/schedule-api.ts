@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import {
+  AddOnItem,
   Availability,
   BlockReason,
   Booking,
@@ -75,6 +76,21 @@ export class ScheduleApi {
   reject(venueId: string, paymentId: string, reason: string): Promise<Payment> {
     return firstValueFrom(this.http.post<Payment>(`/api/v1/owner/venues/${venueId}/payments/${paymentId}/reject`,
       { reason }));
+  }
+
+  addOns(venueId: string): Promise<AddOnItem[]> {
+    return firstValueFrom(this.http.get<AddOnItem[]>(`/api/v1/owner/venues/${venueId}/add-ons`));
+  }
+
+  /** Replaces the booking's extras with these quantities. */
+  setAddOns(venueId: string, bookingId: string, lines: { itemId: string; quantity: number }[]): Promise<Booking> {
+    return firstValueFrom(this.http.put<Booking>(`/api/v1/owner/venues/${venueId}/bookings/${bookingId}/add-ons`,
+      { addOns: lines }));
+  }
+
+  search(venueId: string, query: string): Promise<Booking[]> {
+    return firstValueFrom(this.http.get<Booking[]>(`/api/v1/owner/venues/${venueId}/bookings/search`,
+      { params: { q: query } }));
   }
 
   played(venueId: string, bookingId: string): Promise<Booking> {

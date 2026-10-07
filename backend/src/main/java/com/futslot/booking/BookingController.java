@@ -84,6 +84,13 @@ class BookingController {
 		return this.bookingService.listForVenueDay(CurrentUser.id(jwt), venueId, date);
 	}
 
+	/** Find bookings by reference, customer name or phone digits, across all dates. */
+	@GetMapping("/owner/venues/{venueId}/bookings/search")
+	List<BookingResponse> search(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID venueId,
+			@RequestParam("q") String query) {
+		return this.bookingService.searchForVenue(CurrentUser.id(jwt), venueId, query);
+	}
+
 	@GetMapping("/owner/venues/{venueId}/bookings/{bookingId}")
 	BookingResponse venueBooking(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID venueId,
 			@PathVariable UUID bookingId) {
