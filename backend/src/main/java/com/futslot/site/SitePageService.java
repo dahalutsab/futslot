@@ -98,6 +98,16 @@ class SitePageService {
 	 */
 	SitePage build(String slug, SiteTemplate template, String accent, String headline, String requestedDate,
 			String canonical, String linkPrefix, boolean noindex) {
+		return build(slug, template, accent, headline, requestedDate, canonical, linkPrefix, noindex, null, null);
+	}
+
+	/**
+	 * @param bookingBase where the site's booking pages are ("" on the venue's own address); null in previews,
+	 * where slots link to a WhatsApp message instead
+	 * @param mine link to the signed-in player's bookings, or null
+	 */
+	SitePage build(String slug, SiteTemplate template, String accent, String headline, String requestedDate,
+			String canonical, String linkPrefix, boolean noindex, String bookingBase, String mine) {
 		VenueResponse venue = this.venues.getActiveBySlug(slug);
 		ZoneId zone = ZoneId.of(venue.timezone());
 		LocalDate today = LocalDate.now(this.clock.withZone(zone));
@@ -126,10 +136,10 @@ class SitePageService {
 		SitePage.Venue about = new SitePage.Venue(venue.name(), StringUtils.hasText(headline) ? headline : null,
 				venue.description(), place, venue.addressLine(), cover, venue.courts().size(), formats, todayHours, openNow,
 				openUntil != null);
-		SitePage.Slots slots = slots(slug, venue, contact, date, today, linkPrefix);
+		SitePage.Slots slots = slots(slug, venue, contact, date, today, linkPrefix, bookingBase, mine);
 		// Late in the evening nothing is left today: unless a day was asked for, show tomorrow instead
 		if (requestedDate == null && slots.free() == 0 && venue.policy().maxAdvanceBookingDays() >= 1) {
-			slots = slots(slug, venue, contact, today.plusDays(1), today, linkPrefix);
+			slots = slots(slug, venue, contact, today.plusDays(1), today, linkPrefix, bookingBase, mine);
 		}
 		String background = (template == SiteTemplate.FLOODLIGHT) ? "#131715" : "#ffffff";
 		return new SitePage(template.name().toLowerCase(), color, SiteFormat.inkOn(color), SiteFormat.readableOn(color, background),
@@ -197,7 +207,7 @@ class SitePageService {
 	}
 
 	private SitePage.Slots slots(String slug, VenueResponse venue, Contact contact, LocalDate date, LocalDate today,
-			String linkPrefix) {
+			String linkPrefix, String bookingBase, String mine) {
 		AvailabilityResponse open = this.availability.forPlayers(slug, date);
 		List<SitePage.CourtSlots> courts = new ArrayList<>();
 		List<Map.Entry<java.time.OffsetDateTime, SitePage.BoardRow>> board = new ArrayList<>();
@@ -211,8 +221,11 @@ class SitePageService {
 					String price = SiteFormat.rupees(slot.price());
 					String message = "Namaste! I'd like to book %s at %s on %s, %s (%s). Is it free?"
 						.formatted(court.name(), venue.name(), SiteFormat.day(date), time, price);
-					board.add(Map.entry(slot.startsAt(), new SitePage.BoardRow(time, court.name(), price, contact.bookingLink(message))));
-					return new SitePage.Slot(time, price, contact.bookingLink(message));
+					String book = (bookingBase != null)
+							? bookingBase + "/book?court=" + court.courtId() + "&start=" + URLEncoder.encode(slot.startsAt().toString(), StandardCharsets.UTF_8)
+							: contact.bookingLink(message);
+					board.add(Map.entry(slot.startsAt(), new SitePage.BoardRow(time, court.name(), price, book)));
+					return new SitePage.Slot(time, price, book);
 				})
 				.toList();
 			free += slots.size();
@@ -227,7 +240,7 @@ class SitePageService {
 		}
 		String dayLabel = date.equals(today) ? "Today" : date.equals(today.plusDays(1)) ? "Tomorrow" : SiteFormat.day(date);
 		List<SitePage.BoardRow> rows = board.stream().sorted(Map.Entry.comparingByKey()).map(Map.Entry::getValue).toList();
-		return new SitePage.Slots(dayLabel, days, courts, rows, free);
+		return new SitePage.Slots(dayLabel, days, courts, rows, free, bookingBase != null, mine);
 	}
 
 	private static SitePage.Pricing pricing(List<CourtResponse> courts) {

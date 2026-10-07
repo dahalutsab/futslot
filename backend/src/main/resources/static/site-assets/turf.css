@@ -51,6 +51,7 @@ p { margin: 0; }
 .nav-inner { display: flex; align-items: center; gap: 16px; min-height: 60px; }
 .brand { font-weight: 800; font-size: 18px; text-decoration: none; margin-right: auto; }
 .nav-links { display: none; gap: 4px; }
+.nav-mine { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
 .nav-links a { text-decoration: none; color: var(--muted); padding: 8px 12px; border-radius: 8px; font-weight: 500; }
 .nav-links a:hover { color: var(--ink); background: var(--tint); }
 

@@ -121,7 +121,7 @@ export class Reports {
   }
 
   protected source(key: string): string {
-    return ({ APP: 'App', WALK_IN: 'Walk-in', PHONE: 'Phone', RECURRING: 'Weekly', TOURNAMENT: 'Tournament' } as Record<string, string>)[key] ?? key;
+    return ({ APP: 'App', WEBSITE: 'Website', WALK_IN: 'Walk-in', PHONE: 'Phone', RECURRING: 'Weekly', TOURNAMENT: 'Tournament' } as Record<string, string>)[key] ?? key;
   }
 
   protected sources(summary: VenueReport): { key: string; count: number }[] {

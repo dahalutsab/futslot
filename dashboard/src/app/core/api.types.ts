@@ -95,7 +95,7 @@ export interface Availability {
 
 export type BookingStatus = 'PENDING_PAYMENT' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'EXPIRED';
 
-export type BookingSource = 'APP' | 'WALK_IN' | 'PHONE' | 'RECURRING' | 'TOURNAMENT' | 'ADMIN';
+export type BookingSource = 'APP' | 'WEBSITE' | 'WALK_IN' | 'PHONE' | 'RECURRING' | 'TOURNAMENT' | 'ADMIN';
 
 export type PaymentStatus = 'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'PARTIALLY_REFUNDED' | 'REFUNDED';
 

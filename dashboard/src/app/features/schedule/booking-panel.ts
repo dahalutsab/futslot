@@ -14,6 +14,7 @@ type Step = 'view' | 'take-payment' | 'reject' | 'cancel' | 'extras';
 
 const SOURCES: Record<string, string> = {
   APP: 'Booked in the app',
+  WEBSITE: 'Booked on your website',
   WALK_IN: 'Walk-in',
   PHONE: 'Phone booking',
   RECURRING: 'Weekly booking',

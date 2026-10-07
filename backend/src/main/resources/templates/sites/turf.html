@@ -14,6 +14,7 @@
         <a th:if="${!page.photos.isEmpty()}" href="#photos">Photos</a>
         <a href="#find-us">Find us</a>
       </nav>
+      <a th:if="${page.slots.mine}" class="nav-mine" th:href="${page.slots.mine}">Your bookings</a>
       <a th:if="${page.contact.tel}" class="btn btn-accent btn-small" th:href="${page.contact.tel}">
         <svg th:replace="~{sites/parts :: icon('phone')}"></svg><span>Call</span>
       </a>
@@ -49,7 +50,7 @@
       <div class="wrap">
         <div class="section-head">
           <h2 id="slots-title">Free slots</h2>
-          <p class="muted">Tap a time to book it on WhatsApp. We'll reply to confirm.</p>
+          <p class="muted" th:text="${page.slots.online ? 'Tap a time to book it. You sign in with your phone number.' : 'Tap a time to book it on WhatsApp. We''ll reply to confirm.'}">Tap a time to book it.</p>
         </div>
         <nav class="days" aria-label="Day">
           <a th:each="day : ${page.slots.days}" th:href="${day.href}" th:text="${day.label}" class="day"

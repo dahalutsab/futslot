@@ -45,6 +45,7 @@ p, dl, dd, blockquote, figure { margin: 0; }
 .bar { position: sticky; top: 0; z-index: 20; background: rgba(10, 12, 11, .85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .bar-inner { display: flex; align-items: center; gap: 16px; min-height: 60px; }
 .mark { font-family: "Bebas Neue", Impact, sans-serif; font-size: 26px; letter-spacing: .03em; text-decoration: none; text-transform: uppercase; margin-right: auto; }
+.bar-mine { font-weight: 600; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
 .status { display: none; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
 .status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
 .status.is-open { color: var(--text); }

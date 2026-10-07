@@ -13,7 +13,6 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import com.futslot.billing.BillingEvent;
 import com.futslot.booking.BookingEvent;
 import com.futslot.chat.ChatMessageSent;
-import com.futslot.booking.BookingSource;
 import com.futslot.booking.BookingStatus;
 import com.futslot.booking.RecurringBookingEvent;
 import com.futslot.matchmaking.MatchEvent;
@@ -399,7 +398,7 @@ class NotificationListener {
 	}
 
 	private void created(BookingEvent event, String slot, Map<String, String> data) {
-		if (event.source() == BookingSource.APP) {
+		if (event.source().byPlayer()) {
 			if (event.status() == BookingStatus.PENDING_PAYMENT) {
 				String deadline = Messages.time(event.holdExpiresAt().atZone(event.startsAt().getOffset()).toOffsetDateTime());
 				toPlayer(event, NotificationType.BOOKING_PAYMENT_DUE, "Complete your payment",

@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -33,20 +35,31 @@ class SitePageController {
 
 	private final SiteProperties properties;
 
-	SitePageController(VenueSiteRepository sites, SitePageService pages, SiteProperties properties) {
+	private final SiteSession session;
+
+	SitePageController(VenueSiteRepository sites, SitePageService pages, SiteProperties properties, SiteSession session) {
 		this.sites = sites;
 		this.pages = pages;
 		this.properties = properties;
+		this.session = session;
 	}
 
 	@GetMapping("/sites/{subdomain}")
 	String site(@PathVariable String subdomain, @RequestParam(required = false) String date, Model model,
-			HttpServletResponse response) {
+			HttpServletRequest request, HttpServletResponse response) {
 		VenueSite site = published(subdomain);
 		String slug = this.pages.slugOf(site.getVenueId())
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		// On the venue's own address the booking pages are at /book; at /sites/{subdomain} they're beneath it
+		String base = (request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) != null) ? "" : "/sites/" + site.getSubdomain();
+		String mine = this.session.player(request).isPresent() ? base + "/bookings" : null;
 		model.addAttribute("page", this.pages.build(slug, site.getTemplate(), site.getAccentColor(), site.getHeadline(), date,
-				canonical(site), "?", false));
+				canonical(site), "?", false, base, mine));
+		if (mine != null) {
+			// Personal (it links to their bookings), so not for shared caches
+			response.setHeader("Cache-Control", "private, no-cache");
+			return "sites/" + site.getTemplate().name().toLowerCase(Locale.ROOT);
+		}
 		response.setHeader("Cache-Control", CacheControl.maxAge(Duration.ofMinutes(2)).cachePublic().getHeaderValue());
 		return "sites/" + site.getTemplate().name().toLowerCase(Locale.ROOT);
 	}

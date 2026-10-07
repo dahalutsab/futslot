@@ -38,9 +38,11 @@ public record SitePage(String template, String accent, String accentInk, String 
 
 	/**
 	 * Free slots for one day. {@code days} are the next few days to switch between; each slot's {@code book}
-	 * link starts a booking (for now a WhatsApp message to the venue, or a call).
+	 * link starts a booking. {@code online}: slots link to booking on the site (otherwise to a WhatsApp message, in
+	 * previews); {@code mine} links to the signed-in player's bookings, or is null.
 	 */
-	public record Slots(String dayLabel, List<Day> days, List<CourtSlots> courts, List<BoardRow> board, int free) {
+	public record Slots(String dayLabel, List<Day> days, List<CourtSlots> courts, List<BoardRow> board, int free,
+			boolean online, String mine) {
 	}
 
 	/** One free slot on the day's combined board, earliest first across all courts. */

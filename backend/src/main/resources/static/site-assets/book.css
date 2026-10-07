@@ -1,0 +1,57 @@
+/* Booking pages on venue sites. Colours come from the site's own stylesheet (Turf names them --ink, Floodlight --text). */
+.booking { min-height: 100vh; }
+.book-wrap { max-width: 520px; margin: 0 auto; padding: 0 16px; }
+.book-bar { border-bottom: 1px solid var(--line); background: var(--surface); }
+.book-bar-inner { display: flex; align-items: center; justify-content: space-between; min-height: 56px; }
+.book-home { text-decoration: none; font-weight: 700; display: inline-flex; gap: 8px; align-items: center; min-height: 44px; }
+.book-main { padding-top: 20px; padding-bottom: 48px; display: grid; gap: 14px; }
+.book-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+.book-card h1 { font-size: 34px; line-height: 1.1; margin: 4px 0 2px; }
+.book-card h2 { font-size: 20px; line-height: 1.25; margin: 0 0 6px; }
+.floodlight .book-card h1, .floodlight .book-card h2 { font-family: "Bebas Neue", Impact, sans-serif; font-weight: 400; text-transform: uppercase; letter-spacing: .01em; }
+.floodlight .book-card h1 { font-size: 44px; }
+.floodlight .book-card h2 { font-size: 28px; }
+.book-kicker { text-transform: uppercase; letter-spacing: .1em; font-size: 13px; font-weight: 700; color: var(--accent-text); }
+.book-muted { color: var(--muted); }
+.book-sums { display: flex; gap: 24px; margin: 16px 0 0; flex-wrap: wrap; }
+.book-sums dt { font-size: 13px; color: var(--muted); }
+.book-sums dd { margin: 0; font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.book-form { display: grid; gap: 10px; margin-top: 14px; }
+.book-form label, .book-form legend { font-weight: 600; font-size: 14px; }
+.book-form input[type="text"], .book-form input[type="tel"] {
+  width: 100%; min-height: 50px; padding: 0 14px; border-radius: 10px; border: 1.5px solid var(--line);
+  background: var(--bg); color: var(--ink, var(--text)); font: inherit; font-size: 17px;
+}
+.book-form input:focus { outline: 3px solid var(--accent-text); outline-offset: 1px; }
+.book-phone { display: flex; align-items: stretch; border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--bg); }
+.book-phone span { display: flex; align-items: center; padding: 0 12px; color: var(--muted); border-right: 1.5px solid var(--line); }
+.book-phone input[type="tel"] { border: 0; border-radius: 0; }
+.book-code { letter-spacing: .4em; font-variant-numeric: tabular-nums; text-align: center; font-size: 24px !important; }
+.book-submit { width: 100%; min-height: 52px; margin-top: 4px; }
+.book-again { margin-top: 8px; text-align: center; }
+.book-link { display: inline-flex; align-items: center; background: none; border: 0; color: inherit; font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; min-height: 44px; padding: 0 4px; }
+.book-alert { margin: 0; padding: 12px 14px; border-radius: 10px; background: #fdecec; color: #8f1d1d; border: 1px solid #f5c2c2; }
+.floodlight .book-alert { background: rgba(248, 113, 113, .12); color: #fca5a5; border-color: rgba(248, 113, 113, .35); }
+.book-notice { margin: 0; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
+.book-status { display: inline-block; font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 10px; border: 1px solid var(--line); }
+.book-status.is-good { background: #e6f6ec; color: #14532d; border-color: #b9e4c8; }
+.book-status.is-pending { background: #fff4db; color: #7a4b00; border-color: #f3d69a; }
+.book-status.is-bad { background: #fdecec; color: #8f1d1d; border-color: #f5c2c2; }
+.floodlight .book-status.is-good { background: rgba(74, 222, 128, .12); color: #86efac; border-color: rgba(74, 222, 128, .35); }
+.floodlight .book-status.is-pending { background: rgba(251, 191, 36, .12); color: #fcd34d; border-color: rgba(251, 191, 36, .35); }
+.floodlight .book-status.is-bad { background: rgba(248, 113, 113, .12); color: #fca5a5; border-color: rgba(248, 113, 113, .35); }
+.book-pay-to { margin: 12px 0 0; padding: 12px 14px; border-radius: 10px; background: var(--bg); border: 1px dashed var(--line); font-weight: 600; white-space: pre-line; }
+.book-methods { border: 0; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.book-methods legend { margin-bottom: 6px; }
+.book-method { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 10px; cursor: pointer; font-weight: 600; }
+.book-method:has(input:checked) { border-color: var(--accent-text); }
+.book-method input { accent-color: var(--accent); }
+.book-app { font-size: 14px; color: var(--muted); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.book-bar-actions { display: flex; align-items: center; gap: 12px; }
+.book-title { font-size: 28px; margin: 4px 0; }
+.floodlight .book-title { font-family: "Bebas Neue", Impact, sans-serif; font-weight: 400; text-transform: uppercase; font-size: 40px; }
+.book-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; text-decoration: none; }
+.book-row > span:first-child { display: grid; gap: 2px; }
+.book-row-time { font-size: 18px; }
+.book-row .book-status { margin: 0; text-align: center; }

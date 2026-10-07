@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<!-- Booking on a venue's website. Uses the site's own stylesheet, so it looks like the rest of the site. -->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${(book.step == 'booking' ? 'Your booking' : book.step == 'list' ? 'Your bookings' : 'Book') + ' · ' + book.site.name}">Book</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" th:href="${book.site.fonts}">
+  <link rel="stylesheet" th:href="@{'/site-assets/' + ${book.site.template} + '.css'(v=1)}">
+  <link rel="stylesheet" th:href="@{/site-assets/book.css(v=2)}">
+  <!-- Validated #rrggbb values, so safe to write as they are -->
+  <style th:inline="css">:root { --accent: [(${book.site.accent})]; --accent-ink: [(${book.site.accentInk})]; --accent-text: [(${book.site.accentText})]; }</style>
+</head>
+<body th:class="${book.site.template} + ' booking'">
+  <header class="book-bar">
+    <div class="book-wrap book-bar-inner">
+      <a class="book-home" th:href="${book.site.base + '/'}">
+        <span aria-hidden="true">←</span> <span th:text="${book.site.name}">Venue</span>
+      </a>
+      <div th:if="${book.signedIn}" class="book-bar-actions">
+        <a th:unless="${book.step == 'list'}" class="book-link" th:href="${book.site.base + '/bookings'}">Your bookings</a>
+        <form method="post" th:action="${book.site.base + '/sign-out'}">
+          <button type="submit" class="book-link">Sign out</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <main class="book-wrap book-main">
+    <!-- The slot being booked -->
+    <section th:if="${book.slot != null}" class="book-card book-slot" aria-label="Your slot">
+      <p class="book-kicker" th:text="${book.slot.day}">Fri 9 Oct</p>
+      <h1 th:text="${book.slot.time}">6 PM – 7 PM</h1>
+      <p class="book-muted" th:text="${book.slot.court}">Court A</p>
+      <dl class="book-sums">
+        <div><dt>Price</dt><dd th:text="${book.slot.price}">Rs 1,800</dd></div>
+        <div th:if="${book.slot.advance != null}"><dt>Pay now to confirm</dt><dd th:text="${book.slot.advance}">Rs 540</dd></div>
+        <div th:if="${book.slot.advance == null}"><dt>Pay</dt><dd>At the venue</dd></div>
+      </dl>
+    </section>
+
+    <p th:if="${book.error}" class="book-alert" role="alert" th:text="${book.error}">Error</p>
+    <p th:if="${book.notice}" class="book-notice" role="status" th:text="${book.notice}">Notice</p>
+
+    <!-- Sign in: phone, then code -->
+    <section th:if="${book.step == 'phone'}" class="book-card">
+      <h2>Your phone number</h2>
+      <p class="book-muted">We'll text you a code. Same account as the FutSlot app.</p>
+      <form method="post" th:action="${book.site.base + '/book/code'}" class="book-form">
+        <input type="hidden" name="court" th:value="${book.slot.courtId}">
+        <input type="hidden" name="start" th:value="${book.slot.start}">
+        <label for="phone" class="sr-only">Mobile number</label>
+        <div class="book-phone"><span>+977</span>
+          <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98XXXXXXXX"
+            required pattern="[0-9 ]{10,12}" th:value="${book.phone}" autofocus>
+        </div>
+        <button type="submit" class="btn btn-accent book-submit">Text me a code</button>
+      </form>
+    </section>
+
+    <section th:if="${book.step == 'code'}" class="book-card">
+      <h2 th:text="${book.needsName ? 'Nearly there' : 'Enter the code'}">Enter the code</h2>
+      <form method="post" th:action="${book.site.base + '/book/verify'}" class="book-form">
+        <input type="hidden" name="court" th:value="${book.slot.courtId}">
+        <input type="hidden" name="start" th:value="${book.slot.start}">
+        <input type="hidden" name="phone" th:value="${book.phone}">
+        <label for="code">6-digit code</label>
+        <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6"
+          required th:autofocus="${!book.needsName}" class="book-code" th:value="${book.needsName ? param.code : null}">
+        <th:block th:if="${book.needsName}">
+          <label for="name">Your name</label>
+          <input id="name" name="name" type="text" autocomplete="name" maxlength="100" required autofocus>
+        </th:block>
+        <button type="submit" class="btn btn-accent book-submit">Continue</button>
+      </form>
+      <form method="post" th:action="${book.site.base + '/book/code'}" class="book-again">
+        <input type="hidden" name="court" th:value="${book.slot.courtId}">
+        <input type="hidden" name="start" th:value="${book.slot.start}">
+        <input type="hidden" name="phone" th:value="${book.phone}">
+        <button type="submit" class="book-link">Send the code again</button>
+      </form>
+    </section>
+
+    <!-- Signed in: book it -->
+    <section th:if="${book.step == 'confirm'}" class="book-card">
+      <h2>Book this slot?</h2>
+      <p class="book-muted" th:if="${book.slot.advance != null}"
+        th:text="${'We hold it for ' + book.slot.holdMinutes + ' minutes while you pay ' + book.slot.advance + ' to the venue. The rest is paid at the venue.'}">Hold</p>
+      <p class="book-muted" th:if="${book.slot.advance == null}">Nothing to pay now. Pay at the venue when you play.</p>
+      <form method="post" th:action="${book.site.base + '/book/confirm'}" class="book-form">
+        <input type="hidden" name="court" th:value="${book.slot.courtId}">
+        <input type="hidden" name="start" th:value="${book.slot.start}">
+        <button type="submit" class="btn btn-accent book-submit">Book it</button>
+      </form>
+    </section>
+
+    <section th:if="${book.step == 'gone'}" class="book-card">
+      <h2>That time isn't free any more</h2>
+      <p class="book-muted">Someone may have just booked it. Pick another time.</p>
+      <a class="btn btn-accent book-submit" th:href="${book.site.base + '/#slots'}">See free slots</a>
+    </section>
+
+    <!-- The player's bookings at this venue -->
+    <th:block th:if="${book.step == 'list'}">
+      <h1 class="book-title">Your bookings</h1>
+      <p th:if="${book.bookings.isEmpty()}" class="book-card book-muted">No bookings here yet.</p>
+      <a th:each="b : ${book.bookings}" class="book-card book-row" th:href="${book.site.base + '/bookings/' + b.id}">
+        <span>
+          <span class="book-kicker" th:text="${b.day}">Fri 9 Oct</span>
+          <strong class="book-row-time" th:text="${b.time}">6 PM</strong>
+          <span class="book-muted" th:text="${b.court}">Court A</span>
+        </span>
+        <span class="book-status" th:classappend="${'is-' + b.tone}" th:text="${b.status}">Confirmed</span>
+      </a>
+      <a class="btn btn-accent book-submit" th:href="${book.site.base + '/#slots'}">Book another time</a>
+    </th:block>
+
+    <!-- A booking already made -->
+    <th:block th:if="${book.step == 'booking'}" th:with="b=${book.booking}">
+      <section class="book-card book-slot">
+        <p class="book-status" th:classappend="${'is-' + b.tone}" th:text="${b.status}">Confirmed</p>
+        <p class="book-kicker" th:text="${b.day}">Fri 9 Oct</p>
+        <h1 th:text="${b.time}">6 PM – 7 PM</h1>
+        <p class="book-muted" th:text="${b.court + ' · Booking ' + b.reference}">Court A</p>
+        <dl class="book-sums">
+          <div><dt>Price</dt><dd th:text="${b.total}">Rs 1,800</dd></div>
+          <div><dt>Paid</dt><dd th:text="${b.paid}">Rs 0</dd></div>
+        </dl>
+      </section>
+
+      <section th:if="${b.payNow != null}" class="book-card">
+        <h2 th:text="${'Pay ' + b.payNow + ' to confirm'}">Pay</h2>
+        <p class="book-muted" th:if="${b.holdUntil}" th:text="${'We hold your slot until ' + b.holdUntil + '. Pay the venue directly, then tell us the transaction ID.'}">Hold</p>
+        <p class="book-pay-to" th:text="${b.instructions}">eSewa 98…</p>
+        <form method="post" th:action="${book.site.base + '/bookings/' + b.id + '/pay'}" class="book-form">
+          <input type="hidden" name="amount" th:value="${b.payNowAmount}">
+          <fieldset class="book-methods">
+            <legend>Paid with</legend>
+            <label th:each="m, i : ${b.methods}" class="book-method">
+              <input type="radio" name="method" th:value="${m.value}" th:checked="${i.first}" required>
+              <span th:text="${m.label}">eSewa</span>
+            </label>
+          </fieldset>
+          <label for="txn">Transaction ID</label>
+          <input id="txn" name="transactionId" type="text" maxlength="100" required autocomplete="off" placeholder="From your payment receipt">
+          <button type="submit" class="btn btn-accent book-submit">Send for checking</button>
+        </form>
+      </section>
+
+      <section th:if="${b.checking}" class="book-card">
+        <h2>Payment sent</h2>
+        <p class="book-muted" th:text="${book.site.name + ' will check it and confirm your booking. Check back here under Your bookings, or in the FutSlot app.'}">Checking</p>
+      </section>
+
+      <section class="book-card book-app">
+        <p>See all your bookings, cancel or rebook in the <strong>FutSlot app</strong>, with the same phone number.</p>
+      </section>
+    </th:block>
+  </main>
+</body>
+</html>

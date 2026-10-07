@@ -4,7 +4,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import com.futslot.booking.BookingEvent;
-import com.futslot.booking.BookingSource;
 import com.futslot.payment.MembershipPaymentEvent;
 import com.futslot.payment.PaymentEvent;
 import com.futslot.venue.StaffAdded;
@@ -30,7 +29,7 @@ class AuditListeners {
 		boolean byPlayer = event.actorUserId() != null && event.actorUserId().equals(event.playerUserId());
 		switch (event.type()) {
 			case CREATED -> {
-				if (event.source() != BookingSource.APP) {
+				if (!event.source().byPlayer()) {
 					this.trail.record(event.actorUserId(), event.venueId(), "BOOKING_CREATED", "BOOKING", event.bookingId(),
 							"reference", event.reference(), "source", event.source(), "customer", event.customerName(),
 							"startsAt", event.startsAt(), "total", event.totalAmount());

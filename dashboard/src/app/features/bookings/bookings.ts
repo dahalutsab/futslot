@@ -16,7 +16,7 @@ import { BookingState, stateOf } from '../schedule/schedule-model';
 type Filter = 'all' | 'unpaid' | 'held' | 'played' | 'cancelled';
 
 const SOURCES: Record<string, string> = {
-  APP: 'App', WALK_IN: 'Walk-in', PHONE: 'Phone', RECURRING: 'Weekly', TOURNAMENT: 'Tournament', ADMIN: 'FutSlot',
+  APP: 'App', WEBSITE: 'Website', WALK_IN: 'Walk-in', PHONE: 'Phone', RECURRING: 'Weekly', TOURNAMENT: 'Tournament', ADMIN: 'FutSlot',
 };
 
 /**
