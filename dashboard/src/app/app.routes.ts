@@ -102,6 +102,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/grow/tournaments/tournament').then((m) => m.Tournament),
       },
       {
+        path: 'venue/website',
+        title: 'Website · FutSlot',
+        loadComponent: () => import('./features/venue/website').then((m) => m.Website),
+      },
+      {
         path: 'payments',
         title: 'Payments · FutSlot',
         loadComponent: () => import('./features/payments/payments').then((m) => m.Payments),

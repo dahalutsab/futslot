@@ -87,7 +87,7 @@ public class MembershipService {
 	}
 
 	@Transactional(readOnly = true)
-	List<MembershipPlanResponse> plansOnSale(String slug) {
+	public List<MembershipPlanResponse> plansOnSale(String slug) {
 		Venue venue = this.venues.findBySlugAndStatus(slug, VenueStatus.ACTIVE)
 			.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "VENUE_NOT_FOUND", "Venue not found"));
 		return this.plans.findByVenueIdAndActiveTrueOrderByPrice(venue.getId())

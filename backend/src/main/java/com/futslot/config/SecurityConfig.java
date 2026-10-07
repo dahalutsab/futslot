@@ -31,11 +31,15 @@ public class SecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 			.csrf(csrf -> csrf.disable())
+			// The dashboard previews venue sites in frames on the same origin; nobody else may frame FutSlot
+			.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/actuator/health/**", "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
 				.requestMatchers(HttpMethod.GET, "/media/**").permitAll()
+				// Venue websites and what they load
+				.requestMatchers(HttpMethod.GET, "/sites/**", "/site-preview/**", "/site-assets/**", "/internal/sites/domain-check").permitAll()
 				// What anyone can browse before signing in
 				.requestMatchers(HttpMethod.GET, "/api/v1/venues", "/api/v1/venues/*", "/api/v1/venues/*/availability",
 						"/api/v1/venues/*/reviews", "/api/v1/venues/*/reviews/summary", "/api/v1/venues/*/membership-plans",

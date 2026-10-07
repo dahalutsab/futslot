@@ -639,3 +639,24 @@ export interface TournamentDetail {
   tables: { groupName: string | null; rows: Standing[] }[];
   champion: TeamRef | null;
 }
+
+// The venue's website
+
+export type SiteTemplate = 'TURF' | 'FLOODLIGHT';
+
+/** Before the owner saves, {@code saved} is false and the fields are suggestions. */
+export interface SiteSettings {
+  venueId: string;
+  saved: boolean;
+  template: SiteTemplate;
+  subdomain: string;
+  customDomain: string | null;
+  accentColor: string | null;
+  headline: string | null;
+  published: boolean;
+  url: string;
+  previewPath: string;
+  /** The venue is approved, so the site can go live. */
+  live: boolean;
+  dnsTarget: string;
+}
