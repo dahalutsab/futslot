@@ -42,6 +42,7 @@ class PhotoService {
 	@Transactional
 	PhotoResponse upload(UUID userId, UUID venueId, MultipartFile file, String caption) {
 		this.access.require(userId, venueId, VenuePermission.MANAGE_VENUE);
+		this.photos.lockVenue(venueId);
 		if (file == null || file.isEmpty()) {
 			throw badRequest("FILE_REQUIRED", "Choose a photo to upload");
 		}
@@ -79,6 +80,7 @@ class PhotoService {
 	@Transactional
 	List<PhotoResponse> update(UUID userId, UUID venueId, UUID photoId, PhotoUpdateRequest request) {
 		this.access.require(userId, venueId, VenuePermission.MANAGE_VENUE);
+		this.photos.lockVenue(venueId);
 		VenuePhoto photo = photo(venueId, photoId);
 		if (request.caption() != null) {
 			photo.setCaption(text(request.caption()));
@@ -97,6 +99,7 @@ class PhotoService {
 	@Transactional
 	List<PhotoResponse> delete(UUID userId, UUID venueId, UUID photoId) {
 		this.access.require(userId, venueId, VenuePermission.MANAGE_VENUE);
+		this.photos.lockVenue(venueId);
 		VenuePhoto photo = photo(venueId, photoId);
 		this.photos.delete(photo);
 		this.photos.flush();

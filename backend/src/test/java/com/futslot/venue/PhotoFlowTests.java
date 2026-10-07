@@ -1,5 +1,7 @@
 package com.futslot.venue;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -11,6 +13,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,6 +90,29 @@ class PhotoFlowTests {
 		this.mvc.perform(get(coverUrl)).andExpect(status().isNotFound());
 
 		upload(this.users.signUp("Photo Bomber"), venue, "x.png", PNG).andExpect(status().isNotFound());
+	}
+
+	@Test
+	void photosUploadedAtTheSameTimeGetOneCoverAndTheirOwnPlaces() throws Exception {
+		TestUser owner = this.users.signUp("Busy Uploader");
+		TestVenue venue = this.venues.active(owner, "Parallel Futsal");
+
+		try (ExecutorService pool = Executors.newFixedThreadPool(4)) {
+			List<Future<Integer>> statuses = new ArrayList<>();
+			for (int i = 0; i < 4; i++) {
+				String name = "court-" + i + ".png";
+				statuses.add(pool.submit(() -> upload(owner, venue, name, PNG).andReturn().getResponse().getStatus()));
+			}
+			for (Future<Integer> status : statuses) {
+				assertThat(status.get()).isEqualTo(201);
+			}
+		}
+		String photos = send(owner, get("/api/v1/owner/venues/" + venue.id() + "/photos"), null)
+			.andExpect(jsonPath("$.length()").value(4))
+			.andExpect(jsonPath("$[*].sortOrder", containsInAnyOrder(0, 1, 2, 3)))
+			.andReturn().getResponse().getContentAsString();
+		List<Boolean> covers = JsonPath.read(photos, "$[*].cover");
+		assertThat(covers).containsExactly(true, false, false, false);
 	}
 
 	private ResultActions upload(TestUser user, TestVenue venue, String name, byte[] bytes) throws Exception {
