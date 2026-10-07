@@ -215,8 +215,10 @@ class BillingFlowTests {
 		String paymentId = JsonPath.read(send(owner, post("/api/v1/featured-listings/" + listingId + "/payments"),
 				"{\"method\":\"KHALTI\",\"transactionId\":\"KH-%s\",\"amount\":600}".formatted(UUID.randomUUID()))
 			.andExpect(status().isCreated()).andReturn().getResponse().getContentAsString(), "$.id");
+		send(owner, get(featuredPath), null).andExpect(jsonPath("$[0].paymentPending").value(true));
 		send(admin, post("/api/v1/admin/payments/" + paymentId + "/approve"), null).andExpect(status().isOk());
-		send(owner, get(featuredPath), null).andExpect(jsonPath("$[0].status").value("SCHEDULED"));
+		send(owner, get(featuredPath), null).andExpect(jsonPath("$[0].status").value("SCHEDULED"))
+			.andExpect(jsonPath("$[0].paymentPending").value(false));
 		send(owner, get("/api/v1/notifications"), null)
 			.andExpect(jsonPath("$.content[0].type").value("FEATURED_CONFIRMED"));
 
