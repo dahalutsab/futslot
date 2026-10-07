@@ -148,9 +148,7 @@ public class BookingService {
 		if (request.source() != BookingSource.WALK_IN && request.source() != BookingSource.PHONE) {
 			throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_SOURCE", "Source must be WALK_IN or PHONE");
 		}
-		Court court = this.courts.findByIdAndVenueId(request.courtId(), venueId)
-			.filter(Court::isActive)
-			.orElseThrow(BookingService::courtNotFound);
+		Court court = activeCourt(venueId, request.courtId());
 		Instant now = this.clock.instant();
 		Instant start = request.startsAt().toInstant();
 		Instant end = (request.endsAt() != null) ? request.endsAt().toInstant()
@@ -160,10 +158,8 @@ public class BookingService {
 		ensureFree(court, start, end, now, null);
 
 		BigDecimal price = (request.price() != null) ? request.price() : priceOfSlots(venue, court, start, end);
-		String phone = PhoneNumbers.normalize(request.customerPhone());
-		VenueCustomer customer = customerFor(venue, phone, request.customerName().strip());
-		// A walk-in who also has the app gets the booking in their app
-		this.users.findByPhone(phone).ifPresent(user -> customer.linkUser(user.getId()));
+		VenueCustomer customer = customerFor(venue, PhoneNumbers.normalize(request.customerPhone()),
+				request.customerName().strip());
 		Booking booking = new Booking(this.references.next(), venue, court, customer, null, request.source(), start,
 				end, price, ownerId, request.notes());
 		save(booking, customer, now);
@@ -176,9 +172,7 @@ public class BookingService {
 		ownedVenue(ownerId, venueId);
 		Booking booking = venueBooking(venueId, bookingId);
 		requireLive(booking);
-		Court court = (request.courtId() != null) ? this.courts.findByIdAndVenueId(request.courtId(), venueId)
-			.filter(Court::isActive)
-			.orElseThrow(BookingService::courtNotFound) : booking.getCourt();
+		Court court = (request.courtId() != null) ? activeCourt(venueId, request.courtId()) : booking.getCourt();
 		Instant now = this.clock.instant();
 		Instant start = request.startsAt().toInstant();
 		Instant end = (request.endsAt() != null) ? request.endsAt().toInstant()
@@ -265,7 +259,10 @@ public class BookingService {
 		return BookingResponse.from(venueBooking(venueId, bookingId));
 	}
 
-	private void lockAndExpireHolds(Court court, Instant now) {
+	// Building blocks shared with RecurringBookingService
+
+	/** Must come first in any write that occupies {@code court}. */
+	void lockAndExpireHolds(Court court, Instant now) {
 		this.courts.lockById(court.getId());
 		this.holdExpiry.expire(court.getId(), now);
 	}
@@ -291,7 +288,7 @@ public class BookingService {
 	}
 
 	/** Sum of slot prices when [start, end) is exactly a run of consecutive slots. */
-	private BigDecimal priceOfSlots(Venue venue, Court court, Instant start, Instant end) {
+	BigDecimal priceOfSlots(Venue venue, Court court, Instant start, Instant end) {
 		LocalDate localDate = start.atZone(zone(venue)).toLocalDate();
 		for (LocalDate date : List.of(localDate, localDate.minusDays(1))) {
 			List<Slot> covered = this.availability.slotsFor(venue, court, date)
@@ -321,15 +318,24 @@ public class BookingService {
 	}
 
 	private void ensureFree(Court court, Instant start, Instant end, Instant now, UUID ignoreBookingId) {
-		if (!this.blocks.findOverlapping(List.of(court.getId()), start, end).isEmpty()) {
-			throw new ApiException(HttpStatus.CONFLICT, "SLOT_BLOCKED", "The court is blocked at that time");
-		}
-		if (!this.bookedRanges.byCourt(List.of(court.getId()), start, end, now, ignoreBookingId).isEmpty()) {
-			throw slotUnavailable();
-		}
+		conflictAt(court, start, end, now, ignoreBookingId).ifPresent(code -> {
+			throw "SLOT_BLOCKED".equals(code)
+					? new ApiException(HttpStatus.CONFLICT, code, "The court is blocked at that time") : slotUnavailable();
+		});
 	}
 
-	private void save(Booking booking, VenueCustomer customer, Instant now) {
+	/** SLOT_BLOCKED or SLOT_UNAVAILABLE if something already occupies [start, end); call after locking. */
+	Optional<String> conflictAt(Court court, Instant start, Instant end, Instant now, UUID ignoreBookingId) {
+		if (!this.blocks.findOverlapping(List.of(court.getId()), start, end).isEmpty()) {
+			return Optional.of("SLOT_BLOCKED");
+		}
+		if (!this.bookedRanges.byCourt(List.of(court.getId()), start, end, now, ignoreBookingId).isEmpty()) {
+			return Optional.of("SLOT_UNAVAILABLE");
+		}
+		return Optional.empty();
+	}
+
+	void save(Booking booking, VenueCustomer customer, Instant now) {
 		customer.recordBooking(now);
 		this.bookings.save(booking);
 		flush();
@@ -345,9 +351,21 @@ public class BookingService {
 		}
 	}
 
-	private VenueCustomer customerFor(Venue venue, String phone, String name) {
-		return this.customers.findByVenueIdAndPhone(venue.getId(), phone)
+	/** The venue's customer with this phone, created if new and linked to the app user with that phone. */
+	VenueCustomer customerFor(Venue venue, String phone, String name) {
+		VenueCustomer customer = this.customers.findByVenueIdAndPhone(venue.getId(), phone)
 			.orElseGet(() -> this.customers.save(new VenueCustomer(venue.getId(), phone, name)));
+		// A walk-in who also has the app gets the booking in their app
+		this.users.findByPhone(phone).ifPresent(user -> customer.linkUser(user.getId()));
+		return customer;
+	}
+
+	Court activeCourt(UUID venueId, UUID courtId) {
+		return this.courts.findByIdAndVenueId(courtId, venueId).filter(Court::isActive).orElseThrow(BookingService::courtNotFound);
+	}
+
+	String nextReference() {
+		return this.references.next();
 	}
 
 	private Booking startedConfirmedBooking(UUID ownerId, UUID venueId, UUID bookingId) {
@@ -363,7 +381,7 @@ public class BookingService {
 	}
 
 	/** Owners and staff with MANAGE_BOOKINGS. */
-	private Venue ownedVenue(UUID userId, UUID venueId) {
+	Venue ownedVenue(UUID userId, UUID venueId) {
 		return this.access.require(userId, venueId, VenuePermission.MANAGE_BOOKINGS);
 	}
 
@@ -377,7 +395,7 @@ public class BookingService {
 		}
 	}
 
-	private static void validateRange(Instant start, Instant end) {
+	static void validateRange(Instant start, Instant end) {
 		if (!end.isAfter(start) || Duration.between(start, end).compareTo(MAX_MANUAL_DURATION) > 0) {
 			throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_TIME_RANGE",
 					"End must be after start and within 12 hours");

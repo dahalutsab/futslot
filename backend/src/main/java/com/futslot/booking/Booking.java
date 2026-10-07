@@ -54,6 +54,9 @@ public class Booking {
 	@Column(updatable = false)
 	private UUID bookedByUserId;
 
+	@Column(updatable = false)
+	private UUID recurringBookingId;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, updatable = false)
 	private BookingSource source;
@@ -134,6 +137,14 @@ public class Booking {
 		this.status = BookingStatus.CONFIRMED;
 	}
 
+	static Booking occurrence(String reference, RecurringBooking series, Instant startsAt, Instant endsAt,
+			UUID createdBy) {
+		Booking booking = new Booking(reference, series.getVenue(), series.getCourt(), series.getCustomer(), null,
+				BookingSource.RECURRING, startsAt, endsAt, series.getPrice(), createdBy, null);
+		booking.recurringBookingId = series.getId();
+		return booking;
+	}
+
 	/** Holds the slot until {@code expiresAt}; confirmed once the advance is paid. */
 	void holdForPayment(BigDecimal advance, Instant expiresAt) {
 		this.status = BookingStatus.PENDING_PAYMENT;
@@ -188,6 +199,10 @@ public class Booking {
 
 	public UUID getBookedByUserId() {
 		return this.bookedByUserId;
+	}
+
+	public UUID getRecurringBookingId() {
+		return this.recurringBookingId;
 	}
 
 	public BookingSource getSource() {

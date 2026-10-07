@@ -369,6 +369,126 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/StaffResponse"
+  /api/v1/owner/venues/{venueId}/recurring-bookings:
+    get:
+      tags:
+      - recurring-booking-controller
+      operationId: list_2
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecurringBookingResponse"
+    post:
+      tags:
+      - recurring-booking-controller
+      operationId: create_1
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecurringBookingRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RecurringBookingResponse"
+  /api/v1/owner/venues/{venueId}/recurring-bookings/{seriesId}/resume:
+    post:
+      tags:
+      - recurring-booking-controller
+      operationId: resume
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: seriesId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RecurringBookingResponse"
+  /api/v1/owner/venues/{venueId}/recurring-bookings/{seriesId}/pause:
+    post:
+      tags:
+      - recurring-booking-controller
+      operationId: pause
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: seriesId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RecurringBookingResponse"
+  /api/v1/owner/venues/{venueId}/recurring-bookings/{seriesId}/cancel:
+    post:
+      tags:
+      - recurring-booking-controller
+      operationId: cancel
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: seriesId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RecurringBookingResponse"
   /api/v1/owner/venues/{venueId}/courts:
     post:
       tags:
@@ -764,7 +884,7 @@ paths:
     post:
       tags:
       - booking-controller
-      operationId: cancel
+      operationId: cancel_1
       parameters:
       - name: bookingId
         in: path
@@ -1113,6 +1233,31 @@ paths:
               schema:
                 $ref: "#/components/schemas/AvailabilityResponse"
       security: []
+  /api/v1/owner/venues/{venueId}/recurring-bookings/{seriesId}:
+    get:
+      tags:
+      - recurring-booking-controller
+      operationId: get_3
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: seriesId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RecurringBookingResponse"
   /api/v1/owner/venues/{venueId}/customers:
     get:
       tags:
@@ -1297,7 +1442,7 @@ paths:
     get:
       tags:
       - admin-venue-controller
-      operationId: list_2
+      operationId: list_3
       parameters:
       - name: status
         in: query
@@ -1339,7 +1484,7 @@ paths:
     get:
       tags:
       - admin-venue-controller
-      operationId: get_3
+      operationId: get_4
       parameters:
       - name: venueId
         in: path
@@ -1817,6 +1962,205 @@ components:
       - fullName
       - phone
       - role
+    RecurringBookingRequest:
+      type: object
+      properties:
+        courtId:
+          type: string
+          format: uuid
+        dayOfWeek:
+          type: string
+          enum:
+          - MONDAY
+          - TUESDAY
+          - WEDNESDAY
+          - THURSDAY
+          - FRIDAY
+          - SATURDAY
+          - SUNDAY
+        startTime:
+          type: string
+          format: time-local
+        endTime:
+          type: string
+          format: time-local
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+        customerName:
+          type: string
+          maxLength: 100
+          minLength: 0
+        customerPhone:
+          type: string
+          minLength: 1
+        price:
+          type: number
+          minimum: 0
+      required:
+      - courtId
+      - customerName
+      - customerPhone
+      - dayOfWeek
+      - startTime
+      - startsOn
+    BookingResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        reference:
+          type: string
+        venue:
+          $ref: "#/components/schemas/VenueRef"
+        court:
+          $ref: "#/components/schemas/CourtRef"
+        customer:
+          $ref: "#/components/schemas/CustomerRef"
+        source:
+          type: string
+          enum:
+          - APP
+          - WALK_IN
+          - PHONE
+          - RECURRING
+          - TOURNAMENT
+          - ADMIN
+        status:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - CONFIRMED
+          - COMPLETED
+          - CANCELLED
+          - NO_SHOW
+          - EXPIRED
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        priceAmount:
+          type: number
+        totalAmount:
+          type: number
+        advanceRequired:
+          type: number
+        paidAmount:
+          type: number
+        paymentStatus:
+          type: string
+          enum:
+          - UNPAID
+          - PARTIALLY_PAID
+          - PAID
+          - PARTIALLY_REFUNDED
+          - REFUNDED
+        holdExpiresAt:
+          type: string
+          format: date-time
+        notes:
+          type: string
+        cancelledAt:
+          type: string
+          format: date-time
+        cancellationReason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CourtRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    CustomerRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type: string
+    RecurringBookingResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        court:
+          $ref: "#/components/schemas/CourtRef"
+        customer:
+          $ref: "#/components/schemas/CustomerRef"
+        dayOfWeek:
+          type: string
+          enum:
+          - MONDAY
+          - TUESDAY
+          - WEDNESDAY
+          - THURSDAY
+          - FRIDAY
+          - SATURDAY
+          - SUNDAY
+        startTime:
+          type: string
+          format: time-local
+        endTime:
+          type: string
+          format: time-local
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+        price:
+          type: number
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - PAUSED
+          - CANCELLED
+        generatedUntil:
+          type: string
+          format: date
+        upcoming:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingResponse"
+        skipped:
+          type: array
+          items:
+            $ref: "#/components/schemas/Skipped"
+    Skipped:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        reason:
+          type: string
+    VenueRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
     CourtBlockRequest:
       type: object
       properties:
@@ -1908,101 +2252,6 @@ components:
       - customerPhone
       - source
       - startsAt
-    BookingResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        reference:
-          type: string
-        venue:
-          $ref: "#/components/schemas/VenueRef"
-        court:
-          $ref: "#/components/schemas/CourtRef"
-        customer:
-          $ref: "#/components/schemas/CustomerRef"
-        source:
-          type: string
-          enum:
-          - APP
-          - WALK_IN
-          - PHONE
-          - RECURRING
-          - TOURNAMENT
-          - ADMIN
-        status:
-          type: string
-          enum:
-          - PENDING_PAYMENT
-          - CONFIRMED
-          - COMPLETED
-          - CANCELLED
-          - NO_SHOW
-          - EXPIRED
-        startsAt:
-          type: string
-          format: date-time
-        endsAt:
-          type: string
-          format: date-time
-        priceAmount:
-          type: number
-        totalAmount:
-          type: number
-        advanceRequired:
-          type: number
-        paidAmount:
-          type: number
-        paymentStatus:
-          type: string
-          enum:
-          - UNPAID
-          - PARTIALLY_PAID
-          - PAID
-          - PARTIALLY_REFUNDED
-          - REFUNDED
-        holdExpiresAt:
-          type: string
-          format: date-time
-        notes:
-          type: string
-        cancelledAt:
-          type: string
-          format: date-time
-        cancellationReason:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-    CourtRef:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-    CustomerRef:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        phone:
-          type: string
-    VenueRef:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        slug:
-          type: string
     RescheduleRequest:
       type: object
       properties:
@@ -2046,6 +2295,9 @@ components:
           - VENUE_SUSPENDED
           - VENUE_REINSTATED
           - VENUE_STAFF_ADDED
+          - RECURRING_BOOKING_CREATED
+          - RECURRING_BOOKING_CANCELLED
+          - RECURRING_BOOKING_SKIPPED
         title:
           type: string
         body:

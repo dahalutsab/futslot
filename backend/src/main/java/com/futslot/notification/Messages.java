@@ -1,8 +1,12 @@
 package com.futslot.notification;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.Locale;
 
 /** Wording of user-facing notifications, kept in one place for review and later translation. */
@@ -21,6 +25,24 @@ final class Messages {
 
 	static String time(OffsetDateTime time) {
 		return TIME.format(time);
+	}
+
+	private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH);
+
+	private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("EEE d MMM", Locale.ENGLISH);
+
+	static String day(LocalDate date) {
+		return DAY.format(date);
+	}
+
+	static String date(LocalDate date) {
+		return DATE.format(date);
+	}
+
+	/** "Fridays 19:00-20:00". */
+	static String weekly(DayOfWeek day, LocalTime start, LocalTime end) {
+		String name = day.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+		return name + "s " + start + "-" + end;
 	}
 
 	static String rupees(BigDecimal amount) {
