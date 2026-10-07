@@ -2056,6 +2056,177 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PageResponseReviewResponse"
+  /api/v1/owner/venues/{venueId}/reports/top-customers:
+    get:
+      tags:
+      - report-controller
+      operationId: topCustomers
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          maximum: 50
+          minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TopCustomerRow"
+  /api/v1/owner/venues/{venueId}/reports/summary:
+    get:
+      tags:
+      - report-controller
+      operationId: summary_1
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueReport"
+  /api/v1/owner/venues/{venueId}/reports/peak-hours:
+    get:
+      tags:
+      - report-controller
+      operationId: peakHours
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PeakHourCell"
+  /api/v1/owner/venues/{venueId}/reports/daily:
+    get:
+      tags:
+      - report-controller
+      operationId: daily
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DailyRow"
+  /api/v1/owner/venues/{venueId}/reports/bookings.csv:
+    get:
+      tags:
+      - report-controller
+      operationId: exportBookings
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: byte
   /api/v1/owner/venues/{venueId}/refunds:
     get:
       tags:
@@ -2474,6 +2645,31 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PageResponseReviewResponse"
+  /api/v1/admin/reports/summary:
+    get:
+      tags:
+      - admin-report-controller
+      operationId: summary_2
+      parameters:
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PlatformReport"
   /api/v1/owner/venues/{venueId}/courts/{courtId}/blocks/{blockId}:
     delete:
       tags:
@@ -2778,6 +2974,7 @@ components:
             - MANAGE_BOOKINGS
             - MANAGE_BLOCKS
             - VIEW_CUSTOMERS
+            - VIEW_REPORTS
             - MANAGE_STAFF
           uniqueItems: true
         active:
@@ -2811,6 +3008,7 @@ components:
             - MANAGE_BOOKINGS
             - MANAGE_BLOCKS
             - VIEW_CUSTOMERS
+            - VIEW_REPORTS
             - MANAGE_STAFF
           uniqueItems: true
         active:
@@ -3157,6 +3355,7 @@ components:
             - MANAGE_BOOKINGS
             - MANAGE_BLOCKS
             - VIEW_CUSTOMERS
+            - VIEW_REPORTS
             - MANAGE_STAFF
           uniqueItems: true
       required:
@@ -4206,8 +4405,170 @@ components:
             - MANAGE_BOOKINGS
             - MANAGE_BLOCKS
             - VIEW_CUSTOMERS
+            - VIEW_REPORTS
             - MANAGE_STAFF
           uniqueItems: true
+    TopCustomerRow:
+      type: object
+      properties:
+        customerId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type: string
+        bookings:
+          type: integer
+          format: int64
+        spent:
+          type: number
+        lastPlayedAt:
+          type: string
+          format: date-time
+    Bookings:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int64
+        played:
+          type: integer
+          format: int64
+        pendingPayment:
+          type: integer
+          format: int64
+        confirmed:
+          type: integer
+          format: int64
+        completed:
+          type: integer
+          format: int64
+        noShow:
+          type: integer
+          format: int64
+        cancelled:
+          type: integer
+          format: int64
+        expired:
+          type: integer
+          format: int64
+        bySource:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+        cancellationRate:
+          type: number
+        noShowRate:
+          type: number
+    CourtRow:
+      type: object
+      properties:
+        courtId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        active:
+          type: boolean
+        bookings:
+          type: integer
+          format: int64
+        bookedHours:
+          type: number
+        bookedValue:
+          type: number
+        occupancyRate:
+          type: number
+    Money:
+      type: object
+      properties:
+        bookedValue:
+          type: number
+        discounts:
+          type: number
+        outstanding:
+          type: number
+        collected:
+          type: number
+        refunded:
+          type: number
+        net:
+          type: number
+        collectedByMethod:
+          type: object
+          additionalProperties:
+            type: number
+        membershipSales:
+          type: number
+        refundsOwed:
+          type: number
+    Occupancy:
+      type: object
+      properties:
+        openHours:
+          type: number
+        bookedHours:
+          type: number
+        rate:
+          type: number
+    VenueReport:
+      type: object
+      properties:
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+        bookings:
+          $ref: "#/components/schemas/Bookings"
+        money:
+          $ref: "#/components/schemas/Money"
+        occupancy:
+          $ref: "#/components/schemas/Occupancy"
+        courts:
+          type: array
+          items:
+            $ref: "#/components/schemas/CourtRow"
+    PeakHourCell:
+      type: object
+      properties:
+        dayOfWeek:
+          type: string
+          enum:
+          - MONDAY
+          - TUESDAY
+          - WEDNESDAY
+          - THURSDAY
+          - FRIDAY
+          - SATURDAY
+          - SUNDAY
+        hour:
+          type: integer
+          format: int32
+        bookings:
+          type: integer
+          format: int64
+    DailyRow:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        bookings:
+          type: integer
+          format: int64
+        bookedHours:
+          type: number
+        bookedValue:
+          type: number
+        cancelled:
+          type: integer
+          format: int64
+        collected:
+          type: number
     PageResponseMembershipResponse:
       type: object
       properties:
@@ -4312,6 +4673,56 @@ components:
         totalPages:
           type: integer
           format: int32
+    PlatformReport:
+      type: object
+      properties:
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+        venuesByStatus:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+        newVenues:
+          type: integer
+          format: int64
+        newUsers:
+          type: integer
+          format: int64
+        bookings:
+          type: integer
+          format: int64
+        playedBookings:
+          type: integer
+          format: int64
+        bookedValue:
+          type: number
+        venuesWithBookings:
+          type: integer
+          format: int64
+        topVenues:
+          type: array
+          items:
+            $ref: "#/components/schemas/VenueRow"
+    VenueRow:
+      type: object
+      properties:
+        venueId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        city:
+          type: string
+        bookings:
+          type: integer
+          format: int64
+        bookedValue:
+          type: number
   securitySchemes:
     bearerAuth:
       type: http

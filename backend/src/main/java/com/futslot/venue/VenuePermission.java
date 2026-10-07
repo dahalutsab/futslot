@@ -15,6 +15,9 @@ public enum VenuePermission {
 	/** See and edit the customer list. */
 	VIEW_CUSTOMERS,
 
+	/** See revenue, occupancy and other reports, and export bookings. */
+	VIEW_REPORTS,
+
 	/** Add, change and remove staff. Owner only; cannot be granted to staff. */
 	MANAGE_STAFF
 
