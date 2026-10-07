@@ -11,7 +11,10 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import com.futslot.booking.BookingEvent;
 import com.futslot.booking.BookingSource;
 import com.futslot.booking.BookingStatus;
+import com.futslot.venue.StaffAdded;
+import com.futslot.venue.VenueAccess;
 import com.futslot.venue.VenueModerated;
+import com.futslot.venue.VenuePermission;
 
 /**
  * Turns domain events into notifications once the change has committed. Runs in its own transaction
@@ -22,8 +25,11 @@ class NotificationListener {
 
 	private final NotificationService notifications;
 
-	NotificationListener(NotificationService notifications) {
+	private final VenueAccess access;
+
+	NotificationListener(NotificationService notifications, VenueAccess access) {
 		this.notifications = notifications;
+		this.access = access;
 	}
 
 	@TransactionalEventListener
@@ -58,6 +64,15 @@ class NotificationListener {
 		}
 	}
 
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(StaffAdded event) {
+		String role = event.role().name().charAt(0) + event.role().name().substring(1).toLowerCase();
+		this.notifications.send(event.userId(), NotificationType.VENUE_STAFF_ADDED, "You've joined " + event.venueName(),
+				"You were added as " + role + ". Open the venue dashboard to get started.",
+				Map.of("venueId", event.venueId().toString()));
+	}
+
 	private void created(BookingEvent event, String slot, Map<String, String> data) {
 		if (event.source() == BookingSource.APP) {
 			if (event.status() == BookingStatus.PENDING_PAYMENT) {
@@ -70,7 +85,7 @@ class NotificationListener {
 				toPlayer(event, NotificationType.BOOKING_CONFIRMED, "Booking confirmed",
 						event.venueName() + ", " + slot + ". Ref " + event.reference() + ".", data);
 			}
-			toOwner(event, NotificationType.NEW_BOOKING, "New booking", event.customerName() + " booked " + slot + ".",
+			toVenue(event, NotificationType.NEW_BOOKING, "New booking", event.customerName() + " booked " + slot + ".",
 					data);
 		}
 		else {
@@ -82,7 +97,7 @@ class NotificationListener {
 	private void cancelled(BookingEvent event, String slot, Map<String, String> data) {
 		String reason = (event.reason() != null && !event.reason().isBlank()) ? " Reason: " + event.reason() : "";
 		if (Objects.equals(event.actorUserId(), event.playerUserId())) {
-			toOwner(event, NotificationType.BOOKING_CANCELLED, "Booking cancelled",
+			toVenue(event, NotificationType.BOOKING_CANCELLED, "Booking cancelled",
 					event.customerName() + " cancelled " + slot + "." + reason, data);
 		}
 		else {
@@ -97,11 +112,12 @@ class NotificationListener {
 		}
 	}
 
-	private void toOwner(BookingEvent event, NotificationType type, String title, String body, Map<String, String> data) {
-		// Owners don't need to hear about changes they made themselves
-		if (!event.venueOwnerId().equals(event.actorUserId())) {
-			this.notifications.send(event.venueOwnerId(), type, title, body, data);
-		}
+	/** The owner and staff who handle bookings, except whoever made the change. */
+	private void toVenue(BookingEvent event, NotificationType type, String title, String body, Map<String, String> data) {
+		this.access.usersWith(event.venueId(), VenuePermission.MANAGE_BOOKINGS)
+			.stream()
+			.filter(userId -> !userId.equals(event.actorUserId()))
+			.forEach(userId -> this.notifications.send(userId, type, title, body, data));
 	}
 
 }

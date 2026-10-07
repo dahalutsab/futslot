@@ -32,7 +32,8 @@ import com.futslot.user.UserService;
 import com.futslot.venue.Court;
 import com.futslot.venue.CourtRepository;
 import com.futslot.venue.Venue;
-import com.futslot.venue.VenueRepository;
+import com.futslot.venue.VenueAccess;
+import com.futslot.venue.VenuePermission;
 import com.futslot.venue.VenueStatus;
 
 /**
@@ -53,7 +54,7 @@ public class BookingService {
 
 	private final VenueCustomerRepository customers;
 
-	private final VenueRepository venues;
+	private final VenueAccess access;
 
 	private final CourtRepository courts;
 
@@ -75,13 +76,13 @@ public class BookingService {
 
 	private final Clock clock;
 
-	BookingService(BookingRepository bookings, VenueCustomerRepository customers, VenueRepository venues,
+	BookingService(BookingRepository bookings, VenueCustomerRepository customers, VenueAccess access,
 			CourtRepository courts, CourtBlockRepository blocks, BookedRanges bookedRanges,
 			AvailabilityService availability, UserService userService, UserRepository users,
 			BookingReferences references, HoldExpiry holdExpiry, ApplicationEventPublisher events, Clock clock) {
 		this.bookings = bookings;
 		this.customers = customers;
-		this.venues = venues;
+		this.access = access;
 		this.courts = courts;
 		this.blocks = blocks;
 		this.bookedRanges = bookedRanges;
@@ -361,9 +362,9 @@ public class BookingService {
 		return booking;
 	}
 
-	private Venue ownedVenue(UUID ownerId, UUID venueId) {
-		return this.venues.findByIdAndOwnerId(venueId, ownerId)
-			.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "VENUE_NOT_FOUND", "Venue not found"));
+	/** Owners and staff with MANAGE_BOOKINGS. */
+	private Venue ownedVenue(UUID userId, UUID venueId) {
+		return this.access.require(userId, venueId, VenuePermission.MANAGE_BOOKINGS);
 	}
 
 	private Booking venueBooking(UUID venueId, UUID bookingId) {
