@@ -369,3 +369,18 @@ export interface VenueDetail {
   courts: Court[];
   photos: VenuePhoto[];
 }
+
+// Staff
+
+export type StaffRole = 'MANAGER' | 'RECEPTIONIST';
+
+export interface StaffMember {
+  id: string;
+  userId: string;
+  fullName: string;
+  phone: string;
+  role: StaffRole;
+  permissions: VenuePermission[];
+  active: boolean;
+  createdAt: string;
+}

@@ -68,11 +68,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/venue/photos').then((m) => m.Photos),
       },
       {
+        path: 'venue/staff',
+        title: 'Staff · FutSlot',
+        loadComponent: () => import('./features/venue/staff').then((m) => m.Staff),
+      },
+      {
         path: 'payments',
         title: 'Payments · FutSlot',
         loadComponent: () => import('./features/payments/payments').then((m) => m.Payments),
       },
-      ...ALL_ITEMS.filter((item) => !['schedule', 'bookings', 'payments', 'customers', 'reports', 'messages', 'venue/profile', 'venue/courts', 'venue/add-ons', 'venue/photos'].includes(item.path)).map((item) => ({
+      ...ALL_ITEMS.filter((item) => !['schedule', 'bookings', 'payments', 'customers', 'reports', 'messages', 'venue/profile', 'venue/courts', 'venue/add-ons', 'venue/photos', 'venue/staff'].includes(item.path)).map((item) => ({
         path: item.path,
         title: `${item.label} · FutSlot`,
         data: { nav: item },
