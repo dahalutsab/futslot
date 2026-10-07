@@ -8,7 +8,7 @@ RUN ./mvnw -q package -DskipTests
 
 FROM eclipse-temurin:25-jre
 WORKDIR /app
-RUN useradd --system --uid 1001 futslot
+RUN useradd --system --uid 1001 futslot && mkdir -p /data/media && chown futslot /data/media
 COPY --from=build /app/target/*.jar app.jar
 USER futslot
 EXPOSE 8080

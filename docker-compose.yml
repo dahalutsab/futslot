@@ -25,6 +25,9 @@ services:
       DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-futslot}
       DB_USERNAME: ${DB_USERNAME:-futslot}
       DB_PASSWORD: ${DB_PASSWORD:-futslot}
+      FUTSLOT_MEDIA_DIR: /data/media
+    volumes:
+      - media:/data/media
     ports:
       - "8080:8080"
     depends_on:
@@ -33,3 +36,4 @@ services:
 
 volumes:
   db-data:
+  media:

@@ -404,6 +404,65 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/VenueResponse"
+  /api/v1/owner/venues/{venueId}/photos/{photoId}:
+    put:
+      tags:
+      - photo-controller
+      operationId: update_3
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: photoId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotoUpdateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PhotoResponse"
+    delete:
+      tags:
+      - photo-controller
+      operationId: delete
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: photoId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PhotoResponse"
   /api/v1/owner/venues/{venueId}/payment-instructions:
     put:
       tags:
@@ -491,7 +550,7 @@ paths:
     put:
       tags:
       - discount-code-controller
-      operationId: update_3
+      operationId: update_4
       parameters:
       - name: venueId
         in: path
@@ -672,7 +731,7 @@ paths:
     put:
       tags:
       - add-on-controller
-      operationId: update_4
+      operationId: update_5
       parameters:
       - name: venueId
         in: path
@@ -877,7 +936,7 @@ paths:
     put:
       tags:
       - review-controller
-      operationId: update_5
+      operationId: update_6
       parameters:
       - name: bookingId
         in: path
@@ -925,7 +984,7 @@ paths:
     delete:
       tags:
       - review-controller
-      operationId: delete
+      operationId: delete_1
       parameters:
       - name: bookingId
         in: path
@@ -940,7 +999,7 @@ paths:
     put:
       tags:
       - admin-billing-controller
-      operationId: update_6
+      operationId: update_7
       parameters:
       - name: planId
         in: path
@@ -1741,6 +1800,61 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/RecurringBookingResponse"
+  /api/v1/owner/venues/{venueId}/photos:
+    get:
+      tags:
+      - photo-controller
+      operationId: list_4
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PhotoResponse"
+    post:
+      tags:
+      - photo-controller
+      operationId: upload
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: caption
+        in: query
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+              - file
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PhotoResponse"
   /api/v1/owner/venues/{venueId}/payments/{paymentId}/reject:
     post:
       tags:
@@ -2011,7 +2125,7 @@ paths:
     get:
       tags:
       - discount-code-controller
-      operationId: list_4
+      operationId: list_5
       parameters:
       - name: venueId
         in: path
@@ -2398,7 +2512,7 @@ paths:
     get:
       tags:
       - add-on-controller
-      operationId: list_5
+      operationId: list_6
       parameters:
       - name: venueId
         in: path
@@ -3353,7 +3467,7 @@ paths:
     patch:
       tags:
       - customer-controller
-      operationId: update_7
+      operationId: update_8
       parameters:
       - name: venueId
         in: path
@@ -3395,7 +3509,7 @@ paths:
     patch:
       tags:
       - me-controller
-      operationId: update_8
+      operationId: update_9
       requestBody:
         content:
           application/json:
@@ -3409,6 +3523,20 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/UserResponse"
+  /media/**:
+    get:
+      tags:
+      - media-controller
+      operationId: get_4
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
+      security: []
   /api/v1/venues:
     get:
       tags:
@@ -3454,7 +3582,7 @@ paths:
     get:
       tags:
       - public-venue-controller
-      operationId: get_4
+      operationId: get_5
       parameters:
       - name: slug
         in: path
@@ -3632,7 +3760,7 @@ paths:
     get:
       tags:
       - tournament-controller
-      operationId: get_5
+      operationId: get_6
       parameters:
       - name: slug
         in: path
@@ -3651,7 +3779,7 @@ paths:
     get:
       tags:
       - team-controller
-      operationId: get_6
+      operationId: get_7
       parameters:
       - name: slug
         in: path
@@ -3949,7 +4077,7 @@ paths:
     get:
       tags:
       - recurring-booking-controller
-      operationId: get_7
+      operationId: get_8
       parameters:
       - name: venueId
         in: path
@@ -4364,7 +4492,7 @@ paths:
     get:
       tags:
       - favourite-controller
-      operationId: list_6
+      operationId: list_7
       responses:
         "200":
           description: OK
@@ -4378,7 +4506,7 @@ paths:
     get:
       tags:
       - matchmaking-controller
-      operationId: get_8
+      operationId: get_9
       parameters:
       - name: postId
         in: path
@@ -4462,7 +4590,7 @@ paths:
     get:
       tags:
       - admin-venue-controller
-      operationId: list_7
+      operationId: list_8
       parameters:
       - name: status
         in: query
@@ -4504,7 +4632,7 @@ paths:
     get:
       tags:
       - admin-venue-controller
-      operationId: get_9
+      operationId: get_10
       parameters:
       - name: venueId
         in: path
@@ -4523,7 +4651,7 @@ paths:
     get:
       tags:
       - admin-review-controller
-      operationId: list_8
+      operationId: list_9
       parameters:
       - name: status
         in: query
@@ -4956,6 +5084,21 @@ components:
           type: boolean
       required:
       - day
+    PhotoResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+        caption:
+          type: string
+        sortOrder:
+          type: integer
+          format: int32
+        cover:
+          type: boolean
     PricingRuleResponse:
       type: object
       properties:
@@ -5088,6 +5231,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/CourtResponse"
+        photos:
+          type: array
+          items:
+            $ref: "#/components/schemas/PhotoResponse"
     TournamentRequest:
       type: object
       properties:
@@ -5685,6 +5832,18 @@ components:
         createdAt:
           type: string
           format: date-time
+    PhotoUpdateRequest:
+      type: object
+      properties:
+        caption:
+          type: string
+          maxLength: 200
+          minLength: 0
+        sortOrder:
+          type: integer
+          format: int32
+        cover:
+          type: boolean
     PaymentInstructionsRequest:
       type: object
       properties:
@@ -7682,6 +7841,8 @@ components:
           type: array
           items:
             type: string
+        coverPhotoUrl:
+          type: string
     PageResponseReviewResponse:
       type: object
       properties:
