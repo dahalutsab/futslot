@@ -31,6 +31,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.futslot.common.ApiException;
 import com.futslot.support.IntegrationTest;
@@ -64,6 +65,12 @@ class BookingFlowTests {
 
 	@Autowired
 	JdbcClient jdbcClient;
+
+	@Autowired
+	HoldExpiry holdExpiry;
+
+	@Autowired
+	TransactionTemplate transactions;
 
 	@Test
 	void playerBooksAFreeSlotAndOthersCannotTakeIt() throws Exception {
@@ -265,7 +272,9 @@ class BookingFlowTests {
 			.getContentAsString(), "$.id");
 		this.jdbc.update("UPDATE bookings SET status = 'PENDING_PAYMENT', hold_expires_at = now() - interval '1 minute' WHERE id = ?::uuid", lapsed);
 
-		new BookingMaintenance(this.jdbcClient, Clock.systemUTC()).run();
+		// The scheduled bean is disabled in tests; run the job the way Spring would, inside a transaction
+		BookingMaintenance maintenance = new BookingMaintenance(this.jdbcClient, this.holdExpiry, Clock.systemUTC());
+		this.transactions.executeWithoutResult(status -> maintenance.run());
 
 		assertThat(statusOf(finished)).isEqualTo("COMPLETED");
 		assertThat(statusOf(lapsed)).isEqualTo("EXPIRED");

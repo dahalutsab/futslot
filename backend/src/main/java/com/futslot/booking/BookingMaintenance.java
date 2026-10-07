@@ -2,9 +2,7 @@ package com.futslot.booking;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.sql.Types;
 import java.time.ZoneOffset;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +21,13 @@ class BookingMaintenance {
 
 	private final JdbcClient jdbc;
 
+	private final HoldExpiry holdExpiry;
+
 	private final Clock clock;
 
-	BookingMaintenance(JdbcClient jdbc, Clock clock) {
+	BookingMaintenance(JdbcClient jdbc, HoldExpiry holdExpiry, Clock clock) {
 		this.jdbc = jdbc;
+		this.holdExpiry = holdExpiry;
 		this.clock = clock;
 	}
 
@@ -34,7 +35,7 @@ class BookingMaintenance {
 	@Transactional
 	void run() {
 		Instant now = this.clock.instant();
-		int expired = expireLapsedHolds(this.jdbc, null, now);
+		int expired = this.holdExpiry.expire(null, now);
 		int completed = this.jdbc.sql("""
 				UPDATE bookings SET status = 'COMPLETED', updated_at = now(), version = version + 1
 				WHERE status = 'CONFIRMED' AND ends_at <= :now""")
@@ -43,17 +44,6 @@ class BookingMaintenance {
 		if (expired > 0 || completed > 0) {
 			logger.info("Bookings maintenance: {} holds expired, {} bookings completed", expired, completed);
 		}
-	}
-
-	/** Expires unpaid holds whose time is up, on one court ({@code courtId}) or everywhere (null). */
-	static int expireLapsedHolds(JdbcClient jdbc, UUID courtId, Instant now) {
-		return jdbc.sql("""
-				UPDATE bookings SET status = 'EXPIRED', updated_at = now(), version = version + 1
-				WHERE status = 'PENDING_PAYMENT' AND hold_expires_at <= :now
-				  AND (CAST(:courtId AS uuid) IS NULL OR court_id = :courtId)""")
-			.param("now", now.atOffset(ZoneOffset.UTC))
-			.param("courtId", courtId, Types.OTHER)
-			.update();
 	}
 
 }

@@ -15,4 +15,10 @@ public class TestSupportConfig {
 		return new RecordingSmsSender();
 	}
 
+	@Bean
+	@Primary
+	RecordingPushSender recordingPushSender() {
+		return new RecordingPushSender();
+	}
+
 }
