@@ -236,6 +236,11 @@ commits. Players get a reminder 2 hours before a confirmed booking
 (`futslot.notifications.reminders.*`). Until Firebase is configured, pushes are written to the API log
 (`Push to N device(s): ...`).
 
+### Owner dashboard
+
+The web dashboard for venue owners and staff lives in `dashboard/` (Angular). With the API running:
+`cd dashboard && npm install && npm start`, then open http://localhost:4200. See `dashboard/README.md`.
+
 ### API contract
 
 `docs/api/openapi.yaml` is exported from the running API. After changing endpoints, start the API

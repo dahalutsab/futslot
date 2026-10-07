@@ -1,0 +1,166 @@
+<a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2">Skip to content</a>
+
+@if (loading()) {
+  <div class="flex min-h-dvh items-center justify-center text-muted" aria-live="polite">Loading your venues…</div>
+} @else if (loadError(); as message) {
+  <div class="flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center">
+    <p class="max-w-sm text-muted">{{ message }}</p>
+    <button type="button" (click)="retry()"
+      class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg hover:opacity-90">Try again</button>
+  </div>
+} @else {
+  <div class="min-h-dvh lg:grid lg:grid-cols-[256px_1fr]">
+    <!-- Sidebar (wide screens) -->
+    <aside class="sticky top-0 hidden h-dvh flex-col border-r border-border bg-surface lg:flex">
+      <div class="flex h-14 items-center gap-2 px-5">
+        <span class="grid size-7 place-items-center rounded-md bg-brand text-sm font-bold text-white" aria-hidden="true">F</span>
+        <span class="font-semibold tracking-tight">FutSlot</span>
+      </div>
+
+      @if (venues.venues(); as list) {
+        <div class="px-3 pb-3">
+          <label for="venue-switcher" class="sr-only">Venue</label>
+          <div class="relative">
+            <select id="venue-switcher" (change)="switchVenue($event)"
+              class="h-10 w-full cursor-pointer appearance-none rounded-lg border border-border bg-surface-2 pl-3 pr-8 font-medium">
+              @for (entry of list; track entry.venue.id) {
+                <option [value]="entry.venue.id" [selected]="entry.venue.id === venues.current()?.venue?.id">{{ entry.venue.name }}</option>
+              }
+            </select>
+            <lucide-icon [img]="icons.ChevronsUpDown" [size]="16" class="pointer-events-none absolute right-2.5 top-3 text-subtle" />
+          </div>
+          @if (venues.current(); as current) {
+            <p class="mt-1.5 px-1 text-xs text-subtle">
+              {{ current.access === 'OWNER' ? 'Owner' : current.access === 'MANAGER' ? 'Manager' : 'Receptionist' }}
+              @if (current.venue.status !== 'ACTIVE') { · <span class="text-held-fg">{{ current.venue.status === 'DRAFT' ? 'Draft' : current.venue.status === 'PENDING_APPROVAL' ? 'Waiting for approval' : current.venue.status === 'SUSPENDED' ? 'Suspended' : 'Not approved' }}</span> }
+            </p>
+          }
+        </div>
+      }
+
+      <nav class="flex-1 overflow-y-auto px-3 pb-4" aria-label="Main">
+        @for (group of groups(); track group.label) {
+          <p class="mb-1 mt-4 px-2 text-xs font-medium uppercase tracking-wide text-subtle first:mt-0">{{ group.label }}</p>
+          <ul>
+            @for (item of group.items; track item.path) {
+              <li>
+                <a [routerLink]="item.path" routerLinkActive="bg-surface-2 text-text font-medium" ariaCurrentWhenActive="page"
+                  class="flex h-9 items-center gap-3 rounded-md px-2 text-muted hover:bg-surface-2 hover:text-text">
+                  <lucide-icon [img]="item.icon" [size]="18" [strokeWidth]="1.75" />
+                  <span class="flex-1">{{ item.label }}</span>
+                  @if (badge(item); as count) {
+                    <span class="tabular rounded-full px-2 text-xs font-medium"
+                      [class]="item.badge === 'payments' ? 'bg-verify-bg text-verify-fg' : 'bg-ink text-ink-fg'"
+                      [attr.aria-label]="count + (item.badge === 'payments' ? ' to verify' : ' unread')">{{ count }}</span>
+                  }
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      </nav>
+
+      <div class="border-t border-border p-3">
+        <div class="mb-3 flex rounded-lg bg-surface-2 p-1" role="radiogroup" aria-label="Theme">
+          @for (option of themes; track option.value) {
+            <button type="button" role="radio" [attr.aria-checked]="theme.choice() === option.value" (click)="theme.set(option.value)"
+              class="flex h-8 flex-1 items-center justify-center gap-1.5 rounded-md text-xs text-muted"
+              [class.bg-surface]="theme.choice() === option.value" [class.text-text]="theme.choice() === option.value">
+              <lucide-icon [img]="option.value === 'light' ? icons.Sun : option.value === 'dark' ? icons.Moon : icons.Monitor" [size]="14" />
+              {{ option.label }}
+            </button>
+          }
+        </div>
+        <div class="flex items-center gap-2 px-1">
+          <div class="min-w-0 flex-1">
+            <p class="truncate font-medium">{{ session.user()?.fullName }}</p>
+            <p class="tabular truncate text-xs text-subtle">{{ session.user()?.phone }}</p>
+          </div>
+          <button type="button" (click)="session.signOut()" aria-label="Sign out"
+            class="grid size-11 place-items-center rounded-md text-muted hover:bg-surface-2 hover:text-text">
+            <lucide-icon [img]="icons.LogOut" [size]="18" />
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Top bar (phones and tablets) -->
+    <header class="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-surface px-4 lg:hidden">
+      <span class="grid size-7 shrink-0 place-items-center rounded-md bg-brand text-sm font-bold text-white" aria-hidden="true">F</span>
+      @if (venues.venues(); as list) {
+        <label for="venue-switcher-phone" class="sr-only">Venue</label>
+        <select id="venue-switcher-phone" (change)="switchVenue($event)"
+          class="h-10 min-w-0 flex-1 cursor-pointer truncate rounded-lg bg-transparent font-semibold">
+          @for (entry of list; track entry.venue.id) {
+            <option [value]="entry.venue.id" [selected]="entry.venue.id === venues.current()?.venue?.id">{{ entry.venue.name }}</option>
+          }
+        </select>
+      }
+    </header>
+
+    <main id="main" tabindex="-1" class="min-w-0 pb-20 lg:pb-0">
+      <router-outlet />
+    </main>
+
+    <!-- Bottom bar (phones and tablets) -->
+    <nav class="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden" aria-label="Main">
+      <ul class="grid" [style.grid-template-columns]="'repeat(' + (phoneBar().length + 1) + ', minmax(0, 1fr))'">
+        @for (item of phoneBar(); track item.path) {
+          <li>
+            <a [routerLink]="item.path" routerLinkActive="text-text" #rla="routerLinkActive" ariaCurrentWhenActive="page"
+              class="relative flex h-16 flex-col items-center justify-center gap-1 text-xs text-subtle">
+              <lucide-icon [img]="item.icon" [size]="22" [strokeWidth]="rla.isActive ? 2.25 : 1.75" />
+              {{ item.label }}
+              @if (badge(item); as count) {
+                <span class="tabular absolute right-[calc(50%-22px)] top-2 min-w-5 rounded-full px-1 text-center text-[11px] font-semibold"
+                  [class]="item.badge === 'payments' ? 'bg-verify-line text-white' : 'bg-ink text-ink-fg'"
+                  [attr.aria-label]="count + (item.badge === 'payments' ? ' to verify' : ' unread')">{{ count }}</span>
+              }
+            </a>
+          </li>
+        }
+        <li>
+          <button type="button" (click)="moreOpen.set(true)" aria-haspopup="dialog"
+            class="flex h-16 w-full flex-col items-center justify-center gap-1 text-xs text-subtle">
+            <lucide-icon [img]="icons.Ellipsis" [size]="22" [strokeWidth]="1.75" />
+            More
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+    @if (moreOpen()) {
+      <div class="fixed inset-0 z-30 bg-black/50 lg:hidden" (click)="moreOpen.set(false)" aria-hidden="true"></div>
+      <div role="dialog" aria-modal="true" aria-label="More" class="fixed inset-x-0 bottom-0 z-40 max-h-[80dvh] overflow-y-auto rounded-t-2xl bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] lg:hidden">
+        <div class="mb-2 flex items-center justify-between">
+          <p class="font-semibold">More</p>
+          <button type="button" (click)="moreOpen.set(false)" aria-label="Close" class="grid size-11 place-items-center rounded-md text-muted">
+            <lucide-icon [img]="icons.X" [size]="20" />
+          </button>
+        </div>
+        <ul class="grid grid-cols-3 gap-2">
+          @for (item of moreItems(); track item.path) {
+            <li>
+              <a [routerLink]="item.path" (click)="moreOpen.set(false)"
+                class="flex h-20 flex-col items-center justify-center gap-1.5 rounded-xl bg-surface-2 px-1 text-center text-xs">
+                <lucide-icon [img]="item.icon" [size]="22" [strokeWidth]="1.75" />
+                {{ item.label }}
+              </a>
+            </li>
+          }
+        </ul>
+        <div class="mt-4 flex rounded-lg bg-surface-2 p-1" role="radiogroup" aria-label="Theme">
+          @for (option of themes; track option.value) {
+            <button type="button" role="radio" [attr.aria-checked]="theme.choice() === option.value" (click)="theme.set(option.value)"
+              class="h-10 flex-1 rounded-md text-sm text-muted" [class.bg-surface]="theme.choice() === option.value"
+              [class.text-text]="theme.choice() === option.value">{{ option.label }}</button>
+          }
+        </div>
+        <button type="button" (click)="session.signOut()"
+          class="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-lg text-danger hover:bg-danger-bg">
+          <lucide-icon [img]="icons.LogOut" [size]="18" /> Sign out
+        </button>
+      </div>
+    }
+  </div>
+}
