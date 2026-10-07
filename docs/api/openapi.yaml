@@ -961,6 +961,24 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/Plan"
+  /api/v1/waitlist:
+    post:
+      tags:
+      - waitlist-controller
+      operationId: join
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WaitlistRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/WaitlistView"
   /api/v1/tournaments/{tournamentId}/registrations:
     post:
       tags:
@@ -4182,11 +4200,25 @@ paths:
                 additionalProperties:
                   type: integer
                   format: int64
+  /api/v1/me/waitlist:
+    get:
+      tags:
+      - waitlist-controller
+      operationId: mine_2
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WaitlistView"
   /api/v1/me/tournament-entries:
     get:
       tags:
       - tournament-controller
-      operationId: mine_2
+      operationId: mine_3
       responses:
         "200":
           description: OK
@@ -4200,7 +4232,7 @@ paths:
     get:
       tags:
       - team-controller
-      operationId: mine_3
+      operationId: mine_4
       responses:
         "200":
           description: OK
@@ -4228,7 +4260,7 @@ paths:
     get:
       tags:
       - review-controller
-      operationId: mine_4
+      operationId: mine_5
       parameters:
       - name: page
         in: query
@@ -4302,7 +4334,7 @@ paths:
     get:
       tags:
       - matchmaking-controller
-      operationId: mine_5
+      operationId: mine_6
       parameters:
       - name: page
         in: query
@@ -4667,6 +4699,21 @@ paths:
           type: string
           format: uuid
       - name: blockId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/v1/me/waitlist/{entryId}:
+    delete:
+      tags:
+      - waitlist-controller
+      operationId: leave_1
+      parameters:
+      - name: entryId
         in: path
         required: true
         schema:
@@ -6353,6 +6400,56 @@ components:
       required:
       - monthlyPrice
       - name
+    WaitlistRequest:
+      type: object
+      properties:
+        courtId:
+          type: string
+          format: uuid
+        startsAt:
+          type: string
+          format: date-time
+      required:
+      - courtId
+      - startsAt
+    WaitlistView:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        venueId:
+          type: string
+          format: uuid
+        venueName:
+          type: string
+        venueSlug:
+          type: string
+        courtId:
+          type: string
+          format: uuid
+        courtName:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - WAITING
+          - NOTIFIED
+          - BOOKED
+          - EXPIRED
+          - CANCELLED
+        notifiedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
     Register:
       type: object
       properties:
@@ -7078,6 +7175,7 @@ components:
           - SUBSCRIPTION_PAST_DUE
           - SUBSCRIPTION_ENDED
           - FEATURED_CONFIRMED
+          - WAITLIST_SLOT_FREE
         title:
           type: string
         body:
