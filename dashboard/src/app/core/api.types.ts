@@ -436,3 +436,50 @@ export interface Subscription {
   staff: number;
   paymentInstructions: string | null;
 }
+
+// Memberships and discount codes
+
+export type MembershipType = 'GAME_PACK' | 'MONTHLY_PASS';
+
+export type MembershipStatus = 'PENDING_PAYMENT' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
+
+export interface MembershipPlan {
+  id: string;
+  venueId: string;
+  name: string;
+  description: string | null;
+  type: MembershipType;
+  gamesIncluded: number | null;
+  discountPercent: number | null;
+  validityDays: number;
+  price: number;
+  active: boolean;
+}
+
+export interface Membership {
+  id: string;
+  venue: { id: string; name: string; slug: string };
+  plan: { id: string; name: string; type: MembershipType; gamesIncluded: number | null; discountPercent: number | null };
+  customer: { id: string; name: string; phone: string };
+  startsOn: string;
+  expiresOn: string;
+  gamesRemaining: number | null;
+  status: MembershipStatus;
+  createdAt: string;
+}
+
+export interface DiscountCode {
+  id: string;
+  code: string;
+  description: string | null;
+  type: 'PERCENT' | 'FIXED';
+  value: number;
+  maxDiscountAmount: number | null;
+  minBookingAmount: number | null;
+  validFrom: string | null;
+  validTo: string | null;
+  usageLimit: number | null;
+  perUserLimit: number | null;
+  usedCount: number;
+  active: boolean;
+}

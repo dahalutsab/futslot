@@ -91,6 +91,9 @@ export class Shell implements OnInit {
     if (item.needs === null) {
       return true;
     }
-    return item.needs === 'OWNER' ? this.venues.isOwner() : this.venues.can(item.needs);
+    if (item.needs === 'OWNER') {
+      return this.venues.isOwner();
+    }
+    return Array.isArray(item.needs) ? item.needs.some((p) => this.venues.can(p)) : this.venues.can(item.needs);
   }
 }

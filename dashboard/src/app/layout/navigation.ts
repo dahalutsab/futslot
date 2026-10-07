@@ -24,8 +24,8 @@ export interface NavItem {
   path: string;
   label: string;
   icon: LucideIconData;
-  /** null: anyone at the venue; OWNER: the owner only. */
-  needs: VenuePermission | 'OWNER' | null;
+  /** null: anyone at the venue; OWNER: the owner only; a list: any one of them. */
+  needs: VenuePermission | VenuePermission[] | 'OWNER' | null;
   /** Shown in the phone bottom bar (at most 4, plus More). */
   onPhoneBar?: boolean;
   badge?: 'payments' | 'messages';
@@ -79,7 +79,7 @@ export const NAVIGATION: NavGroup[] = [
   {
     label: 'Grow',
     items: [
-      { path: 'grow/memberships', label: 'Memberships & codes', icon: BadgePercent, needs: 'MANAGE_VENUE',
+      { path: 'grow/memberships', label: 'Memberships & codes', icon: BadgePercent, needs: ['MANAGE_BOOKINGS', 'MANAGE_VENUE'],
         about: 'Game packs, monthly passes and discount codes.' },
       { path: 'grow/tournaments', label: 'Tournaments', icon: Trophy, needs: 'MANAGE_VENUE',
         about: 'Run knockouts and leagues: entries, fixtures and results.' },
