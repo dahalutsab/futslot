@@ -22,7 +22,7 @@ import com.futslot.TestcontainersConfiguration;
 @SpringBootTest(properties = { "futslot.bookings.maintenance.enabled=false",
 		"futslot.notifications.reminders.enabled=false", "futslot.bookings.recurring.enabled=false",
 		"futslot.memberships.expiry.enabled=false", "futslot.matchmaking.expiry.enabled=false",
-		"futslot.billing.jobs.enabled=false" })
+		"futslot.billing.jobs.enabled=false", "futslot.media.dir=${java.io.tmpdir}/futslot-test-media" })
 @AutoConfigureMockMvc
 @Import({ TestcontainersConfiguration.class, TestSupportConfig.class })
 public @interface IntegrationTest {

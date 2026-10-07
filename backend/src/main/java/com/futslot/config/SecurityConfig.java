@@ -35,6 +35,7 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/actuator/health/**", "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
+				.requestMatchers(HttpMethod.GET, "/media/**").permitAll()
 				// What anyone can browse before signing in
 				.requestMatchers(HttpMethod.GET, "/api/v1/venues", "/api/v1/venues/*", "/api/v1/venues/*/availability",
 						"/api/v1/venues/*/reviews", "/api/v1/venues/*/reviews/summary", "/api/v1/venues/*/membership-plans",

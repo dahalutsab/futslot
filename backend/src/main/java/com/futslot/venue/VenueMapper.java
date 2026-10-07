@@ -15,8 +15,11 @@ class VenueMapper {
 
 	private final AmenityRepository amenities;
 
-	VenueMapper(AmenityRepository amenities) {
+	private final VenuePhotoRepository photos;
+
+	VenueMapper(AmenityRepository amenities, VenuePhotoRepository photos) {
 		this.amenities = amenities;
+		this.photos = photos;
 	}
 
 	VenueResponse toResponse(Venue venue, boolean ownerView) {
@@ -44,14 +47,19 @@ class VenueMapper {
 				venue.getLatitude(), venue.getLongitude(), venue.getTimezone(), venue.getStatus(),
 				ownerView ? venue.getRejectionReason() : null, venue.policy(), venue.getPaymentInstructions(),
 				venue.getAverageRating(),
-				venue.getReviewCount(), fromPrice(venue), hours, amenities, courts);
+				venue.getReviewCount(), fromPrice(venue), hours, amenities, courts,
+				this.photos.findByVenueIdOrderByIsCoverDescSortOrderAscCreatedAtAsc(venue.getId())
+					.stream()
+					.map(PhotoResponse::from)
+					.toList());
 	}
 
 	VenueSummaryResponse toSummary(Venue venue) {
 		int activeCourts = (int) venue.getCourts().stream().filter(Court::isActive).count();
 		return new VenueSummaryResponse(venue.getId(), venue.getSlug(), venue.getName(), venue.getArea(),
 				venue.getCity(), venue.getLatitude(), venue.getLongitude(), venue.getStatus(), venue.getAverageRating(),
-				venue.getReviewCount(), fromPrice(venue), activeCourts, venue.getAmenityCodes().stream().sorted().toList());
+				venue.getReviewCount(), fromPrice(venue), activeCourts, venue.getAmenityCodes().stream().sorted().toList(),
+				this.photos.findByVenueIdAndIsCoverTrue(venue.getId()).map(VenuePhoto::getUrl).orElse(null));
 	}
 
 	/** Cheapest active price across active courts: the "from Rs X/hr" shown in listings. */

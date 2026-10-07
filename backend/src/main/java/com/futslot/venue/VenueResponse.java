@@ -9,6 +9,6 @@ public record VenueResponse(UUID id, String slug, String name, String descriptio
 		VenueStatus status, String rejectionReason, VenuePolicy policy, String paymentInstructions,
 		BigDecimal averageRating, int reviewCount,
 		BigDecimal fromPrice, List<DayHours> operatingHours, List<AmenityResponse> amenities,
-		List<CourtResponse> courts) {
+		List<CourtResponse> courts, List<PhotoResponse> photos) {
 
 }

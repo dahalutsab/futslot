@@ -98,6 +98,14 @@ posted again.
 Players save approved venues with `PUT /api/v1/me/favourites/{venueId}` and list them with
 `GET /api/v1/me/favourites`.
 
+### Venue photos
+
+Owners and managers upload photos (`POST /api/v1/owner/venues/{id}/photos`, multipart `file`): JPEG, PNG or
+WebP up to 5 MB, at most 15 per venue, checked by their content rather than the file name. The first photo is
+the cover shown in listings (`coverPhotoUrl`); any photo can be made the cover. Files are stored under
+`futslot.media.dir` (`FUTSLOT_MEDIA_DIR`; a Docker volume in `docker-compose.yml`) and served publicly at the
+`/media/...` path each photo returns. Moving to cloud storage later only means a new `MediaStorage`.
+
 ### Extras (add-ons)
 
 Venues list what they sell or rent with a booking (`/api/v1/owner/venues/{id}/add-ons`): bibs, balls,
