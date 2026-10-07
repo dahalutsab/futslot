@@ -280,3 +280,92 @@ export interface ChatMessage {
   readAt: string | null;
   createdAt: string;
 }
+
+// Venue settings
+
+export type Weekday = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+
+/** Times are "HH:mm:ss"; a close at or before the open means open past midnight. */
+export interface DayHours {
+  day: Weekday;
+  openTime: string | null;
+  closeTime: string | null;
+  closed: boolean;
+}
+
+export interface VenuePolicy {
+  advancePercent: number;
+  bookingHoldMinutes: number;
+  freeCancelHours: number;
+  lateCancelRefundPct: number;
+  maxAdvanceBookingDays: number;
+}
+
+export interface Amenity {
+  code: string;
+  name: string;
+  icon: string;
+}
+
+export type CourtFormat = 'FIVE_A_SIDE' | 'SIX_A_SIDE' | 'SEVEN_A_SIDE';
+export type CourtSurface = 'ARTIFICIAL_TURF' | 'HARDWOOD' | 'CONCRETE' | 'RUBBER';
+export type PriceLabel = 'STANDARD' | 'PEAK' | 'OFF_PEAK' | 'WEEKEND' | 'HOLIDAY';
+
+export interface PricingRule {
+  id: string;
+  label: PriceLabel;
+  dayOfWeek: Weekday | null;
+  startTime: string;
+  endTime: string;
+  price: number;
+  priority: number;
+  validFrom: string | null;
+  validTo: string | null;
+  active: boolean;
+}
+
+export interface Court {
+  id: string;
+  name: string;
+  format: CourtFormat;
+  surface: CourtSurface;
+  indoor: boolean;
+  slotDurationMinutes: number;
+  status: 'ACTIVE' | 'INACTIVE';
+  sortOrder: number;
+  pricingRules: PricingRule[];
+}
+
+export interface VenuePhoto {
+  id: string;
+  url: string;
+  caption: string | null;
+  sortOrder: number;
+  cover: boolean;
+}
+
+export interface VenueDetail {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  phone: string | null;
+  email: string | null;
+  addressLine: string;
+  area: string | null;
+  city: string;
+  latitude: number | null;
+  longitude: number | null;
+  timezone: string;
+  status: VenueStatus;
+  rejectionReason: string | null;
+  policy: VenuePolicy;
+  paymentInstructions: string | null;
+  averageRating: number;
+  reviewCount: number;
+  fromPrice: number | null;
+  operatingHours: DayHours[];
+  amenities: Amenity[];
+  courts: Court[];
+  photos: VenuePhoto[];
+}
