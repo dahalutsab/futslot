@@ -33,16 +33,17 @@ public final class BillingViews {
 
 	}
 
+	/** {@code paymentPending}: the owner has sent a payment that FutSlot hasn't checked yet. */
 	public record Invoice(UUID id, String invoiceNumber, UUID venueId, String planCode, String planName,
 			BillingCycle billingCycle, BigDecimal amount, Instant periodStart, Instant periodEnd, LocalDate dueOn,
-			InvoiceStatus status, Instant paidAt) {
+			InvoiceStatus status, Instant paidAt, boolean paymentPending) {
 
-		static Invoice from(SubscriptionInvoice invoice) {
+		static Invoice from(SubscriptionInvoice invoice, boolean paymentPending) {
 			SubscriptionPlan plan = invoice.getPlan();
 			return new Invoice(invoice.getId(), invoice.getInvoiceNumber(), invoice.getSubscription().getVenueId(),
 					(plan != null) ? plan.getCode() : null, (plan != null) ? plan.getName() : null,
 					invoice.getBillingCycle(), invoice.getAmount(), invoice.getPeriodStart(), invoice.getPeriodEnd(),
-					invoice.getDueOn(), invoice.getStatus(), invoice.getPaidAt());
+					invoice.getDueOn(), invoice.getStatus(), invoice.getPaidAt(), paymentPending);
 		}
 
 	}

@@ -79,6 +79,7 @@ class BillingFlowTests {
 			.andExpect(jsonPath("$.status").value("PAST_DUE"))
 			.andExpect(jsonPath("$.plan.code").value(code))
 			.andExpect(jsonPath("$.openInvoice.amount").value(1500.0))
+			.andExpect(jsonPath("$.openInvoice.paymentPending").value(false))
 			.andExpect(jsonPath("$.openInvoice.invoiceNumber", startsWith("INV-")))
 			.andExpect(jsonPath("$.paymentInstructions").value("Contact FutSlot for payment details"))
 			.andReturn().getResponse().getContentAsString(), "$.openInvoice.id");
@@ -93,6 +94,9 @@ class BillingFlowTests {
 			.andExpect(jsonPath("$.purpose").value("SUBSCRIPTION"))
 			.andExpect(jsonPath("$.customerName").value("Paying Futsal"))
 			.andReturn().getResponse().getContentAsString(), "$.id");
+		send(owner, get(subscription), null).andExpect(jsonPath("$.openInvoice.paymentPending").value(true));
+		send(owner, get("/api/v1/owner/venues/" + venue.id() + "/invoices"), null)
+			.andExpect(jsonPath("$[0].paymentPending").value(true));
 
 		// Paid to FutSlot, not to the venue: not in the venue's queue, its income or its own approvals
 		send(owner, get("/api/v1/owner/venues/" + venue.id() + "/payments/pending"), null)

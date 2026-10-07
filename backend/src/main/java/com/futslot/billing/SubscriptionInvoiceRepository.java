@@ -37,4 +37,10 @@ interface SubscriptionInvoiceRepository extends JpaRepository<SubscriptionInvoic
 			where i.status = com.futslot.billing.InvoiceStatus.DUE and i.dueOn < :today""")
 	List<SubscriptionInvoice> findOverdue(LocalDate today);
 
+	/** Which of these invoices have a payment waiting for an admin to check it. */
+	@Query(value = """
+			SELECT DISTINCT subscription_invoice_id FROM payments
+			WHERE subscription_invoice_id IN (:invoiceIds) AND status = 'PENDING'""", nativeQuery = true)
+	List<UUID> withPendingPayment(Collection<UUID> invoiceIds);
+
 }
