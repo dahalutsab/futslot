@@ -37,7 +37,7 @@ import com.futslot.venue.VenueStatus;
  * admins moderate. The venue's average rating and count are recomputed on every change.
  */
 @Service
-class ReviewService {
+public class ReviewService {
 
 	static final Duration REVIEW_WINDOW = Duration.ofDays(30);
 
@@ -139,14 +139,14 @@ class ReviewService {
 	// Public
 
 	@Transactional(readOnly = true)
-	PageResponse<ReviewResponse> published(String slug, Pageable pageable) {
+	public PageResponse<ReviewResponse> published(String slug, Pageable pageable) {
 		Venue venue = activeVenue(slug);
 		return PageResponse.of(this.reviews.findByVenueIdAndStatus(venue.getId(), ReviewStatus.PUBLISHED, pageable),
 				ReviewResponse::forPublic);
 	}
 
 	@Transactional(readOnly = true)
-	RatingSummaryResponse summary(String slug) {
+	public RatingSummaryResponse summary(String slug) {
 		Venue venue = activeVenue(slug);
 		Map<Integer, Long> stars = new LinkedHashMap<>();
 		for (int rating = 5; rating >= 1; rating--) {

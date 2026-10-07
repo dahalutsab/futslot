@@ -1,4 +1,6 @@
 {
   "/api": { "target": "http://localhost:8080", "secure": false },
-  "/media": { "target": "http://localhost:8080", "secure": false }
+  "/media": { "target": "http://localhost:8080", "secure": false },
+  "/site-preview": { "target": "http://localhost:8080", "secure": false },
+  "/site-assets": { "target": "http://localhost:8080", "secure": false }
 }

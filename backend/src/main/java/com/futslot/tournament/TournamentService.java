@@ -181,6 +181,14 @@ public class TournamentService {
 			.toList();
 	}
 
+	/** A venue's tournaments that teams can still sign up for or follow, soonest first. */
+	@Transactional(readOnly = true)
+	public List<TournamentViews.Summary> upcomingAtVenue(UUID venueId) {
+		Specification<Tournament> spec = (root, q, cb) -> cb.and(root.get("status").in(PUBLIC),
+				cb.notEqual(root.get("status"), TournamentStatus.COMPLETED), cb.equal(root.get("venue").get("id"), venueId));
+		return this.tournaments.findAll(spec, Sort.by("startsOn")).stream().map(this::summary).toList();
+	}
+
 	/** Drafts are only visible to the venue. */
 	@Transactional(readOnly = true)
 	TournamentViews.Detail get(UUID userId, String slug) {
