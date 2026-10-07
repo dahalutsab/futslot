@@ -30,6 +30,9 @@ The migrations are the source of truth; this page explains them.
 | V8 | Payments | `payouts`, `payments`, `payment_events`, `refunds` |
 | V9 | Reviews and favourites | `reviews`, `favourite_venues` |
 | V10 | Notifications, chat, audit | `notifications`, `conversations`, `messages`, `audit_logs` |
+| V11 | Booking reminders | `bookings.reminder_sent_at` |
+| V12 | Venue payment instructions | `venues.payment_instructions` |
+| V13 | Booking split ("baazi") | `booking_splits`; guests, sides and settlement on `booking_participants` |
 
 ## Key design decisions
 
