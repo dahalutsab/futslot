@@ -30,6 +30,7 @@ import com.futslot.venue.StaffAdded;
 import com.futslot.venue.VenueAccess;
 import com.futslot.venue.VenueModerated;
 import com.futslot.venue.VenuePermission;
+import com.futslot.waitlist.SlotFreed;
 
 /**
  * Turns domain events into notifications once the change has committed. Runs in its own transaction
@@ -361,6 +362,19 @@ class NotificationListener {
 				"FutSlot couldn't find your " + Messages.rupees(event.amount()) + " payment for " + event.what() + ": "
 						+ event.reason() + ".",
 				Map.of());
+	}
+
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(SlotFreed event) {
+		Map<String, String> data = Map.of("venueId", event.venueId().toString(), "venueSlug", event.venueSlug(),
+				"courtId", event.courtId().toString(), "startsAt", event.startsAt().toString());
+		for (UUID recipient : event.recipients()) {
+			this.notifications.send(recipient, NotificationType.WAITLIST_SLOT_FREE, "A slot you wanted is free",
+					event.venueName() + ", " + event.courtName() + ", " + Messages.when(event.startsAt())
+							+ ". Book it before someone else does.",
+					data);
+		}
 	}
 
 	@TransactionalEventListener

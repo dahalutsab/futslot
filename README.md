@@ -106,6 +106,12 @@ water. Players add them when booking, and staff can change them at the counter d
 codes only reduce the court price. A booking keeps the price it was charged for an item, even if the
 venue changes the price later.
 
+### Waitlist
+
+A player can wait for a booked slot (`POST /api/v1/waitlist`, up to 5 at a time). When a booking on it is
+cancelled or its payment hold runs out, everyone still waiting is notified at once, and the first to book
+gets it. The others stay on the list in case it frees again. Entries lapse when the slot's time passes.
+
 ### Splitting the cost (baazi)
 
 Usually one player books and the group plays. The booker can set up a split on the booking

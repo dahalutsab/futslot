@@ -374,6 +374,12 @@ public class BookingService {
 		}
 	}
 
+	/** The court's slot starting at {@code start}, as players see it now (status included). */
+	@Transactional(readOnly = true)
+	public Optional<Slot> slotStarting(Court court, Instant start) {
+		return findSlot(court.getVenue(), court, start).map(DatedSlot::slot);
+	}
+
 	/** Finds the slot starting at {@code start}; late-night slots belong to the previous operating day. */
 	private Optional<DatedSlot> findSlot(Venue venue, Court court, Instant start) {
 		LocalDate localDate = start.atZone(zone(venue)).toLocalDate();
