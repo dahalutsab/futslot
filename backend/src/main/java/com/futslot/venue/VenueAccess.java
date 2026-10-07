@@ -47,6 +47,16 @@ public class VenueAccess {
 		return venue;
 	}
 
+	/** The venue, if {@code userId} owns it: billing and other owner-only matters. Staff get 403. */
+	@Transactional(readOnly = true)
+	public Venue requireOwner(UUID userId, UUID venueId) {
+		Venue venue = require(userId, venueId, null);
+		if (!venue.getOwnerId().equals(userId)) {
+			throw new ApiException(HttpStatus.FORBIDDEN, "OWNER_ONLY", "Only the owner of " + venue.getName() + " can do this");
+		}
+		return venue;
+	}
+
 	/** Everyone who should hear about activity needing {@code permission}: owner first, then staff. */
 	@Transactional(readOnly = true)
 	public List<UUID> usersWith(UUID venueId, VenuePermission permission) {
@@ -57,6 +67,12 @@ public class VenueAccess {
 			.filter(member -> member.has(permission))
 			.forEach(member -> users.add(member.getUserId()));
 		return new ArrayList<>(users);
+	}
+
+	/** Active staff accounts, for plan limits. */
+	@Transactional(readOnly = true)
+	public long activeStaff(UUID venueId) {
+		return this.staff.findByVenueIdAndActiveTrue(venueId).size();
 	}
 
 	/** Every venue the user owns or works at, with what they can do there. */

@@ -230,6 +230,49 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/Detail"
+  /api/v1/owner/venues/{venueId}/subscription:
+    get:
+      tags:
+      - billing-controller
+      operationId: subscription
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Subscription"
+    put:
+      tags:
+      - billing-controller
+      operationId: choose
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChoosePlan"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Subscription"
   /api/v1/owner/venues/{venueId}/staff/{staffId}:
     put:
       tags:
@@ -831,6 +874,31 @@ paths:
       responses:
         "204":
           description: No Content
+  /api/v1/admin/subscription-plans/{planId}:
+    put:
+      tags:
+      - admin-billing-controller
+      operationId: update_5
+      parameters:
+      - name: planId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Plan"
   /api/v1/tournaments/{tournamentId}/registrations:
     post:
       tags:
@@ -1789,6 +1857,76 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/MembershipPlanResponse"
+  /api/v1/owner/venues/{venueId}/featured:
+    get:
+      tags:
+      - billing-controller
+      operationId: listings
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Featured"
+    post:
+      tags:
+      - billing-controller
+      operationId: feature
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Feature"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Featured"
+  /api/v1/owner/venues/{venueId}/featured/{listingId}/cancel:
+    post:
+      tags:
+      - billing-controller
+      operationId: cancel_3
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: listingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Featured"
   /api/v1/owner/venues/{venueId}/discount-codes:
     get:
       tags:
@@ -2429,7 +2567,7 @@ paths:
     post:
       tags:
       - matchmaking-controller
-      operationId: cancel_3
+      operationId: cancel_4
       parameters:
       - name: postId
         in: path
@@ -2444,6 +2582,56 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/MatchPostView"
+  /api/v1/invoices/{invoiceId}/payments:
+    post:
+      tags:
+      - platform-payment-controller
+      operationId: payInvoice
+      parameters:
+      - name: invoiceId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Claim"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+  /api/v1/featured-listings/{listingId}/payments:
+    post:
+      tags:
+      - platform-payment-controller
+      operationId: payListing
+      parameters:
+      - name: listingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Claim"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
   /api/v1/bookings:
     get:
       tags:
@@ -2664,7 +2852,7 @@ paths:
     post:
       tags:
       - booking-controller
-      operationId: cancel_4
+      operationId: cancel_5
       parameters:
       - name: bookingId
         in: path
@@ -2862,6 +3050,37 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/VenueResponse"
+  /api/v1/admin/subscription-plans:
+    get:
+      tags:
+      - admin-billing-controller
+      operationId: plans_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Plan"
+    post:
+      tags:
+      - admin-billing-controller
+      operationId: create_7
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Plan"
   /api/v1/admin/reviews/{reviewId}/status:
     post:
       tags:
@@ -2887,6 +3106,100 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ReviewResponse"
+  /api/v1/admin/payments/{paymentId}/reject:
+    post:
+      tags:
+      - platform-payment-controller
+      operationId: reject_3
+      parameters:
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Reject"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+  /api/v1/admin/payments/{paymentId}/approve:
+    post:
+      tags:
+      - platform-payment-controller
+      operationId: approve_2
+      parameters:
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+  /api/v1/admin/invoices/{invoiceId}/payments:
+    post:
+      tags:
+      - platform-payment-controller
+      operationId: recordInvoice
+      parameters:
+      - name: invoiceId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordEntry"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+  /api/v1/admin/featured-listings/{listingId}/payments:
+    post:
+      tags:
+      - platform-payment-controller
+      operationId: recordListing
+      parameters:
+      - name: listingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordEntry"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
   /api/v1/owner/venues/{venueId}/customers/{customerId}:
     get:
       tags:
@@ -2915,7 +3228,7 @@ paths:
     patch:
       tags:
       - customer-controller
-      operationId: update_5
+      operationId: update_6
       parameters:
       - name: venueId
         in: path
@@ -2957,7 +3270,7 @@ paths:
     patch:
       tags:
       - me-controller
-      operationId: update_6
+      operationId: update_7
       requestBody:
         content:
           application/json:
@@ -3206,6 +3519,21 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/TeamResponse"
+  /api/v1/subscription-plans:
+    get:
+      tags:
+      - billing-controller
+      operationId: plans_2
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Plan"
+      security: []
   /api/v1/players/{userId}:
     get:
       tags:
@@ -3517,6 +3845,69 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/PaymentResponse"
+  /api/v1/owner/venues/{venueId}/invoices:
+    get:
+      tags:
+      - billing-controller
+      operationId: invoices
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Invoice"
+  /api/v1/owner/venues/{venueId}/featured/quote:
+    get:
+      tags:
+      - billing-controller
+      operationId: quote_1
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: placement
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - HOME_CAROUSEL
+          - SEARCH_TOP
+          - CITY_TOP
+      - name: startsOn
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: days
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int32
+          maximum: 30
+          minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/FeaturedQuote"
   /api/v1/owner/venues/{venueId}/customers:
     get:
       tags:
@@ -3842,6 +4233,37 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/MatchPostView"
+  /api/v1/featured-venues:
+    get:
+      tags:
+      - billing-controller
+      operationId: featured
+      parameters:
+      - name: placement
+        in: query
+        required: false
+        schema:
+          type: string
+          default: SEARCH_TOP
+          enum:
+          - HOME_CAROUSEL
+          - SEARCH_TOP
+          - CITY_TOP
+      - name: city
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VenueSummaryResponse"
+      security: []
   /api/v1/bookings/{bookingId}:
     get:
       tags:
@@ -4002,6 +4424,77 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PlatformReport"
+  /api/v1/admin/payments/pending:
+    get:
+      tags:
+      - platform-payment-controller
+      operationId: pending_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentResponse"
+  /api/v1/admin/invoices:
+    get:
+      tags:
+      - admin-billing-controller
+      operationId: invoices_1
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - DUE
+            - PAID
+            - OVERDUE
+            - VOID
+          uniqueItems: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Invoice"
+  /api/v1/admin/featured-listings:
+    get:
+      tags:
+      - admin-billing-controller
+      operationId: featured_1
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - PENDING_PAYMENT
+            - SCHEDULED
+            - ACTIVE
+            - ENDED
+            - CANCELLED
+          uniqueItems: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Featured"
   /api/v1/teams/{teamId}/members/{userId}:
     delete:
       tags:
@@ -4779,6 +5272,136 @@ components:
       required:
       - courtId
       - startsAt
+    ChoosePlan:
+      type: object
+      properties:
+        planCode:
+          type: string
+          minLength: 1
+        billingCycle:
+          type: string
+          enum:
+          - MONTHLY
+          - YEARLY
+      required:
+      - planCode
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        invoiceNumber:
+          type: string
+        venueId:
+          type: string
+          format: uuid
+        planCode:
+          type: string
+        planName:
+          type: string
+        billingCycle:
+          type: string
+          enum:
+          - MONTHLY
+          - YEARLY
+        amount:
+          type: number
+        periodStart:
+          type: string
+          format: date-time
+        periodEnd:
+          type: string
+          format: date-time
+        dueOn:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+          - DUE
+          - PAID
+          - OVERDUE
+          - VOID
+        paidAt:
+          type: string
+          format: date-time
+    Plan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        monthlyPrice:
+          type: number
+        yearlyPrice:
+          type: number
+        maxCourts:
+          type: integer
+          format: int32
+        maxStaff:
+          type: integer
+          format: int32
+        features:
+          type: array
+          items:
+            type: string
+        active:
+          type: boolean
+    Subscription:
+      type: object
+      properties:
+        venueId:
+          type: string
+          format: uuid
+        plan:
+          $ref: "#/components/schemas/Plan"
+        status:
+          type: string
+          enum:
+          - TRIALING
+          - ACTIVE
+          - PAST_DUE
+          - CANCELLED
+          - EXPIRED
+        billingCycle:
+          type: string
+          enum:
+          - MONTHLY
+          - YEARLY
+        currentPeriodStart:
+          type: string
+          format: date-time
+        currentPeriodEnd:
+          type: string
+          format: date-time
+        cancelAtPeriodEnd:
+          type: boolean
+        nextPlan:
+          $ref: "#/components/schemas/Plan"
+        nextBillingCycle:
+          type: string
+          enum:
+          - MONTHLY
+          - YEARLY
+        openInvoice:
+          $ref: "#/components/schemas/Invoice"
+        limitsEnforced:
+          type: boolean
+        courts:
+          type: integer
+          format: int64
+        staff:
+          type: integer
+          format: int64
+        paymentInstructions:
+          type: string
     StaffUpdateRequest:
       type: object
       properties:
@@ -5389,6 +6012,50 @@ components:
           minLength: 0
       required:
       - rating
+    PlanRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: "[A-Z][A-Z0-9_]{1,29}"
+        name:
+          type: string
+          maxLength: 60
+          minLength: 0
+        description:
+          type: string
+          maxLength: 500
+          minLength: 0
+        monthlyPrice:
+          type: number
+          minimum: 0
+        yearlyPrice:
+          type: number
+          minimum: 0
+        maxCourts:
+          type: integer
+          format: int32
+          minimum: 1
+        maxStaff:
+          type: integer
+          format: int32
+          minimum: 0
+        features:
+          type: array
+          items:
+            type: string
+            maxLength: 40
+            minLength: 0
+          maxItems: 20
+          minItems: 0
+        active:
+          type: boolean
+        sortOrder:
+          type: integer
+          format: int32
+      required:
+      - monthlyPrice
+      - name
     Register:
       type: object
       properties:
@@ -5471,6 +6138,14 @@ components:
           format: uuid
         tournamentName:
           type: string
+        subscriptionInvoiceId:
+          type: string
+          format: uuid
+        invoiceNumber:
+          type: string
+        featuredListingId:
+          type: string
+          format: uuid
         customerName:
           type: string
         amount:
@@ -5933,6 +6608,64 @@ components:
         discountPercent:
           type: integer
           format: int32
+    Feature:
+      type: object
+      properties:
+        placement:
+          type: string
+          enum:
+          - HOME_CAROUSEL
+          - SEARCH_TOP
+          - CITY_TOP
+        startsOn:
+          type: string
+          format: date
+        days:
+          type: integer
+          format: int32
+          maximum: 30
+          minimum: 1
+      required:
+      - days
+      - placement
+      - startsOn
+    Featured:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        venueId:
+          type: string
+          format: uuid
+        venueName:
+          type: string
+        placement:
+          type: string
+          enum:
+          - HOME_CAROUSEL
+          - SEARCH_TOP
+          - CITY_TOP
+        city:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        price:
+          type: number
+        status:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - SCHEDULED
+          - ACTIVE
+          - ENDED
+          - CANCELLED
+        paymentInstructions:
+          type: string
     CourtBlockRequest:
       type: object
       properties:
@@ -6122,6 +6855,11 @@ components:
           - TOURNAMENT_FIXTURES
           - TOURNAMENT_MATCH_SCHEDULED
           - TOURNAMENT_CANCELLED
+          - INVOICE_DUE
+          - SUBSCRIPTION_ACTIVE
+          - SUBSCRIPTION_PAST_DUE
+          - SUBSCRIPTION_ENDED
+          - FEATURED_CONFIRMED
         title:
           type: string
         body:
@@ -6999,6 +7737,27 @@ components:
         totalPages:
           type: integer
           format: int32
+    FeaturedQuote:
+      type: object
+      properties:
+        placement:
+          type: string
+          enum:
+          - HOME_CAROUSEL
+          - SEARCH_TOP
+          - CITY_TOP
+        startsOn:
+          type: string
+          format: date
+        days:
+          type: integer
+          format: int32
+        pricePerDay:
+          type: number
+        price:
+          type: number
+        available:
+          type: boolean
     CustomerSummaryResponse:
       type: object
       properties:

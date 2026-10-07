@@ -38,7 +38,10 @@ final class PaymentRequests {
 
 	}
 
-	/** Staff recording an entry fee paid at the venue; the tournament's fee is taken as the amount. */
+	/**
+	 * Recording a payment of a fixed amount taken directly (an entry fee by venue staff, an invoice or
+	 * listing by a FutSlot admin); the amount due is taken as paid.
+	 */
 	record RecordEntry(@NotNull PaymentMethod method, @Size(max = 100) String transactionId) {
 
 	}

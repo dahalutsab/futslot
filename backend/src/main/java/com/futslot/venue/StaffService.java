@@ -30,11 +30,15 @@ class StaffService {
 
 	private final ApplicationEventPublisher events;
 
-	StaffService(VenueAccess access, VenueStaffRepository staff, UserRepository users, ApplicationEventPublisher events) {
+	private final PlanLimits limits;
+
+	StaffService(VenueAccess access, VenueStaffRepository staff, UserRepository users, ApplicationEventPublisher events,
+			PlanLimits limits) {
 		this.access = access;
 		this.staff = staff;
 		this.users = users;
 		this.events = events;
+		this.limits = limits;
 	}
 
 	@Transactional(readOnly = true)
@@ -53,6 +57,12 @@ class StaffService {
 			throw new ApiException(HttpStatus.BAD_REQUEST, "ALREADY_OWNER", "That's the venue owner");
 		}
 		Set<VenuePermission> permissions = permissions(request.role(), request.permissions());
+		boolean alreadyActive = this.staff.findByVenueIdAndUserId(venueId, person.getId())
+			.filter(VenueStaff::isActive)
+			.isPresent();
+		if (!alreadyActive) {
+			this.limits.checkStaff(venueId, this.staff.findByVenueIdAndActiveTrue(venueId).size());
+		}
 		VenueStaff member = this.staff.findByVenueIdAndUserId(venueId, person.getId())
 			.map(existing -> {
 				existing.assign(request.role(), permissions, true);
@@ -68,8 +78,11 @@ class StaffService {
 	StaffResponse update(UUID userId, UUID venueId, UUID staffId, StaffUpdateRequest request) {
 		this.access.require(userId, venueId, VenuePermission.MANAGE_STAFF);
 		VenueStaff member = member(venueId, staffId);
-		member.assign(request.role(), permissions(request.role(), request.permissions()),
-				!Boolean.FALSE.equals(request.active()));
+		boolean active = !Boolean.FALSE.equals(request.active());
+		if (active && !member.isActive()) {
+			this.limits.checkStaff(venueId, this.staff.findByVenueIdAndActiveTrue(venueId).size());
+		}
+		member.assign(request.role(), permissions(request.role(), request.permissions()), active);
 		return toResponses(List.of(member)).getFirst();
 	}
 

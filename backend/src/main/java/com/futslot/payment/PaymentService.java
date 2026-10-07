@@ -50,10 +50,10 @@ import com.futslot.venue.VenueRepository;
 class PaymentService {
 
 	/** Methods a player can report; cash is only recorded by staff. */
-	private static final Set<PaymentMethod> CLAIMABLE = EnumSet.of(PaymentMethod.ESEWA, PaymentMethod.KHALTI,
+	static final Set<PaymentMethod> CLAIMABLE = EnumSet.of(PaymentMethod.ESEWA, PaymentMethod.KHALTI,
 			PaymentMethod.FONEPAY, PaymentMethod.BANK_TRANSFER);
 
-	private static final Set<PaymentMethod> RECORDABLE = EnumSet.of(PaymentMethod.CASH, PaymentMethod.ESEWA,
+	static final Set<PaymentMethod> RECORDABLE = EnumSet.of(PaymentMethod.CASH, PaymentMethod.ESEWA,
 			PaymentMethod.KHALTI, PaymentMethod.FONEPAY, PaymentMethod.BANK_TRANSFER);
 
 	private static final Set<TransactionStatus> REFUNDABLE = EnumSet.of(TransactionStatus.SUCCEEDED,
@@ -432,7 +432,7 @@ class PaymentService {
 		}
 	}
 
-	private String uniqueTransactionId(PaymentMethod method, String transactionId) {
+	String uniqueTransactionId(PaymentMethod method, String transactionId) {
 		String id = transactionId.strip();
 		if (this.payments.existsByMethodAndTransactionId(method, id)) {
 			throw new ApiException(HttpStatus.CONFLICT, "DUPLICATE_TRANSACTION",
@@ -441,7 +441,7 @@ class PaymentService {
 		return id;
 	}
 
-	private static ApiException badRequest(String code, String message) {
+	static ApiException badRequest(String code, String message) {
 		return new ApiException(HttpStatus.BAD_REQUEST, code, message);
 	}
 
