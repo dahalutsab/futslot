@@ -214,3 +214,46 @@ export interface CustomerDetail {
   stats: { total: number; upcoming: number; completed: number; cancelled: number; noShows: number; completedValue: number };
   recentBookings: Booking[];
 }
+
+// Reports
+
+export interface VenueReport {
+  from: string;
+  to: string;
+  bookings: {
+    total: number; played: number; pendingPayment: number; confirmed: number; completed: number; noShow: number;
+    cancelled: number; expired: number; bySource: Record<string, number>; cancellationRate: number | null;
+    noShowRate: number | null;
+  };
+  money: {
+    bookedValue: number; discounts: number; outstanding: number; collected: number; refunded: number; net: number;
+    collectedByMethod: Record<string, number>; membershipSales: number; refundsOwed: number;
+  };
+  occupancy: { openHours: number; bookedHours: number; rate: number | null };
+  courts: { courtId: string; name: string; active: boolean; bookings: number; bookedHours: number; bookedValue: number;
+    occupancyRate: number | null }[];
+}
+
+export interface DailyRow {
+  date: string;
+  bookings: number;
+  bookedHours: number;
+  bookedValue: number;
+  cancelled: number;
+  collected: number;
+}
+
+export interface PeakHourCell {
+  dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+  hour: number;
+  bookings: number;
+}
+
+export interface TopCustomer {
+  customerId: string;
+  name: string;
+  phone: string;
+  bookings: number;
+  spent: number;
+  lastPlayedAt: string;
+}

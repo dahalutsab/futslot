@@ -46,6 +46,14 @@
   --color-noshow-bg: var(--noshow-bg);
   --color-noshow-line: var(--noshow-line);
   --color-noshow-fg: var(--noshow-fg);
+
+  /* Charts: one validated blue (magnitude), and a 5-step sequential ramp for the heatmap */
+  --color-viz: var(--viz);
+  --color-heat-1: var(--heat-1);
+  --color-heat-2: var(--heat-2);
+  --color-heat-3: var(--heat-3);
+  --color-heat-4: var(--heat-4);
+  --color-heat-5: var(--heat-5);
 }
 
 :root {
@@ -81,6 +89,13 @@
   --noshow-bg: #fef2f2;
   --noshow-line: #ef4444;
   --noshow-fg: #991b1b;
+
+  --viz: #2a78d6;
+  --heat-1: #86b6ef;
+  --heat-2: #5598e7;
+  --heat-3: #2a78d6;
+  --heat-4: #1c5cab;
+  --heat-5: #104281;
 
   color-scheme: light;
 }
@@ -119,6 +134,14 @@
   --noshow-bg: rgb(239 68 68 / 0.14);
   --noshow-line: #f87171;
   --noshow-fg: #fca5a5;
+
+  /* Dark steps of the same ramps: low values recede toward the dark surface */
+  --viz: #3987e5;
+  --heat-1: #184f95;
+  --heat-2: #256abf;
+  --heat-3: #3987e5;
+  --heat-4: #6da7ec;
+  --heat-5: #9ec5f4;
 
   color-scheme: dark;
 }
