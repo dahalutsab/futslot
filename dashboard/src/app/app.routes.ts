@@ -33,11 +33,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/bookings/bookings').then((m) => m.Bookings),
       },
       {
+        path: 'customers',
+        title: 'Customers · FutSlot',
+        loadComponent: () => import('./features/customers/customers').then((m) => m.Customers),
+      },
+      {
         path: 'payments',
         title: 'Payments · FutSlot',
         loadComponent: () => import('./features/payments/payments').then((m) => m.Payments),
       },
-      ...ALL_ITEMS.filter((item) => !['schedule', 'bookings', 'payments'].includes(item.path)).map((item) => ({
+      ...ALL_ITEMS.filter((item) => !['schedule', 'bookings', 'payments', 'customers'].includes(item.path)).map((item) => ({
         path: item.path,
         title: `${item.label} · FutSlot`,
         data: { nav: item },
