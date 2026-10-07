@@ -3,8 +3,9 @@ package com.futslot.slot;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+
+import com.futslot.common.Timestamps;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +13,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /** Time a court cannot be booked (maintenance, private event, holiday...). */
@@ -42,7 +44,6 @@ public class CourtBlock {
 	@Column(nullable = false, updatable = false)
 	private UUID createdBy;
 
-	@CreationTimestamp
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -84,6 +85,13 @@ public class CourtBlock {
 
 	public String getNote() {
 		return this.note;
+	}
+
+	@PrePersist
+	void stampCreated() {
+		if (this.createdAt == null) {
+			this.createdAt = Timestamps.now();
+		}
 	}
 
 }

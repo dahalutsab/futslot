@@ -3,11 +3,11 @@ package com.futslot.review;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
 import com.futslot.booking.Booking;
+import com.futslot.common.Timestamps;
 import com.futslot.user.User;
 
 import jakarta.persistence.Column;
@@ -19,6 +19,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /** A player's rating of a venue, one per completed booking. */
@@ -55,7 +56,6 @@ public class Review {
 	@Column(nullable = false)
 	private ReviewStatus status = ReviewStatus.PUBLISHED;
 
-	@CreationTimestamp
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -129,6 +129,13 @@ public class Review {
 
 	public Instant getUpdatedAt() {
 		return this.updatedAt;
+	}
+
+	@PrePersist
+	void stampCreated() {
+		if (this.createdAt == null) {
+			this.createdAt = Timestamps.now();
+		}
 	}
 
 }

@@ -3,13 +3,15 @@ package com.futslot.venue;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+
+import com.futslot.common.Timestamps;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /** A picture of the venue. One per venue is the cover shown in listings. */
@@ -36,7 +38,6 @@ public class VenuePhoto {
 	@Column(nullable = false)
 	private boolean isCover;
 
-	@CreationTimestamp
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -85,6 +86,13 @@ public class VenuePhoto {
 
 	public boolean isCover() {
 		return this.isCover;
+	}
+
+	@PrePersist
+	void stampCreated() {
+		if (this.createdAt == null) {
+			this.createdAt = Timestamps.now();
+		}
 	}
 
 }

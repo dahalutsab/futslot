@@ -3,10 +3,10 @@ package com.futslot.matchmaking;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
+import com.futslot.common.Timestamps;
 import com.futslot.team.Team;
 import com.futslot.user.User;
 
@@ -19,6 +19,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /** A player (or, for FIND_OPPONENT, a team through its leader) asking to take part. One per player per post. */
@@ -49,7 +50,6 @@ class JoinRequest {
 	@Column(nullable = false)
 	private JoinRequestStatus status = JoinRequestStatus.PENDING;
 
-	@CreationTimestamp
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -103,6 +103,13 @@ class JoinRequest {
 
 	Instant getCreatedAt() {
 		return this.createdAt;
+	}
+
+	@PrePersist
+	void stampCreated() {
+		if (this.createdAt == null) {
+			this.createdAt = Timestamps.now();
+		}
 	}
 
 }

@@ -55,7 +55,8 @@ class ChatFlowTests {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.body").value("Can we bring our own ball?"))
 			.andExpect(jsonPath("$.fromYou").value(true))
-			.andExpect(jsonPath("$.bookingId").value(bookingId));
+			.andExpect(jsonPath("$.bookingId").value(bookingId))
+			.andExpect(jsonPath("$.createdAt").isNotEmpty());
 		for (TestUser staff : new TestUser[] { owner, desk }) {
 			send(staff, get("/api/v1/notifications"), null)
 				.andExpect(jsonPath("$.content[0].type").value("CHAT_MESSAGE"))
@@ -71,7 +72,8 @@ class ChatFlowTests {
 		String venueThread = "/api/v1/owner/venues/" + venue.id() + "/conversations/" + conversationId;
 		send(desk, post(venueThread + "/messages"), "{\"body\":\"Of course, see you at 7!\"}").andExpect(status().isCreated())
 			.andExpect(jsonPath("$.senderName").value("Desk Didi (Chat Futsal)"))
-			.andExpect(jsonPath("$.fromYou").value(true));
+			.andExpect(jsonPath("$.fromYou").value(true))
+			.andExpect(jsonPath("$.createdAt").isNotEmpty());
 		send(desk, post(venueThread + "/read"), null).andExpect(status().isNoContent());
 		send(owner, get("/api/v1/owner/venues/" + venue.id() + "/conversations"), null)
 			.andExpect(jsonPath("$[0].unread").value(0));
