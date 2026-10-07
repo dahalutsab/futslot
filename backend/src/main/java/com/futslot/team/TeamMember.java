@@ -4,8 +4,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
-
+import com.futslot.common.Timestamps;
 import com.futslot.user.User;
 
 import jakarta.persistence.Column;
@@ -17,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /** A player's place in a team, from invitation on. Rows stay after leaving so history isn't lost. */
@@ -47,7 +47,6 @@ public class TeamMember {
 
 	private Instant joinedAt;
 
-	@CreationTimestamp
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -128,6 +127,13 @@ public class TeamMember {
 
 	public record Key(UUID teamId, UUID userId) implements Serializable {
 
+	}
+
+	@PrePersist
+	void stampCreated() {
+		if (this.createdAt == null) {
+			this.createdAt = Timestamps.now();
+		}
 	}
 
 }

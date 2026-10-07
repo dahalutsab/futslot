@@ -4,14 +4,16 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.futslot.common.Timestamps;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /** The cost-sharing rule for one booking and, once played, the result that decides who pays. */
@@ -44,7 +46,6 @@ class BookingSplit {
 
 	private Instant resultRecordedAt;
 
-	@CreationTimestamp
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -121,6 +122,13 @@ class BookingSplit {
 
 	Instant getResultRecordedAt() {
 		return this.resultRecordedAt;
+	}
+
+	@PrePersist
+	void stampCreated() {
+		if (this.createdAt == null) {
+			this.createdAt = Timestamps.now();
+		}
 	}
 
 }

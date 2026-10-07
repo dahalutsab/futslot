@@ -3,9 +3,9 @@ package com.futslot.chat;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
+import com.futslot.common.Timestamps;
 import com.futslot.user.User;
 import com.futslot.venue.Venue;
 
@@ -16,6 +16,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /** The one thread between a player and a venue. */
@@ -38,7 +39,6 @@ class Conversation {
 
 	private Instant lastMessageAt;
 
-	@CreationTimestamp
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -68,6 +68,13 @@ class Conversation {
 
 	Instant getLastMessageAt() {
 		return this.lastMessageAt;
+	}
+
+	@PrePersist
+	void stampCreated() {
+		if (this.createdAt == null) {
+			this.createdAt = Timestamps.now();
+		}
 	}
 
 }

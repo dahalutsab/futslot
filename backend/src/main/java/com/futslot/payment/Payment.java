@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
@@ -13,6 +12,7 @@ import org.hibernate.type.SqlTypes;
 import com.futslot.billing.FeaturedListing;
 import com.futslot.billing.SubscriptionInvoice;
 import com.futslot.booking.Booking;
+import com.futslot.common.Timestamps;
 import com.futslot.membership.Membership;
 import com.futslot.tournament.Registration;
 
@@ -25,6 +25,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /**
@@ -96,7 +97,6 @@ public class Payment {
 
 	private Instant paidAt;
 
-	@CreationTimestamp
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -281,6 +281,13 @@ public class Payment {
 
 	public Instant getCreatedAt() {
 		return this.createdAt;
+	}
+
+	@PrePersist
+	void stampCreated() {
+		if (this.createdAt == null) {
+			this.createdAt = Timestamps.now();
+		}
 	}
 
 }

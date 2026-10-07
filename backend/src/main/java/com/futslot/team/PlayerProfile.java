@@ -3,14 +3,16 @@ package com.futslot.team;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.futslot.common.Timestamps;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /**
@@ -40,7 +42,6 @@ public class PlayerProfile {
 	@Column(nullable = false)
 	private boolean isPublic = true;
 
-	@CreationTimestamp
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -96,6 +97,13 @@ public class PlayerProfile {
 
 	public boolean isPublic() {
 		return this.isPublic;
+	}
+
+	@PrePersist
+	void stampCreated() {
+		if (this.createdAt == null) {
+			this.createdAt = Timestamps.now();
+		}
 	}
 
 }

@@ -5,10 +5,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
+import com.futslot.common.Timestamps;
 import com.futslot.venue.Venue;
 
 import jakarta.persistence.Column;
@@ -20,6 +20,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /** A competition a venue runs: teams register, fixtures are drawn, results decide the winner. */
@@ -94,7 +95,6 @@ public class Tournament {
 	@Column(nullable = false)
 	private TournamentStatus status = TournamentStatus.DRAFT;
 
-	@CreationTimestamp
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -240,6 +240,13 @@ public class Tournament {
 
 	public TournamentStatus getStatus() {
 		return this.status;
+	}
+
+	@PrePersist
+	void stampCreated() {
+		if (this.createdAt == null) {
+			this.createdAt = Timestamps.now();
+		}
 	}
 
 }

@@ -4,13 +4,15 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+
+import com.futslot.common.Timestamps;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /** A code used on a booking. Deleted again if the booking is cancelled or expires. */
@@ -35,7 +37,6 @@ class DiscountRedemption {
 	@Column(nullable = false, precision = 12, scale = 2, updatable = false)
 	private BigDecimal amount;
 
-	@CreationTimestamp
 	@Column(nullable = false, updatable = false)
 	private Instant redeemedAt;
 
@@ -51,6 +52,13 @@ class DiscountRedemption {
 
 	UUID getDiscountCodeId() {
 		return this.discountCodeId;
+	}
+
+	@PrePersist
+	void stampCreated() {
+		if (this.redeemedAt == null) {
+			this.redeemedAt = Timestamps.now();
+		}
 	}
 
 }

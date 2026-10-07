@@ -3,8 +3,9 @@ package com.futslot.notification;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+
+import com.futslot.common.Timestamps;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +13,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /** A push token (FCM) for one app installation. A token belongs to whoever registered it last. */
@@ -37,7 +39,6 @@ public class DeviceToken {
 	@Column(nullable = false)
 	private Instant lastSeenAt;
 
-	@CreationTimestamp
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -59,6 +60,13 @@ public class DeviceToken {
 
 	public String getToken() {
 		return this.token;
+	}
+
+	@PrePersist
+	void stampCreated() {
+		if (this.createdAt == null) {
+			this.createdAt = Timestamps.now();
+		}
 	}
 
 }

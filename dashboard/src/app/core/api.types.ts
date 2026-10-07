@@ -257,3 +257,26 @@ export interface TopCustomer {
   spent: number;
   lastPlayedAt: string;
 }
+
+export interface ConversationSummary {
+  id: string;
+  venueId: string;
+  venueName: string;
+  venueSlug: string;
+  playerId: string;
+  playerName: string;
+  lastMessage: string | null;
+  lastMessageAt: string | null;
+  unread: number;
+}
+
+/** {@code fromYou}: sent by anyone at the venue. */
+export interface ChatMessage {
+  id: string;
+  senderName: string;
+  fromYou: boolean;
+  bookingId: string | null;
+  body: string;
+  readAt: string | null;
+  createdAt: string;
+}
