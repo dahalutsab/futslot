@@ -233,7 +233,7 @@ class BookingFlowTests {
 			players.add(this.users.signUp("Racer " + i).id());
 		}
 		PlayerBookingRequest request = new PlayerBookingRequest(venue.courtId(),
-				OffsetDateTime.parse(TOMORROW + "T20:00:00+05:45"), null, null, null);
+				OffsetDateTime.parse(TOMORROW + "T20:00:00+05:45"), null, null, null, null);
 
 		CountDownLatch start = new CountDownLatch(1);
 		List<Callable<String>> attempts = players.stream().<Callable<String>>map(playerId -> () -> {

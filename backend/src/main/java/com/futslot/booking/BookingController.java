@@ -12,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -87,6 +88,12 @@ class BookingController {
 	BookingResponse venueBooking(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID venueId,
 			@PathVariable UUID bookingId) {
 		return this.bookingService.getForOwner(CurrentUser.id(jwt), venueId, bookingId);
+	}
+
+	@PutMapping("/owner/venues/{venueId}/bookings/{bookingId}/add-ons")
+	BookingResponse setAddOns(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID venueId, @PathVariable UUID bookingId,
+			@Valid @RequestBody AddOnsRequest request) {
+		return this.bookingService.setAddOns(CurrentUser.id(jwt), venueId, bookingId, request);
 	}
 
 	@PostMapping("/owner/venues/{venueId}/bookings/{bookingId}/reschedule")

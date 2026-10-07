@@ -35,10 +35,11 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/actuator/health/**", "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
+				// What anyone can browse before signing in
 				.requestMatchers(HttpMethod.GET, "/api/v1/venues", "/api/v1/venues/*", "/api/v1/venues/*/availability",
-						"/api/v1/venues/*/reviews", "/api/v1/venues/*/reviews/summary",
-						"/api/v1/venues/*/membership-plans", "/api/v1/amenities", "/api/v1/tournaments",
-						"/api/v1/tournaments/*", "/api/v1/subscription-plans", "/api/v1/featured-venues").permitAll()
+						"/api/v1/venues/*/reviews", "/api/v1/venues/*/reviews/summary", "/api/v1/venues/*/membership-plans",
+						"/api/v1/venues/*/add-ons", "/api/v1/amenities", "/api/v1/featured-venues", "/api/v1/tournaments",
+						"/api/v1/tournaments/*", "/api/v1/subscription-plans").permitAll()
 				.anyRequest().authenticated())
 			.oauth2ResourceServer(oauth2 -> oauth2
 				.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
