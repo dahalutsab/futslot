@@ -53,13 +53,15 @@ class AdminVenueController {
 	}
 
 	@PostMapping("/{venueId}/reject")
-	VenueResponse reject(@PathVariable UUID venueId, @Valid @RequestBody ModerationRequest request) {
-		return this.adminVenueService.reject(venueId, request.reason());
+	VenueResponse reject(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID venueId,
+			@Valid @RequestBody ModerationRequest request) {
+		return this.adminVenueService.reject(CurrentUser.id(jwt), venueId, request.reason());
 	}
 
 	@PostMapping("/{venueId}/suspend")
-	VenueResponse suspend(@PathVariable UUID venueId, @Valid @RequestBody ModerationRequest request) {
-		return this.adminVenueService.suspend(venueId, request.reason());
+	VenueResponse suspend(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID venueId,
+			@Valid @RequestBody ModerationRequest request) {
+		return this.adminVenueService.suspend(CurrentUser.id(jwt), venueId, request.reason());
 	}
 
 	@PostMapping("/{venueId}/reinstate")

@@ -45,32 +45,32 @@ class AdminVenueService {
 	VenueResponse approve(UUID adminId, UUID venueId) {
 		Venue venue = venueIn(venueId, VenueStatus.PENDING_APPROVAL);
 		venue.approve(adminId, this.clock.instant());
-		return moderated(venue);
+		return moderated(venue, adminId);
 	}
 
 	@Transactional
-	VenueResponse reject(UUID venueId, String reason) {
+	VenueResponse reject(UUID adminId, UUID venueId, String reason) {
 		Venue venue = venueIn(venueId, VenueStatus.PENDING_APPROVAL);
 		venue.reject(reason.strip());
-		return moderated(venue);
+		return moderated(venue, adminId);
 	}
 
 	@Transactional
-	VenueResponse suspend(UUID venueId, String reason) {
+	VenueResponse suspend(UUID adminId, UUID venueId, String reason) {
 		Venue venue = venueIn(venueId, VenueStatus.ACTIVE);
 		venue.suspend(reason.strip());
-		return moderated(venue);
+		return moderated(venue, adminId);
 	}
 
 	@Transactional
 	VenueResponse reinstate(UUID adminId, UUID venueId) {
 		Venue venue = venueIn(venueId, VenueStatus.SUSPENDED);
 		venue.approve(adminId, this.clock.instant());
-		return moderated(venue);
+		return moderated(venue, adminId);
 	}
 
-	private VenueResponse moderated(Venue venue) {
-		this.events.publishEvent(VenueModerated.of(venue));
+	private VenueResponse moderated(Venue venue, UUID adminId) {
+		this.events.publishEvent(VenueModerated.of(venue, adminId));
 		return this.mapper.toResponse(venue, true);
 	}
 

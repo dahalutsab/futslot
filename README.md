@@ -220,6 +220,14 @@ Bookings count by start time; money counts by when it was paid or refunded. Repo
 `VIEW_REPORTS` permission (owners and managers by default). Admins get FutSlot-wide totals from
 `GET /api/v1/admin/reports/summary`.
 
+### Audit log
+
+Actions that matter in a dispute are recorded in the same transaction as the change: money received,
+rejected or refunded; bookings entered by the venue, moved or cancelled; staff added; venues approved,
+rejected or suspended. Each entry records who did it, and when and from which IP. Owners see their venue's log
+(`GET /api/v1/owner/venues/{id}/audit-log`). Admins see everything, IP addresses included
+(`GET /api/v1/admin/audit-log`).
+
 ### Notifications
 
 Booking and venue changes create in-app notifications (`GET /api/v1/notifications`) and push them to the
