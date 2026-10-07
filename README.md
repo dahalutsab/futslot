@@ -51,6 +51,23 @@ refresh their token:
 INSERT INTO user_roles (user_id, role) SELECT id, 'ADMIN' FROM users WHERE phone = '+9779800000000';
 ```
 
+### Payments
+
+FutSlot does not hold money. Players pay the venue directly, and FutSlot records and verifies it:
+
+- **Advance via the venue's own wallet.** The venue sets payment instructions (its eSewa / Khalti / Fonepay
+  number or bank details). The player pays, then submits the transaction id
+  (`POST /api/v1/bookings/{id}/payments`). The slot stays held while staff check their wallet and approve
+  or reject it. Approving at least the advance confirms the booking; rejecting gives the player the hold
+  time again. A transaction id can only be used once per method.
+- **Cash and counter payments.** Staff record what they received against a booking.
+- **Refunds.** When a paid booking is cancelled or expires, FutSlot works out what is owed from the venue's
+  policy (full refund if the player cancels at least `freeCancelHours` ahead, otherwise
+  `lateCancelRefundPct`; always full if the venue cancels or the hold expired). The venue pays it back and
+  marks it done.
+
+Gateway checkout (eSewa / Khalti merchant APIs) can be added later as another way to create verified payments.
+
 ### Notifications
 
 Booking and venue changes create in-app notifications (`GET /api/v1/notifications`) and push them to the

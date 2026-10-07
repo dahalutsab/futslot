@@ -92,6 +92,8 @@ public class Venue {
 	@Column(nullable = false)
 	private int maxAdvanceBookingDays = 30;
 
+	private String paymentInstructions;
+
 	@Column(nullable = false, precision = 3, scale = 2)
 	private BigDecimal averageRating = BigDecimal.ZERO;
 
@@ -152,6 +154,10 @@ public class Venue {
 	public VenuePolicy policy() {
 		return new VenuePolicy(this.advancePercent, this.bookingHoldMinutes, this.freeCancelHours,
 				this.lateCancelRefundPct, this.maxAdvanceBookingDays);
+	}
+
+	void setPaymentInstructions(String instructions) {
+		this.paymentInstructions = (instructions != null && !instructions.isBlank()) ? instructions.strip() : null;
 	}
 
 	void submitForApproval() {
@@ -244,6 +250,10 @@ public class Venue {
 
 	public String getRejectionReason() {
 		return this.rejectionReason;
+	}
+
+	public String getPaymentInstructions() {
+		return this.paymentInstructions;
 	}
 
 	public BigDecimal getAverageRating() {

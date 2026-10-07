@@ -13,6 +13,7 @@ import com.futslot.booking.BookingEvent;
 import com.futslot.booking.BookingSource;
 import com.futslot.booking.BookingStatus;
 import com.futslot.booking.RecurringBookingEvent;
+import com.futslot.payment.PaymentEvent;
 import com.futslot.venue.StaffAdded;
 import com.futslot.venue.VenueAccess;
 import com.futslot.venue.VenueModerated;
@@ -99,6 +100,55 @@ class NotificationListener {
 				if (event.playerUserId() != null) {
 					this.notifications.send(event.playerUserId(), NotificationType.RECURRING_BOOKING_SKIPPED,
 							"Weekly slot at " + event.venueName() + " not booked", body, data);
+				}
+			}
+		}
+	}
+
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(PaymentEvent event) {
+		String slot = Messages.when(event.startsAt());
+		String amount = Messages.rupees(event.amount());
+		Map<String, String> data = Map.of("bookingId", event.bookingId().toString(), "venueId", event.venueId().toString());
+		switch (event.type()) {
+			case SUBMITTED -> this.access.usersWith(event.venueId(), VenuePermission.MANAGE_BOOKINGS)
+				.forEach(userId -> this.notifications.send(userId, NotificationType.PAYMENT_TO_VERIFY, "Payment to verify",
+						event.customerName() + " paid " + amount + " by " + event.method() + " for " + slot
+								+ ". Check your wallet, then approve or reject.",
+						data));
+			case RECEIVED -> {
+				if (event.playerUserId() != null && !event.playerUserId().equals(event.actorUserId())) {
+					String confirmed = (event.bookingStatus() == BookingStatus.CONFIRMED) ? " Your booking is confirmed." : "";
+					this.notifications.send(event.playerUserId(), NotificationType.PAYMENT_RECEIVED, "Payment received",
+							event.venueName() + " received " + amount + " for " + slot + "." + confirmed, data);
+				}
+			}
+			case REJECTED -> {
+				if (event.playerUserId() != null) {
+					String deadline = (event.holdExpiresAt() != null) ? " Pay by "
+							+ Messages.time(event.holdExpiresAt().atZone(event.startsAt().getOffset()).toOffsetDateTime())
+							+ " to keep the slot." : "";
+					this.notifications.send(event.playerUserId(), NotificationType.PAYMENT_REJECTED, "Payment not found",
+							event.venueName() + " couldn't find your " + amount + " payment: " + event.reason() + "."
+									+ deadline,
+							data);
+				}
+			}
+			case REFUND_DUE -> {
+				if (event.playerUserId() != null) {
+					this.notifications.send(event.playerUserId(), NotificationType.REFUND_DUE, "Refund on the way",
+							event.venueName() + " will refund " + amount + " for " + slot + ".", data);
+				}
+				this.access.usersWith(event.venueId(), VenuePermission.MANAGE_BOOKINGS)
+					.forEach(userId -> this.notifications.send(userId, NotificationType.REFUND_TO_PAY, "Refund to pay",
+							event.customerName() + " is owed " + amount + " for " + slot + " (" + event.reason() + ").",
+							data));
+			}
+			case REFUNDED -> {
+				if (event.playerUserId() != null) {
+					this.notifications.send(event.playerUserId(), NotificationType.REFUND_SENT, "Refund sent",
+							event.venueName() + " refunded " + amount + " for " + slot + ".", data);
 				}
 			}
 		}

@@ -16,7 +16,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Time occupied by live bookings. Unpaid holds whose hold has lapsed count as free: the booking
- * module expires them before inserting, so they never block a new booking.
+ * module expires them before inserting, so they never block a new booking. A hold with no expiry
+ * (payment submitted, awaiting verification) still occupies its slot.
  */
 @Component
 public class BookedRanges {
@@ -42,7 +43,7 @@ public class BookedRanges {
 				SELECT court_id, starts_at, ends_at FROM bookings
 				WHERE court_id IN (:courtIds) AND starts_at < :to AND ends_at > :from
 				  AND status NOT IN ('CANCELLED', 'EXPIRED')
-				  AND NOT (status = 'PENDING_PAYMENT' AND hold_expires_at <= :now)
+				  AND NOT (status = 'PENDING_PAYMENT' AND hold_expires_at IS NOT NULL AND hold_expires_at <= :now)
 				  AND id IS DISTINCT FROM :excludeId""")
 			.param("courtIds", courtIds)
 			.param("from", utc(from))
