@@ -2,6 +2,7 @@ package com.futslot.notification;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -13,9 +14,13 @@ import com.futslot.booking.BookingEvent;
 import com.futslot.booking.BookingSource;
 import com.futslot.booking.BookingStatus;
 import com.futslot.booking.RecurringBookingEvent;
+import com.futslot.matchmaking.MatchEvent;
+import com.futslot.matchmaking.MatchPostType;
 import com.futslot.payment.MembershipPaymentEvent;
 import com.futslot.payment.PaymentEvent;
 import com.futslot.review.ReviewEvent;
+import com.futslot.team.TeamEvent;
+import com.futslot.team.TeamService;
 import com.futslot.venue.StaffAdded;
 import com.futslot.venue.VenueAccess;
 import com.futslot.venue.VenueModerated;
@@ -32,9 +37,12 @@ class NotificationListener {
 
 	private final VenueAccess access;
 
-	NotificationListener(NotificationService notifications, VenueAccess access) {
+	private final TeamService teams;
+
+	NotificationListener(NotificationService notifications, VenueAccess access, TeamService teams) {
 		this.notifications = notifications;
 		this.access = access;
+		this.teams = teams;
 	}
 
 	@TransactionalEventListener
@@ -204,6 +212,47 @@ class NotificationListener {
 			}
 			case REPLIED -> this.notifications.send(event.authorUserId(), NotificationType.REVIEW_REPLY,
 					event.venueName() + " replied to your review", "Tap to read their reply.", data);
+		}
+	}
+
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(TeamEvent event) {
+		Map<String, String> data = Map.of("teamId", event.teamId().toString(), "teamSlug", event.teamSlug());
+		switch (event.type()) {
+			case INVITED -> this.notifications.send(event.userId(), NotificationType.TEAM_INVITE,
+					"Join " + event.teamName() + "?", event.actorName() + " invited you to the team.", data);
+			case JOINED -> this.teams.squad(event.teamId())
+				.stream()
+				.filter(userId -> !userId.equals(event.userId()))
+				.forEach(userId -> this.notifications.send(userId, NotificationType.TEAM_MEMBER_JOINED,
+						event.userName() + " joined " + event.teamName(), "Say hello to your new teammate.", data));
+			case REMOVED -> this.notifications.send(event.userId(), NotificationType.TEAM_MEMBER_REMOVED,
+					"Removed from " + event.teamName(), event.actorName() + " removed you from the team.", data);
+			case CAPTAIN_CHANGED -> this.notifications.send(event.userId(), NotificationType.TEAM_CAPTAIN_CHANGED,
+					"You're captain of " + event.teamName(), event.actorName() + " handed you the captaincy.", data);
+		}
+	}
+
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(MatchEvent event) {
+		Map<String, String> data = Map.of("matchPostId", event.postId().toString());
+		String match = event.place() + ", " + Messages.when(event.startsAt());
+		String what = (event.postType() == MatchPostType.FIND_OPPONENT) ? "your match" : "your game";
+		for (UUID recipient : event.recipients()) {
+			switch (event.type()) {
+				case REQUESTED -> this.notifications.send(recipient, NotificationType.MATCH_REQUEST,
+						event.actorName() + " wants to join", match + ". Accept or decline in the app.", data);
+				case ACCEPTED -> this.notifications.send(recipient, NotificationType.MATCH_REQUEST_ACCEPTED,
+						"You're in!", event.actorName() + " accepted you for " + match + ".", data);
+				case DECLINED -> this.notifications.send(recipient, NotificationType.MATCH_REQUEST_DECLINED,
+						"Not this time", "Your request for " + match + " wasn't accepted.", data);
+				case WITHDRAWN -> this.notifications.send(recipient, NotificationType.MATCH_PLAYER_WITHDREW,
+						event.actorName() + " dropped out", "A place opened up in " + what + " at " + match + ".", data);
+				case CANCELLED -> this.notifications.send(recipient, NotificationType.MATCH_POST_CANCELLED,
+						"Match called off", event.actorName() + " cancelled " + match + ".", data);
+			}
 		}
 	}
 

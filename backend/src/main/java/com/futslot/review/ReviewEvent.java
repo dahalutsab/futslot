@@ -2,6 +2,8 @@ package com.futslot.review;
 
 import java.util.UUID;
 
+import com.futslot.common.Names;
+
 /** Published after a review is written or answered; consumed by notifications after commit. */
 public record ReviewEvent(Type type, UUID reviewId, UUID venueId, String venueName, UUID authorUserId,
 		String authorName, int rating, String comment, UUID actorUserId) {
@@ -17,7 +19,7 @@ public record ReviewEvent(Type type, UUID reviewId, UUID venueId, String venueNa
 
 	static ReviewEvent of(Type type, Review review, UUID actorUserId) {
 		return new ReviewEvent(type, review.getId(), review.getVenueId(), review.getBooking().getVenue().getName(),
-				review.getUser().getId(), ReviewResponse.shortName(review.getUser().getFullName()), review.getRating(),
+				review.getUser().getId(), Names.shortName(review.getUser().getFullName()), review.getRating(),
 				review.getComment(), actorUserId);
 	}
 

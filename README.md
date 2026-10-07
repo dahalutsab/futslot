@@ -98,6 +98,18 @@ posted again.
 Players save approved venues with `PUT /api/v1/me/favourites/{venueId}` and list them with
 `GET /api/v1/me/favourites`.
 
+### Teams and matchmaking
+
+Players fill in a profile (position, skill level, city), shown to others by short name ("Ram S.") with
+the number of games they've played. Anyone can start a team and becomes its captain. The captain and
+vice-captains invite players by the phone number they signed up with. Only the captain changes roles,
+and the captain has to hand over before leaving. Private teams are visible only to their members.
+
+Match posts are either "need players" (for one of your bookings, a venue or a city) or "find an
+opponent" (for a team you lead). Others ask to join; the poster accepts or declines. A post fills when
+its places are taken, which declines everyone still waiting, and reopens if an accepted player drops
+out before kick-off. Phone numbers are shared only between the poster and accepted players.
+
 ### Reports
 
 Venue reports live under `/api/v1/owner/venues/{venueId}/reports` and take `from` / `to` local dates (both
