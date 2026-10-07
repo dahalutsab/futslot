@@ -83,7 +83,7 @@ export const NAVIGATION: NavGroup[] = [
         about: 'Game packs, monthly passes and discount codes.' },
       { path: 'grow/tournaments', label: 'Tournaments', icon: Trophy, needs: 'MANAGE_VENUE',
         about: 'Run knockouts and leagues: entries, fixtures and results.' },
-      { path: 'grow/reviews', label: 'Reviews', icon: Star, needs: null,
+      { path: 'grow/reviews', label: 'Reviews', icon: Star, needs: 'MANAGE_VENUE',
         about: 'What players say, and your replies.' },
       { path: 'grow/featured', label: 'Featured listing', icon: Megaphone, needs: 'OWNER',
         about: 'Be shown first to players in the app.' },

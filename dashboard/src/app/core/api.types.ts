@@ -483,3 +483,28 @@ export interface DiscountCode {
   usedCount: number;
   active: boolean;
 }
+
+// Reviews
+
+export interface Review {
+  id: string;
+  venueId: string;
+  venueName: string;
+  bookingId: string | null;
+  playedOn: string;
+  rating: number;
+  comment: string | null;
+  reviewerName: string;
+  reviewerAvatarUrl: string | null;
+  ownerReply: string | null;
+  ownerRepliedAt: string | null;
+  status: 'PUBLISHED' | 'HIDDEN' | 'REMOVED';
+  createdAt: string;
+}
+
+/** {@code stars} maps each rating 1–5 to how many published reviews gave it. */
+export interface RatingSummary {
+  averageRating: number | null;
+  reviewCount: number;
+  stars: Record<string, number>;
+}

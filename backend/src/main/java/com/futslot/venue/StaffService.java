@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.futslot.common.ApiException;
 import com.futslot.common.PhoneNumbers;
 import com.futslot.user.Role;
+import com.futslot.user.AccountCreated;
 import com.futslot.user.User;
 import com.futslot.user.UserRepository;
 
@@ -52,7 +53,11 @@ class StaffService {
 		Venue venue = this.access.require(userId, venueId, VenuePermission.MANAGE_STAFF);
 		String phone = PhoneNumbers.normalize(request.phone());
 		User person = this.users.findByPhone(phone)
-			.orElseGet(() -> this.users.save(new User(phone, request.fullName().strip())));
+			.orElseGet(() -> {
+				User created = this.users.save(new User(phone, request.fullName().strip()));
+				this.events.publishEvent(new AccountCreated(created.getId(), phone));
+				return created;
+			});
 		if (person.getId().equals(venue.getOwnerId())) {
 			throw new ApiException(HttpStatus.BAD_REQUEST, "ALREADY_OWNER", "That's the venue owner");
 		}
