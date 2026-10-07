@@ -114,6 +114,14 @@ water. Players add them when booking, and staff can change them at the counter d
 codes only reduce the court price. A booking keeps the price it was charged for an item, even if the
 venue changes the price later.
 
+### Chat
+
+Players message a venue (`POST /api/v1/venues/{venueId}/messages`, optionally about one of their bookings
+there). Each player and venue share one conversation. Anyone at the venue who handles bookings can read and
+reply. The player sees replies as from the venue; the venue sees which staff member wrote. The other side
+gets a notification for each message, and both see unread counts. There's no live connection: the apps
+refresh when a notification arrives.
+
 ### Waitlist
 
 A player can wait for a booked slot (`POST /api/v1/waitlist`, up to 5 at a time). When a booking on it is

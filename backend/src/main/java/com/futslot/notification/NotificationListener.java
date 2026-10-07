@@ -12,6 +12,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.futslot.billing.BillingEvent;
 import com.futslot.booking.BookingEvent;
+import com.futslot.chat.ChatMessageSent;
 import com.futslot.booking.BookingSource;
 import com.futslot.booking.BookingStatus;
 import com.futslot.booking.RecurringBookingEvent;
@@ -374,6 +375,17 @@ class NotificationListener {
 					event.venueName() + ", " + event.courtName() + ", " + Messages.when(event.startsAt())
 							+ ". Book it before someone else does.",
 					data);
+		}
+	}
+
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(ChatMessageSent event) {
+		Map<String, String> data = Map.of("conversationId", event.conversationId().toString(), "venueId",
+				event.venueId().toString(), "side", event.toVenue() ? "VENUE" : "PLAYER");
+		for (UUID recipient : event.recipients()) {
+			this.notifications.send(recipient, NotificationType.CHAT_MESSAGE, event.fromName(),
+					Messages.excerpt(event.preview()), data);
 		}
 	}
 

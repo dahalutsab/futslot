@@ -1038,6 +1038,31 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/WaitlistView"
+  /api/v1/venues/{venueId}/messages:
+    post:
+      tags:
+      - chat-controller
+      operationId: messageVenue
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MessageView"
   /api/v1/tournaments/{tournamentId}/registrations:
     post:
       tags:
@@ -2291,6 +2316,90 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/CourtBlockResponse"
+  /api/v1/owner/venues/{venueId}/conversations/{conversationId}/read:
+    post:
+      tags:
+      - chat-controller
+      operationId: venueRead
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/v1/owner/venues/{venueId}/conversations/{conversationId}/messages:
+    get:
+      tags:
+      - chat-controller
+      operationId: venueMessages
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MessageView"
+    post:
+      tags:
+      - chat-controller
+      operationId: venueReply
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MessageView"
   /api/v1/owner/venues/{venueId}/bookings:
     get:
       tags:
@@ -2632,6 +2741,72 @@ paths:
       responses:
         "204":
           description: No Content
+  /api/v1/me/conversations/{conversationId}/read:
+    post:
+      tags:
+      - chat-controller
+      operationId: read
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/v1/me/conversations/{conversationId}/messages:
+    get:
+      tags:
+      - chat-controller
+      operationId: myMessages
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MessageView"
+    post:
+      tags:
+      - chat-controller
+      operationId: reply_1
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MessageView"
   /api/v1/match-posts:
     get:
       tags:
@@ -4233,6 +4408,27 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PageResponseCustomerSummaryResponse"
+  /api/v1/owner/venues/{venueId}/conversations:
+    get:
+      tags:
+      - chat-controller
+      operationId: forVenue_1
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ConversationSummary"
   /api/v1/owner/venues/{venueId}/bookings/{bookingId}:
     get:
       tags:
@@ -4502,6 +4698,20 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/VenueSummaryResponse"
+  /api/v1/me/conversations:
+    get:
+      tags:
+      - chat-controller
+      operationId: mine_7
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ConversationSummary"
   /api/v1/match-posts/{postId}:
     get:
       tags:
@@ -6609,6 +6819,39 @@ components:
         createdAt:
           type: string
           format: date-time
+    MessageRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        bookingId:
+          type: string
+          format: uuid
+      required:
+      - body
+    MessageView:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        senderName:
+          type: string
+        fromYou:
+          type: boolean
+        bookingId:
+          type: string
+          format: uuid
+        body:
+          type: string
+        readAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
     Register:
       type: object
       properties:
@@ -7335,6 +7578,7 @@ components:
           - SUBSCRIPTION_ENDED
           - FEATURED_CONFIRMED
           - WAITLIST_SLOT_FREE
+          - CHAT_MESSAGE
         title:
           type: string
         body:
@@ -8280,6 +8524,32 @@ components:
         totalPages:
           type: integer
           format: int32
+    ConversationSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        venueId:
+          type: string
+          format: uuid
+        venueName:
+          type: string
+        venueSlug:
+          type: string
+        playerId:
+          type: string
+          format: uuid
+        playerName:
+          type: string
+        lastMessage:
+          type: string
+        lastMessageAt:
+          type: string
+          format: date-time
+        unread:
+          type: integer
+          format: int64
     BookingPaymentsResponse:
       type: object
       properties:
