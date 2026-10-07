@@ -535,3 +535,107 @@ export interface FeaturedQuote {
   price: number;
   available: boolean;
 }
+
+// Tournaments
+
+export type TournamentFormat = 'KNOCKOUT' | 'LEAGUE' | 'GROUP_KNOCKOUT';
+
+export type TournamentStatus = 'DRAFT' | 'REGISTRATION_OPEN' | 'REGISTRATION_CLOSED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+
+export type Stage = 'GROUP' | 'LEAGUE' | 'ROUND_OF_32' | 'ROUND_OF_16' | 'QUARTER_FINAL' | 'SEMI_FINAL' | 'THIRD_PLACE' | 'FINAL';
+
+export interface TeamRef {
+  registrationId: string;
+  teamId: string;
+  name: string;
+  slug: string;
+}
+
+export interface TournamentSummary {
+  id: string;
+  slug: string;
+  name: string;
+  venue: { id: string; name: string; slug: string; city: string };
+  format: TournamentFormat;
+  status: TournamentStatus;
+  startsOn: string;
+  endsOn: string;
+  entryFee: number;
+  teamsIn: number;
+  maxTeams: number;
+  bannerUrl: string | null;
+}
+
+export interface TournamentEntry {
+  id: string;
+  team: TeamRef;
+  status: 'PENDING_PAYMENT' | 'CONFIRMED' | 'WAITLISTED' | 'WITHDRAWN' | 'REJECTED';
+  groupName: string | null;
+  seed: number | null;
+  squad: { userId: string; name: string; jerseyNumber: number | null }[];
+  registeredAt: string;
+}
+
+export interface TournamentMatch {
+  id: string;
+  stage: Stage;
+  groupName: string | null;
+  round: number;
+  matchNumber: number;
+  home: TeamRef | null;
+  away: TeamRef | null;
+  court: { id: string; name: string } | null;
+  /** Venue-local with offset. */
+  scheduledAt: string | null;
+  homeScore: number | null;
+  awayScore: number | null;
+  homePenalties: number | null;
+  awayPenalties: number | null;
+  winnerRegistrationId: string | null;
+  status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'WALKOVER' | 'POSTPONED' | 'CANCELLED';
+  bye: boolean;
+}
+
+export interface Standing {
+  team: TeamRef;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+}
+
+export interface TournamentDetail {
+  id: string;
+  slug: string;
+  name: string;
+  venue: { id: string; name: string; slug: string; city: string };
+  description: string | null;
+  rules: string | null;
+  bannerUrl: string | null;
+  format: TournamentFormat;
+  status: TournamentStatus;
+  teamSize: number;
+  maxSquadSize: number;
+  maxTeams: number;
+  entryFee: number;
+  prizeDetails: string | null;
+  pointsForWin: number;
+  pointsForDraw: number;
+  registrationOpensAt: string | null;
+  registrationClosesAt: string | null;
+  startsOn: string;
+  endsOn: string;
+  matchMinutes: number;
+  groupCount: number | null;
+  acceptingTeams: boolean;
+  teamsIn: number;
+  waitlisted: number;
+  registrations: TournamentEntry[];
+  matches: TournamentMatch[];
+  tables: { groupName: string | null; rows: Standing[] }[];
+  champion: TeamRef | null;
+}
