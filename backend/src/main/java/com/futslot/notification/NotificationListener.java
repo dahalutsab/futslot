@@ -19,6 +19,7 @@ import com.futslot.matchmaking.MatchPostType;
 import com.futslot.payment.MembershipPaymentEvent;
 import com.futslot.payment.PaymentEvent;
 import com.futslot.review.ReviewEvent;
+import com.futslot.split.SplitEvent;
 import com.futslot.team.TeamEvent;
 import com.futslot.team.TeamService;
 import com.futslot.venue.StaffAdded;
@@ -252,6 +253,25 @@ class NotificationListener {
 						event.actorName() + " dropped out", "A place opened up in " + what + " at " + match + ".", data);
 				case CANCELLED -> this.notifications.send(recipient, NotificationType.MATCH_POST_CANCELLED,
 						"Match called off", event.actorName() + " cancelled " + match + ".", data);
+			}
+		}
+	}
+
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(SplitEvent event) {
+		Map<String, String> data = Map.of("bookingId", event.bookingId().toString());
+		String game = event.venueName() + ", " + Messages.when(event.startsAt());
+		switch (event.type()) {
+			case ADDED -> this.notifications.send(event.recipientUserId(), NotificationType.SPLIT_ADDED,
+					event.bookerName() + " added you to a game", game + ". You're on " + event.sideName() + ".", data);
+			case RESULT -> {
+				String outcome = event.draw() ? "It's a draw" : event.winnerName() + " won";
+				String owes = (event.share().signum() > 0)
+						? "Your share is " + Messages.rupees(event.share()) + ", pay " + event.bookerName() + "."
+						: "You pay nothing.";
+				this.notifications.send(event.recipientUserId(), NotificationType.SPLIT_RESULT, outcome,
+						game + ". " + owes, data);
 			}
 		}
 	}

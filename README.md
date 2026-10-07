@@ -98,6 +98,25 @@ posted again.
 Players save approved venues with `PUT /api/v1/me/favourites/{venueId}` and list them with
 `GET /api/v1/me/favourites`.
 
+### Splitting the cost (baazi)
+
+Usually one player books and the group plays. The booker can set up a split on the booking
+(`PUT /api/v1/bookings/{id}/split`): add the players (app users by phone, friends without the app by
+name), put them on two sides, and pick a rule:
+
+| Rule | Who pays |
+|---|---|
+| `EQUAL` | Everyone the same, whoever wins |
+| `LOSERS_PAY_ALL` | Losers pay everything, winners nothing |
+| `LOSERS_PAY_PERCENT` | Losers pay `losersPercent` (e.g. 70), winners the rest |
+| `LOSERS_PAY_COURT` | Losers pay the court, winners pay the extras (water, drinks) |
+
+A draw always splits everything equally. Before kick-off the split shows what each side would pay
+for each result. After the game the booker records the result and each player's share is fixed: whole
+rupees, with any odd rupee going to the booker. The booker ticks players off as they pay, and players
+with the app see what they owe in `GET /api/v1/me/split-dues`. FutSlot doesn't handle this money; the
+booker pays the venue and collects from the others.
+
 ### Teams and matchmaking
 
 Players fill in a profile (position, skill level, city), shown to others by short name ("Ram S.") with

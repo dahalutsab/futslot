@@ -530,6 +530,104 @@ paths:
       responses:
         "204":
           description: No Content
+  /api/v1/bookings/{bookingId}/split:
+    get:
+      tags:
+      - split-controller
+      operationId: get_1
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SplitView"
+    put:
+      tags:
+      - split-controller
+      operationId: setUp
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Rules"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SplitView"
+  /api/v1/bookings/{bookingId}/split/players/{playerId}:
+    put:
+      tags:
+      - split-controller
+      operationId: movePlayer
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: playerId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MovePlayer"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SplitView"
+    delete:
+      tags:
+      - split-controller
+      operationId: removePlayer
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: playerId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SplitView"
   /api/v1/bookings/{bookingId}/review:
     get:
       tags:
@@ -1894,6 +1992,123 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/BookingResponse"
+  /api/v1/bookings/{bookingId}/split/result:
+    post:
+      tags:
+      - split-controller
+      operationId: recordResult
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Result"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SplitView"
+    delete:
+      tags:
+      - split-controller
+      operationId: undoResult
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SplitView"
+  /api/v1/bookings/{bookingId}/split/players:
+    post:
+      tags:
+      - split-controller
+      operationId: addPlayer
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddPlayer"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SplitView"
+  /api/v1/bookings/{bookingId}/split/players/{playerId}/paid:
+    post:
+      tags:
+      - split-controller
+      operationId: markPaid
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: playerId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SplitView"
+    delete:
+      tags:
+      - split-controller
+      operationId: markUnpaid
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: playerId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SplitView"
   /api/v1/bookings/{bookingId}/payments:
     get:
       tags:
@@ -2168,7 +2383,7 @@ paths:
     get:
       tags:
       - customer-controller
-      operationId: get_1
+      operationId: get_2
       parameters:
       - name: venueId
         in: path
@@ -2293,7 +2508,7 @@ paths:
     get:
       tags:
       - public-venue-controller
-      operationId: get_2
+      operationId: get_3
       parameters:
       - name: slug
         in: path
@@ -2423,7 +2638,7 @@ paths:
     get:
       tags:
       - team-controller
-      operationId: get_3
+      operationId: get_4
       parameters:
       - name: slug
         in: path
@@ -2706,7 +2921,7 @@ paths:
     get:
       tags:
       - recurring-booking-controller
-      operationId: get_4
+      operationId: get_5
       parameters:
       - name: venueId
         in: path
@@ -2908,6 +3123,20 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TeamResponse"
+  /api/v1/me/split-dues:
+    get:
+      tags:
+      - split-controller
+      operationId: owed
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OwedShare"
   /api/v1/me/reviews:
     get:
       tags:
@@ -3030,7 +3259,7 @@ paths:
     get:
       tags:
       - matchmaking-controller
-      operationId: get_5
+      operationId: get_6
       parameters:
       - name: postId
         in: path
@@ -3125,7 +3354,7 @@ paths:
     get:
       tags:
       - admin-venue-controller
-      operationId: get_6
+      operationId: get_7
       parameters:
       - name: venueId
         in: path
@@ -4055,6 +4284,170 @@ components:
         gamesPlayed:
           type: integer
           format: int64
+    Rules:
+      type: object
+      properties:
+        rule:
+          type: string
+          enum:
+          - EQUAL
+          - LOSERS_PAY_ALL
+          - LOSERS_PAY_PERCENT
+          - LOSERS_PAY_COURT
+        losersPercent:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 50
+        extrasAmount:
+          type: number
+          minimum: 0
+        extrasNote:
+          type: string
+          maxLength: 100
+          minLength: 0
+        sideAName:
+          type: string
+          maxLength: 30
+          minLength: 0
+        sideBName:
+          type: string
+          maxLength: 30
+          minLength: 0
+        bookerSide:
+          type: string
+          enum:
+          - A
+          - B
+      required:
+      - rule
+    Outcome:
+      type: object
+      properties:
+        result:
+          type: string
+          enum:
+          - A_WON
+          - B_WON
+          - DRAW
+        sideATotal:
+          type: number
+        sideAEach:
+          type: number
+        sideBTotal:
+          type: number
+        sideBEach:
+          type: number
+    Person:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type: string
+    Player:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        side:
+          type: string
+          enum:
+          - A
+          - B
+        booker:
+          type: boolean
+        you:
+          type: boolean
+        appUser:
+          type: boolean
+        phone:
+          type: string
+        share:
+          type: number
+        settled:
+          type: boolean
+        settledAt:
+          type: string
+          format: date-time
+    SplitView:
+      type: object
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        reference:
+          type: string
+        venueName:
+          type: string
+        courtName:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        bookedBy:
+          $ref: "#/components/schemas/Person"
+        rule:
+          type: string
+          enum:
+          - EQUAL
+          - LOSERS_PAY_ALL
+          - LOSERS_PAY_PERCENT
+          - LOSERS_PAY_COURT
+        losersPercent:
+          type: integer
+          format: int32
+        courtAmount:
+          type: number
+        extrasAmount:
+          type: number
+        extrasNote:
+          type: string
+        total:
+          type: number
+        sideAName:
+          type: string
+        sideBName:
+          type: string
+        players:
+          type: array
+          items:
+            $ref: "#/components/schemas/Player"
+        result:
+          type: string
+          enum:
+          - A_WON
+          - B_WON
+          - DRAW
+        resultRecordedAt:
+          type: string
+          format: date-time
+        outcomes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Outcome"
+        collected:
+          type: number
+        outstanding:
+          type: number
+        youAreBooker:
+          type: boolean
+    MovePlayer:
+      type: object
+      properties:
+        side:
+          type: string
+          enum:
+          - A
+          - B
+      required:
+      - side
     Write:
       type: object
       properties:
@@ -4697,6 +5090,8 @@ components:
           - MATCH_REQUEST_DECLINED
           - MATCH_PLAYER_WITHDREW
           - MATCH_POST_CANCELLED
+          - SPLIT_ADDED
+          - SPLIT_RESULT
         title:
           type: string
         body:
@@ -4870,14 +5265,6 @@ components:
           - WITHDRAWN
         team:
           $ref: "#/components/schemas/TeamRef"
-    Person:
-      type: object
-      properties:
-        userId:
-          type: string
-          format: uuid
-        name:
-          type: string
     RequestView:
       type: object
       properties:
@@ -4945,6 +5332,31 @@ components:
       required:
       - courtId
       - startsAt
+    Result:
+      type: object
+      properties:
+        result:
+          type: string
+          enum:
+          - A_WON
+          - B_WON
+          - DRAW
+    AddPlayer:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 60
+          minLength: 0
+        phone:
+          type: string
+        side:
+          type: string
+          enum:
+          - A
+          - B
+      required:
+      - side
     Claim:
       type: object
       properties:
@@ -5642,6 +6054,29 @@ components:
         totalPages:
           type: integer
           format: int32
+    OwedShare:
+      type: object
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        venueName:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        side:
+          type: string
+        result:
+          type: string
+          enum:
+          - A_WON
+          - B_WON
+          - DRAW
+        amount:
+          type: number
+        payTo:
+          $ref: "#/components/schemas/Person"
     PageResponseMatchPostView:
       type: object
       properties:
