@@ -49,6 +49,11 @@ export function today(timeZone: string, now = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
 }
 
+/** "6:05 PM" for an instant, as the clock reads in {@code timeZone}. */
+export function clockAt(instant: string, timeZone: string): string {
+  return clock(minutesInto(today(timeZone, new Date(instant)), instant, timeZone));
+}
+
 /** YYYY-MM-DD shifted by whole days. */
 export function addDays(day: string, days: number): string {
   const [y, m, d] = day.split('-').map(Number);
