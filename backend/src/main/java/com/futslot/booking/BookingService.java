@@ -33,6 +33,7 @@ import com.futslot.slot.SlotStatus;
 import com.futslot.user.User;
 import com.futslot.user.UserRepository;
 import com.futslot.user.UserService;
+import com.futslot.venue.AddOnService;
 import com.futslot.venue.Court;
 import com.futslot.venue.CourtRepository;
 import com.futslot.venue.Venue;
@@ -80,6 +81,8 @@ public class BookingService {
 
 	private final DiscountCodeService discountCodes;
 
+	private final AddOnService addOns;
+
 	private final ApplicationEventPublisher events;
 
 	private final Clock clock;
@@ -88,7 +91,7 @@ public class BookingService {
 			CourtRepository courts, CourtBlockRepository blocks, BookedRanges bookedRanges,
 			AvailabilityService availability, UserService userService, UserRepository users,
 			BookingReferences references, HoldExpiry holdExpiry, MembershipService memberships,
-			DiscountCodeService discountCodes, ApplicationEventPublisher events, Clock clock) {
+			DiscountCodeService discountCodes, AddOnService addOns, ApplicationEventPublisher events, Clock clock) {
 		this.bookings = bookings;
 		this.customers = customers;
 		this.access = access;
@@ -102,6 +105,7 @@ public class BookingService {
 		this.holdExpiry = holdExpiry;
 		this.memberships = memberships;
 		this.discountCodes = discountCodes;
+		this.addOns = addOns;
 		this.events = events;
 		this.clock = clock;
 	}
@@ -134,6 +138,7 @@ public class BookingService {
 		Benefit benefit = benefit(venue, customer, userId, start, slot.price(), request.membershipId(),
 				request.discountCode(), now, true);
 		booking.applyDiscount(benefit.discount(), benefit.membershipId(), benefit.discountCodeId());
+		booking.setAddOns(this.addOns.resolve(venue.getId(), request.addOns()));
 		BigDecimal advance = advanceFor(venue, booking.getTotalAmount());
 		if (advance.signum() > 0) {
 			booking.holdForPayment(advance, now.plus(Duration.ofMinutes(venue.policy().bookingHoldMinutes())));
@@ -155,8 +160,13 @@ public class BookingService {
 		VenueCustomer customer = this.customers.findByVenueIdAndPhone(venue.getId(), user.getPhone()).orElse(null);
 		Benefit benefit = benefit(venue, customer, userId, start, slot.price(), request.membershipId(),
 				request.discountCode(), this.clock.instant(), false);
-		BigDecimal total = slot.price().subtract(benefit.discount());
-		return new QuoteResponse(slot.price(), benefit.discount(), total, advanceFor(venue, total),
+		BigDecimal extras = this.addOns.resolve(venue.getId(), request.addOns())
+			.entrySet()
+			.stream()
+			.map(line -> line.getKey().getPrice().multiply(BigDecimal.valueOf(line.getValue())))
+			.reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal total = slot.price().add(extras).subtract(benefit.discount());
+		return new QuoteResponse(slot.price(), extras, benefit.discount(), total, advanceFor(venue, total),
 				benefit.membershipId(), (benefit.code() != null) ? benefit.code().getCode() : null);
 	}
 
@@ -182,6 +192,7 @@ public class BookingService {
 				end, price, ownerId, request.notes());
 		Benefit benefit = benefit(venue, customer, ownerId, start, price, request.membershipId(), null, now, true);
 		booking.applyDiscount(benefit.discount(), benefit.membershipId(), null);
+		booking.setAddOns(this.addOns.resolve(venueId, request.addOns()));
 		save(booking, customer, now);
 		redeem(benefit, booking, ownerId);
 		publish(BookingEventType.CREATED, booking, ownerId, null);
@@ -204,6 +215,18 @@ public class BookingService {
 		booking.moveTo(court, start, end);
 		flush();
 		publish(BookingEventType.RESCHEDULED, booking, ownerId, null);
+		return BookingResponse.from(booking);
+	}
+
+	/** Staff adding what was taken at the counter (or correcting it), during or after the game. */
+	@Transactional
+	public BookingResponse setAddOns(UUID userId, UUID venueId, UUID bookingId, AddOnsRequest request) {
+		ownedVenue(userId, venueId);
+		Booking booking = venueBooking(venueId, bookingId);
+		if (!booking.isLive() && booking.getStatus() != BookingStatus.COMPLETED) {
+			throw invalidStatus(booking);
+		}
+		booking.setAddOns(this.addOns.resolve(venueId, request.addOns()));
 		return BookingResponse.from(booking);
 	}
 

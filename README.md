@@ -98,6 +98,14 @@ posted again.
 Players save approved venues with `PUT /api/v1/me/favourites/{venueId}` and list them with
 `GET /api/v1/me/favourites`.
 
+### Extras (add-ons)
+
+Venues list what they sell or rent with a booking (`/api/v1/owner/venues/{id}/add-ons`): bibs, balls,
+water. Players add them when booking, and staff can change them at the counter during or after the game
+(`PUT .../bookings/{id}/add-ons`). The booking total is court + extras - discount: memberships and discount
+codes only reduce the court price. A booking keeps the price it was charged for an item, even if the
+venue changes the price later.
+
 ### Splitting the cost (baazi)
 
 Usually one player books and the group plays. The booker can set up a split on the booking

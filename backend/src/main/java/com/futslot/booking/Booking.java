@@ -2,16 +2,23 @@ package com.futslot.booking;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
+import com.futslot.venue.AddOnItem;
 import com.futslot.venue.Court;
 import com.futslot.venue.Venue;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -82,6 +89,10 @@ public class Booking {
 
 	@Column(nullable = false, precision = 12, scale = 2)
 	private BigDecimal addOnsAmount = BigDecimal.ZERO;
+
+	@ElementCollection
+	@CollectionTable(name = "booking_add_ons", joinColumns = @JoinColumn(name = "booking_id"))
+	private List<BookingAddOn> addOns = new ArrayList<>();
 
 	@Column(nullable = false, precision = 12, scale = 2)
 	private BigDecimal discountAmount = BigDecimal.ZERO;
@@ -157,11 +168,35 @@ public class Booking {
 	 */
 	void applyDiscount(BigDecimal discount, UUID membershipId, UUID discountCodeId) {
 		this.discountAmount = discount;
-		this.totalAmount = this.priceAmount.subtract(discount);
 		this.membershipId = membershipId;
 		this.discountCodeId = discountCodeId;
-		if (this.totalAmount.signum() == 0) {
-			this.paymentStatus = PaymentStatus.PAID;
+		recalculate();
+	}
+
+	/**
+	 * Replaces the extras (the court discount stays on the court price). What's paid stays paid; the
+	 * payment status follows the new total.
+	 */
+	void setAddOns(Map<AddOnItem, Integer> items) {
+		Map<UUID, BigDecimal> charged = new HashMap<>();
+		this.addOns.forEach(line -> charged.put(line.getItem().getId(), line.getUnitPrice()));
+		this.addOns.clear();
+		items.forEach((item, quantity) -> {
+			BookingAddOn line = new BookingAddOn(item, quantity);
+			// Keep the price already charged for an item that was on the booking before
+			BigDecimal earlier = charged.get(item.getId());
+			this.addOns.add((earlier != null) ? line.atPrice(earlier) : line);
+		});
+		this.addOnsAmount = this.addOns.stream().map(BookingAddOn::total).reduce(BigDecimal.ZERO, BigDecimal::add);
+		recalculate();
+	}
+
+	private void recalculate() {
+		this.totalAmount = this.priceAmount.add(this.addOnsAmount).subtract(this.discountAmount);
+		if (this.paymentStatus == PaymentStatus.UNPAID || this.paymentStatus == PaymentStatus.PARTIALLY_PAID
+				|| this.paymentStatus == PaymentStatus.PAID) {
+			this.paymentStatus = (this.paidAmount.compareTo(this.totalAmount) >= 0) ? PaymentStatus.PAID
+					: (this.paidAmount.signum() > 0) ? PaymentStatus.PARTIALLY_PAID : PaymentStatus.UNPAID;
 		}
 	}
 
@@ -253,6 +288,14 @@ public class Booking {
 
 	public BigDecimal getDiscountAmount() {
 		return this.discountAmount;
+	}
+
+	public BigDecimal getAddOnsAmount() {
+		return this.addOnsAmount;
+	}
+
+	public List<BookingAddOn> getAddOns() {
+		return this.addOns;
 	}
 
 	public Court getCourt() {

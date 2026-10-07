@@ -4,12 +4,14 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.UUID;
 
 /** Start and end are in the venue's local offset. */
 public record BookingResponse(UUID id, String reference, VenueRef venue, CourtRef court, CustomerRef customer,
 		BookingSource source, BookingStatus status, OffsetDateTime startsAt, OffsetDateTime endsAt,
-		BigDecimal priceAmount, BigDecimal discountAmount, UUID membershipId, UUID discountCodeId,
+		BigDecimal priceAmount, BigDecimal addOnsAmount, List<AddOn> addOns, BigDecimal discountAmount,
+		UUID membershipId, UUID discountCodeId,
 		BigDecimal totalAmount, BigDecimal advanceRequired, BigDecimal paidAmount, PaymentStatus paymentStatus,
 		Instant holdExpiresAt, String notes, Instant cancelledAt, String cancellationReason, Instant createdAt) {
 
@@ -22,10 +24,19 @@ public record BookingResponse(UUID id, String reference, VenueRef venue, CourtRe
 						booking.getCustomer().getPhone()),
 				booking.getSource(), booking.getStatus(), booking.getStartsAt().atZone(zone).toOffsetDateTime(),
 				booking.getEndsAt().atZone(zone).toOffsetDateTime(), booking.getPriceAmount(),
+				booking.getAddOnsAmount(), booking.getAddOns()
+					.stream()
+					.map(line -> new AddOn(line.getItem().getId(), line.getItem().getName(), line.getQuantity(),
+							line.getUnitPrice()))
+					.toList(),
 				booking.getDiscountAmount(), booking.getMembershipId(), booking.getDiscountCodeId(),
 				booking.getTotalAmount(), booking.getAdvanceRequired(), booking.getPaidAmount(),
 				booking.getPaymentStatus(), booking.getHoldExpiresAt(), booking.getNotes(), booking.getCancelledAt(),
 				booking.getCancellationReason(), booking.getCreatedAt());
+	}
+
+	public record AddOn(UUID itemId, String name, int quantity, BigDecimal unitPrice) {
+
 	}
 
 	public record VenueRef(UUID id, String name, String slug) {
