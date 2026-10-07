@@ -53,7 +53,22 @@ class PaymentController {
 		return this.paymentService.buyMembership(CurrentUser.id(jwt), request);
 	}
 
+	/** Pay a tournament entry fee to the venue, then report it here. */
+	@PostMapping("/tournament-entries/{registrationId}/payments")
+	@ResponseStatus(HttpStatus.CREATED)
+	PaymentResponse claimEntry(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID registrationId,
+			@Valid @RequestBody PaymentRequests.Claim request) {
+		return this.paymentService.claimEntry(CurrentUser.id(jwt), registrationId, request);
+	}
+
 	// Venue
+
+	@PostMapping("/owner/venues/{venueId}/tournament-entries/{registrationId}/payments")
+	@ResponseStatus(HttpStatus.CREATED)
+	PaymentResponse recordEntry(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID venueId,
+			@PathVariable UUID registrationId, @Valid @RequestBody PaymentRequests.RecordEntry request) {
+		return this.paymentService.recordEntry(CurrentUser.id(jwt), venueId, registrationId, request);
+	}
 
 	@PostMapping("/owner/venues/{venueId}/memberships")
 	@ResponseStatus(HttpStatus.CREATED)

@@ -129,6 +129,27 @@ opponent" (for a team you lead). Others ask to join; the poster accepts or decli
 its places are taken, which declines everyone still waiting, and reopens if an accepted player drops
 out before kick-off. Phone numbers are shared only between the poster and accepted players.
 
+### Tournaments
+
+Venues run tournaments (owners and managers, under `/api/v1/owner/venues/{venueId}/tournaments`) in three
+formats: `KNOCKOUT` (byes go to the top seeds when the field isn't a power of two), `LEAGUE` (everyone plays
+everyone once) and `GROUP_KNOCKOUT` (2, 4 or 8 round-robin groups, then the top two of each cross into a
+knockout: A1-B2, B1-A2).
+
+1. **Draft** the tournament, then **open** registration. It appears in `GET /api/v1/tournaments`.
+2. **Teams sign up.** A captain or vice-captain registers the team with a squad of current members. Once
+   the places are taken, teams join a waitlist, and the next team moves up when someone withdraws or is
+   rejected. Entry fees are paid like booking payments: report a wallet payment for staff to approve, or
+   staff record cash. Either way the entry is confirmed.
+3. **Close** registration and **draw** fixtures from the confirmed teams (in sign-up order, or shuffled).
+4. **Schedule** matches on a court. This blocks the court for `matchMinutes`, so nobody can book over it.
+5. **Enter results.** Knockout winners move on straight away; a level knockout match needs penalties. A
+   no-show is a walkover (3-0). A result can be corrected until the next round's match has been played.
+   Tables use points, then goal difference, then goals scored.
+
+Cancelling frees every court booked for unplayed matches. Squad players are told when fixtures are out,
+when their matches are scheduled, and if the tournament is cancelled.
+
 ### Reports
 
 Venue reports live under `/api/v1/owner/venues/{venueId}/reports` and take `from` / `to` local dates (both

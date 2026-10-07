@@ -108,11 +108,133 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/VenueResponse"
+  /api/v1/owner/venues/{venueId}/tournaments/{tournamentId}:
+    get:
+      tags:
+      - owner-tournament-controller
+      operationId: get_1
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+    put:
+      tags:
+      - owner-tournament-controller
+      operationId: update_1
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TournamentRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+  /api/v1/owner/venues/{venueId}/tournaments/{tournamentId}/matches/{matchId}/schedule:
+    put:
+      tags:
+      - owner-tournament-controller
+      operationId: schedule
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: matchId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Schedule"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+    delete:
+      tags:
+      - owner-tournament-controller
+      operationId: unschedule
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: matchId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
   /api/v1/owner/venues/{venueId}/staff/{staffId}:
     put:
       tags:
       - staff-controller
-      operationId: update_1
+      operationId: update_2
       parameters:
       - name: venueId
         in: path
@@ -326,7 +448,7 @@ paths:
     put:
       tags:
       - discount-code-controller
-      operationId: update_2
+      operationId: update_3
       parameters:
       - name: venueId
         in: path
@@ -534,7 +656,7 @@ paths:
     get:
       tags:
       - split-controller
-      operationId: get_1
+      operationId: get_2
       parameters:
       - name: bookingId
         in: path
@@ -650,7 +772,7 @@ paths:
     put:
       tags:
       - review-controller
-      operationId: update_3
+      operationId: update_4
       parameters:
       - name: bookingId
         in: path
@@ -709,6 +831,81 @@ paths:
       responses:
         "204":
           description: No Content
+  /api/v1/tournaments/{tournamentId}/registrations:
+    post:
+      tags:
+      - tournament-controller
+      operationId: register
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Register"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+  /api/v1/tournaments/{tournamentId}/registrations/{registrationId}/withdraw:
+    post:
+      tags:
+      - tournament-controller
+      operationId: withdraw
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: registrationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+  /api/v1/tournament-entries/{registrationId}/payments:
+    post:
+      tags:
+      - payment-controller
+      operationId: claimEntry
+      parameters:
+      - name: registrationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Claim"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
   /api/v1/teams:
     get:
       tags:
@@ -871,6 +1068,317 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/VenueResponse"
+  /api/v1/owner/venues/{venueId}/tournaments:
+    get:
+      tags:
+      - owner-tournament-controller
+      operationId: list_1
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Summary"
+    post:
+      tags:
+      - owner-tournament-controller
+      operationId: create_3
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TournamentRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+  /api/v1/owner/venues/{venueId}/tournaments/{tournamentId}/registrations/{registrationId}/reject:
+    post:
+      tags:
+      - owner-tournament-controller
+      operationId: reject
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: registrationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+  /api/v1/owner/venues/{venueId}/tournaments/{tournamentId}/open:
+    post:
+      tags:
+      - owner-tournament-controller
+      operationId: open
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+  /api/v1/owner/venues/{venueId}/tournaments/{tournamentId}/matches/{matchId}/walkover:
+    post:
+      tags:
+      - owner-tournament-controller
+      operationId: walkover
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: matchId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Walkover"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+  /api/v1/owner/venues/{venueId}/tournaments/{tournamentId}/matches/{matchId}/result:
+    post:
+      tags:
+      - owner-tournament-controller
+      operationId: result
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: matchId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Result"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+  /api/v1/owner/venues/{venueId}/tournaments/{tournamentId}/knockout:
+    post:
+      tags:
+      - owner-tournament-controller
+      operationId: advance
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+  /api/v1/owner/venues/{venueId}/tournaments/{tournamentId}/draw:
+    post:
+      tags:
+      - owner-tournament-controller
+      operationId: draw
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Draw"
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+  /api/v1/owner/venues/{venueId}/tournaments/{tournamentId}/close:
+    post:
+      tags:
+      - owner-tournament-controller
+      operationId: close
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+  /api/v1/owner/venues/{venueId}/tournaments/{tournamentId}/cancel:
+    post:
+      tags:
+      - owner-tournament-controller
+      operationId: cancel
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+  /api/v1/owner/venues/{venueId}/tournament-entries/{registrationId}/payments:
+    post:
+      tags:
+      - payment-controller
+      operationId: recordEntry
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: registrationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordEntry"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
   /api/v1/owner/venues/{venueId}/submit:
     post:
       tags:
@@ -894,7 +1402,7 @@ paths:
     get:
       tags:
       - staff-controller
-      operationId: list_1
+      operationId: list_2
       parameters:
       - name: venueId
         in: path
@@ -969,7 +1477,7 @@ paths:
     get:
       tags:
       - recurring-booking-controller
-      operationId: list_2
+      operationId: list_3
       parameters:
       - name: venueId
         in: path
@@ -989,7 +1497,7 @@ paths:
     post:
       tags:
       - recurring-booking-controller
-      operationId: create_3
+      operationId: create_4
       parameters:
       - name: venueId
         in: path
@@ -1064,7 +1572,7 @@ paths:
     post:
       tags:
       - recurring-booking-controller
-      operationId: cancel
+      operationId: cancel_1
       parameters:
       - name: venueId
         in: path
@@ -1089,7 +1597,7 @@ paths:
     post:
       tags:
       - payment-controller
-      operationId: reject
+      operationId: reject_1
       parameters:
       - name: venueId
         in: path
@@ -1215,7 +1723,7 @@ paths:
     post:
       tags:
       - membership-controller
-      operationId: cancel_1
+      operationId: cancel_2
       parameters:
       - name: venueId
         in: path
@@ -1285,7 +1793,7 @@ paths:
     get:
       tags:
       - discount-code-controller
-      operationId: list_3
+      operationId: list_4
       parameters:
       - name: venueId
         in: path
@@ -1305,7 +1813,7 @@ paths:
     post:
       tags:
       - discount-code-controller
-      operationId: create_4
+      operationId: create_5
       parameters:
       - name: venueId
         in: path
@@ -1809,7 +2317,7 @@ paths:
     post:
       tags:
       - matchmaking-controller
-      operationId: create_5
+      operationId: create_6
       requestBody:
         content:
           application/json:
@@ -1902,7 +2410,7 @@ paths:
     post:
       tags:
       - matchmaking-controller
-      operationId: withdraw
+      operationId: withdraw_1
       parameters:
       - name: postId
         in: path
@@ -1921,7 +2429,7 @@ paths:
     post:
       tags:
       - matchmaking-controller
-      operationId: cancel_2
+      operationId: cancel_3
       parameters:
       - name: postId
         in: path
@@ -2156,7 +2664,7 @@ paths:
     post:
       tags:
       - booking-controller
-      operationId: cancel_3
+      operationId: cancel_4
       parameters:
       - name: bookingId
         in: path
@@ -2295,7 +2803,7 @@ paths:
     post:
       tags:
       - admin-venue-controller
-      operationId: reject_1
+      operationId: reject_2
       parameters:
       - name: venueId
         in: path
@@ -2383,7 +2891,7 @@ paths:
     get:
       tags:
       - customer-controller
-      operationId: get_2
+      operationId: get_3
       parameters:
       - name: venueId
         in: path
@@ -2407,7 +2915,7 @@ paths:
     patch:
       tags:
       - customer-controller
-      operationId: update_4
+      operationId: update_5
       parameters:
       - name: venueId
         in: path
@@ -2449,7 +2957,7 @@ paths:
     patch:
       tags:
       - me-controller
-      operationId: update_5
+      operationId: update_6
       requestBody:
         content:
           application/json:
@@ -2508,7 +3016,7 @@ paths:
     get:
       tags:
       - public-venue-controller
-      operationId: get_3
+      operationId: get_4
       parameters:
       - name: slug
         in: path
@@ -2634,11 +3142,57 @@ paths:
               schema:
                 $ref: "#/components/schemas/AvailabilityResponse"
       security: []
+  /api/v1/tournaments:
+    get:
+      tags:
+      - tournament-controller
+      operationId: browse_1
+      parameters:
+      - name: city
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: upcoming
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Summary"
+      security: []
+  /api/v1/tournaments/{slug}:
+    get:
+      tags:
+      - tournament-controller
+      operationId: get_5
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Detail"
+      security: []
   /api/v1/teams/{slug}:
     get:
       tags:
       - team-controller
-      operationId: get_4
+      operationId: get_6
       parameters:
       - name: slug
         in: path
@@ -2921,7 +3475,7 @@ paths:
     get:
       tags:
       - recurring-booking-controller
-      operationId: get_5
+      operationId: get_7
       parameters:
       - name: venueId
         in: path
@@ -3109,11 +3663,25 @@ paths:
                 additionalProperties:
                   type: integer
                   format: int64
+  /api/v1/me/tournament-entries:
+    get:
+      tags:
+      - tournament-controller
+      operationId: mine_2
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MyEntry"
   /api/v1/me/teams:
     get:
       tags:
       - team-controller
-      operationId: mine_2
+      operationId: mine_3
       responses:
         "200":
           description: OK
@@ -3141,7 +3709,7 @@ paths:
     get:
       tags:
       - review-controller
-      operationId: mine_3
+      operationId: mine_4
       parameters:
       - name: page
         in: query
@@ -3215,7 +3783,7 @@ paths:
     get:
       tags:
       - matchmaking-controller
-      operationId: mine_4
+      operationId: mine_5
       parameters:
       - name: page
         in: query
@@ -3245,7 +3813,7 @@ paths:
     get:
       tags:
       - favourite-controller
-      operationId: list_4
+      operationId: list_5
       responses:
         "200":
           description: OK
@@ -3259,7 +3827,7 @@ paths:
     get:
       tags:
       - matchmaking-controller
-      operationId: get_6
+      operationId: get_8
       parameters:
       - name: postId
         in: path
@@ -3312,7 +3880,7 @@ paths:
     get:
       tags:
       - admin-venue-controller
-      operationId: list_5
+      operationId: list_6
       parameters:
       - name: status
         in: query
@@ -3354,7 +3922,7 @@ paths:
     get:
       tags:
       - admin-venue-controller
-      operationId: get_7
+      operationId: get_9
       parameters:
       - name: venueId
         in: path
@@ -3373,7 +3941,7 @@ paths:
     get:
       tags:
       - admin-review-controller
-      operationId: list_6
+      operationId: list_7
       parameters:
       - name: status
         in: query
@@ -3852,6 +4420,365 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/CourtResponse"
+    TournamentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 0
+        description:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        rules:
+          type: string
+          maxLength: 4000
+          minLength: 0
+        bannerUrl:
+          type: string
+          maxLength: 500
+          minLength: 0
+        format:
+          type: string
+          enum:
+          - KNOCKOUT
+          - LEAGUE
+          - GROUP_KNOCKOUT
+        teamSize:
+          type: integer
+          format: int32
+          maximum: 11
+          minimum: 3
+        maxSquadSize:
+          type: integer
+          format: int32
+          maximum: 20
+          minimum: 3
+        maxTeams:
+          type: integer
+          format: int32
+          maximum: 32
+          minimum: 2
+        entryFee:
+          type: number
+          minimum: 0
+        prizeDetails:
+          type: string
+          maxLength: 500
+          minLength: 0
+        pointsForWin:
+          type: integer
+          format: int32
+          maximum: 10
+          minimum: 0
+        pointsForDraw:
+          type: integer
+          format: int32
+          maximum: 10
+          minimum: 0
+        registrationOpensAt:
+          type: string
+          format: date-time
+        registrationClosesAt:
+          type: string
+          format: date-time
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+        matchMinutes:
+          type: integer
+          format: int32
+          maximum: 240
+          minimum: 10
+        groupCount:
+          type: integer
+          format: int32
+      required:
+      - endsOn
+      - format
+      - maxSquadSize
+      - maxTeams
+      - name
+      - startsOn
+      - teamSize
+    CourtRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    Detail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        name:
+          type: string
+        venue:
+          $ref: "#/components/schemas/VenueRef"
+        description:
+          type: string
+        rules:
+          type: string
+        bannerUrl:
+          type: string
+        format:
+          type: string
+          enum:
+          - KNOCKOUT
+          - LEAGUE
+          - GROUP_KNOCKOUT
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - REGISTRATION_OPEN
+          - REGISTRATION_CLOSED
+          - IN_PROGRESS
+          - COMPLETED
+          - CANCELLED
+        teamSize:
+          type: integer
+          format: int32
+        maxSquadSize:
+          type: integer
+          format: int32
+        maxTeams:
+          type: integer
+          format: int32
+        entryFee:
+          type: number
+        prizeDetails:
+          type: string
+        pointsForWin:
+          type: integer
+          format: int32
+        pointsForDraw:
+          type: integer
+          format: int32
+        registrationOpensAt:
+          type: string
+          format: date-time
+        registrationClosesAt:
+          type: string
+          format: date-time
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+        matchMinutes:
+          type: integer
+          format: int32
+        groupCount:
+          type: integer
+          format: int32
+        acceptingTeams:
+          type: boolean
+        teamsIn:
+          type: integer
+          format: int32
+        waitlisted:
+          type: integer
+          format: int32
+        registrations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Entry"
+        matches:
+          type: array
+          items:
+            $ref: "#/components/schemas/Match"
+        tables:
+          type: array
+          items:
+            $ref: "#/components/schemas/Table"
+        champion:
+          $ref: "#/components/schemas/TeamRef"
+    Entry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        team:
+          $ref: "#/components/schemas/TeamRef"
+        status:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - CONFIRMED
+          - WAITLISTED
+          - WITHDRAWN
+          - REJECTED
+        groupName:
+          type: string
+        seed:
+          type: integer
+          format: int32
+        squad:
+          type: array
+          items:
+            $ref: "#/components/schemas/SquadPlayer"
+        registeredAt:
+          type: string
+          format: date-time
+    Match:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        stage:
+          type: string
+          enum:
+          - GROUP
+          - LEAGUE
+          - ROUND_OF_32
+          - ROUND_OF_16
+          - QUARTER_FINAL
+          - SEMI_FINAL
+          - THIRD_PLACE
+          - FINAL
+        groupName:
+          type: string
+        round:
+          type: integer
+          format: int32
+        matchNumber:
+          type: integer
+          format: int32
+        home:
+          $ref: "#/components/schemas/TeamRef"
+        away:
+          $ref: "#/components/schemas/TeamRef"
+        court:
+          $ref: "#/components/schemas/CourtRef"
+        scheduledAt:
+          type: string
+          format: date-time
+        homeScore:
+          type: integer
+          format: int32
+        awayScore:
+          type: integer
+          format: int32
+        homePenalties:
+          type: integer
+          format: int32
+        awayPenalties:
+          type: integer
+          format: int32
+        winnerRegistrationId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - SCHEDULED
+          - IN_PROGRESS
+          - COMPLETED
+          - WALKOVER
+          - POSTPONED
+          - CANCELLED
+        bye:
+          type: boolean
+    SquadPlayer:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        jerseyNumber:
+          type: integer
+          format: int32
+    Standing:
+      type: object
+      properties:
+        team:
+          $ref: "#/components/schemas/TeamRef"
+        played:
+          type: integer
+          format: int32
+        won:
+          type: integer
+          format: int32
+        drawn:
+          type: integer
+          format: int32
+        lost:
+          type: integer
+          format: int32
+        goalsFor:
+          type: integer
+          format: int32
+        goalsAgainst:
+          type: integer
+          format: int32
+        goalDifference:
+          type: integer
+          format: int32
+        points:
+          type: integer
+          format: int32
+    Table:
+      type: object
+      properties:
+        groupName:
+          type: string
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/Standing"
+    TeamRef:
+      type: object
+      properties:
+        registrationId:
+          type: string
+          format: uuid
+        teamId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+    VenueRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        city:
+          type: string
+    Schedule:
+      type: object
+      properties:
+        courtId:
+          type: string
+          format: uuid
+        startsAt:
+          type: string
+          format: date-time
+      required:
+      - courtId
+      - startsAt
     StaffUpdateRequest:
       type: object
       properties:
@@ -4462,6 +5389,122 @@ components:
           minLength: 0
       required:
       - rating
+    Register:
+      type: object
+      properties:
+        teamId:
+          type: string
+          format: uuid
+        squad:
+          type: array
+          items:
+            $ref: "#/components/schemas/SquadEntry"
+          maxItems: 20
+          minItems: 0
+      required:
+      - squad
+      - teamId
+    SquadEntry:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        jerseyNumber:
+          type: integer
+          format: int32
+          maximum: 99
+          minimum: 0
+      required:
+      - userId
+    Claim:
+      type: object
+      properties:
+        method:
+          type: string
+          enum:
+          - CASH
+          - ESEWA
+          - KHALTI
+          - FONEPAY
+          - BANK_TRANSFER
+          - CARD
+          - MEMBERSHIP_CREDIT
+        transactionId:
+          type: string
+          maxLength: 100
+          minLength: 0
+        amount:
+          type: number
+          minimum: 1
+      required:
+      - amount
+      - method
+      - transactionId
+    PaymentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        purpose:
+          type: string
+          enum:
+          - BOOKING
+          - SPLIT_SHARE
+          - TOURNAMENT_ENTRY
+          - MEMBERSHIP
+          - SUBSCRIPTION
+          - FEATURED_LISTING
+        bookingId:
+          type: string
+          format: uuid
+        bookingReference:
+          type: string
+        membershipId:
+          type: string
+          format: uuid
+        membershipPlanName:
+          type: string
+        tournamentRegistrationId:
+          type: string
+          format: uuid
+        tournamentName:
+          type: string
+        customerName:
+          type: string
+        amount:
+          type: number
+        method:
+          type: string
+          enum:
+          - CASH
+          - ESEWA
+          - KHALTI
+          - FONEPAY
+          - BANK_TRANSFER
+          - CARD
+          - MEMBERSHIP_CREDIT
+        status:
+          type: string
+          enum:
+          - INITIATED
+          - PENDING
+          - SUCCEEDED
+          - FAILED
+          - CANCELLED
+          - PARTIALLY_REFUNDED
+          - REFUNDED
+        transactionId:
+          type: string
+        failureReason:
+          type: string
+        paidAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
     Invite:
       type: object
       properties:
@@ -4470,6 +5513,64 @@ components:
           minLength: 1
       required:
       - phone
+    Walkover:
+      type: object
+      properties:
+        winnerRegistrationId:
+          type: string
+          format: uuid
+      required:
+      - winnerRegistrationId
+    Result:
+      type: object
+      properties:
+        homeScore:
+          type: integer
+          format: int32
+          maximum: 99
+          minimum: 0
+        awayScore:
+          type: integer
+          format: int32
+          maximum: 99
+          minimum: 0
+        homePenalties:
+          type: integer
+          format: int32
+          maximum: 99
+          minimum: 0
+        awayPenalties:
+          type: integer
+          format: int32
+          maximum: 99
+          minimum: 0
+      required:
+      - awayScore
+      - homeScore
+    Draw:
+      type: object
+      properties:
+        shuffle:
+          type: boolean
+    RecordEntry:
+      type: object
+      properties:
+        method:
+          type: string
+          enum:
+          - CASH
+          - ESEWA
+          - KHALTI
+          - FONEPAY
+          - BANK_TRANSFER
+          - CARD
+          - MEMBERSHIP_CREDIT
+        transactionId:
+          type: string
+          maxLength: 100
+          minLength: 0
+      required:
+      - method
     StaffRequest:
       type: object
       properties:
@@ -4673,14 +5774,6 @@ components:
         createdAt:
           type: string
           format: date-time
-    CourtRef:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
     CustomerRef:
       type: object
       properties:
@@ -4750,16 +5843,6 @@ components:
           format: date
         reason:
           type: string
-    VenueRef:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        slug:
-          type: string
     Reject:
       type: object
       properties:
@@ -4769,65 +5852,6 @@ components:
           minLength: 0
       required:
       - reason
-    PaymentResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        purpose:
-          type: string
-          enum:
-          - BOOKING
-          - SPLIT_SHARE
-          - TOURNAMENT_ENTRY
-          - MEMBERSHIP
-          - SUBSCRIPTION
-          - FEATURED_LISTING
-        bookingId:
-          type: string
-          format: uuid
-        bookingReference:
-          type: string
-        membershipId:
-          type: string
-          format: uuid
-        membershipPlanName:
-          type: string
-        customerName:
-          type: string
-        amount:
-          type: number
-        method:
-          type: string
-          enum:
-          - CASH
-          - ESEWA
-          - KHALTI
-          - FONEPAY
-          - BANK_TRANSFER
-          - CARD
-          - MEMBERSHIP_CREDIT
-        status:
-          type: string
-          enum:
-          - INITIATED
-          - PENDING
-          - SUCCEEDED
-          - FAILED
-          - CANCELLED
-          - PARTIALLY_REFUNDED
-          - REFUNDED
-        transactionId:
-          type: string
-        failureReason:
-          type: string
-        paidAt:
-          type: string
-          format: date-time
-        createdAt:
-          type: string
-          format: date-time
     SellMembership:
       type: object
       properties:
@@ -5092,6 +6116,12 @@ components:
           - MATCH_POST_CANCELLED
           - SPLIT_ADDED
           - SPLIT_RESULT
+          - TOURNAMENT_REGISTRATION
+          - TOURNAMENT_ENTRY_CONFIRMED
+          - TOURNAMENT_PLACE_OFFERED
+          - TOURNAMENT_FIXTURES
+          - TOURNAMENT_MATCH_SCHEDULED
+          - TOURNAMENT_CANCELLED
         title:
           type: string
         body:
@@ -5289,16 +6319,6 @@ components:
         createdAt:
           type: string
           format: date-time
-    TeamRef:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        slug:
-          type: string
     JoinRequestBody:
       type: object
       properties:
@@ -5332,15 +6352,6 @@ components:
       required:
       - courtId
       - startsAt
-    Result:
-      type: object
-      properties:
-        result:
-          type: string
-          enum:
-          - A_WON
-          - B_WON
-          - DRAW
     AddPlayer:
       type: object
       properties:
@@ -5357,30 +6368,6 @@ components:
           - B
       required:
       - side
-    Claim:
-      type: object
-      properties:
-        method:
-          type: string
-          enum:
-          - CASH
-          - ESEWA
-          - KHALTI
-          - FONEPAY
-          - BANK_TRANSFER
-          - CARD
-          - MEMBERSHIP_CREDIT
-        transactionId:
-          type: string
-          maxLength: 100
-          minLength: 0
-        amount:
-          type: number
-          minimum: 1
-      required:
-      - amount
-      - method
-      - transactionId
     QuoteResponse:
       type: object
       properties:
@@ -5727,6 +6714,49 @@ components:
           - BOOKED
           - BLOCKED
           - PAST
+    Summary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        name:
+          type: string
+        venue:
+          $ref: "#/components/schemas/VenueRef"
+        format:
+          type: string
+          enum:
+          - KNOCKOUT
+          - LEAGUE
+          - GROUP_KNOCKOUT
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - REGISTRATION_OPEN
+          - REGISTRATION_CLOSED
+          - IN_PROGRESS
+          - COMPLETED
+          - CANCELLED
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+        entryFee:
+          type: number
+        teamsIn:
+          type: integer
+          format: int32
+        maxTeams:
+          type: integer
+          format: int32
+        bannerUrl:
+          type: string
     PageResponseTeamSummary:
       type: object
       properties:
@@ -6054,6 +7084,13 @@ components:
         totalPages:
           type: integer
           format: int32
+    MyEntry:
+      type: object
+      properties:
+        tournament:
+          $ref: "#/components/schemas/Summary"
+        entry:
+          $ref: "#/components/schemas/Entry"
     OwedShare:
       type: object
       properties:

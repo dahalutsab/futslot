@@ -12,6 +12,7 @@ import org.hibernate.type.SqlTypes;
 
 import com.futslot.booking.Booking;
 import com.futslot.membership.Membership;
+import com.futslot.tournament.Registration;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,7 +26,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 /**
- * Money paid to a venue for a booking or a membership. Today players pay the venue's own wallet/QR or
+ * Money paid to a venue for a booking, a membership or a tournament entry. Today players pay the venue's own wallet/QR or
  * cash, so FutSlot only records and verifies payments; {@code transactionId} is the wallet's transaction
  * id (unique per method, so the same receipt can't be claimed twice).
  */
@@ -49,6 +50,10 @@ public class Payment {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "membership_id", updatable = false)
 	private Membership membership;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "tournament_registration_id", updatable = false)
+	private Registration entry;
 
 	@Column(updatable = false)
 	private UUID venueId;
@@ -134,6 +139,25 @@ public class Payment {
 		return payment;
 	}
 
+	static Payment entryClaimed(Registration entry, UUID payerUserId, BigDecimal amount, PaymentMethod method,
+			String transactionId) {
+		Payment payment = new Payment(PaymentPurpose.TOURNAMENT_ENTRY, null, null,
+				entry.getTournament().getVenue().getId(), payerUserId, amount, method, transactionId,
+				TransactionStatus.PENDING);
+		payment.entry = entry;
+		return payment;
+	}
+
+	static Payment entryReceived(Registration entry, BigDecimal amount, PaymentMethod method, String transactionId,
+			UUID recordedBy, Instant at) {
+		Payment payment = new Payment(PaymentPurpose.TOURNAMENT_ENTRY, null, null,
+				entry.getTournament().getVenue().getId(), entry.getRegisteredBy(), amount, method, transactionId,
+				TransactionStatus.SUCCEEDED);
+		payment.entry = entry;
+		payment.approve(recordedBy, at);
+		return payment;
+	}
+
 	void approve(UUID by, Instant at) {
 		this.status = TransactionStatus.SUCCEEDED;
 		this.recordedBy = by;
@@ -170,6 +194,10 @@ public class Payment {
 
 	public Membership getMembership() {
 		return this.membership;
+	}
+
+	public Registration getEntry() {
+		return this.entry;
 	}
 
 	public UUID getVenueId() {

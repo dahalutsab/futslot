@@ -37,7 +37,8 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/v1/venues", "/api/v1/venues/*", "/api/v1/venues/*/availability",
 						"/api/v1/venues/*/reviews", "/api/v1/venues/*/reviews/summary",
-						"/api/v1/venues/*/membership-plans", "/api/v1/amenities").permitAll()
+						"/api/v1/venues/*/membership-plans", "/api/v1/amenities", "/api/v1/tournaments",
+						"/api/v1/tournaments/*").permitAll()
 				.anyRequest().authenticated())
 			.oauth2ResourceServer(oauth2 -> oauth2
 				.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));

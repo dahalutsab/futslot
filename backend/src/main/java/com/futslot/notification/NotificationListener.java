@@ -16,12 +16,14 @@ import com.futslot.booking.BookingStatus;
 import com.futslot.booking.RecurringBookingEvent;
 import com.futslot.matchmaking.MatchEvent;
 import com.futslot.matchmaking.MatchPostType;
+import com.futslot.payment.EntryPaymentEvent;
 import com.futslot.payment.MembershipPaymentEvent;
 import com.futslot.payment.PaymentEvent;
 import com.futslot.review.ReviewEvent;
 import com.futslot.split.SplitEvent;
 import com.futslot.team.TeamEvent;
 import com.futslot.team.TeamService;
+import com.futslot.tournament.TournamentEvent;
 import com.futslot.venue.StaffAdded;
 import com.futslot.venue.VenueAccess;
 import com.futslot.venue.VenueModerated;
@@ -272,6 +274,53 @@ class NotificationListener {
 						: "You pay nothing.";
 				this.notifications.send(event.recipientUserId(), NotificationType.SPLIT_RESULT, outcome,
 						game + ". " + owes, data);
+			}
+		}
+	}
+
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(TournamentEvent event) {
+		Map<String, String> data = Map.of("tournamentId", event.tournamentId().toString(), "tournamentSlug",
+				event.slug());
+		String name = event.tournamentName();
+		for (UUID recipient : event.recipients()) {
+			switch (event.type()) {
+				case REGISTERED -> this.notifications.send(recipient, NotificationType.TOURNAMENT_REGISTRATION,
+						event.teamName() + " signed up", "New entry for " + name + ".", data);
+				case ENTRY_CONFIRMED -> this.notifications.send(recipient, NotificationType.TOURNAMENT_ENTRY_CONFIRMED,
+						event.teamName() + " is in " + name, "Your place is confirmed. Fixtures come once registration closes.",
+						data);
+				case PROMOTED -> this.notifications.send(recipient, NotificationType.TOURNAMENT_PLACE_OFFERED,
+						"A place opened up in " + name,
+						event.teamName() + " is off the waitlist. Pay any entry fee to confirm.", data);
+				case FIXTURES_DRAWN -> this.notifications.send(recipient, NotificationType.TOURNAMENT_FIXTURES,
+						"Fixtures are out", "See who you play in " + name + ".", data);
+				case MATCH_SCHEDULED -> this.notifications.send(recipient, NotificationType.TOURNAMENT_MATCH_SCHEDULED,
+						event.teamName() + " vs " + event.opponentName(),
+						name + ": " + event.courtName() + ", " + Messages.when(event.at()) + ".", data);
+				case CANCELLED -> this.notifications.send(recipient, NotificationType.TOURNAMENT_CANCELLED,
+						name + " is cancelled", event.venueName() + " called off the tournament.", data);
+			}
+		}
+	}
+
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(EntryPaymentEvent event) {
+		Map<String, String> data = Map.of("tournamentRegistrationId", event.registrationId().toString());
+		String amount = Messages.rupees(event.amount());
+		switch (event.type()) {
+			case SUBMITTED -> this.access.usersWith(event.venueId(), VenuePermission.MANAGE_BOOKINGS)
+				.forEach(userId -> this.notifications.send(userId, NotificationType.PAYMENT_TO_VERIFY, "Payment to verify",
+						event.teamName() + " paid the " + amount + " entry for " + event.tournamentName() + " by "
+								+ event.method() + ". Check your wallet, then approve or reject.",
+						data));
+			case REJECTED -> this.notifications.send(event.registeredBy(), NotificationType.PAYMENT_REJECTED,
+					"Payment not found", "The venue couldn't find your " + amount + " entry fee for "
+							+ event.tournamentName() + ": " + event.reason() + ".",
+					data);
+			default -> {
 			}
 		}
 	}
