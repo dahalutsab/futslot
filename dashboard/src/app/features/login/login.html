@@ -63,6 +63,10 @@
             </p>
           </div>
 
+          @if (notice(); as message) {
+            <p class="rounded-lg bg-surface-2 px-3 py-2 text-muted" role="status">{{ message }}</p>
+          }
+
           @if (needsName()) {
             <div>
               <label for="full-name" class="mb-1.5 block font-medium">Your name</label>
