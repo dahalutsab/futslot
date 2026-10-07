@@ -51,6 +51,8 @@ public class BookingService {
 
 	static final int MAX_ACTIVE_HOLDS_PER_PLAYER = 3;
 
+	static final int SEARCH_LIMIT = 30;
+
 	private static final Duration MAX_MANUAL_DURATION = Duration.ofHours(12);
 
 	private static final List<BookingStatus> LIVE = List.of(BookingStatus.PENDING_PAYMENT, BookingStatus.CONFIRMED);
@@ -292,6 +294,27 @@ public class BookingService {
 		ZoneId zone = zone(venue);
 		return this.bookings
 			.findForVenueBetween(venueId, date.atStartOfDay(zone).toInstant(), date.plusDays(1).atStartOfDay(zone).toInstant())
+			.stream()
+			.map(BookingResponse::from)
+			.toList();
+	}
+
+	/**
+	 * Staff looking a booking up by its reference ("FS-7KQ2MX"), the customer's name or a few digits of their
+	 * phone, across all dates. At most {@link #SEARCH_LIMIT}, newest first.
+	 */
+	@Transactional(readOnly = true)
+	public List<BookingResponse> searchForVenue(UUID userId, UUID venueId, String query) {
+		ownedVenue(userId, venueId);
+		String text = (query != null) ? query.strip() : "";
+		if (text.length() < 2) {
+			return List.of();
+		}
+		String digits = text.replaceAll("\\D", "");
+		String name = "%" + text.toLowerCase().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+		// Fewer than 3 digits would match almost everyone; a control character never matches a phone
+		String phone = (digits.length() >= 3) ? "%" + digits + "%" : "\u0001";
+		return this.bookings.search(venueId, text.toUpperCase(), name, phone, PageRequest.of(0, SEARCH_LIMIT))
 			.stream()
 			.map(BookingResponse::from)
 			.toList();

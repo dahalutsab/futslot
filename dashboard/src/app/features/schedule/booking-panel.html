@@ -109,6 +109,48 @@
     </form>
   }
 
+  @if (step() === 'extras') {
+    <section class="mt-5 rounded-xl border border-border p-4" aria-label="Extras">
+      <p class="font-medium">Extras</p>
+      @if (extras(); as lines) {
+        @if (lines.length === 0) {
+          <p class="mt-2 text-muted">You haven't listed any extras yet. Add bibs, balls or drinks under Venue → Extras.</p>
+        } @else {
+          <ul class="mt-2 divide-y divide-border">
+            @for (line of lines; track line.item.id) {
+              <li class="flex items-center gap-3 py-2">
+                <div class="min-w-0 flex-1">
+                  <p class="truncate">{{ line.item.name }}</p>
+                  <p class="tabular text-sm text-subtle">{{ rupees(line.item.price) }}</p>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button type="button" (click)="adjust(line.item.id, -1)" [disabled]="line.quantity === 0"
+                    [attr.aria-label]="'One less ' + line.item.name"
+                    class="grid size-11 place-items-center rounded-lg border border-border disabled:opacity-40">
+                    <lucide-icon [img]="icons.Minus" [size]="16" />
+                  </button>
+                  <span class="tabular w-8 text-center font-medium" aria-live="polite">{{ line.quantity }}</span>
+                  <button type="button" (click)="adjust(line.item.id, 1)" [attr.aria-label]="'One more ' + line.item.name"
+                    class="grid size-11 place-items-center rounded-lg border border-border">
+                    <lucide-icon [img]="icons.Plus" [size]="16" />
+                  </button>
+                </div>
+              </li>
+            }
+          </ul>
+          <div class="mt-3 flex gap-2">
+            <button type="button" (click)="saveExtras()" [disabled]="busy()"
+              class="h-12 flex-1 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">Save · {{ rupees(extrasTotal()) }}</button>
+            <button type="button" (click)="go('view')" class="h-12 rounded-lg px-4 font-medium">Back</button>
+          </div>
+          <p class="mt-2 text-sm text-subtle">Items already on the booking keep the price they were charged.</p>
+        }
+      } @else {
+        <p class="mt-2 text-muted">Loading…</p>
+      }
+    </section>
+  }
+
   @if (step() === 'cancel') {
     <form class="mt-5 space-y-3 rounded-xl border border-noshow-line bg-noshow-bg p-4 text-noshow-fg" (ngSubmit)="cancel()">
       <p class="font-medium">Cancel this booking?</p>
@@ -136,6 +178,12 @@
       @if (canTakePayment()) {
         <button type="button" (click)="go('take-payment')"
           class="h-12 w-full rounded-lg bg-ink font-medium text-ink-fg">Take payment · {{ rupees(due()) }} due</button>
+      }
+      @if (canEditExtras()) {
+        <button type="button" (click)="openExtras()"
+          class="h-12 w-full rounded-lg border border-border font-medium hover:bg-surface-2">
+          {{ booking().addOns.length ? 'Change extras' : 'Add extras (bibs, water…)' }}
+        </button>
       }
       @if (booking().status === 'CONFIRMED' && started()) {
         <div class="flex gap-2">

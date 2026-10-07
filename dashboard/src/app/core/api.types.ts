@@ -176,3 +176,11 @@ export interface Refund {
   createdAt: string;
   processedAt: string | null;
 }
+
+export interface AddOnItem {
+  id: string;
+  name: string;
+  category: 'EQUIPMENT_RENTAL' | 'FOOD_DRINK' | 'OTHER';
+  price: number;
+  active: boolean;
+}

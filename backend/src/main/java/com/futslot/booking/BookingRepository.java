@@ -45,6 +45,15 @@ interface BookingRepository extends JpaRepository<Booking, UUID> {
 
 	List<Booking> findByCustomerIdOrderByStartsAtDesc(UUID customerId, Pageable pageable);
 
+	/** By exact reference, part of the customer's name, or part of their phone number; newest first. */
+	@Query("""
+			select b from Booking b
+			where b.venue.id = :venueId
+			  and (upper(b.reference) = :reference or lower(b.customer.name) like :name escape '\\'
+			       or b.customer.phone like :phone)
+			order by b.startsAt desc""")
+	List<Booking> search(UUID venueId, String reference, String name, String phone, Pageable pageable);
+
 	@Query("""
 			select b.status as status, count(b) as bookings, coalesce(sum(b.totalAmount), 0) as amount
 			from Booking b where b.customer.id = :customerId group by b.status""")

@@ -1,0 +1,131 @@
+<div class="mx-auto max-w-5xl px-4 py-4 lg:px-8 lg:py-6">
+  <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">Bookings</h1>
+
+  <div class="mt-4 flex flex-wrap items-center gap-2">
+    <label class="relative min-w-0 flex-1 basis-64">
+      <span class="sr-only">Find a booking</span>
+      <lucide-icon [img]="icons.Search" [size]="18" class="pointer-events-none absolute left-3 top-1/2 flex -translate-y-1/2 text-subtle" />
+      <input type="search" [value]="query()" (input)="typed($any($event.target).value)" autocomplete="off"
+        placeholder="Find by reference, name or phone"
+        class="h-12 w-full rounded-lg border border-border bg-surface pl-11 pr-11 text-base lg:h-10 [&::-webkit-search-cancel-button]:hidden" />
+      @if (query()) {
+        <button type="button" (click)="clearSearch()" aria-label="Clear search"
+          class="absolute right-0 top-1/2 grid size-11 -translate-y-1/2 place-items-center text-subtle hover:text-text lg:size-10">
+          <lucide-icon [img]="icons.X" [size]="16" />
+        </button>
+      }
+    </label>
+    @if (!searching()) {
+      <div class="flex items-center gap-1">
+        <button type="button" (click)="shift(-1)" aria-label="Previous day"
+          class="grid size-11 place-items-center rounded-lg border border-border bg-surface hover:bg-surface-2 lg:size-10">
+          <lucide-icon [img]="icons.ChevronLeft" [size]="18" />
+        </button>
+        <label class="relative flex h-11 items-center gap-2 rounded-lg border border-border bg-surface px-3 font-medium lg:h-10">
+          <lucide-icon [img]="icons.CalendarDays" [size]="16" class="text-muted" />
+          {{ fmt.dayLabel(date()) }}
+          <input type="date" [value]="date()" (change)="setDate($any($event.target).value)" aria-label="Choose a day"
+            class="absolute inset-0 cursor-pointer opacity-0" />
+        </label>
+        <button type="button" (click)="shift(1)" aria-label="Next day"
+          class="grid size-11 place-items-center rounded-lg border border-border bg-surface hover:bg-surface-2 lg:size-10">
+          <lucide-icon [img]="icons.ChevronRight" [size]="18" />
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (!searching()) {
+    <div class="mt-3 flex gap-2 overflow-x-auto pb-1" role="radiogroup" aria-label="Show">
+      @for (option of filters; track option.value) {
+        <button type="button" role="radio" [attr.aria-checked]="filter() === option.value" (click)="filter.set(option.value)"
+          class="h-9 shrink-0 rounded-full border px-3 text-sm font-medium"
+          [class]="filter() === option.value ? 'border-ink bg-ink text-ink-fg' : 'border-border text-muted hover:text-text'">{{ option.label }}</button>
+      }
+    </div>
+  } @else {
+    <p class="mt-3 text-sm text-muted">Matches across all days, newest first.</p>
+  }
+
+  @if (error(); as message) {
+    <p class="mt-6 rounded-xl border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
+  } @else if (!loaded()) {
+    <div class="mt-4 h-48 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+  } @else if (shown().length === 0) {
+    <p class="mt-4 rounded-xl border border-dashed border-border bg-surface px-6 py-10 text-center text-muted">
+      {{ searching() ? 'No bookings match "' + query().trim() + '".' : 'No bookings here.' }}
+    </p>
+  } @else {
+    <!-- Wide screens: a table -->
+    <div class="mt-4 hidden overflow-hidden rounded-xl border border-border bg-surface md:block">
+      <table class="w-full text-left">
+        <thead class="border-b border-border text-sm text-muted">
+          <tr>
+            <th scope="col" class="px-4 py-2.5 font-medium">When</th>
+            <th scope="col" class="px-4 py-2.5 font-medium">Customer</th>
+            <th scope="col" class="px-4 py-2.5 font-medium">Status</th>
+            <th scope="col" class="px-4 py-2.5 text-right font-medium">Total</th>
+            <th scope="col" class="px-4 py-2.5 text-right font-medium">Due</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (booking of shown(); track booking.id) {
+            <tr class="cursor-pointer border-b border-border last:border-0 hover:bg-surface-2" (click)="selected.set(booking)">
+              <td class="px-4 py-3">
+                <button type="button" class="text-left" (click)="selected.set(booking); $event.stopPropagation()">
+                  <span class="tabular font-medium">{{ fmt.localClock(booking.startsAt) }}–{{ fmt.localClock(booking.endsAt) }}</span>
+                  <span class="block text-sm text-muted">
+                    @if (searching()) { {{ fmt.dayLabel(booking.startsAt.slice(0, 10)) }} · }{{ booking.court.name }}
+                  </span>
+                </button>
+              </td>
+              <td class="px-4 py-3">
+                <span class="font-medium">{{ booking.customer.name }}</span>
+                <span class="tabular block text-sm text-muted">{{ fmt.phone(booking.customer.phone) }} · {{ source(booking) }}</span>
+              </td>
+              <td class="px-4 py-3">
+                @if (state(booking); as s) {
+                  <fs-status-chip [value]="s" />
+                } @else {
+                  <span class="text-sm text-subtle">{{ booking.status === 'EXPIRED' ? 'Hold lapsed' : 'Cancelled' }}</span>
+                }
+              </td>
+              <td class="tabular px-4 py-3 text-right">{{ fmt.rupees(booking.totalAmount) }}</td>
+              <td class="tabular px-4 py-3 text-right font-medium">{{ due(booking) > 0 ? fmt.rupees(due(booking)) : '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Phones: cards -->
+    <ul class="mt-4 space-y-2 md:hidden">
+      @for (booking of shown(); track booking.id) {
+        <li>
+          <button type="button" (click)="selected.set(booking)"
+            class="flex w-full flex-col gap-1.5 rounded-xl border border-border bg-surface p-4 text-left">
+            <span class="flex w-full items-start gap-2">
+              <span class="min-w-0 flex-1 truncate font-medium">{{ booking.customer.name }}</span>
+              <span class="tabular font-medium">{{ due(booking) > 0 ? fmt.rupees(due(booking)) + ' due' : fmt.rupees(booking.totalAmount) }}</span>
+            </span>
+            <span class="tabular text-sm text-muted">
+              @if (searching()) { {{ fmt.dayLabel(booking.startsAt.slice(0, 10)) }} · }{{ fmt.localClock(booking.startsAt) }}–{{ fmt.localClock(booking.endsAt) }} · {{ booking.court.name }}
+            </span>
+            @if (state(booking); as s) {
+              <fs-status-chip [value]="s" />
+            } @else {
+              <span class="text-sm text-subtle">{{ booking.status === 'EXPIRED' ? 'Hold lapsed' : 'Cancelled' }}</span>
+            }
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+@if (selected(); as booking) {
+  @if (venues.current(); as current) {
+    <fs-booking-panel [venueId]="current.venue.id" [booking]="booking" [canManage]="venues.can('MANAGE_BOOKINGS')"
+      (done)="changed()" (closed)="selected.set(null)" />
+  }
+}
