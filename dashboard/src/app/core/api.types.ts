@@ -384,3 +384,55 @@ export interface StaffMember {
   active: boolean;
   createdAt: string;
 }
+
+// FutSlot billing
+
+export type BillingCycle = 'MONTHLY' | 'YEARLY';
+
+export interface Plan {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  monthlyPrice: number;
+  yearlyPrice: number | null;
+  maxCourts: number | null;
+  maxStaff: number | null;
+  features: string[];
+  active: boolean;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  venueId: string;
+  planCode: string | null;
+  planName: string | null;
+  billingCycle: BillingCycle | null;
+  amount: number;
+  periodStart: string;
+  periodEnd: string;
+  dueOn: string;
+  status: 'DUE' | 'PAID' | 'OVERDUE' | 'VOID';
+  paidAt: string | null;
+  /** Sent by the owner, not yet checked by FutSlot. */
+  paymentPending: boolean;
+}
+
+/** Without a subscription the venue is on Free and the subscription fields are null. */
+export interface Subscription {
+  venueId: string;
+  plan: Plan;
+  status: 'TRIALING' | 'ACTIVE' | 'PAST_DUE' | 'CANCELLED' | 'EXPIRED' | null;
+  billingCycle: BillingCycle | null;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+  nextPlan: Plan | null;
+  nextBillingCycle: BillingCycle | null;
+  openInvoice: Invoice | null;
+  limitsEnforced: boolean;
+  courts: number;
+  staff: number;
+  paymentInstructions: string | null;
+}
