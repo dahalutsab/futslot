@@ -508,3 +508,30 @@ export interface RatingSummary {
   reviewCount: number;
   stars: Record<string, number>;
 }
+
+// Featured listings
+
+export type FeaturedPlacement = 'HOME_CAROUSEL' | 'SEARCH_TOP' | 'CITY_TOP';
+
+export interface FeaturedListing {
+  id: string;
+  venueId: string;
+  venueName: string;
+  placement: FeaturedPlacement;
+  city: string | null;
+  startsAt: string;
+  endsAt: string;
+  price: number;
+  status: 'PENDING_PAYMENT' | 'SCHEDULED' | 'ACTIVE' | 'ENDED' | 'CANCELLED';
+  paymentInstructions: string | null;
+  paymentPending: boolean;
+}
+
+export interface FeaturedQuote {
+  placement: FeaturedPlacement;
+  startsOn: string;
+  days: number;
+  pricePerDay: number;
+  price: number;
+  available: boolean;
+}

@@ -11,6 +11,12 @@ import org.springframework.data.jpa.repository.Query;
 
 interface FeaturedListingRepository extends JpaRepository<FeaturedListing, UUID> {
 
+	/** Which of these listings have a payment waiting for an admin to check it. */
+	@Query(value = """
+			SELECT DISTINCT featured_listing_id FROM payments
+			WHERE featured_listing_id IN (:listingIds) AND status = 'PENDING'""", nativeQuery = true)
+	List<UUID> withPendingPayment(Collection<UUID> listingIds);
+
 	@EntityGraph(attributePaths = "venue")
 	List<FeaturedListing> findByVenueIdOrderByStartsAtDesc(UUID venueId);
 

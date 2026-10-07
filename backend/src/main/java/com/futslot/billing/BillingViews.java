@@ -48,8 +48,10 @@ public final class BillingViews {
 
 	}
 
+	/** {@code paymentPending}: the owner has sent a payment that FutSlot hasn't checked yet. */
 	public record Featured(UUID id, UUID venueId, String venueName, FeaturedPlacement placement, String city,
-			Instant startsAt, Instant endsAt, BigDecimal price, FeaturedStatus status, String paymentInstructions) {
+			Instant startsAt, Instant endsAt, BigDecimal price, FeaturedStatus status, String paymentInstructions,
+			boolean paymentPending) {
 
 	}
 

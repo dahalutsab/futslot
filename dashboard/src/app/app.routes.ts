@@ -88,11 +88,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/grow/reviews').then((m) => m.Reviews),
       },
       {
+        path: 'grow/featured',
+        title: 'Featured listing · FutSlot',
+        loadComponent: () => import('./features/grow/featured').then((m) => m.Featured),
+      },
+      {
         path: 'payments',
         title: 'Payments · FutSlot',
         loadComponent: () => import('./features/payments/payments').then((m) => m.Payments),
       },
-      ...ALL_ITEMS.filter((item) => !['schedule', 'bookings', 'payments', 'customers', 'reports', 'messages', 'venue/profile', 'venue/courts', 'venue/add-ons', 'venue/photos', 'venue/staff', 'venue/billing', 'grow/memberships', 'grow/reviews'].includes(item.path)).map((item) => ({
+      ...ALL_ITEMS.filter((item) => !['schedule', 'bookings', 'payments', 'customers', 'reports', 'messages', 'venue/profile', 'venue/courts', 'venue/add-ons', 'venue/photos', 'venue/staff', 'venue/billing', 'grow/memberships', 'grow/reviews', 'grow/featured'].includes(item.path)).map((item) => ({
         path: item.path,
         title: `${item.label} · FutSlot`,
         data: { nav: item },

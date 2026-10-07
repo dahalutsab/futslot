@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -113,12 +114,12 @@ public class FeaturedService {
 	@Transactional(readOnly = true)
 	List<BillingViews.Featured> forVenue(UUID userId, UUID venueId) {
 		this.access.requireOwner(userId, venueId);
-		return this.listings.findByVenueIdOrderByStartsAtDesc(venueId).stream().map(this::view).toList();
+		return views(this.listings.findByVenueIdOrderByStartsAtDesc(venueId));
 	}
 
 	@Transactional(readOnly = true)
 	List<BillingViews.Featured> byStatus(Set<FeaturedStatus> statuses) {
-		return this.listings.findByStatusInOrderByStartsAt(statuses).stream().map(this::view).toList();
+		return views(this.listings.findByStatusInOrderByStartsAt(statuses));
 	}
 
 	/**
@@ -198,10 +199,22 @@ public class FeaturedService {
 		return listing;
 	}
 
+	private List<BillingViews.Featured> views(List<FeaturedListing> listings) {
+		if (listings.isEmpty()) {
+			return List.of();
+		}
+		Set<UUID> pending = new HashSet<>(this.listings.withPendingPayment(listings.stream().map(FeaturedListing::getId).toList()));
+		return listings.stream().map(listing -> view(listing, pending.contains(listing.getId()))).toList();
+	}
+
 	private BillingViews.Featured view(FeaturedListing listing) {
+		return views(List.of(listing)).getFirst();
+	}
+
+	private BillingViews.Featured view(FeaturedListing listing, boolean paymentPending) {
 		return new BillingViews.Featured(listing.getId(), listing.getVenue().getId(), listing.getVenue().getName(),
 				listing.getPlacement(), listing.getCity(), listing.getStartsAt(), listing.getEndsAt(), listing.getPrice(),
-				listing.statusAt(this.clock.instant()), this.properties.paymentInstructions());
+				listing.statusAt(this.clock.instant()), this.properties.paymentInstructions(), paymentPending);
 	}
 
 	private static ApiException notFound() {
