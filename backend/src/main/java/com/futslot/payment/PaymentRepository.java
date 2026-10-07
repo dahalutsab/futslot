@@ -17,6 +17,12 @@ interface PaymentRepository extends JpaRepository<Payment, UUID> {
 
 	boolean existsByEntryIdAndStatus(UUID registrationId, TransactionStatus status);
 
+	boolean existsByInvoiceIdAndStatus(UUID invoiceId, TransactionStatus status);
+
+	boolean existsByListingIdAndStatus(UUID listingId, TransactionStatus status);
+
+	List<Payment> findByStatusAndPurposeInOrderByCreatedAt(TransactionStatus status, Collection<PaymentPurpose> purposes);
+
 	List<Payment> findByBookingIdOrderByCreatedAt(UUID bookingId);
 
 	List<Payment> findByBookingIdAndStatusIn(UUID bookingId, Collection<TransactionStatus> statuses);

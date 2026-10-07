@@ -34,6 +34,7 @@ The migrations are the source of truth; this page explains them.
 | V12 | Venue payment instructions | `venues.payment_instructions` |
 | V13 | Booking split ("baazi") | `booking_splits`; guests, sides and settlement on `booking_participants` |
 | V14 | Tournament scheduling | `tournaments.match_minutes`, `tournaments.group_count`, `tournament_matches.court_block_id` |
+| V15 | Subscription billing | `venue_subscriptions.next_plan_id` / `next_billing_cycle`, `subscription_invoices.plan_id` / `billing_cycle` |
 
 ## Key design decisions
 

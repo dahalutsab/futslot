@@ -10,6 +10,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
 
+import com.futslot.billing.FeaturedListing;
+import com.futslot.billing.SubscriptionInvoice;
 import com.futslot.booking.Booking;
 import com.futslot.membership.Membership;
 import com.futslot.tournament.Registration;
@@ -26,8 +28,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 /**
- * Money paid to a venue for a booking, a membership or a tournament entry. Today players pay the venue's own wallet/QR or
- * cash, so FutSlot only records and verifies payments; {@code transactionId} is the wallet's transaction
+ * Money paid to a venue for a booking, a membership or a tournament entry, or by a venue to FutSlot for
+ * a subscription or featured listing ({@code venueId} is then null: it isn't the venue's income). Today
+ * money goes straight to the payee's own wallet/QR or cash, so FutSlot only records and verifies payments; {@code transactionId} is the wallet's transaction
  * id (unique per method, so the same receipt can't be claimed twice).
  */
 @Entity
@@ -54,6 +57,14 @@ public class Payment {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "tournament_registration_id", updatable = false)
 	private Registration entry;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "subscription_invoice_id", updatable = false)
+	private SubscriptionInvoice invoice;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "featured_listing_id", updatable = false)
+	private FeaturedListing listing;
 
 	@Column(updatable = false)
 	private UUID venueId;
@@ -158,6 +169,29 @@ public class Payment {
 		return payment;
 	}
 
+	/** A venue owner paying FutSlot for an invoice; {@code recordedBy} set means an admin took it directly. */
+	static Payment forInvoice(SubscriptionInvoice invoice, UUID payerUserId, PaymentMethod method, String transactionId,
+			UUID recordedBy, Instant at) {
+		Payment payment = new Payment(PaymentPurpose.SUBSCRIPTION, null, null, null, payerUserId, invoice.getAmount(),
+				method, transactionId, (recordedBy != null) ? TransactionStatus.SUCCEEDED : TransactionStatus.PENDING);
+		payment.invoice = invoice;
+		if (recordedBy != null) {
+			payment.approve(recordedBy, at);
+		}
+		return payment;
+	}
+
+	static Payment forListing(FeaturedListing listing, UUID payerUserId, PaymentMethod method, String transactionId,
+			UUID recordedBy, Instant at) {
+		Payment payment = new Payment(PaymentPurpose.FEATURED_LISTING, null, null, null, payerUserId, listing.getPrice(),
+				method, transactionId, (recordedBy != null) ? TransactionStatus.SUCCEEDED : TransactionStatus.PENDING);
+		payment.listing = listing;
+		if (recordedBy != null) {
+			payment.approve(recordedBy, at);
+		}
+		return payment;
+	}
+
 	void approve(UUID by, Instant at) {
 		this.status = TransactionStatus.SUCCEEDED;
 		this.recordedBy = by;
@@ -198,6 +232,19 @@ public class Payment {
 
 	public Registration getEntry() {
 		return this.entry;
+	}
+
+	public SubscriptionInvoice getInvoice() {
+		return this.invoice;
+	}
+
+	public FeaturedListing getListing() {
+		return this.listing;
+	}
+
+	/** Paid to FutSlot rather than to a venue. */
+	boolean isPlatform() {
+		return this.purpose == PaymentPurpose.SUBSCRIPTION || this.purpose == PaymentPurpose.FEATURED_LISTING;
 	}
 
 	public UUID getVenueId() {

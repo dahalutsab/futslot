@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import com.futslot.billing.BillingEvent;
 import com.futslot.booking.BookingEvent;
 import com.futslot.booking.BookingSource;
 import com.futslot.booking.BookingStatus;
@@ -19,6 +20,7 @@ import com.futslot.matchmaking.MatchPostType;
 import com.futslot.payment.EntryPaymentEvent;
 import com.futslot.payment.MembershipPaymentEvent;
 import com.futslot.payment.PaymentEvent;
+import com.futslot.payment.PlatformPaymentRejected;
 import com.futslot.review.ReviewEvent;
 import com.futslot.split.SplitEvent;
 import com.futslot.team.TeamEvent;
@@ -323,6 +325,42 @@ class NotificationListener {
 			default -> {
 			}
 		}
+	}
+
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(BillingEvent event) {
+		Map<String, String> data = Map.of("venueId", event.venueId().toString());
+		switch (event.type()) {
+			case INVOICE_DUE -> this.notifications.send(event.ownerId(), NotificationType.INVOICE_DUE,
+					"Invoice for " + event.planName(), Messages.rupees(event.amount()) + " for " + event.venueName()
+							+ " is due " + Messages.date(event.date()) + ".",
+					data);
+			case SUBSCRIPTION_ACTIVE -> this.notifications.send(event.ownerId(), NotificationType.SUBSCRIPTION_ACTIVE,
+					event.planName() + " is active", event.venueName() + " is paid up until " + Messages.date(event.date())
+							+ ".",
+					data);
+			case SUBSCRIPTION_PAST_DUE -> this.notifications.send(event.ownerId(), NotificationType.SUBSCRIPTION_PAST_DUE,
+					"Renewal not paid", "Pay by " + Messages.date(event.date()) + " to keep " + event.planName() + " for "
+							+ event.venueName() + ".",
+					data);
+			case SUBSCRIPTION_ENDED -> this.notifications.send(event.ownerId(), NotificationType.SUBSCRIPTION_ENDED,
+					event.venueName() + " is on the Free plan", "Your " + event.planName() + " subscription has ended.",
+					data);
+			case FEATURED_CONFIRMED -> this.notifications.send(event.ownerId(), NotificationType.FEATURED_CONFIRMED,
+					"Featured listing confirmed", event.venueName() + " is featured from " + Messages.date(event.date())
+							+ ".",
+					data);
+		}
+	}
+
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(PlatformPaymentRejected event) {
+		this.notifications.send(event.payerUserId(), NotificationType.PAYMENT_REJECTED, "Payment not found",
+				"FutSlot couldn't find your " + Messages.rupees(event.amount()) + " payment for " + event.what() + ": "
+						+ event.reason() + ".",
+				Map.of());
 	}
 
 	@TransactionalEventListener

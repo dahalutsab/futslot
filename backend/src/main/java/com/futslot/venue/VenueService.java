@@ -5,8 +5,11 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,8 +44,11 @@ public class VenueService {
 
 	private final VenueMapper mapper;
 
+	private final PlanLimits limits;
+
 	VenueService(VenueRepository venues, CourtRepository courts, PricingRuleRepository pricingRules,
-			AmenityRepository amenities, UserService userService, VenueAccess access, VenueMapper mapper) {
+			AmenityRepository amenities, UserService userService, VenueAccess access, VenueMapper mapper,
+			PlanLimits limits) {
 		this.venues = venues;
 		this.courts = courts;
 		this.pricingRules = pricingRules;
@@ -50,6 +56,7 @@ public class VenueService {
 		this.userService = userService;
 		this.access = access;
 		this.mapper = mapper;
+		this.limits = limits;
 	}
 
 	@Transactional
@@ -164,6 +171,7 @@ public class VenueService {
 		if (this.courts.existsByVenueIdAndNameIgnoreCase(venueId, request.name().strip())) {
 			throw duplicateCourt(request.name());
 		}
+		this.limits.checkCourts(venueId, venue.getCourts().stream().filter(Court::isActive).count());
 		Court court = this.courts.save(new Court(venue, request));
 		venue.getCourts().add(court);
 		return CourtResponse.from(court, true);
@@ -223,6 +231,16 @@ public class VenueService {
 		return this.venues.findBySlugAndStatus(slug, VenueStatus.ACTIVE)
 			.map(venue -> this.mapper.toResponse(venue, false))
 			.orElseThrow(VenueService::venueNotFound);
+	}
+
+	/** Listing cards for these venues, in the given order; venues that aren't live are left out. */
+	@Transactional(readOnly = true)
+	public List<VenueSummaryResponse> summaries(List<UUID> venueIds) {
+		Map<UUID, Venue> byId = this.venues.findAllById(venueIds)
+			.stream()
+			.filter(venue -> venue.getStatus() == VenueStatus.ACTIVE)
+			.collect(Collectors.toMap(Venue::getId, Function.identity()));
+		return venueIds.stream().distinct().filter(byId::containsKey).map(byId::get).map(this.mapper::toSummary).toList();
 	}
 
 	@Transactional(readOnly = true)

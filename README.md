@@ -150,6 +150,29 @@ knockout: A1-B2, B1-A2).
 Cancelling frees every court booked for unplayed matches. Squad players are told when fixtures are out,
 when their matches are scheduled, and if the tournament is cancelled.
 
+### Subscriptions and featured listings (FutSlot's revenue)
+
+Every venue starts on the free plan. Admins define paid plans (`/api/v1/admin/subscription-plans`), and
+owners choose one (`PUT /api/v1/owner/venues/{id}/subscription`). There's no gateway yet, so venues pay
+FutSlot the same way players pay venues: send money to the account in
+`futslot.subscriptions.payment-instructions` (set `FUTSLOT_PAYMENT_INSTRUCTIONS`), report the transaction
+id, and an admin approves it (`GET /api/v1/admin/payments/pending`). Admins can also record a payment
+taken some other way. These payments aren't a venue's income, so they never appear in venue reports or
+payment queues.
+
+- **Paying starts the period** (a month or a year). A renewal invoice goes out 7 days before the period
+  ends.
+- **Plan changes wait for renewal**, and so does going back to Free.
+- **An unpaid renewal** gives 7 days' grace before the venue drops to Free. A first invoice that's never
+  paid lapses the same way.
+- **Plan limits (courts, staff) aren't enforced at launch**, so every venue gets everything. Set
+  `futslot.subscriptions.enforce-limits=true` to switch them on.
+
+Owners can also buy **featured days** (`POST /api/v1/owner/venues/{id}/featured`): the home carousel, the
+top of search, or the top of search in their city. Each placement has a price per day and a number of places
+(`futslot.subscriptions.featured.*`; the shipped values are placeholders). An unpaid listing holds its place
+for 48 hours. The app shows featured venues from `GET /api/v1/featured-venues`.
+
 ### Reports
 
 Venue reports live under `/api/v1/owner/venues/{venueId}/reports` and take `from` / `to` local dates (both
