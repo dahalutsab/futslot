@@ -27,7 +27,12 @@ export const routes: Routes = [
         title: 'Schedule · FutSlot',
         loadComponent: () => import('./features/schedule/schedule').then((m) => m.Schedule),
       },
-      ...ALL_ITEMS.filter((item) => item.path !== 'schedule').map((item) => ({
+      {
+        path: 'payments',
+        title: 'Payments · FutSlot',
+        loadComponent: () => import('./features/payments/payments').then((m) => m.Payments),
+      },
+      ...ALL_ITEMS.filter((item) => !['schedule', 'payments'].includes(item.path)).map((item) => ({
         path: item.path,
         title: `${item.label} · FutSlot`,
         data: { nav: item },
