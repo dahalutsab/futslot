@@ -38,6 +38,11 @@ final class PaymentRequests {
 
 	}
 
+	/** Staff recording an entry fee paid at the venue; the tournament's fee is taken as the amount. */
+	record RecordEntry(@NotNull PaymentMethod method, @Size(max = 100) String transactionId) {
+
+	}
+
 	record Reject(@NotBlank @Size(max = 500) String reason) {
 
 	}

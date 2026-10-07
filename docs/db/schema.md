@@ -33,6 +33,7 @@ The migrations are the source of truth; this page explains them.
 | V11 | Booking reminders | `bookings.reminder_sent_at` |
 | V12 | Venue payment instructions | `venues.payment_instructions` |
 | V13 | Booking split ("baazi") | `booking_splits`; guests, sides and settlement on `booking_participants` |
+| V14 | Tournament scheduling | `tournaments.match_minutes`, `tournaments.group_count`, `tournament_matches.court_block_id` |
 
 ## Key design decisions
 

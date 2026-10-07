@@ -30,6 +30,9 @@ import com.futslot.membership.MembershipPlan;
 import com.futslot.membership.MembershipResponse;
 import com.futslot.membership.MembershipService;
 import com.futslot.membership.MembershipStatus;
+import com.futslot.tournament.Registration;
+import com.futslot.tournament.RegistrationStatus;
+import com.futslot.tournament.TournamentService;
 import com.futslot.user.UserService;
 import com.futslot.venue.Venue;
 import com.futslot.venue.VenueAccess;
@@ -66,6 +69,8 @@ class PaymentService {
 
 	private final MembershipService memberships;
 
+	private final TournamentService tournaments;
+
 	private final UserService users;
 
 	private final VenueRepository venues;
@@ -77,13 +82,15 @@ class PaymentService {
 	private final Clock clock;
 
 	PaymentService(PaymentRepository payments, RefundRepository refunds, BookingLookup bookings,
-			BookingService bookingService, MembershipService memberships, UserService users, VenueRepository venues,
-			VenueAccess access, ApplicationEventPublisher events, Clock clock) {
+			BookingService bookingService, MembershipService memberships, TournamentService tournaments,
+			UserService users, VenueRepository venues, VenueAccess access, ApplicationEventPublisher events,
+			Clock clock) {
 		this.payments = payments;
 		this.refunds = refunds;
 		this.bookings = bookings;
 		this.bookingService = bookingService;
 		this.memberships = memberships;
+		this.tournaments = tournaments;
 		this.users = users;
 		this.venues = venues;
 		this.access = access;
@@ -145,6 +152,16 @@ class PaymentService {
 	@Transactional
 	PaymentResponse approve(UUID userId, UUID venueId, UUID paymentId) {
 		Payment payment = pendingAtVenue(userId, venueId, paymentId);
+		if (payment.getPurpose() == PaymentPurpose.TOURNAMENT_ENTRY) {
+			Registration entry = payment.getEntry();
+			if (entry.getStatus() != RegistrationStatus.PENDING_PAYMENT) {
+				throw new ApiException(HttpStatus.CONFLICT, "ENTRY_NOT_PENDING",
+						"The entry is " + entry.getStatus() + "; reject this payment and refund it instead");
+			}
+			payment.approve(userId, this.clock.instant());
+			this.tournaments.feePaid(entry);
+			return PaymentResponse.from(payment);
+		}
 		if (payment.getPurpose() == PaymentPurpose.MEMBERSHIP) {
 			Membership membership = payment.getMembership();
 			if (membership.getStatus() != MembershipStatus.PENDING_PAYMENT) {
@@ -177,6 +194,11 @@ class PaymentService {
 	PaymentResponse reject(UUID userId, UUID venueId, UUID paymentId, String reason) {
 		Payment payment = pendingAtVenue(userId, venueId, paymentId);
 		payment.reject(userId, reason.strip());
+		if (payment.getPurpose() == PaymentPurpose.TOURNAMENT_ENTRY) {
+			this.events.publishEvent(EntryPaymentEvent.of(PaymentEvent.Type.REJECTED, payment.getEntry(),
+					payment.getAmount(), payment.getMethod(), reason.strip()));
+			return PaymentResponse.from(payment);
+		}
 		if (payment.getPurpose() == PaymentPurpose.MEMBERSHIP) {
 			Membership membership = payment.getMembership();
 			if (membership.getStatus() == MembershipStatus.PENDING_PAYMENT) {
@@ -248,6 +270,42 @@ class PaymentService {
 		this.events.publishEvent(MembershipPaymentEvent.of(PaymentEvent.Type.RECEIVED, membership, plan.getPrice(),
 				request.method(), null, userId));
 		return MembershipResponse.from(membership);
+	}
+
+	/** A team leader paid the entry fee to the venue's wallet; staff verify it like any other payment. */
+	@Transactional
+	PaymentResponse claimEntry(UUID userId, UUID registrationId, PaymentRequests.Claim request) {
+		Registration entry = this.tournaments.entryToPay(userId, registrationId);
+		if (this.payments.existsByEntryIdAndStatus(registrationId, TransactionStatus.PENDING)) {
+			throw new ApiException(HttpStatus.CONFLICT, "PAYMENT_PENDING", "Your payment is already being verified");
+		}
+		if (!CLAIMABLE.contains(request.method())) {
+			throw badRequest("INVALID_METHOD", "Pay with eSewa, Khalti, Fonepay or bank transfer");
+		}
+		BigDecimal fee = entry.getTournament().getEntryFee();
+		if (request.amount().compareTo(fee) != 0) {
+			throw badRequest("AMOUNT_MISMATCH", "The entry fee is Rs " + fee.toPlainString());
+		}
+		String transactionId = uniqueTransactionId(request.method(), request.transactionId());
+		Payment payment = this.payments.save(Payment.entryClaimed(entry, userId, fee, request.method(), transactionId));
+		this.events.publishEvent(EntryPaymentEvent.of(PaymentEvent.Type.SUBMITTED, entry, fee, request.method(), null));
+		return PaymentResponse.from(payment);
+	}
+
+	/** Staff took the entry fee (cash at the counter, or a transfer they can see). */
+	@Transactional
+	PaymentResponse recordEntry(UUID userId, UUID venueId, UUID registrationId, PaymentRequests.RecordEntry request) {
+		this.access.require(userId, venueId, VenuePermission.MANAGE_BOOKINGS);
+		Registration entry = this.tournaments.entryAtVenue(venueId, registrationId);
+		if (!RECORDABLE.contains(request.method())) {
+			throw badRequest("INVALID_METHOD", "Use cash, eSewa, Khalti, Fonepay or bank transfer");
+		}
+		String transactionId = (request.transactionId() != null && !request.transactionId().isBlank())
+				? uniqueTransactionId(request.method(), request.transactionId()) : null;
+		Payment payment = this.payments.save(Payment.entryReceived(entry, entry.getTournament().getEntryFee(),
+				request.method(), transactionId, userId, this.clock.instant()));
+		this.tournaments.feePaid(entry);
+		return PaymentResponse.from(payment);
 	}
 
 	@Transactional(readOnly = true)

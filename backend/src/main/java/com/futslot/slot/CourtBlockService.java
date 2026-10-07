@@ -16,7 +16,7 @@ import com.futslot.venue.VenueAccess;
 import com.futslot.venue.VenuePermission;
 
 @Service
-class CourtBlockService {
+public class CourtBlockService {
 
 	private final VenueAccess access;
 
@@ -59,6 +59,29 @@ class CourtBlockService {
 		CourtBlock block = this.blocks.save(new CourtBlock(court.getId(), start, end, request.reason(),
 				request.note(), ownerId));
 		return CourtBlockResponse.from(block);
+	}
+
+	/**
+	 * For other modules (tournament matches): blocks court time without a permission check, which the
+	 * caller has done. Same overlap rules as {@link #create}.
+	 */
+	@Transactional
+	public UUID reserve(UUID courtId, Instant start, Instant end, BlockReason reason, String note, UUID by) {
+		this.courts.lockById(courtId);
+		if (!this.blocks.findOverlapping(List.of(courtId), start, end).isEmpty()) {
+			throw new ApiException(HttpStatus.CONFLICT, "BLOCK_OVERLAP", "The court is blocked at that time");
+		}
+		if (!this.bookedRanges.byCourt(List.of(courtId), start, end, this.clock.instant()).isEmpty()) {
+			throw new ApiException(HttpStatus.CONFLICT, "SLOT_HAS_BOOKINGS",
+					"The court is booked at that time. Pick another time or move the booking");
+		}
+		return this.blocks.save(new CourtBlock(courtId, start, end, reason, note, by)).getId();
+	}
+
+	/** Frees time taken by {@link #reserve}; already-deleted blocks are fine. */
+	@Transactional
+	public void release(UUID blockId) {
+		this.blocks.deleteById(blockId);
 	}
 
 	@Transactional(readOnly = true)
