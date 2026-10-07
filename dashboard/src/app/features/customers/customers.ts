@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LucideAngularModule, Phone, Search, Smartphone, X } from 'lucide-angular';
 import { firstValueFrom } from 'rxjs';
@@ -86,6 +87,18 @@ export class Customers {
       }
     });
     inject(DestroyRef).onDestroy(() => this.timer && clearTimeout(this.timer));
+    // Follow URL changes made while this screen is open (Ctrl+K); ?open=<id> opens that customer
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      const q = params.get('q') ?? '';
+      if (q !== this.query()) {
+        this.query.set(q);
+        void this.load(true);
+      }
+      const open = params.get('open');
+      if (open) {
+        void this.open({ id: open } as CustomerSummary);
+      }
+    });
   }
 
   protected typed(value: string): void {

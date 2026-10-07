@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CalendarDays, ChevronLeft, ChevronRight, LucideAngularModule, Search, X } from 'lucide-angular';
 
@@ -92,6 +93,9 @@ export class Bookings {
 
   private searchSequence = 0;
 
+  /** The query last searched for, so the URL echoing it back doesn't search again. */
+  private searchedFor: string | null = null;
+
   constructor() {
     effect(() => {
       const venue = this.venues.current();
@@ -100,9 +104,16 @@ export class Bookings {
         void this.loadDay(venue.venue.id, date);
       }
     });
-    if (this.searching()) {
-      void this.runSearch();
-    }
+    // The URL can change while this screen is open (search from anywhere with Ctrl+K): follow it.
+    // ?open=<id> opens that booking once the search has found it.
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      const q = params.get('q') ?? '';
+      const open = params.get('open');
+      if (q !== this.searchedFor || open) {
+        this.query.set(q);
+        void this.runSearch(open);
+      }
+    });
     inject(DestroyRef).onDestroy(() => this.searchTimer && clearTimeout(this.searchTimer));
   }
 
@@ -153,7 +164,8 @@ export class Bookings {
     void this.badges.refresh();
   }
 
-  private async runSearch(): Promise<void> {
+  private async runSearch(open: string | null = null): Promise<void> {
+    this.searchedFor = this.query().trim();
     this.syncUrl();
     const venue = this.venues.current();
     if (!venue || !this.searching()) {
@@ -166,6 +178,9 @@ export class Bookings {
       if (sequence === this.searchSequence) {
         this.found.set(results);
         this.error.set(null);
+        if (open) {
+          this.selected.set(results.find((b) => b.id === open) ?? null);
+        }
       }
     }
     catch (error) {

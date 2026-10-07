@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 
 import { signedIn, signedOut } from './core/guards';
-import { ALL_ITEMS } from './layout/navigation';
 
 export const routes: Routes = [
   {
@@ -107,12 +106,6 @@ export const routes: Routes = [
         title: 'Payments · FutSlot',
         loadComponent: () => import('./features/payments/payments').then((m) => m.Payments),
       },
-      ...ALL_ITEMS.filter((item) => !['schedule', 'bookings', 'payments', 'customers', 'reports', 'messages', 'venue/profile', 'venue/courts', 'venue/add-ons', 'venue/photos', 'venue/staff', 'venue/billing', 'grow/memberships', 'grow/reviews', 'grow/featured', 'grow/tournaments'].includes(item.path)).map((item) => ({
-        path: item.path,
-        title: `${item.label} · FutSlot`,
-        data: { nav: item },
-        loadComponent: () => import('./features/placeholder/placeholder').then((m) => m.Placeholder),
-      })),
     ],
   },
   { path: '**', redirectTo: '' },
