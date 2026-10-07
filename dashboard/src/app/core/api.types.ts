@@ -158,3 +158,21 @@ export interface Payment {
   paidAt: string | null;
   createdAt: string;
 }
+
+export type RefundStatus = 'REQUESTED' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED' | 'REJECTED';
+
+/** Money owed back to a player, and how they originally paid (so it can go back the same way). */
+export interface Refund {
+  id: string;
+  bookingId: string;
+  bookingReference: string;
+  customerName: string;
+  customerPhone: string;
+  amount: number;
+  originalMethod: PaymentMethod;
+  reason: string;
+  status: RefundStatus;
+  reference: string | null;
+  createdAt: string;
+  processedAt: string | null;
+}

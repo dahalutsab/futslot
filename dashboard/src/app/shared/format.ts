@@ -85,3 +85,18 @@ export function phone(value: string | null | undefined): string {
   }
   return value.startsWith('+977') && value.length === 14 ? `+977 ${value.slice(4)}` : value;
 }
+
+/** "just now", "5 min ago", "3 h ago", then "7 Oct". */
+export function ago(instant: string, now = new Date()): string {
+  const minutes = Math.round((now.getTime() - new Date(instant).getTime()) / 60_000);
+  if (minutes < 1) {
+    return 'just now';
+  }
+  if (minutes < 60) {
+    return `${minutes} min ago`;
+  }
+  if (minutes < 24 * 60) {
+    return `${Math.round(minutes / 60)} h ago`;
+  }
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' }).format(new Date(instant));
+}
