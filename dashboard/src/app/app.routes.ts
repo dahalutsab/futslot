@@ -93,11 +93,21 @@ export const routes: Routes = [
         loadComponent: () => import('./features/grow/featured').then((m) => m.Featured),
       },
       {
+        path: 'grow/tournaments',
+        title: 'Tournaments · FutSlot',
+        loadComponent: () => import('./features/grow/tournaments/tournaments').then((m) => m.Tournaments),
+      },
+      {
+        path: 'grow/tournaments/:id',
+        title: 'Tournament · FutSlot',
+        loadComponent: () => import('./features/grow/tournaments/tournament').then((m) => m.Tournament),
+      },
+      {
         path: 'payments',
         title: 'Payments · FutSlot',
         loadComponent: () => import('./features/payments/payments').then((m) => m.Payments),
       },
-      ...ALL_ITEMS.filter((item) => !['schedule', 'bookings', 'payments', 'customers', 'reports', 'messages', 'venue/profile', 'venue/courts', 'venue/add-ons', 'venue/photos', 'venue/staff', 'venue/billing', 'grow/memberships', 'grow/reviews', 'grow/featured'].includes(item.path)).map((item) => ({
+      ...ALL_ITEMS.filter((item) => !['schedule', 'bookings', 'payments', 'customers', 'reports', 'messages', 'venue/profile', 'venue/courts', 'venue/add-ons', 'venue/photos', 'venue/staff', 'venue/billing', 'grow/memberships', 'grow/reviews', 'grow/featured', 'grow/tournaments'].includes(item.path)).map((item) => ({
         path: item.path,
         title: `${item.label} · FutSlot`,
         data: { nav: item },
