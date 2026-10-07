@@ -184,3 +184,33 @@ export interface AddOnItem {
   price: number;
   active: boolean;
 }
+
+export interface Page<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+/** {@code hasApp}: linked to a FutSlot account, so they get notifications. */
+export interface CustomerSummary {
+  id: string;
+  name: string;
+  phone: string;
+  hasApp: boolean;
+  totalBookings: number;
+  lastBookingAt: string | null;
+}
+
+export interface CustomerDetail {
+  id: string;
+  name: string;
+  phone: string;
+  hasApp: boolean;
+  notes: string | null;
+  customerSince: string;
+  lastBookingAt: string | null;
+  stats: { total: number; upcoming: number; completed: number; cancelled: number; noShows: number; completedValue: number };
+  recentBookings: Booking[];
+}

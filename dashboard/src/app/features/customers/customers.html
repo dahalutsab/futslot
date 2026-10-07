@@ -1,0 +1,136 @@
+<div class="mx-auto max-w-4xl px-4 py-4 lg:px-8 lg:py-6">
+  <div class="flex items-baseline gap-3">
+    <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">Customers</h1>
+    @if (customers()) {
+      <span class="tabular text-muted">{{ total() }}</span>
+    }
+  </div>
+
+  <div class="mt-4 flex flex-wrap gap-2">
+    <label class="relative min-w-0 flex-1 basis-64">
+      <span class="sr-only">Find a customer</span>
+      <lucide-icon [img]="icons.Search" [size]="18" class="pointer-events-none absolute left-3 top-1/2 flex -translate-y-1/2 text-subtle" />
+      <input type="search" [value]="query()" (input)="typed($any($event.target).value)" autocomplete="off"
+        placeholder="Find by name or phone"
+        class="h-12 w-full rounded-lg border border-border bg-surface pl-11 pr-3 text-base lg:h-10 [&::-webkit-search-cancel-button]:hidden" />
+    </label>
+    <label class="flex items-center gap-2">
+      <span class="text-sm text-muted">Sort</span>
+      <select [value]="sort()" (change)="setSort($any($event.target).value)"
+        class="h-12 cursor-pointer rounded-lg border border-border bg-surface px-3 lg:h-10">
+        @for (option of sorts; track option.value) {
+          <option [value]="option.value" [selected]="sort() === option.value">{{ option.label }}</option>
+        }
+      </select>
+    </label>
+  </div>
+
+  @if (error(); as message) {
+    <p class="mt-6 rounded-xl border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
+  } @else if (customers(); as list) {
+    @if (list.length === 0) {
+      <p class="mt-4 rounded-xl border border-dashed border-border bg-surface px-6 py-10 text-center text-muted">
+        {{ query().trim() ? 'Nobody matches "' + query().trim() + '".' : 'Customers appear here after their first booking.' }}
+      </p>
+    } @else {
+      <ul class="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+        @for (customer of list; track customer.id) {
+          <li>
+            <button type="button" (click)="open(customer)" class="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-surface-2">
+              <span class="grid size-10 shrink-0 place-items-center rounded-full bg-surface-2 font-semibold text-muted" aria-hidden="true">
+                {{ customer.name.charAt(0).toUpperCase() }}
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="flex items-center gap-1.5">
+                  <span class="truncate font-medium">{{ customer.name }}</span>
+                  @if (customer.hasApp) {
+                    <lucide-icon [img]="icons.Smartphone" [size]="14" class="shrink-0 text-subtle" aria-label="Uses the FutSlot app" />
+                  }
+                </span>
+                <span class="tabular block truncate text-sm text-muted">{{ fmt.phone(customer.phone) }}</span>
+              </span>
+              <span class="shrink-0 text-right">
+                <span class="tabular block font-medium">{{ customer.totalBookings }} {{ customer.totalBookings === 1 ? 'booking' : 'bookings' }}</span>
+                @if (customer.lastBookingAt) {
+                  <span class="block text-sm text-subtle">Last {{ fmt.ago(customer.lastBookingAt) }}</span>
+                }
+              </span>
+            </button>
+          </li>
+        }
+      </ul>
+      @if (hasMore()) {
+        <button type="button" (click)="more()" class="mt-3 h-11 w-full rounded-lg border border-border font-medium hover:bg-surface-2">Show more</button>
+      }
+    }
+  } @else {
+    <div class="mt-4 h-48 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+  }
+</div>
+
+@if (detail() || detailError()) {
+  <fs-sheet [title]="detail()?.name ?? 'Customer'" [subtitle]="detail() ? 'Customer since ' + fmt.dayLabel(detail()!.customerSince.slice(0, 10)) : null"
+    (closed)="close()">
+    @if (detail(); as c) {
+      <a [href]="'tel:' + c.phone" class="flex h-12 items-center gap-3 rounded-lg border border-border px-3 hover:bg-surface-2">
+        <lucide-icon [img]="icons.Phone" [size]="18" class="text-muted" />
+        <span class="tabular font-medium">{{ fmt.phone(c.phone) }}</span>
+        <span class="ml-auto text-sm text-subtle">{{ c.hasApp ? 'Uses the app · ' : '' }}Call</span>
+      </a>
+
+      <dl class="mt-4 grid grid-cols-3 gap-2 text-center">
+        <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Played</dt><dd class="tabular text-lg font-semibold">{{ c.stats.completed }}</dd></div>
+        <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Upcoming</dt><dd class="tabular text-lg font-semibold">{{ c.stats.upcoming }}</dd></div>
+        <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Spent</dt><dd class="tabular text-lg font-semibold">{{ fmt.rupees(c.stats.completedValue) }}</dd></div>
+        <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Cancelled</dt><dd class="tabular text-lg font-semibold">{{ c.stats.cancelled }}</dd></div>
+        <div class="rounded-lg px-2 py-3" [class]="c.stats.noShows > 0 ? 'bg-noshow-bg text-noshow-fg' : 'bg-surface-2'"><dt class="text-xs" [class.text-muted]="c.stats.noShows === 0">No-shows</dt><dd class="tabular text-lg font-semibold">{{ c.stats.noShows }}</dd></div>
+        <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Total</dt><dd class="tabular text-lg font-semibold">{{ c.stats.total }}</dd></div>
+      </dl>
+
+      <form class="mt-5 space-y-3" (ngSubmit)="save()">
+        <div>
+          <label for="customer-name" class="mb-1.5 block font-medium">Name</label>
+          <input id="customer-name" name="name" type="text" maxlength="100"
+            class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+            [ngModel]="name()" (ngModelChange)="name.set($event); saved.set(false)" />
+        </div>
+        <div>
+          <label for="customer-notes" class="mb-1.5 block font-medium">Notes <span class="font-normal text-subtle">(only your staff see these)</span></label>
+          <textarea id="customer-notes" name="notes" rows="3" maxlength="2000" placeholder="e.g. Regular on Fridays, prefers Court B"
+            class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-base"
+            [ngModel]="notes()" (ngModelChange)="notes.set($event); saved.set(false)"></textarea>
+        </div>
+        <div class="flex items-center gap-3">
+          <button type="submit" [disabled]="saving()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Save</button>
+          @if (saved()) {
+            <span class="text-sm text-confirmed-fg" role="status">Saved</span>
+          }
+        </div>
+      </form>
+
+      <h3 class="mt-6 font-medium">Recent bookings</h3>
+      @if (c.recentBookings.length === 0) {
+        <p class="mt-2 text-muted">No bookings yet.</p>
+      } @else {
+        <ul class="mt-2 divide-y divide-border">
+          @for (booking of c.recentBookings; track booking.id) {
+            <li class="flex items-center gap-3 py-2.5">
+              <div class="min-w-0 flex-1">
+                <p class="tabular">{{ fmt.dayLabel(booking.startsAt.slice(0, 10)) }} · {{ fmt.localClock(booking.startsAt) }}</p>
+                <p class="text-sm text-muted">{{ booking.court.name }} · {{ fmt.rupees(booking.totalAmount) }}</p>
+              </div>
+              @if (stateOf(booking); as s) {
+                <fs-status-chip [value]="s" />
+              } @else {
+                <span class="text-sm text-subtle">{{ booking.status === 'EXPIRED' ? 'Hold lapsed' : 'Cancelled' }}</span>
+              }
+            </li>
+          }
+        </ul>
+      }
+    }
+    @if (detailError(); as message) {
+      <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+    }
+  </fs-sheet>
+}
