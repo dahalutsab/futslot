@@ -11,6 +11,7 @@
       <span class="status" th:classappend="${page.venue.open} ? 'is-open'">
         <span class="dot" aria-hidden="true"></span><span th:text="${page.venue.openNow}">Open now</span>
       </span>
+      <a th:if="${page.slots.mine}" class="bar-mine" th:href="${page.slots.mine}">Your bookings</a>
       <a th:if="${page.contact.tel}" class="btn btn-accent btn-small" th:href="${page.contact.tel}">
         <svg th:replace="~{sites/parts :: icon('phone')}"></svg><span>Call</span>
       </a>
@@ -63,7 +64,7 @@
             </li>
           </ol>
           <p th:if="${page.slots.free == 0}" class="board-empty" th:text="${'Nothing free ' + (page.slots.dayLabel == 'Today' ? 'today' : page.slots.dayLabel == 'Tomorrow' ? 'tomorrow' : 'on ' + page.slots.dayLabel) + '. Pick another day above.'}">Nothing free.</p>
-          <p class="board-note">Booking opens a WhatsApp chat with us, ready to send.</p>
+          <p class="board-note" th:text="${page.slots.online ? 'Tap a time to book. You sign in with your phone number.' : 'Booking opens a WhatsApp chat with us, ready to send.'}">Tap a time to book.</p>
         </section>
       </div>
     </section>

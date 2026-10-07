@@ -3,6 +3,7 @@ package com.futslot.site;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -22,6 +23,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 class SiteHostFilter extends OncePerRequestFilter {
+
+	private static final Pattern BOOKING = Pattern.compile("/book(/code|/verify|/confirm)?|/bookings(/[0-9a-f-]{36}(/pay)?)?|/sign-out");
 
 	private final VenueSiteRepository sites;
 
@@ -45,13 +48,17 @@ class SiteHostFilter extends OncePerRequestFilter {
 			chain.doFilter(request, response);
 			return;
 		}
-		String target = switch (path) {
-			case "/", "" -> "/sites/" + subdomain.get();
-			case "/robots.txt" -> "/sites/" + subdomain.get() + "/robots.txt";
-			case "/sitemap.xml" -> "/sites/" + subdomain.get() + "/sitemap.xml";
-			default -> null;
-		};
-		if (target == null || !"GET".equals(request.getMethod()) && !"HEAD".equals(request.getMethod())) {
+		String site = "/sites/" + subdomain.get();
+		boolean reading = "GET".equals(request.getMethod()) || "HEAD".equals(request.getMethod());
+		String target = null;
+		if (reading && (path.isEmpty() || path.equals("/") || path.equals("/robots.txt") || path.equals("/sitemap.xml"))) {
+			target = site + (path.length() > 1 ? path : "");
+		}
+		// Booking: the slot, signing in and confirming, then the booking itself (pages and their forms)
+		else if (BOOKING.matcher(path).matches()) {
+			target = site + path;
+		}
+		if (target == null) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}

@@ -40,6 +40,7 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.GET, "/media/**").permitAll()
 				// Venue websites and what they load
 				.requestMatchers(HttpMethod.GET, "/sites/**", "/site-preview/**", "/site-assets/**", "/internal/sites/domain-check").permitAll()
+				.requestMatchers(HttpMethod.POST, "/sites/*/book/*", "/sites/*/bookings/*/pay", "/sites/*/sign-out").permitAll()
 				// What anyone can browse before signing in
 				.requestMatchers(HttpMethod.GET, "/api/v1/venues", "/api/v1/venues/*", "/api/v1/venues/*/availability",
 						"/api/v1/venues/*/reviews", "/api/v1/venues/*/reviews/summary", "/api/v1/venues/*/membership-plans",

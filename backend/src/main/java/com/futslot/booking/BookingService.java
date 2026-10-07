@@ -114,6 +114,12 @@ public class BookingService {
 
 	@Transactional
 	public BookingResponse bookAsPlayer(UUID userId, PlayerBookingRequest request) {
+		return bookAsPlayer(userId, request, BookingSource.APP);
+	}
+
+	/** {@code source} is APP or WEBSITE: where the player booked. */
+	@Transactional
+	public BookingResponse bookAsPlayer(UUID userId, PlayerBookingRequest request, BookingSource source) {
 		Court court = bookableCourt(request.courtId());
 		Venue venue = court.getVenue();
 		Instant now = this.clock.instant();
@@ -135,7 +141,7 @@ public class BookingService {
 		User user = this.userService.get(userId);
 		VenueCustomer customer = customerForPlayer(venue, user);
 		Slot slot = dated.slot();
-		Booking booking = new Booking(this.references.next(), venue, court, customer, userId, BookingSource.APP,
+		Booking booking = new Booking(this.references.next(), venue, court, customer, userId, source,
 				start, slot.endsAt().toInstant(), slot.price(), userId, request.notes());
 		Benefit benefit = benefit(venue, customer, userId, start, slot.price(), request.membershipId(),
 				request.discountCode(), now, true);

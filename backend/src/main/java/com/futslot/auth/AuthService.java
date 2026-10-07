@@ -47,17 +47,23 @@ class AuthService {
 
 	@Transactional(noRollbackFor = ApiException.class)
 	TokenResponse verifyOtp(OtpVerifyRequest request) {
-		String phone = PhoneNumbers.normalize(request.phone());
-		OtpCode otp = this.otpService.check(phone, OtpPurpose.LOGIN, request.code());
+		return this.tokenService.issue(signIn(request.phone(), request.code(), request.fullName()));
+	}
+
+	/** Checks the code and signs the person in, creating their account if it's their first time. */
+	@Transactional(noRollbackFor = ApiException.class)
+	User signIn(String rawPhone, String code, String fullName) {
+		String phone = PhoneNumbers.normalize(rawPhone);
+		OtpCode otp = this.otpService.check(phone, OtpPurpose.LOGIN, code);
 		Instant now = this.clock.instant();
-		User user = this.users.findByPhone(phone).orElseGet(() -> register(phone, request.fullName()));
+		User user = this.users.findByPhone(phone).orElseGet(() -> register(phone, fullName));
 		if (!user.isActive()) {
 			throw new ApiException(HttpStatus.FORBIDDEN, "ACCOUNT_DISABLED", "This account has been disabled");
 		}
 		otp.consume(now);
 		user.markPhoneVerified(now);
 		user.recordLogin(now);
-		return this.tokenService.issue(user);
+		return user;
 	}
 
 	@Transactional(noRollbackFor = ApiException.class)
