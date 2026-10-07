@@ -21,11 +21,21 @@ import com.futslot.booking.Booking;
 import com.futslot.booking.BookingEvent;
 import com.futslot.booking.BookingEventType;
 import com.futslot.booking.BookingLookup;
+import com.futslot.booking.BookingService;
 import com.futslot.booking.BookingStatus;
+import com.futslot.booking.VenueCustomer;
 import com.futslot.common.ApiException;
+import com.futslot.membership.Membership;
+import com.futslot.membership.MembershipPlan;
+import com.futslot.membership.MembershipResponse;
+import com.futslot.membership.MembershipService;
+import com.futslot.membership.MembershipStatus;
+import com.futslot.user.UserService;
+import com.futslot.venue.Venue;
 import com.futslot.venue.VenueAccess;
 import com.futslot.venue.VenuePermission;
 import com.futslot.venue.VenuePolicy;
+import com.futslot.venue.VenueRepository;
 
 /**
  * Payments are made to the venue directly (cash, or the venue's own eSewa/Khalti/Fonepay/bank). Players
@@ -52,17 +62,30 @@ class PaymentService {
 
 	private final BookingLookup bookings;
 
+	private final BookingService bookingService;
+
+	private final MembershipService memberships;
+
+	private final UserService users;
+
+	private final VenueRepository venues;
+
 	private final VenueAccess access;
 
 	private final ApplicationEventPublisher events;
 
 	private final Clock clock;
 
-	PaymentService(PaymentRepository payments, RefundRepository refunds, BookingLookup bookings, VenueAccess access,
-			ApplicationEventPublisher events, Clock clock) {
+	PaymentService(PaymentRepository payments, RefundRepository refunds, BookingLookup bookings,
+			BookingService bookingService, MembershipService memberships, UserService users, VenueRepository venues,
+			VenueAccess access, ApplicationEventPublisher events, Clock clock) {
 		this.payments = payments;
 		this.refunds = refunds;
 		this.bookings = bookings;
+		this.bookingService = bookingService;
+		this.memberships = memberships;
+		this.users = users;
+		this.venues = venues;
 		this.access = access;
 		this.events = events;
 		this.clock = clock;
@@ -122,6 +145,18 @@ class PaymentService {
 	@Transactional
 	PaymentResponse approve(UUID userId, UUID venueId, UUID paymentId) {
 		Payment payment = pendingAtVenue(userId, venueId, paymentId);
+		if (payment.getPurpose() == PaymentPurpose.MEMBERSHIP) {
+			Membership membership = payment.getMembership();
+			if (membership.getStatus() != MembershipStatus.PENDING_PAYMENT) {
+				throw new ApiException(HttpStatus.CONFLICT, "MEMBERSHIP_NOT_PENDING",
+						"The membership is " + membership.getStatus() + "; reject this payment and refund it instead");
+			}
+			payment.approve(userId, this.clock.instant());
+			this.memberships.activate(membership);
+			this.events.publishEvent(MembershipPaymentEvent.of(PaymentEvent.Type.RECEIVED, membership,
+					payment.getAmount(), payment.getMethod(), null, userId));
+			return PaymentResponse.from(payment);
+		}
 		Booking booking = payment.getBooking();
 		if (!booking.isLive()) {
 			throw new ApiException(HttpStatus.CONFLICT, "BOOKING_NOT_ACTIVE",
@@ -134,17 +169,85 @@ class PaymentService {
 		return PaymentResponse.from(payment);
 	}
 
-	/** The money wasn't found: the player gets the venue's normal hold time again to pay. */
+	/**
+	 * The money wasn't found: a held booking gets the venue's normal hold time again; a membership
+	 * purchase is cancelled and the player can buy again.
+	 */
 	@Transactional
 	PaymentResponse reject(UUID userId, UUID venueId, UUID paymentId, String reason) {
 		Payment payment = pendingAtVenue(userId, venueId, paymentId);
-		Booking booking = payment.getBooking();
 		payment.reject(userId, reason.strip());
+		if (payment.getPurpose() == PaymentPurpose.MEMBERSHIP) {
+			Membership membership = payment.getMembership();
+			if (membership.getStatus() == MembershipStatus.PENDING_PAYMENT) {
+				membership.cancel();
+			}
+			this.events.publishEvent(MembershipPaymentEvent.of(PaymentEvent.Type.REJECTED, membership,
+					payment.getAmount(), payment.getMethod(), reason.strip(), userId));
+			return PaymentResponse.from(payment);
+		}
+		Booking booking = payment.getBooking();
 		VenuePolicy policy = booking.getVenue().policy();
 		booking.resumeHold(this.clock.instant().plus(Duration.ofMinutes(policy.bookingHoldMinutes())));
 		this.events.publishEvent(PaymentEvent.of(PaymentEvent.Type.REJECTED, booking, payment.getAmount(),
 				payment.getMethod(), reason.strip(), userId));
 		return PaymentResponse.from(payment);
+	}
+
+	/**
+	 * A player buys a plan by paying the venue and reporting it; the membership starts once staff verify
+	 * the payment. Free plans start straight away.
+	 */
+	@Transactional
+	MembershipResponse buyMembership(UUID userId, PaymentRequests.BuyMembership request) {
+		MembershipPlan plan = this.memberships.planOnSale(request.planId());
+		Venue venue = this.venues.findById(plan.getVenueId()).orElseThrow();
+		VenueCustomer customer = this.bookingService.customerForPlayer(venue, this.users.get(userId));
+		Membership membership = this.memberships.open(plan, venue, customer);
+		if (plan.getPrice().signum() == 0) {
+			this.memberships.activate(membership);
+			return MembershipResponse.from(membership);
+		}
+		if (request.method() == null || request.transactionId() == null || request.transactionId().isBlank()
+				|| request.amount() == null) {
+			throw badRequest("PAYMENT_DETAILS_REQUIRED", "Pay the venue, then enter the method, transaction id and amount");
+		}
+		if (!CLAIMABLE.contains(request.method())) {
+			throw badRequest("INVALID_METHOD", "Pay with eSewa, Khalti, Fonepay or bank transfer");
+		}
+		if (request.amount().compareTo(plan.getPrice()) != 0) {
+			throw badRequest("AMOUNT_MISMATCH", "This plan costs Rs " + plan.getPrice().toPlainString());
+		}
+		String transactionId = uniqueTransactionId(request.method(), request.transactionId());
+		this.payments.save(Payment.membershipClaimed(membership, userId, request.amount(), request.method(),
+				transactionId));
+		this.events.publishEvent(MembershipPaymentEvent.of(PaymentEvent.Type.SUBMITTED, membership, request.amount(),
+				request.method(), null, userId));
+		return MembershipResponse.from(membership);
+	}
+
+	/** Staff sell a plan at the counter: it starts today and its price is recorded as received. */
+	@Transactional
+	MembershipResponse sellMembership(UUID userId, UUID venueId, PaymentRequests.SellMembership request) {
+		Venue venue = this.access.require(userId, venueId, VenuePermission.MANAGE_BOOKINGS);
+		MembershipPlan plan = this.memberships.planAtVenue(venueId, request.planId());
+		boolean paid = plan.getPrice().signum() > 0;
+		if (paid && (request.method() == null || !RECORDABLE.contains(request.method()))) {
+			throw badRequest("INVALID_METHOD", "Use cash, eSewa, Khalti, Fonepay or bank transfer");
+		}
+		VenueCustomer customer = this.bookingService.customerForPhone(venue, request.customerPhone(),
+				request.customerName());
+		Membership membership = this.memberships.open(plan, venue, customer);
+		this.memberships.activate(membership);
+		if (paid) {
+			String transactionId = (request.transactionId() != null && !request.transactionId().isBlank())
+					? uniqueTransactionId(request.method(), request.transactionId()) : null;
+			this.payments.save(Payment.membershipReceived(membership, plan.getPrice(), request.method(), transactionId,
+					userId, this.clock.instant()));
+		}
+		this.events.publishEvent(MembershipPaymentEvent.of(PaymentEvent.Type.RECEIVED, membership, plan.getPrice(),
+				request.method(), null, userId));
+		return MembershipResponse.from(membership);
 	}
 
 	@Transactional(readOnly = true)

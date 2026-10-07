@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.futslot.common.CurrentUser;
+import com.futslot.membership.MembershipResponse;
 
 import jakarta.validation.Valid;
 
@@ -44,7 +45,22 @@ class PaymentController {
 		return this.paymentService.claim(CurrentUser.id(jwt), bookingId, request);
 	}
 
+	/** Buy a venue's membership plan after paying the venue. */
+	@PostMapping("/me/memberships")
+	@ResponseStatus(HttpStatus.CREATED)
+	MembershipResponse buyMembership(@AuthenticationPrincipal Jwt jwt,
+			@Valid @RequestBody PaymentRequests.BuyMembership request) {
+		return this.paymentService.buyMembership(CurrentUser.id(jwt), request);
+	}
+
 	// Venue
+
+	@PostMapping("/owner/venues/{venueId}/memberships")
+	@ResponseStatus(HttpStatus.CREATED)
+	MembershipResponse sellMembership(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID venueId,
+			@Valid @RequestBody PaymentRequests.SellMembership request) {
+		return this.paymentService.sellMembership(CurrentUser.id(jwt), venueId, request);
+	}
 
 	@GetMapping("/owner/venues/{venueId}/bookings/{bookingId}/payments")
 	BookingPaymentsResponse bookingPayments(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID venueId,

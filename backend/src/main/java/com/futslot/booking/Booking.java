@@ -57,6 +57,12 @@ public class Booking {
 	@Column(updatable = false)
 	private UUID recurringBookingId;
 
+	@Column(updatable = false)
+	private UUID membershipId;
+
+	@Column(updatable = false)
+	private UUID discountCodeId;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, updatable = false)
 	private BookingSource source;
@@ -145,6 +151,20 @@ public class Booking {
 		return booking;
 	}
 
+	/**
+	 * A membership or discount code takes {@code discount} off the price. Call before
+	 * {@link #holdForPayment}, since the advance is a share of what's left to pay.
+	 */
+	void applyDiscount(BigDecimal discount, UUID membershipId, UUID discountCodeId) {
+		this.discountAmount = discount;
+		this.totalAmount = this.priceAmount.subtract(discount);
+		this.membershipId = membershipId;
+		this.discountCodeId = discountCodeId;
+		if (this.totalAmount.signum() == 0) {
+			this.paymentStatus = PaymentStatus.PAID;
+		}
+	}
+
 	/** Holds the slot until {@code expiresAt}; confirmed once the advance is paid. */
 	void holdForPayment(BigDecimal advance, Instant expiresAt) {
 		this.status = BookingStatus.PENDING_PAYMENT;
@@ -221,6 +241,18 @@ public class Booking {
 
 	public Venue getVenue() {
 		return this.venue;
+	}
+
+	public UUID getMembershipId() {
+		return this.membershipId;
+	}
+
+	public UUID getDiscountCodeId() {
+		return this.discountCodeId;
+	}
+
+	public BigDecimal getDiscountAmount() {
+		return this.discountAmount;
 	}
 
 	public Court getCourt() {

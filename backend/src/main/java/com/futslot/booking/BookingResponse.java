@@ -9,9 +9,9 @@ import java.util.UUID;
 /** Start and end are in the venue's local offset. */
 public record BookingResponse(UUID id, String reference, VenueRef venue, CourtRef court, CustomerRef customer,
 		BookingSource source, BookingStatus status, OffsetDateTime startsAt, OffsetDateTime endsAt,
-		BigDecimal priceAmount, BigDecimal totalAmount, BigDecimal advanceRequired, BigDecimal paidAmount,
-		PaymentStatus paymentStatus, Instant holdExpiresAt, String notes, Instant cancelledAt,
-		String cancellationReason, Instant createdAt) {
+		BigDecimal priceAmount, BigDecimal discountAmount, UUID membershipId, UUID discountCodeId,
+		BigDecimal totalAmount, BigDecimal advanceRequired, BigDecimal paidAmount, PaymentStatus paymentStatus,
+		Instant holdExpiresAt, String notes, Instant cancelledAt, String cancellationReason, Instant createdAt) {
 
 	public static BookingResponse from(Booking booking) {
 		ZoneId zone = ZoneId.of(booking.getVenue().getTimezone());
@@ -22,6 +22,7 @@ public record BookingResponse(UUID id, String reference, VenueRef venue, CourtRe
 						booking.getCustomer().getPhone()),
 				booking.getSource(), booking.getStatus(), booking.getStartsAt().atZone(zone).toOffsetDateTime(),
 				booking.getEndsAt().atZone(zone).toOffsetDateTime(), booking.getPriceAmount(),
+				booking.getDiscountAmount(), booking.getMembershipId(), booking.getDiscountCodeId(),
 				booking.getTotalAmount(), booking.getAdvanceRequired(), booking.getPaidAmount(),
 				booking.getPaymentStatus(), booking.getHoldExpiresAt(), booking.getNotes(), booking.getCancelledAt(),
 				booking.getCancellationReason(), booking.getCreatedAt());

@@ -21,6 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.futslot.common.ApiException;
 import com.futslot.common.PhoneNumbers;
+import com.futslot.discount.DiscountCode;
+import com.futslot.discount.DiscountCodeService;
+import com.futslot.membership.Membership;
+import com.futslot.membership.MembershipService;
 import com.futslot.slot.AvailabilityService;
 import com.futslot.slot.BookedRanges;
 import com.futslot.slot.CourtBlockRepository;
@@ -72,6 +76,10 @@ public class BookingService {
 
 	private final HoldExpiry holdExpiry;
 
+	private final MembershipService memberships;
+
+	private final DiscountCodeService discountCodes;
+
 	private final ApplicationEventPublisher events;
 
 	private final Clock clock;
@@ -79,7 +87,8 @@ public class BookingService {
 	BookingService(BookingRepository bookings, VenueCustomerRepository customers, VenueAccess access,
 			CourtRepository courts, CourtBlockRepository blocks, BookedRanges bookedRanges,
 			AvailabilityService availability, UserService userService, UserRepository users,
-			BookingReferences references, HoldExpiry holdExpiry, ApplicationEventPublisher events, Clock clock) {
+			BookingReferences references, HoldExpiry holdExpiry, MembershipService memberships,
+			DiscountCodeService discountCodes, ApplicationEventPublisher events, Clock clock) {
 		this.bookings = bookings;
 		this.customers = customers;
 		this.access = access;
@@ -91,28 +100,21 @@ public class BookingService {
 		this.users = users;
 		this.references = references;
 		this.holdExpiry = holdExpiry;
+		this.memberships = memberships;
+		this.discountCodes = discountCodes;
 		this.events = events;
 		this.clock = clock;
 	}
 
 	@Transactional
 	public BookingResponse bookAsPlayer(UUID userId, PlayerBookingRequest request) {
-		Court court = this.courts.findById(request.courtId()).filter(Court::isActive).orElseThrow(BookingService::courtNotFound);
+		Court court = bookableCourt(request.courtId());
 		Venue venue = court.getVenue();
-		if (venue.getStatus() != VenueStatus.ACTIVE) {
-			throw courtNotFound();
-		}
 		Instant now = this.clock.instant();
 		Instant start = request.startsAt().toInstant();
 		lockAndExpireHolds(court, now);
 
-		DatedSlot dated = findSlot(venue, court, start)
-			.orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "SLOT_NOT_FOUND", "That isn't a bookable slot"));
-		LocalDate lastBookable = LocalDate.now(this.clock.withZone(zone(venue)))
-			.plusDays(venue.policy().maxAdvanceBookingDays());
-		if (dated.date().isAfter(lastBookable)) {
-			throw new ApiException(HttpStatus.BAD_REQUEST, "DATE_OUT_OF_RANGE", "Bookings open up to " + lastBookable);
-		}
+		DatedSlot dated = bookableSlot(venue, court, start);
 		switch (dated.slot().status()) {
 			case PAST -> throw new ApiException(HttpStatus.CONFLICT, "SLOT_IN_PAST", "That slot has already started");
 			case BOOKED, BLOCKED -> throw slotUnavailable();
@@ -125,21 +127,37 @@ public class BookingService {
 		}
 
 		User user = this.userService.get(userId);
-		VenueCustomer customer = customerFor(venue, user.getPhone(), user.getFullName());
-		customer.linkUser(userId);
+		VenueCustomer customer = customerForPlayer(venue, user);
 		Slot slot = dated.slot();
 		Booking booking = new Booking(this.references.next(), venue, court, customer, userId, BookingSource.APP,
 				start, slot.endsAt().toInstant(), slot.price(), userId, request.notes());
-		int advancePercent = venue.policy().advancePercent();
-		if (advancePercent > 0) {
-			BigDecimal advance = slot.price()
-				.multiply(BigDecimal.valueOf(advancePercent))
-				.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+		Benefit benefit = benefit(venue, customer, userId, start, slot.price(), request.membershipId(),
+				request.discountCode(), now, true);
+		booking.applyDiscount(benefit.discount(), benefit.membershipId(), benefit.discountCodeId());
+		BigDecimal advance = advanceFor(venue, booking.getTotalAmount());
+		if (advance.signum() > 0) {
 			booking.holdForPayment(advance, now.plus(Duration.ofMinutes(venue.policy().bookingHoldMinutes())));
 		}
 		save(booking, customer, now);
+		redeem(benefit, booking, userId);
 		publish(BookingEventType.CREATED, booking, userId, null);
 		return BookingResponse.from(booking);
+	}
+
+	/** What booking this slot would cost, with the membership or code applied, without booking it. */
+	@Transactional(readOnly = true)
+	public QuoteResponse quote(UUID userId, PlayerBookingRequest request) {
+		Court court = bookableCourt(request.courtId());
+		Venue venue = court.getVenue();
+		Instant start = request.startsAt().toInstant();
+		Slot slot = bookableSlot(venue, court, start).slot();
+		User user = this.userService.get(userId);
+		VenueCustomer customer = this.customers.findByVenueIdAndPhone(venue.getId(), user.getPhone()).orElse(null);
+		Benefit benefit = benefit(venue, customer, userId, start, slot.price(), request.membershipId(),
+				request.discountCode(), this.clock.instant(), false);
+		BigDecimal total = slot.price().subtract(benefit.discount());
+		return new QuoteResponse(slot.price(), benefit.discount(), total, advanceFor(venue, total),
+				benefit.membershipId(), (benefit.code() != null) ? benefit.code().getCode() : null);
 	}
 
 	@Transactional
@@ -162,7 +180,10 @@ public class BookingService {
 				request.customerName().strip());
 		Booking booking = new Booking(this.references.next(), venue, court, customer, null, request.source(), start,
 				end, price, ownerId, request.notes());
+		Benefit benefit = benefit(venue, customer, ownerId, start, price, request.membershipId(), null, now, true);
+		booking.applyDiscount(benefit.discount(), benefit.membershipId(), null);
 		save(booking, customer, now);
+		redeem(benefit, booking, ownerId);
 		publish(BookingEventType.CREATED, booking, ownerId, null);
 		return BookingResponse.from(booking);
 	}
@@ -272,6 +293,64 @@ public class BookingService {
 		this.events.publishEvent(BookingEvent.of(type, booking, actorUserId, reason));
 	}
 
+	private Court bookableCourt(UUID courtId) {
+		Court court = this.courts.findById(courtId).filter(Court::isActive).orElseThrow(BookingService::courtNotFound);
+		if (court.getVenue().getStatus() != VenueStatus.ACTIVE) {
+			throw courtNotFound();
+		}
+		return court;
+	}
+
+	/** The slot starting at {@code start}, within the venue's booking window. */
+	private DatedSlot bookableSlot(Venue venue, Court court, Instant start) {
+		DatedSlot dated = findSlot(venue, court, start)
+			.orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "SLOT_NOT_FOUND", "That isn't a bookable slot"));
+		LocalDate lastBookable = LocalDate.now(this.clock.withZone(zone(venue)))
+			.plusDays(venue.policy().maxAdvanceBookingDays());
+		if (dated.date().isAfter(lastBookable)) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "DATE_OUT_OF_RANGE", "Bookings open up to " + lastBookable);
+		}
+		return dated;
+	}
+
+	/** The venue's advance on {@code total}; nothing when nothing is left to pay. */
+	private static BigDecimal advanceFor(Venue venue, BigDecimal total) {
+		return total.multiply(BigDecimal.valueOf(venue.policy().advancePercent()))
+			.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+	}
+
+	/**
+	 * What a membership or discount code takes off {@code price}. With {@code lock} the membership or code
+	 * row stays locked until commit; {@link #redeem} then uses it up.
+	 */
+	private Benefit benefit(Venue venue, VenueCustomer customer, UUID userId, Instant start, BigDecimal price,
+			UUID membershipId, String code, Instant now, boolean lock) {
+		boolean hasCode = code != null && !code.isBlank();
+		if (membershipId != null && hasCode) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "ONE_DISCOUNT_ONLY",
+					"Use either a membership or a discount code, not both");
+		}
+		if (membershipId != null) {
+			Membership membership = this.memberships.usable(membershipId, customer,
+					start.atZone(zone(venue)).toLocalDate(), lock);
+			return new Benefit(MembershipService.discountFor(membership, price), membership, null);
+		}
+		if (hasCode) {
+			DiscountCode discount = this.discountCodes.usable(venue.getId(), code, userId, price, now, lock);
+			return new Benefit(DiscountCodeService.discountFor(discount, price), null, discount);
+		}
+		return new Benefit(BigDecimal.ZERO, null, null);
+	}
+
+	private void redeem(Benefit benefit, Booking booking, UUID userId) {
+		if (benefit.membership() != null) {
+			this.memberships.useGame(benefit.membership());
+		}
+		if (benefit.code() != null) {
+			this.discountCodes.redeem(benefit.code(), booking.getId(), userId, benefit.discount());
+		}
+	}
+
 	/** Finds the slot starting at {@code start}; late-night slots belong to the previous operating day. */
 	private Optional<DatedSlot> findSlot(Venue venue, Court court, Instant start) {
 		LocalDate localDate = start.atZone(zone(venue)).toLocalDate();
@@ -351,6 +430,18 @@ public class BookingService {
 		}
 	}
 
+	/** The venue's customer record for an app user, linked to their account. Call inside a transaction. */
+	public VenueCustomer customerForPlayer(Venue venue, User user) {
+		VenueCustomer customer = customerFor(venue, user.getPhone(), user.getFullName());
+		customer.linkUser(user.getId());
+		return customer;
+	}
+
+	/** The venue's customer with a phone number staff typed in. Call inside a transaction. */
+	public VenueCustomer customerForPhone(Venue venue, String phone, String name) {
+		return customerFor(venue, PhoneNumbers.normalize(phone), name.strip());
+	}
+
 	/** The venue's customer with this phone, created if new and linked to the app user with that phone. */
 	VenueCustomer customerFor(Venue venue, String phone, String name) {
 		VenueCustomer customer = this.customers.findByVenueIdAndPhone(venue.getId(), phone)
@@ -404,6 +495,18 @@ public class BookingService {
 
 	private static ZoneId zone(Venue venue) {
 		return ZoneId.of(venue.getTimezone());
+	}
+
+	private record Benefit(BigDecimal discount, Membership membership, DiscountCode code) {
+
+		UUID membershipId() {
+			return (this.membership != null) ? this.membership.getId() : null;
+		}
+
+		UUID discountCodeId() {
+			return (this.code != null) ? this.code.getId() : null;
+		}
+
 	}
 
 	private static ApiException slotUnavailable() {

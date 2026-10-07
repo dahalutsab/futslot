@@ -44,6 +44,11 @@ class BookingController {
 		return this.bookingService.bookAsPlayer(CurrentUser.id(jwt), request);
 	}
 
+	@PostMapping("/bookings/quote")
+	QuoteResponse quote(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody PlayerBookingRequest request) {
+		return this.bookingService.quote(CurrentUser.id(jwt), request);
+	}
+
 	@GetMapping("/bookings")
 	List<BookingResponse> myBookings(@AuthenticationPrincipal Jwt jwt,
 			@RequestParam(defaultValue = "upcoming") @Pattern(regexp = "upcoming|past") String scope,
