@@ -6,7 +6,7 @@
       <span class="sr-only">Find a booking</span>
       <lucide-icon [img]="icons.Search" [size]="18" class="pointer-events-none absolute left-3 top-1/2 flex -translate-y-1/2 text-subtle" />
       <input type="search" [value]="query()" (input)="typed($any($event.target).value)" autocomplete="off"
-        placeholder="Find by reference, name or phone"
+        placeholder="Reference, name or phone"
         class="h-12 w-full rounded-lg border border-border bg-surface pl-11 pr-11 text-base lg:h-10 [&::-webkit-search-cancel-button]:hidden" />
       @if (query()) {
         <button type="button" (click)="clearSearch()" aria-label="Clear search"
@@ -36,7 +36,7 @@
   </div>
 
   @if (!searching()) {
-    <div class="mt-3 flex gap-2 overflow-x-auto pb-1" role="radiogroup" aria-label="Show">
+    <div class="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]" role="radiogroup" aria-label="Show">
       @for (option of filters; track option.value) {
         <button type="button" role="radio" [attr.aria-checked]="filter() === option.value" (click)="filter.set(option.value)"
           class="h-9 shrink-0 rounded-full border px-3 text-sm font-medium"

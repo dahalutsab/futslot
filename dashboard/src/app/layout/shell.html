@@ -38,6 +38,15 @@
         </div>
       }
 
+      <div class="px-3 pb-2">
+        <button type="button" (click)="paletteOpen.set(true)" aria-keyshortcuts="Control+K Meta+K"
+          class="flex h-10 w-full items-center gap-2 rounded-lg border border-border px-3 text-muted hover:bg-surface-2 hover:text-text">
+          <lucide-icon [img]="icons.Search" [size]="16" />
+          <span class="flex-1 text-left">Search</span>
+          <kbd class="rounded border border-border px-1.5 text-xs text-subtle">{{ shortcut }}</kbd>
+        </button>
+      </div>
+
       <nav class="flex-1 overflow-y-auto px-3 pb-4" aria-label="Main">
         @for (group of groups(); track group.label) {
           <p class="mb-1 mt-4 px-2 text-xs font-medium uppercase tracking-wide text-subtle first:mt-0">{{ group.label }}</p>
@@ -96,6 +105,10 @@
           }
         </select>
       }
+      <button type="button" (click)="paletteOpen.set(true)" aria-label="Search"
+        class="-mr-2 grid size-11 shrink-0 place-items-center rounded-md text-muted hover:bg-surface-2 hover:text-text">
+        <lucide-icon [img]="icons.Search" [size]="20" />
+      </button>
     </header>
 
     <main id="main" tabindex="-1" class="min-w-0 pb-20 lg:pb-0">
@@ -131,7 +144,7 @@
 
     @if (moreOpen()) {
       <div class="fixed inset-0 z-30 bg-black/50 lg:hidden" (click)="moreOpen.set(false)" aria-hidden="true"></div>
-      <div role="dialog" aria-modal="true" aria-label="More" class="fixed inset-x-0 bottom-0 z-40 max-h-[80dvh] overflow-y-auto rounded-t-2xl bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] lg:hidden">
+      <div role="dialog" aria-modal="true" aria-label="More" cdkTrapFocus cdkTrapFocusAutoCapture class="fixed inset-x-0 bottom-0 z-40 max-h-[80dvh] overflow-y-auto rounded-t-2xl bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] lg:hidden">
         <div class="mb-2 flex items-center justify-between">
           <p class="font-semibold">More</p>
           <button type="button" (click)="moreOpen.set(false)" aria-label="Close" class="grid size-11 place-items-center rounded-md text-muted">
@@ -163,4 +176,8 @@
       </div>
     }
   </div>
+}
+
+@if (paletteOpen()) {
+  <fs-command-palette (closed)="paletteOpen.set(false)" />
 }

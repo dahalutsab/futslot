@@ -19,6 +19,7 @@ import {
 } from 'lucide-angular';
 
 import { VenuePermission } from '../core/api.types';
+import { VenueContext } from '../core/venue-context';
 
 export interface NavItem {
   path: string;
@@ -29,7 +30,7 @@ export interface NavItem {
   /** Shown in the phone bottom bar (at most 4, plus More). */
   onPhoneBar?: boolean;
   badge?: 'payments' | 'messages';
-  /** One line for the placeholder until the screen is built. */
+  /** What the screen is for, in a line; shown when searching for it. */
   about: string;
 }
 
@@ -92,3 +93,14 @@ export const NAVIGATION: NavGroup[] = [
 ];
 
 export const ALL_ITEMS: NavItem[] = NAVIGATION.flatMap((group) => group.items);
+
+/** Whether the person may see this item at the venue they're looking at. */
+export function canSee(item: NavItem, venues: VenueContext): boolean {
+  if (item.needs === null) {
+    return true;
+  }
+  if (item.needs === 'OWNER') {
+    return venues.isOwner();
+  }
+  return Array.isArray(item.needs) ? item.needs.some((p) => venues.can(p)) : venues.can(item.needs);
+}

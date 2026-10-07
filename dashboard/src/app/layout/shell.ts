@@ -1,3 +1,4 @@
+import { A11yModule } from '@angular/cdk/a11y';
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { ChevronsUpDown, Ellipsis, LogOut, LucideAngularModule, Monitor, Moon, Search, Sun, X } from 'lucide-angular';
@@ -7,7 +8,8 @@ import { Session } from '../core/session';
 import { Theme, ThemeChoice } from '../core/theme';
 import { VenueContext } from '../core/venue-context';
 import { Badges } from './badges';
-import { ALL_ITEMS, NAVIGATION, NavGroup, NavItem } from './navigation';
+import { CommandPalette } from './command-palette';
+import { ALL_ITEMS, canSee, NAVIGATION, NavGroup, NavItem } from './navigation';
 
 /**
  * The frame around every screen: a sidebar on wide screens, a top bar and bottom bar on phones. Only what the
@@ -15,8 +17,9 @@ import { ALL_ITEMS, NAVIGATION, NavGroup, NavItem } from './navigation';
  */
 @Component({
   selector: 'fs-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule],
+  imports: [A11yModule, CommandPalette, RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '(document:keydown)': 'shortcuts($event)' },
   templateUrl: './shell.html',
 })
 export class Shell implements OnInit {
@@ -37,6 +40,11 @@ export class Shell implements OnInit {
   protected readonly loadError = signal<string | null>(null);
 
   protected readonly moreOpen = signal(false);
+
+  protected readonly paletteOpen = signal(false);
+
+  /** How the search shortcut is written on this computer. */
+  protected readonly shortcut = /Mac|iPhone|iPad/.test(navigator.userAgent) ? '⌘K' : 'Ctrl K';
 
   protected readonly groups = computed<NavGroup[]>(() =>
     NAVIGATION.map((group) => ({ ...group, items: group.items.filter((item) => this.allowed(item)) })).filter(
@@ -87,13 +95,19 @@ export class Shell implements OnInit {
     void this.ngOnInit();
   }
 
+  /** Ctrl/⌘ K opens search from anywhere (and closes it again); Escape closes the More sheet. */
+  protected shortcuts(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && this.moreOpen()) {
+      this.moreOpen.set(false);
+    }
+    else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      this.moreOpen.set(false);
+      this.paletteOpen.update((open) => !open);
+    }
+  }
+
   private allowed(item: NavItem): boolean {
-    if (item.needs === null) {
-      return true;
-    }
-    if (item.needs === 'OWNER') {
-      return this.venues.isOwner();
-    }
-    return Array.isArray(item.needs) ? item.needs.some((p) => this.venues.can(p)) : this.venues.can(item.needs);
+    return canSee(item, this.venues);
   }
 }
