@@ -64,6 +64,15 @@ public class VenueCustomer {
 		}
 	}
 
+	void update(String name, String notes) {
+		if (name != null) {
+			this.name = name;
+		}
+		if (notes != null) {
+			this.notes = notes.isBlank() ? null : notes;
+		}
+	}
+
 	void recordBooking(Instant at) {
 		this.totalBookings++;
 		this.lastBookingAt = at;
@@ -87,6 +96,22 @@ public class VenueCustomer {
 
 	public int getTotalBookings() {
 		return this.totalBookings;
+	}
+
+	public UUID getVenueId() {
+		return this.venueId;
+	}
+
+	public String getNotes() {
+		return this.notes;
+	}
+
+	public Instant getLastBookingAt() {
+		return this.lastBookingAt;
+	}
+
+	public Instant getCreatedAt() {
+		return this.createdAt;
 	}
 
 }

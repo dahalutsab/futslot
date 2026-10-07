@@ -944,6 +944,61 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/VenueResponse"
+  /api/v1/owner/venues/{venueId}/customers/{customerId}:
+    get:
+      tags:
+      - customer-controller
+      operationId: get_1
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerDetailResponse"
+    patch:
+      tags:
+      - customer-controller
+      operationId: update_1
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerUpdateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerDetailResponse"
   /api/v1/me:
     get:
       tags:
@@ -959,7 +1014,7 @@ paths:
     patch:
       tags:
       - me-controller
-      operationId: update_1
+      operationId: update_2
       requestBody:
         content:
           application/json:
@@ -1018,7 +1073,7 @@ paths:
     get:
       tags:
       - public-venue-controller
-      operationId: get_1
+      operationId: get_2
       parameters:
       - name: slug
         in: path
@@ -1058,6 +1113,57 @@ paths:
               schema:
                 $ref: "#/components/schemas/AvailabilityResponse"
       security: []
+  /api/v1/owner/venues/{venueId}/customers:
+    get:
+      tags:
+      - customer-controller
+      operationId: search_1
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          default: RECENT
+          enum:
+          - RECENT
+          - FREQUENT
+          - NAME
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          maximum: 100
+          minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseCustomerSummaryResponse"
   /api/v1/owner/venues/{venueId}/bookings/{bookingId}:
     get:
       tags:
@@ -1233,7 +1339,7 @@ paths:
     get:
       tags:
       - admin-venue-controller
-      operationId: get_2
+      operationId: get_3
       parameters:
       - name: venueId
         in: path
@@ -2079,6 +2185,63 @@ components:
           minLength: 0
       required:
       - reason
+    CustomerUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 1
+        notes:
+          type: string
+          maxLength: 2000
+          minLength: 0
+    CustomerDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type: string
+        hasApp:
+          type: boolean
+        notes:
+          type: string
+        customerSince:
+          type: string
+          format: date-time
+        lastBookingAt:
+          type: string
+          format: date-time
+        stats:
+          $ref: "#/components/schemas/Stats"
+        recentBookings:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingResponse"
+    Stats:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int64
+        upcoming:
+          type: integer
+          format: int64
+        completed:
+          type: integer
+          format: int64
+        cancelled:
+          type: integer
+          format: int64
+        noShows:
+          type: integer
+          format: int64
+        completedValue:
+          type: number
     UpdateProfileRequest:
       type: object
       properties:
@@ -2233,6 +2396,43 @@ components:
             - VIEW_CUSTOMERS
             - MANAGE_STAFF
           uniqueItems: true
+    CustomerSummaryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type: string
+        hasApp:
+          type: boolean
+        totalBookings:
+          type: integer
+          format: int32
+        lastBookingAt:
+          type: string
+          format: date-time
+    PageResponseCustomerSummaryResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerSummaryResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
     PageResponseNotificationResponse:
       type: object
       properties:
