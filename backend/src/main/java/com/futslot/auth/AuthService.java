@@ -3,12 +3,14 @@ package com.futslot.auth;
 import java.time.Clock;
 import java.time.Instant;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.futslot.common.ApiException;
 import com.futslot.common.PhoneNumbers;
+import com.futslot.user.AccountCreated;
 import com.futslot.user.User;
 import com.futslot.user.UserRepository;
 
@@ -25,12 +27,16 @@ class AuthService {
 
 	private final UserRepository users;
 
+	private final ApplicationEventPublisher events;
+
 	private final Clock clock;
 
-	AuthService(OtpService otpService, TokenService tokenService, UserRepository users, Clock clock) {
+	AuthService(OtpService otpService, TokenService tokenService, UserRepository users, ApplicationEventPublisher events,
+			Clock clock) {
 		this.otpService = otpService;
 		this.tokenService = tokenService;
 		this.users = users;
+		this.events = events;
 		this.clock = clock;
 	}
 
@@ -69,7 +75,9 @@ class AuthService {
 			// The code stays valid so the app can ask for a name and resubmit it
 			throw new ApiException(HttpStatus.BAD_REQUEST, "FULL_NAME_REQUIRED", "Enter your name to create an account");
 		}
-		return this.users.save(new User(phone, fullName.strip()));
+		User user = this.users.save(new User(phone, fullName.strip()));
+		this.events.publishEvent(new AccountCreated(user.getId(), user.getPhone()));
+		return user;
 	}
 
 }

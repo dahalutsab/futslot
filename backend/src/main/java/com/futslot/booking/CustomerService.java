@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.util.StringUtils;
 
 import com.futslot.common.ApiException;
 import com.futslot.common.PageResponse;
+import com.futslot.user.AccountCreated;
 import com.futslot.venue.VenueAccess;
 import com.futslot.venue.VenuePermission;
 
@@ -34,6 +36,15 @@ class CustomerService {
 		this.customers = customers;
 		this.bookings = bookings;
 		this.access = access;
+	}
+
+	/**
+	 * Someone who booked by phone or walked in, and later got an account with that number, sees those bookings
+	 * in the app and can review them.
+	 */
+	@EventListener
+	void onAccountCreated(AccountCreated event) {
+		this.customers.linkAccount(event.userId(), event.phone());
 	}
 
 	@Transactional(readOnly = true)

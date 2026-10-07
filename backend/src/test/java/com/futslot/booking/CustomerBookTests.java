@@ -61,6 +61,22 @@ class CustomerBookTests {
 	}
 
 	@Test
+	void walkInsWhoSignUpLaterGetTheirBookingsInTheApp() throws Exception {
+		TestUser owner = this.users.signUp("Counter Owner");
+		TestVenue venue = this.venues.active(owner, "Walk-in Futsal");
+		String phone = TestUsers.nextLocalPhone();
+		String played = id(book(owner, venue, TODAY.minusDays(1), "06:00", "Dipesh Karki", phone));
+		send(owner, post("/api/v1/owner/venues/" + venue.id() + "/bookings/" + played + "/complete"), null)
+			.andExpect(status().isOk());
+
+		TestUser player = this.users.logIn(phone, "Dipesh Karki");
+		send(player, get("/api/v1/bookings").param("scope", "past"), null).andExpect(jsonPath("$[0].id").value(played));
+		send(player, get("/api/v1/me/reviews/pending"), null).andExpect(jsonPath("$[0].id").value(played));
+		send(owner, get("/api/v1/owner/venues/" + venue.id() + "/customers"), null)
+			.andExpect(jsonPath("$.content[0].hasApp").value(true));
+	}
+
+	@Test
 	void customerDetailShowsHistoryStatsAndEditableNotes() throws Exception {
 		TestUser owner = this.users.signUp("Detail Keeper");
 		TestVenue venue = this.venues.active(owner, "Detail Futsal");
