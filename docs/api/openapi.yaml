@@ -103,6 +103,61 @@ paths:
       responses:
         "204":
           description: No Content
+  /api/v1/owner/venues/{venueId}/reviews/{reviewId}/reply:
+    put:
+      tags:
+      - review-controller
+      operationId: reply
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: reviewId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Reply"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReviewResponse"
+    delete:
+      tags:
+      - review-controller
+      operationId: deleteReply
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: reviewId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReviewResponse"
   /api/v1/owner/venues/{venueId}/policy:
     put:
       tags:
@@ -299,6 +354,116 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/VenueResponse"
+  /api/v1/me/favourites/{venueId}:
+    put:
+      tags:
+      - favourite-controller
+      operationId: add
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No Content
+    delete:
+      tags:
+      - favourite-controller
+      operationId: remove_1
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/v1/bookings/{bookingId}/review:
+    get:
+      tags:
+      - review-controller
+      operationId: myReview
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReviewResponse"
+    put:
+      tags:
+      - review-controller
+      operationId: update_1
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Write"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReviewResponse"
+    post:
+      tags:
+      - review-controller
+      operationId: create
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Write"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReviewResponse"
+    delete:
+      tags:
+      - review-controller
+      operationId: delete
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: No Content
   /api/v1/owner/venues:
     get:
       tags:
@@ -316,7 +481,7 @@ paths:
     post:
       tags:
       - owner-venue-controller
-      operationId: create
+      operationId: create_1
       requestBody:
         content:
           application/json:
@@ -373,7 +538,7 @@ paths:
     post:
       tags:
       - staff-controller
-      operationId: add
+      operationId: add_1
       parameters:
       - name: venueId
         in: path
@@ -448,7 +613,7 @@ paths:
     post:
       tags:
       - recurring-booking-controller
-      operationId: create_1
+      operationId: create_2
       parameters:
       - name: venueId
         in: path
@@ -1273,6 +1438,31 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/VenueResponse"
+  /api/v1/admin/reviews/{reviewId}/status:
+    post:
+      tags:
+      - admin-review-controller
+      operationId: moderate
+      parameters:
+      - name: reviewId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Moderate"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReviewResponse"
   /api/v1/owner/venues/{venueId}/customers/{customerId}:
     get:
       tags:
@@ -1301,7 +1491,7 @@ paths:
     patch:
       tags:
       - customer-controller
-      operationId: update_1
+      operationId: update_2
       parameters:
       - name: venueId
         in: path
@@ -1343,7 +1533,7 @@ paths:
     patch:
       tags:
       - me-controller
-      operationId: update_2
+      operationId: update_3
       requestBody:
         content:
           application/json:
@@ -1417,6 +1607,71 @@ paths:
               schema:
                 $ref: "#/components/schemas/VenueResponse"
       security: []
+  /api/v1/venues/{slug}/reviews:
+    get:
+      tags:
+      - review-controller
+      operationId: venueReviews
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          default: NEWEST
+          enum:
+          - NEWEST
+          - HIGHEST
+          - LOWEST
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          maximum: 50
+          minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseReviewResponse"
+      security: []
+  /api/v1/venues/{slug}/reviews/summary:
+    get:
+      tags:
+      - review-controller
+      operationId: summary
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RatingSummaryResponse"
+      security: []
   /api/v1/venues/{slug}/availability:
     get:
       tags:
@@ -1442,6 +1697,48 @@ paths:
               schema:
                 $ref: "#/components/schemas/AvailabilityResponse"
       security: []
+  /api/v1/owner/venues/{venueId}/reviews:
+    get:
+      tags:
+      - review-controller
+      operationId: forVenue
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: unanswered
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          maximum: 100
+          minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseReviewResponse"
   /api/v1/owner/venues/{venueId}/refunds:
     get:
       tags:
@@ -1667,6 +1964,64 @@ paths:
                 additionalProperties:
                   type: integer
                   format: int64
+  /api/v1/me/reviews:
+    get:
+      tags:
+      - review-controller
+      operationId: mine
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          maximum: 50
+          minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseReviewResponse"
+  /api/v1/me/reviews/pending:
+    get:
+      tags:
+      - review-controller
+      operationId: awaitingReview
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BookingResponse"
+  /api/v1/me/favourites:
+    get:
+      tags:
+      - favourite-controller
+      operationId: list_3
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VenueSummaryResponse"
   /api/v1/bookings/{bookingId}:
     get:
       tags:
@@ -1705,7 +2060,7 @@ paths:
     get:
       tags:
       - admin-venue-controller
-      operationId: list_3
+      operationId: list_4
       parameters:
       - name: status
         in: query
@@ -1762,6 +2117,46 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/VenueResponse"
+  /api/v1/admin/reviews:
+    get:
+      tags:
+      - admin-review-controller
+      operationId: list_5
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          default: PUBLISHED
+          enum:
+          - PUBLISHED
+          - HIDDEN
+          - REMOVED
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          maximum: 100
+          minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseReviewResponse"
   /api/v1/owner/venues/{venueId}/courts/{courtId}/blocks/{blockId}:
     delete:
       tags:
@@ -2106,6 +2501,55 @@ components:
         createdAt:
           type: string
           format: date-time
+    Reply:
+      type: object
+      properties:
+        text:
+          type: string
+          maxLength: 1000
+          minLength: 0
+      required:
+      - text
+    ReviewResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        venueId:
+          type: string
+          format: uuid
+        venueName:
+          type: string
+        bookingId:
+          type: string
+          format: uuid
+        playedOn:
+          type: string
+          format: date
+        rating:
+          type: integer
+          format: int32
+        comment:
+          type: string
+        reviewerName:
+          type: string
+        reviewerAvatarUrl:
+          type: string
+        ownerReply:
+          type: string
+        ownerRepliedAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - PUBLISHED
+          - HIDDEN
+          - REMOVED
+        createdAt:
+          type: string
+          format: date-time
     PaymentInstructionsRequest:
       type: object
       properties:
@@ -2204,6 +2648,20 @@ components:
           uniqueItems: true
       required:
       - codes
+    Write:
+      type: object
+      properties:
+        rating:
+          type: integer
+          format: int32
+          maximum: 5
+          minimum: 1
+        comment:
+          type: string
+          maxLength: 1000
+          minLength: 0
+      required:
+      - rating
     StaffRequest:
       type: object
       properties:
@@ -2705,6 +3163,8 @@ components:
           - REFUND_DUE
           - REFUND_TO_PAY
           - REFUND_SENT
+          - NEW_REVIEW
+          - REVIEW_REPLY
         title:
           type: string
         body:
@@ -2868,6 +3328,17 @@ components:
           minLength: 0
       required:
       - reason
+    Moderate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - PUBLISHED
+          - HIDDEN
+          - REMOVED
+      required:
+      - status
     CustomerUpdateRequest:
       type: object
       properties:
@@ -2999,6 +3470,38 @@ components:
           type: array
           items:
             type: string
+    PageResponseReviewResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    RatingSummaryResponse:
+      type: object
+      properties:
+        averageRating:
+          type: number
+        reviewCount:
+          type: integer
+          format: int32
+        stars:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
     AvailabilityResponse:
       type: object
       properties:

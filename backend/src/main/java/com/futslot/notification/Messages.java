@@ -45,6 +45,16 @@ final class Messages {
 		return name + "s " + start + "-" + end;
 	}
 
+	/** The start of a player-written text, cut at a word boundary. */
+	static String excerpt(String text) {
+		String flat = text.strip().replaceAll("\\s+", " ");
+		if (flat.length() <= 80) {
+			return flat;
+		}
+		int cut = flat.lastIndexOf(' ', 80);
+		return flat.substring(0, (cut > 40) ? cut : 80) + "...";
+	}
+
 	static String rupees(BigDecimal amount) {
 		return "Rs " + amount.stripTrailingZeros().toPlainString();
 	}
