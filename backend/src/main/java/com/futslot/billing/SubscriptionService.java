@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -153,14 +154,14 @@ public class SubscriptionService implements PlanLimits {
 	@Transactional(readOnly = true)
 	List<BillingViews.Invoice> invoices(UUID userId, UUID venueId) {
 		this.access.requireOwner(userId, venueId);
-		return this.invoices.findForVenue(venueId).stream().map(BillingViews.Invoice::from).toList();
+		return views(this.invoices.findForVenue(venueId));
 	}
 
 	// Admins
 
 	@Transactional(readOnly = true)
 	List<BillingViews.Invoice> invoicesByStatus(Set<InvoiceStatus> statuses) {
-		return this.invoices.findByStatusInOrderByDueOn(statuses).stream().map(BillingViews.Invoice::from).toList();
+		return views(this.invoices.findByStatusInOrderByDueOn(statuses));
 	}
 
 	// For payments
@@ -281,6 +282,14 @@ public class SubscriptionService implements PlanLimits {
 		}
 	}
 
+	private List<BillingViews.Invoice> views(List<SubscriptionInvoice> invoices) {
+		if (invoices.isEmpty()) {
+			return List.of();
+		}
+		Set<UUID> pending = new HashSet<>(this.invoices.withPendingPayment(invoices.stream().map(SubscriptionInvoice::getId).toList()));
+		return invoices.stream().map(invoice -> BillingViews.Invoice.from(invoice, pending.contains(invoice.getId()))).toList();
+	}
+
 	private BillingViews.Subscription view(Venue venue) {
 		VenueSubscription live = this.subscriptions.findLive(venue.getId()).orElse(null);
 		SubscriptionPlan plan = effectivePlan(venue.getId());
@@ -298,7 +307,7 @@ public class SubscriptionService implements PlanLimits {
 		return new BillingViews.Subscription(venue.getId(), BillingViews.Plan.from(live.getPlan()), live.getStatus(),
 				live.getBillingCycle(), live.getCurrentPeriodStart(), live.getCurrentPeriodEnd(),
 				live.isCancelAtPeriodEnd(), (live.getNextPlan() != null) ? BillingViews.Plan.from(live.getNextPlan()) : null,
-				live.getNextBillingCycle(), (open != null) ? BillingViews.Invoice.from(open) : null,
+				live.getNextBillingCycle(), (open != null) ? views(List.of(open)).getFirst() : null,
 				this.properties.enforceLimits(), courts, staffCount, this.properties.paymentInstructions());
 	}
 
