@@ -62,3 +62,26 @@ export function dayLabel(day: string): string {
   return new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
     .format(new Date(Date.UTC(y, m - 1, d)));
 }
+
+const METHOD_LABELS: Record<string, string> = {
+  CASH: 'Cash',
+  ESEWA: 'eSewa',
+  KHALTI: 'Khalti',
+  FONEPAY: 'Fonepay',
+  BANK_TRANSFER: 'Bank transfer',
+  CARD: 'Card',
+  MEMBERSHIP_CREDIT: 'Membership',
+};
+
+/** How each wallet spells its own name. */
+export function methodLabel(method: string): string {
+  return METHOD_LABELS[method] ?? method;
+}
+
+/** "+977 9856789012": the country code apart, so the familiar 10 digits stand out. */
+export function phone(value: string | null | undefined): string {
+  if (!value) {
+    return '';
+  }
+  return value.startsWith('+977') && value.length === 14 ? `+977 ${value.slice(4)}` : value;
+}

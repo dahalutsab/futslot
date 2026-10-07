@@ -49,7 +49,7 @@
         <dd class="mt-0.5 truncate text-xl font-semibold">
           @if (isToday()) {
             @if (d.summary.next; as next) {
-              <span class="tabular">{{ next.startsAt.slice(11, 16) }}</span>
+              <span class="tabular">{{ fmt.localClock(next.startsAt) }}</span>
               <span class="text-base font-normal text-muted"> {{ next.customer.name }}</span>
             } @else {
               <span class="text-base font-normal text-subtle">Nothing else today</span>

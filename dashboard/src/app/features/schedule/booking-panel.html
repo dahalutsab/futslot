@@ -9,7 +9,7 @@
   <a [href]="'tel:' + booking().customer.phone"
     class="mt-4 flex h-12 items-center gap-3 rounded-lg border border-border px-3 hover:bg-surface-2">
     <lucide-icon [img]="icons.Phone" [size]="18" class="text-muted" />
-    <span class="tabular font-medium">{{ booking().customer.phone }}</span>
+    <span class="tabular font-medium">{{ phone(booking().customer.phone) }}</span>
     <span class="ml-auto text-sm text-subtle">Call</span>
   </a>
 
@@ -37,7 +37,7 @@
   @if (state() === 'verify' && canManage()) {
     <section class="mt-5 rounded-xl border border-verify-line bg-verify-bg p-4 text-verify-fg" aria-label="Payment to verify">
       @if (pending(); as payment) {
-        <p class="font-medium">{{ rupees(payment.amount) }} by {{ payment.method === 'BANK_TRANSFER' ? 'bank transfer' : payment.method.charAt(0) + payment.method.slice(1).toLowerCase() }}</p>
+        <p class="font-medium">{{ rupees(payment.amount) }} by {{ methodLabel(payment.method) }}</p>
         <p class="tabular mt-0.5 text-sm">Transaction {{ payment.transactionId }}</p>
         <p class="mt-2 text-sm">Check it arrived in your wallet, then approve or reject.</p>
         @if (step() !== 'reject') {

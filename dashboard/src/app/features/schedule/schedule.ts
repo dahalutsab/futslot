@@ -15,7 +15,7 @@ import { problemOf } from '../../core/api-error';
 import { Booking, CourtBlock, Slot } from '../../core/api.types';
 import { VenueContext } from '../../core/venue-context';
 import { Badges } from '../../layout/badges';
-import { addDays, clock, dayLabel, minutesInto, rupees, today } from '../../shared/format';
+import { addDays, clock, dayLabel, localClock, minutesInto, rupees, today } from '../../shared/format';
 import { ChipState, stateIcon, stateLabel } from '../../shared/status-chip';
 import { BlockPanel } from './block-panel';
 import { BookingPanel } from './booking-panel';
@@ -84,7 +84,7 @@ export class Schedule {
 
   protected readonly icons = { CalendarDays, ChevronLeft, ChevronRight, Lock, Plus, RefreshCw, Trophy };
 
-  protected readonly fmt = { rupees, clock, dayLabel };
+  protected readonly fmt = { rupees, clock, dayLabel, localClock };
 
   protected readonly pxPerMinute = PX_PER_MINUTE;
 

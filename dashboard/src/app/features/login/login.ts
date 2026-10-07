@@ -38,6 +38,8 @@ export class Login implements OnDestroy {
 
   protected readonly error = signal<string | null>(null);
 
+  protected readonly notice = signal<string | null>(null);
+
   protected readonly resendIn = signal(0);
 
   protected readonly expired = this.route.snapshot.queryParamMap.has('expired');
@@ -67,7 +69,17 @@ export class Login implements OnDestroy {
       queueMicrotask(() => document.getElementById('code')?.focus());
     }
     catch (error) {
-      this.error.set(problemOf(error).message);
+      const problem = problemOf(error);
+      if (problem.code === 'OTP_COOLDOWN') {
+        // A code went out under a minute ago (a double tap, or a reload): let them use it
+        this.step.set('code');
+        this.notice.set('We sent you a code a moment ago. Enter it below.');
+        this.startCountdown(60);
+        queueMicrotask(() => document.getElementById('code')?.focus());
+      }
+      else {
+        this.error.set(problem.message);
+      }
     }
     finally {
       this.busy.set(false);
@@ -107,6 +119,7 @@ export class Login implements OnDestroy {
   }
 
   changeNumber(): void {
+    this.notice.set(null);
     this.step.set('phone');
     this.code.set('');
     this.needsName.set(false);

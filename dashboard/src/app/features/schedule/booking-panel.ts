@@ -4,7 +4,7 @@ import { Check, LoaderCircle, LucideAngularModule, Phone, X } from 'lucide-angul
 
 import { problemOf } from '../../core/api-error';
 import { Booking, Payment, PaymentMethod } from '../../core/api.types';
-import { localClock, rupees } from '../../shared/format';
+import { localClock, methodLabel, phone, rupees } from '../../shared/format';
 import { Sheet } from '../../shared/sheet';
 import { StatusChip } from '../../shared/status-chip';
 import { ScheduleApi } from './schedule-api';
@@ -21,13 +21,8 @@ const SOURCES: Record<string, string> = {
   ADMIN: 'Added by FutSlot',
 };
 
-const METHODS: { value: PaymentMethod; label: string }[] = [
-  { value: 'CASH', label: 'Cash' },
-  { value: 'ESEWA', label: 'eSewa' },
-  { value: 'KHALTI', label: 'Khalti' },
-  { value: 'FONEPAY', label: 'Fonepay' },
-  { value: 'BANK_TRANSFER', label: 'Bank' },
-];
+const METHODS: { value: PaymentMethod; label: string }[] = (['CASH', 'ESEWA', 'KHALTI', 'FONEPAY', 'BANK_TRANSFER'] as const)
+  .map((value) => ({ value, label: value === 'BANK_TRANSFER' ? 'Bank' : methodLabel(value) }));
 
 /**
  * One booking: who, when, what's paid, and the next thing staff are likely to do with it (verify a
@@ -55,6 +50,10 @@ export class BookingPanel implements OnInit {
   protected readonly icons = { Check, LoaderCircle, Phone, X };
 
   protected readonly rupees = rupees;
+
+  protected readonly methodLabel = methodLabel;
+
+  protected readonly phone = phone;
 
   protected readonly methods = METHODS;
 
