@@ -133,7 +133,7 @@
               <span class="w-24 font-medium">{{ row.label }}</span>
               <button type="button" role="switch" [attr.aria-checked]="row.open" [attr.aria-label]="row.label + ' open'" (click)="setRow(i, { open: !row.open })"
                 class="flex h-11 items-center gap-2 text-sm">
-                <span class="relative block h-6 w-10 shrink-0 rounded-full transition-colors" [class]="row.open ? 'bg-ink' : 'bg-border'">
+                <span class="relative block h-6 w-10 shrink-0 rounded-full transition-colors" [class]="row.open ? 'bg-ink' : 'bg-subtle'">
                   <span class="absolute left-0 top-0.5 block size-5 rounded-full bg-surface shadow transition-transform" [class]="row.open ? 'translate-x-[18px]' : 'translate-x-0.5'"></span>
                 </span>
                 <span class="w-12 text-left" [class.text-muted]="!row.open">{{ row.open ? 'Open' : 'Closed' }}</span>
