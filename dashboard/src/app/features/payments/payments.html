@@ -1,7 +1,7 @@
 <div class="mx-auto max-w-4xl px-4 py-4 lg:px-8 lg:py-6">
   <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">Payments</h1>
 
-  <div class="mt-4 flex gap-1 overflow-x-auto rounded-lg bg-surface-2 p-1" role="tablist" aria-label="Payments">
+  <div class="mt-4 flex gap-1 overflow-x-auto rounded-lg bg-surface-2 p-1 [scrollbar-width:none]" role="tablist" aria-label="Payments">
     <button type="button" role="tab" [attr.aria-selected]="tab() === 'verify'" (click)="show('verify')"
       class="flex h-10 shrink-0 items-center gap-2 rounded-md px-4 font-medium text-muted"
       [class.bg-surface]="tab() === 'verify'" [class.text-text]="tab() === 'verify'">

@@ -50,7 +50,7 @@ const ENTRY_LABELS: Record<TournamentEntry['status'], string> = {
           }
         </div>
 
-        <div class="mt-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border" role="tablist">
+        <div class="mt-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border [scrollbar-width:none]" role="tablist">
           @for (option of tabs(); track option.value) {
             <button type="button" role="tab" [attr.aria-selected]="tab() === option.value" (click)="tab.set(option.value)"
               class="-mb-px h-11 shrink-0 border-b-2 px-3 font-medium" [class]="tab() === option.value ? 'border-ink text-text' : 'border-transparent text-muted hover:text-text'">

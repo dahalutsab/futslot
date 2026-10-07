@@ -88,7 +88,7 @@
 
       <!-- Phones: one court at a time -->
       @if (d.courts.length > 1) {
-        <div class="mt-4 flex gap-1 overflow-x-auto rounded-lg bg-surface-2 p-1 md:hidden" role="tablist" aria-label="Court">
+        <div class="mt-4 flex gap-1 overflow-x-auto rounded-lg bg-surface-2 p-1 [scrollbar-width:none] md:hidden" role="tablist" aria-label="Court">
           @for (court of d.courts; track court.id; let i = $index) {
             <button type="button" role="tab" [attr.aria-selected]="phoneCourt() === i" (click)="phoneCourt.set(i)"
               class="h-10 shrink-0 rounded-md px-4 font-medium text-muted"

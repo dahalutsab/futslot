@@ -1,3 +1,4 @@
+import { A11yModule } from '@angular/cdk/a11y';
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { ChevronsUpDown, Ellipsis, LogOut, LucideAngularModule, Monitor, Moon, Search, Sun, X } from 'lucide-angular';
@@ -16,7 +17,7 @@ import { ALL_ITEMS, canSee, NAVIGATION, NavGroup, NavItem } from './navigation';
  */
 @Component({
   selector: 'fs-shell',
-  imports: [CommandPalette, RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule],
+  imports: [A11yModule, CommandPalette, RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown)': 'shortcuts($event)' },
   templateUrl: './shell.html',
@@ -94,9 +95,12 @@ export class Shell implements OnInit {
     void this.ngOnInit();
   }
 
-  /** Ctrl/⌘ K opens search from anywhere (and closes it again). */
+  /** Ctrl/⌘ K opens search from anywhere (and closes it again); Escape closes the More sheet. */
   protected shortcuts(event: KeyboardEvent): void {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+    if (event.key === 'Escape' && this.moreOpen()) {
+      this.moreOpen.set(false);
+    }
+    else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
       event.preventDefault();
       this.moreOpen.set(false);
       this.paletteOpen.update((open) => !open);
