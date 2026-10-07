@@ -22,7 +22,12 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/shell').then((m) => m.Shell),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'schedule' },
-      ...ALL_ITEMS.map((item) => ({
+      {
+        path: 'schedule',
+        title: 'Schedule · FutSlot',
+        loadComponent: () => import('./features/schedule/schedule').then((m) => m.Schedule),
+      },
+      ...ALL_ITEMS.filter((item) => item.path !== 'schedule').map((item) => ({
         path: item.path,
         title: `${item.label} · FutSlot`,
         data: { nav: item },

@@ -1,0 +1,154 @@
+<fs-sheet [title]="booking().customer.name" [subtitle]="when()" (closed)="closed.emit()">
+  <div class="flex flex-wrap items-center gap-2">
+    @if (state(); as s) {
+      <fs-status-chip [value]="s" />
+    }
+    <span class="tabular text-sm text-subtle">{{ booking().reference }} · {{ source() }}</span>
+  </div>
+
+  <a [href]="'tel:' + booking().customer.phone"
+    class="mt-4 flex h-12 items-center gap-3 rounded-lg border border-border px-3 hover:bg-surface-2">
+    <lucide-icon [img]="icons.Phone" [size]="18" class="text-muted" />
+    <span class="tabular font-medium">{{ booking().customer.phone }}</span>
+    <span class="ml-auto text-sm text-subtle">Call</span>
+  </a>
+
+  <!-- Money -->
+  <dl class="tabular mt-5 space-y-1.5">
+    <div class="flex justify-between"><dt class="text-muted">Court</dt><dd>{{ rupees(booking().priceAmount) }}</dd></div>
+    @for (line of booking().addOns; track line.itemId) {
+      <div class="flex justify-between"><dt class="text-muted">{{ line.quantity }} × {{ line.name }}</dt><dd>{{ rupees(line.quantity * line.unitPrice) }}</dd></div>
+    }
+    @if (booking().discountAmount > 0) {
+      <div class="flex justify-between"><dt class="text-muted">{{ booking().membershipId ? 'Membership' : 'Discount' }}</dt><dd>−{{ rupees(booking().discountAmount) }}</dd></div>
+    }
+    <div class="flex justify-between border-t border-border pt-1.5 font-medium"><dt>Total</dt><dd>{{ rupees(booking().totalAmount) }}</dd></div>
+    <div class="flex justify-between"><dt class="text-muted">Paid</dt><dd>{{ rupees(booking().paidAmount) }}</dd></div>
+    @if (due() > 0) {
+      <div class="flex justify-between font-semibold"><dt>Due</dt><dd>{{ rupees(due()) }}</dd></div>
+    }
+  </dl>
+
+  @if (booking().notes) {
+    <p class="mt-4 rounded-lg bg-surface-2 px-3 py-2 text-muted">{{ booking().notes }}</p>
+  }
+
+  <!-- The payment staff need to check -->
+  @if (state() === 'verify' && canManage()) {
+    <section class="mt-5 rounded-xl border border-verify-line bg-verify-bg p-4 text-verify-fg" aria-label="Payment to verify">
+      @if (pending(); as payment) {
+        <p class="font-medium">{{ rupees(payment.amount) }} by {{ payment.method === 'BANK_TRANSFER' ? 'bank transfer' : payment.method.charAt(0) + payment.method.slice(1).toLowerCase() }}</p>
+        <p class="tabular mt-0.5 text-sm">Transaction {{ payment.transactionId }}</p>
+        <p class="mt-2 text-sm">Check it arrived in your wallet, then approve or reject.</p>
+        @if (step() !== 'reject') {
+          <div class="mt-3 flex gap-2">
+            <button type="button" (click)="approve()" [disabled]="busy()"
+              class="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+              <lucide-icon [img]="icons.Check" [size]="18" /> Approve
+            </button>
+            <button type="button" (click)="go('reject')"
+              class="h-11 flex-1 rounded-lg border border-verify-line font-medium">Not received</button>
+          </div>
+        } @else {
+          <form class="mt-3 space-y-2" (ngSubmit)="reject()">
+            <label for="reject-reason" class="block text-sm font-medium">What's wrong?</label>
+            <input id="reject-reason" name="reason" type="text" maxlength="500" placeholder="e.g. Not in our eSewa"
+              class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base text-text"
+              [ngModel]="reason()" (ngModelChange)="reason.set($event)" />
+            <div class="flex gap-2">
+              <button type="submit" [disabled]="busy()" class="h-11 flex-1 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">Reject payment</button>
+              <button type="button" (click)="go('view')" class="h-11 rounded-lg px-4 font-medium">Back</button>
+            </div>
+            <p class="text-sm">The player gets their hold time back to pay again.</p>
+          </form>
+        }
+      } @else {
+        <p class="text-sm">Loading the payment…</p>
+      }
+    </section>
+  }
+
+  @if (step() === 'take-payment') {
+    <form class="mt-5 space-y-4 rounded-xl border border-border p-4" (ngSubmit)="takePayment()">
+      <div>
+        <label for="pay-amount" class="mb-1.5 block font-medium">Amount</label>
+        <div class="flex h-12 items-center rounded-lg border border-border bg-surface">
+          <span class="border-r border-border px-3 text-muted">Rs</span>
+          <input id="pay-amount" name="amount" type="number" inputmode="decimal" min="1" [max]="due()"
+            class="tabular h-full min-w-0 flex-1 bg-transparent px-3 text-base outline-none"
+            [ngModel]="amount()" (ngModelChange)="amount.set($event)" />
+        </div>
+      </div>
+      <fieldset>
+        <legend class="mb-1.5 font-medium">Paid by</legend>
+        <div class="grid grid-cols-3 gap-2">
+          @for (option of methods; track option.value) {
+            <label class="flex h-11 cursor-pointer items-center justify-center rounded-lg border text-sm font-medium"
+              [class]="method() === option.value ? 'border-ink bg-surface-2' : 'border-border text-muted'">
+              <input type="radio" name="method" class="sr-only" [value]="option.value"
+                [checked]="method() === option.value" (change)="method.set(option.value)" />
+              {{ option.label }}
+            </label>
+          }
+        </div>
+      </fieldset>
+      @if (method() !== 'CASH') {
+        <div>
+          <label for="pay-txn" class="mb-1.5 block font-medium">Transaction ID <span class="font-normal text-subtle">(optional)</span></label>
+          <input id="pay-txn" name="txn" type="text" maxlength="100"
+            class="tabular h-12 w-full rounded-lg border border-border bg-surface px-3 text-base"
+            [ngModel]="transactionId()" (ngModelChange)="transactionId.set($event)" />
+        </div>
+      }
+      <div class="flex gap-2">
+        <button type="submit" [disabled]="busy()" class="h-12 flex-1 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+          Record {{ rupees(amount() || 0) }}
+        </button>
+        <button type="button" (click)="go('view')" class="h-12 rounded-lg px-4 font-medium">Back</button>
+      </div>
+    </form>
+  }
+
+  @if (step() === 'cancel') {
+    <form class="mt-5 space-y-3 rounded-xl border border-noshow-line bg-noshow-bg p-4 text-noshow-fg" (ngSubmit)="cancel()">
+      <p class="font-medium">Cancel this booking?</p>
+      <p class="text-sm">
+        The player is told.
+        @if (booking().paidAmount > 0) { They paid {{ rupees(booking().paidAmount) }}; a refund is worked out from your policy and listed for you to pay back. }
+      </p>
+      <label for="cancel-reason" class="block text-sm font-medium">Reason <span class="font-normal">(optional, the player sees it)</span></label>
+      <input id="cancel-reason" name="reason" type="text" maxlength="500"
+        class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base text-text"
+        [ngModel]="reason()" (ngModelChange)="reason.set($event)" />
+      <div class="flex gap-2">
+        <button type="submit" [disabled]="busy()" class="h-11 flex-1 rounded-lg bg-danger font-medium text-white disabled:opacity-60">Cancel booking</button>
+        <button type="button" (click)="go('view')" class="h-11 rounded-lg px-4 font-medium">Keep it</button>
+      </div>
+    </form>
+  }
+
+  @if (error(); as message) {
+    <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+  }
+
+  @if (step() === 'view' && canManage()) {
+    <div class="mt-6 space-y-2">
+      @if (canTakePayment()) {
+        <button type="button" (click)="go('take-payment')"
+          class="h-12 w-full rounded-lg bg-ink font-medium text-ink-fg">Take payment · {{ rupees(due()) }} due</button>
+      }
+      @if (booking().status === 'CONFIRMED' && started()) {
+        <div class="flex gap-2">
+          <button type="button" (click)="played()" [disabled]="busy()"
+            class="h-12 flex-1 rounded-lg border border-border font-medium hover:bg-surface-2 disabled:opacity-60">Mark played</button>
+          <button type="button" (click)="noShow()" [disabled]="busy()"
+            class="h-12 flex-1 rounded-lg border border-border font-medium hover:bg-surface-2 disabled:opacity-60">No-show</button>
+        </div>
+      }
+      @if (live()) {
+        <button type="button" (click)="go('cancel')"
+          class="h-12 w-full rounded-lg font-medium text-danger hover:bg-danger-bg">Cancel booking</button>
+      }
+    </div>
+  }
+</fs-sheet>

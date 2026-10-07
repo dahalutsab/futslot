@@ -1,0 +1,210 @@
+<div class="px-4 py-4 lg:px-8 lg:py-6">
+  <!-- Day and numbers -->
+  <div class="flex flex-wrap items-center gap-3">
+    <h1 class="mr-auto text-xl font-semibold tracking-tight lg:text-2xl">Schedule</h1>
+    <div class="flex items-center gap-1">
+      <button type="button" (click)="shift(-1)" aria-label="Previous day"
+        class="grid size-11 place-items-center rounded-lg border border-border bg-surface hover:bg-surface-2 lg:size-9">
+        <lucide-icon [img]="icons.ChevronLeft" [size]="18" />
+      </button>
+      <label class="relative flex h-11 items-center gap-2 rounded-lg border border-border bg-surface px-3 font-medium lg:h-9">
+        <lucide-icon [img]="icons.CalendarDays" [size]="16" class="text-muted" />
+        <span>{{ fmt.dayLabel(date()) }}</span>
+        <input type="date" [value]="date()" (change)="goTo($any($event.target).value)" aria-label="Choose a day"
+          class="absolute inset-0 cursor-pointer opacity-0" />
+      </label>
+      <button type="button" (click)="shift(1)" aria-label="Next day"
+        class="grid size-11 place-items-center rounded-lg border border-border bg-surface hover:bg-surface-2 lg:size-9">
+        <lucide-icon [img]="icons.ChevronRight" [size]="18" />
+      </button>
+      @if (!isToday()) {
+        <button type="button" (click)="goToday()"
+          class="h-11 rounded-lg px-3 font-medium hover:bg-surface-2 lg:h-9">Today</button>
+      }
+      <button type="button" (click)="refresh()" aria-label="Refresh"
+        class="grid size-11 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-text lg:size-9">
+        <lucide-icon [img]="icons.RefreshCw" [size]="16" [class.animate-spin]="loading()" />
+      </button>
+    </div>
+  </div>
+
+  @if (day(); as d) {
+    <dl class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div class="rounded-xl border border-border bg-surface px-4 py-3">
+        <dt class="text-sm text-muted">Bookings</dt>
+        <dd class="tabular mt-0.5 text-xl font-semibold">{{ d.summary.bookings }}</dd>
+      </div>
+      <div class="rounded-xl border border-border bg-surface px-4 py-3">
+        <dt class="text-sm text-muted">Collected</dt>
+        <dd class="tabular mt-0.5 text-xl font-semibold">{{ fmt.rupees(d.summary.collected) }}
+          <span class="text-sm font-normal text-subtle">of {{ fmt.rupees(d.summary.bookedValue) }}</span></dd>
+      </div>
+      <div class="rounded-xl border border-border px-4 py-3"
+        [class]="d.summary.toVerify > 0 ? 'border-verify-line bg-verify-bg text-verify-fg' : 'bg-surface'">
+        <dt class="text-sm" [class.text-muted]="d.summary.toVerify === 0">Payments to verify</dt>
+        <dd class="tabular mt-0.5 text-xl font-semibold">{{ d.summary.toVerify }}</dd>
+      </div>
+      <div class="rounded-xl border border-border bg-surface px-4 py-3">
+        <dt class="text-sm text-muted">{{ isToday() ? 'Next up' : 'Free slots' }}</dt>
+        <dd class="mt-0.5 truncate text-xl font-semibold">
+          @if (isToday()) {
+            @if (d.summary.next; as next) {
+              <span class="tabular">{{ next.startsAt.slice(11, 16) }}</span>
+              <span class="text-base font-normal text-muted"> {{ next.customer.name }}</span>
+            } @else {
+              <span class="text-base font-normal text-subtle">Nothing else today</span>
+            }
+          } @else {
+            <span class="tabular">{{ d.summary.freeSlotsLeft }}</span>
+          }
+        </dd>
+      </div>
+    </dl>
+  }
+
+  @if (error(); as message) {
+    <div class="mt-6 rounded-xl border border-border bg-surface px-6 py-10 text-center">
+      <p class="text-muted">{{ message }}</p>
+      <button type="button" (click)="refresh()" class="mt-4 h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg">Try again</button>
+    </div>
+  } @else if (!day()) {
+    <div class="mt-6 h-[480px] animate-pulse rounded-xl bg-surface" aria-label="Loading schedule"></div>
+  } @else if (day(); as d) {
+    @if (d.courts.length === 0) {
+      <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
+        <p class="font-medium">No courts yet</p>
+        <p class="mt-1 text-muted">Add your courts and their prices, and they'll show up here.</p>
+      </div>
+    } @else {
+      <!-- Legend: what each colour means -->
+      <ul class="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted" aria-label="Legend">
+        @for (entry of legend; track entry.state) {
+          <li class="flex items-center gap-1.5">
+            <span class="size-2.5 rounded-sm" [class]="entry.swatch"></span>
+            {{ chipLabel(entry.state) }}
+          </li>
+        }
+      </ul>
+
+      <!-- Phones: one court at a time -->
+      @if (d.courts.length > 1) {
+        <div class="mt-4 flex gap-1 overflow-x-auto rounded-lg bg-surface-2 p-1 md:hidden" role="tablist" aria-label="Court">
+          @for (court of d.courts; track court.id; let i = $index) {
+            <button type="button" role="tab" [attr.aria-selected]="phoneCourt() === i" (click)="phoneCourt.set(i)"
+              class="h-10 shrink-0 rounded-md px-4 font-medium text-muted"
+              [class.bg-surface]="phoneCourt() === i" [class.text-text]="phoneCourt() === i">{{ court.name }}</button>
+          }
+        </div>
+      }
+
+      <div class="mt-3 overflow-hidden rounded-xl border border-border bg-surface">
+        <!-- Court headers (wider screens) -->
+        <div class="hidden border-b border-border md:grid" [style.grid-template-columns]="'64px repeat(' + d.courts.length + ', minmax(140px, 1fr))'">
+          <div></div>
+          @for (court of d.courts; track court.id) {
+            <div class="border-l border-border px-3 py-2.5 font-medium">{{ court.name }}</div>
+          }
+        </div>
+
+        <div class="relative grid md:[grid-template-columns:var(--cols)]"
+          [style.--cols]="'64px repeat(' + d.courts.length + ', minmax(140px, 1fr))'"
+          [style.height.px]="(d.end - d.start) * pxPerMinute">
+          <!-- Hour rail -->
+          <div class="absolute inset-y-0 left-0 w-16 md:relative md:w-auto">
+            @for (hour of hours(); track hour) {
+              <div class="tabular absolute right-2 -translate-y-1/2 text-xs text-subtle first:translate-y-1"
+                [style.top.px]="(hour - d.start) * pxPerMinute">{{ fmt.clock(hour) }}</div>
+            }
+          </div>
+
+          @for (court of d.courts; track court.id; let i = $index) {
+            <div class="relative ml-16 border-border md:ml-0 md:block md:border-l" [class.hidden]="phoneCourt() !== i">
+              <!-- Hour lines -->
+              @for (hour of hours(); track hour) {
+                <div class="absolute inset-x-0 border-t border-border/60" [style.top.px]="(hour - d.start) * pxPerMinute"></div>
+              }
+
+              @for (item of court.items; track trackItem(item)) {
+                @switch (item.kind) {
+                  @case ('free') {
+                    @if (canBook() || canBlock()) {
+                      <button type="button" (click)="open(item, court.id, court.name)"
+                        [attr.aria-label]="'Book ' + court.name + ' at ' + range(item) + ', ' + fmt.rupees(item.slot.price)"
+                        class="group absolute inset-x-1 flex items-start justify-between gap-2 rounded-md border border-dashed border-transparent px-2 py-1.5 text-left text-xs text-subtle hover:border-border hover:bg-surface-2 focus-visible:border-border"
+                        [style.top.px]="top(item) + 2" [style.height.px]="height(item) - 4">
+                        <span class="tabular">{{ fmt.rupees(item.slot.price) }}</span>
+                        <span class="flex items-center gap-0.5 font-medium text-text opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 max-md:opacity-100">
+                          <lucide-icon [img]="icons.Plus" [size]="14" /> Book
+                        </span>
+                      </button>
+                    } @else {
+                      <div class="tabular absolute inset-x-1 px-2 py-1.5 text-xs text-subtle"
+                        [style.top.px]="top(item) + 2" [style.height.px]="height(item) - 4">Free · {{ fmt.rupees(item.slot.price) }}</div>
+                    }
+                  }
+                  @case ('past') {
+                    <div class="absolute inset-x-1 rounded-md bg-surface-2/60" [style.top.px]="top(item) + 2"
+                      [style.height.px]="height(item) - 4" aria-hidden="true"></div>
+                  }
+                  @case ('booking') {
+                    <button type="button" (click)="open(item, court.id, court.name)"
+                      [attr.aria-label]="item.booking.customer.name + ', ' + range(item) + ', ' + chipLabel(item.state)"
+                      class="absolute inset-x-1 flex flex-col overflow-hidden rounded-md border-l-4 px-2 py-1.5 text-left shadow-sm hover:brightness-[0.97] dark:hover:brightness-110"
+                      [class]="bookingClasses(item.state)"
+                      [style.top.px]="top(item) + 2" [style.height.px]="height(item) - 4">
+                      <span class="flex items-center gap-1 truncate font-medium text-text">
+                        <lucide-icon [img]="chipIcon(item.state)" [size]="13" [strokeWidth]="2.25" class="shrink-0" [class]="iconClass(item.state)" />
+                        {{ item.booking.customer.name }}
+                      </span>
+                      <span class="tabular truncate text-xs opacity-90">
+                        {{ range(item) }}
+                        @if (paymentNote(item.booking); as note) { · {{ note }} }
+                      </span>
+                    </button>
+                  }
+                  @case ('block') {
+                    <button type="button" (click)="open(item, court.id, court.name)"
+                      class="absolute inset-x-1 flex items-start gap-1.5 overflow-hidden rounded-md px-2 py-1.5 text-left text-xs font-medium"
+                      [class]="item.tournament ? 'bg-tournament-bg text-tournament-fg border-l-4 border-tournament-line' : 'hatched text-blocked-fg'"
+                      [style.top.px]="top(item) + 2" [style.height.px]="height(item) - 4">
+                      <lucide-icon [img]="item.tournament ? icons.Trophy : icons.Lock" [size]="13" class="mt-0.5 shrink-0" />
+                      <span class="line-clamp-2 rounded bg-surface/80 px-1">{{ item.block.note || chipLabel(item.tournament ? 'tournament' : 'blocked') }}</span>
+                    </button>
+                  }
+                }
+              }
+            </div>
+          }
+
+          @if (nowOffset() !== null) {
+            <div class="pointer-events-none absolute inset-x-0 z-10 ml-16 border-t-2 border-noshow-line"
+              [style.top.px]="nowOffset()" aria-hidden="true">
+              <span class="absolute -left-1.5 -top-[5px] size-2 rounded-full bg-noshow-line"></span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  }
+</div>
+
+@if (selection(); as selected) {
+  @if (venues.current(); as current) {
+    @switch (selected.kind) {
+      @case ('free') {
+        <fs-walk-in-panel [venueId]="current.venue.id" [courtId]="selected.courtId" [courtName]="selected.courtName"
+          [slot]="selected.slot" [canBook]="canBook()" [canBlock]="canBlock()"
+          (done)="changed()" (closed)="selection.set(null)" />
+      }
+      @case ('booking') {
+        <fs-booking-panel [venueId]="current.venue.id" [booking]="selected.booking" [canManage]="canBook()"
+          (done)="changed()" (closed)="selection.set(null)" />
+      }
+      @case ('block') {
+        <fs-block-panel [venueId]="current.venue.id" [block]="selected.block" [courtName]="selected.courtName"
+          [timeZone]="day()?.timeZone ?? 'Asia/Kathmandu'"
+          [canRemove]="canBlock()" (done)="changed()" (closed)="selection.set(null)" />
+      }
+    }
+  }
+}
