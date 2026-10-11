@@ -93,6 +93,10 @@ public class VenueService {
 	@Transactional
 	public VenueResponse updatePolicy(UUID ownerId, UUID venueId, VenuePolicy policy) {
 		Venue venue = owned(ownerId, venueId);
+		String problem = policy.tierProblem();
+		if (problem != null) {
+			throw badRequest("INVALID_CANCELLATION_TIERS", problem);
+		}
 		venue.applyPolicy(policy);
 		return this.mapper.toResponse(venue, true);
 	}

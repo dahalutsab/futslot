@@ -123,6 +123,8 @@ export interface Booking {
   notes: string | null;
   cancelledAt: string | null;
   cancellationReason: string | null;
+  /** The venue's fee share when the player cancelled late, 0 otherwise. */
+  cancellationFeePercent: number;
   createdAt: string;
 }
 
@@ -211,7 +213,7 @@ export interface CustomerDetail {
   notes: string | null;
   customerSince: string;
   lastBookingAt: string | null;
-  stats: { total: number; upcoming: number; completed: number; cancelled: number; noShows: number; completedValue: number };
+  stats: { total: number; upcoming: number; completed: number; cancelled: number; lateCancellations: number; noShows: number; completedValue: number };
   recentBookings: Booking[];
 }
 
@@ -293,11 +295,17 @@ export interface DayHours {
   closed: boolean;
 }
 
+/** A player cancelling less than {@link withinHours} before the start pays {@link feePercent} of the price. */
+export interface CancellationTier {
+  withinHours: number;
+  feePercent: number;
+}
+
 export interface VenuePolicy {
   advancePercent: number;
   bookingHoldMinutes: number;
-  freeCancelHours: number;
-  lateCancelRefundPct: number;
+  /** Furthest from the start first; empty means cancelling is always free. */
+  cancellationTiers: CancellationTier[];
   maxAdvanceBookingDays: number;
 }
 

@@ -61,7 +61,7 @@ class SiteBookingTests {
 		TestUser owner = this.users.signUp("Booking Site Owner");
 		TestVenue venue = this.venues.active(owner, "Book Here Futsal");
 		ownerSends(owner, put("/api/v1/owner/venues/" + venue.id() + "/policy"),
-				"{\"advancePercent\":30,\"bookingHoldMinutes\":15,\"freeCancelHours\":24,\"lateCancelRefundPct\":0,\"maxAdvanceBookingDays\":30}");
+				"{\"advancePercent\":30,\"bookingHoldMinutes\":15,\"cancellationTiers\":[{\"withinHours\":24,\"feePercent\":100}],\"maxAdvanceBookingDays\":30}");
 		ownerSends(owner, put("/api/v1/owner/venues/" + venue.id() + "/site"), "{\"template\":\"TURF\",\"subdomain\":\"bookhere\"}");
 		ownerSends(owner, post("/api/v1/owner/venues/" + venue.id() + "/site/publish"), null);
 

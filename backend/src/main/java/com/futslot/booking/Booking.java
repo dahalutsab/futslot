@@ -121,6 +121,9 @@ public class Booking {
 
 	private String cancellationReason;
 
+	@Column(nullable = false)
+	private int cancellationFeePercent;
+
 	@Column(updatable = false)
 	private UUID createdBy;
 
@@ -246,10 +249,16 @@ public class Booking {
 	}
 
 	void cancel(UUID by, String reason, Instant at) {
+		cancel(by, reason, at, 0);
+	}
+
+	/** {@code feePercent}: the venue's fee share for a player cancelling this late; 0 otherwise. */
+	void cancel(UUID by, String reason, Instant at, int feePercent) {
 		this.status = BookingStatus.CANCELLED;
 		this.cancelledBy = by;
 		this.cancellationReason = reason;
 		this.cancelledAt = at;
+		this.cancellationFeePercent = feePercent;
 	}
 
 	void moveTo(Court court, Instant startsAt, Instant endsAt) {
@@ -364,6 +373,10 @@ public class Booking {
 
 	public String getCancellationReason() {
 		return this.cancellationReason;
+	}
+
+	public int getCancellationFeePercent() {
+		return this.cancellationFeePercent;
 	}
 
 	public Instant getCreatedAt() {

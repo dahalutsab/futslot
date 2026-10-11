@@ -1,4 +1,4 @@
-import { hoursProblem, hoursRows, overnight, parseLocation, policySummary, toDayHours } from './venue-model';
+import { hoursProblem, hoursRows, nextTier, overnight, parseLocation, policySummary, tiersProblem, toDayHours } from './venue-model';
 
 describe('venue model', () => {
   it('orders the week from Sunday and fills days never set', () => {
@@ -33,12 +33,30 @@ describe('venue model', () => {
   });
 
   it('describes the booking rules in plain words', () => {
-    expect(policySummary({ advancePercent: 30, bookingHoldMinutes: 15, freeCancelHours: 24, lateCancelRefundPct: 0, maxAdvanceBookingDays: 30 }))
+    expect(policySummary({ advancePercent: 30, bookingHoldMinutes: 15, cancellationTiers: [{ withinHours: 24, feePercent: 100 }], maxAdvanceBookingDays: 30 }))
       .toEqual(['Players pay 30% up front to confirm. Unpaid bookings are released after 15 minutes.',
-        'Cancelling 24 hours or more before the game gets a full refund; later gets nothing back.',
+        'Cancelling 24 hours or more before the game is free.',
+        "Cancelling later costs a share of the booking price: 100% within 24 hours. It's never more than the player has paid.",
         'If you cancel, players always get everything back.',
         'Players can book up to 30 days ahead.']);
-    expect(policySummary({ advancePercent: 0, bookingHoldMinutes: 15, freeCancelHours: 0, lateCancelRefundPct: 50, maxAdvanceBookingDays: 7 })[1])
-      .toBe('Cancelling any time before the game gets a full refund.');
+    expect(policySummary({ advancePercent: 0, bookingHoldMinutes: 15, cancellationTiers: [], maxAdvanceBookingDays: 7 })[1])
+      .toBe('Cancelling any time before the game is free.');
+    expect(policySummary({ advancePercent: 0, bookingHoldMinutes: 15, cancellationTiers: [{ withinHours: 10, feePercent: 60 }, { withinHours: 24, feePercent: 20 }, { withinHours: 12, feePercent: 50 }], maxAdvanceBookingDays: 7 })[2])
+      .toBe("Cancelling later costs a share of the booking price: 20% within 24 hours, 50% within 12 hours and 60% within 10 hours. It's never more than the player has paid.");
+  });
+
+  it('checks cancellation fees the way the server does', () => {
+    expect(tiersProblem([])).toBeNull();
+    expect(tiersProblem([{ withinHours: 12, feePercent: 50 }, { withinHours: 24, feePercent: 20 }])).toBeNull();
+    expect(tiersProblem([{ withinHours: 48, feePercent: 20 }])).toContain('1 to 24 hours');
+    expect(tiersProblem([{ withinHours: 12, feePercent: 0 }])).toContain('1% to 100%');
+    expect(tiersProblem([{ withinHours: 12, feePercent: 20 }, { withinHours: 12, feePercent: 50 }])).toContain('Two cancellation fees');
+    expect(tiersProblem([{ withinHours: 24, feePercent: 50 }, { withinHours: 12, feePercent: 50 }])).toContain('must be more than');
+  });
+
+  it('suggests the next fee closer to the start', () => {
+    expect(nextTier([])).toEqual({ withinHours: 24, feePercent: 50 });
+    expect(nextTier([{ withinHours: 24, feePercent: 20 }, { withinHours: 12, feePercent: 50 }])).toEqual({ withinHours: 6, feePercent: 70 });
+    expect(nextTier([{ withinHours: 1, feePercent: 90 }])).toEqual({ withinHours: 1, feePercent: 100 });
   });
 });

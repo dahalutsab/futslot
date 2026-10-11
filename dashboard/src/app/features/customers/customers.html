@@ -82,7 +82,13 @@
         <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Played</dt><dd class="tabular text-lg font-semibold">{{ c.stats.completed }}</dd></div>
         <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Upcoming</dt><dd class="tabular text-lg font-semibold">{{ c.stats.upcoming }}</dd></div>
         <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Spent</dt><dd class="tabular text-lg font-semibold">{{ fmt.rupees(c.stats.completedValue) }}</dd></div>
-        <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Cancelled</dt><dd class="tabular text-lg font-semibold">{{ c.stats.cancelled }}</dd></div>
+        <div class="rounded-lg px-2 py-3" [class]="c.stats.lateCancellations > 0 ? 'bg-noshow-bg text-noshow-fg' : 'bg-surface-2'">
+          <dt class="text-xs" [class.text-muted]="c.stats.lateCancellations === 0">Cancelled</dt>
+          <dd class="tabular text-lg font-semibold">{{ c.stats.cancelled }}</dd>
+          @if (c.stats.lateCancellations > 0) {
+            <dd class="text-xs">{{ c.stats.lateCancellations }} late</dd>
+          }
+        </div>
         <div class="rounded-lg px-2 py-3" [class]="c.stats.noShows > 0 ? 'bg-noshow-bg text-noshow-fg' : 'bg-surface-2'"><dt class="text-xs" [class.text-muted]="c.stats.noShows === 0">No-shows</dt><dd class="tabular text-lg font-semibold">{{ c.stats.noShows }}</dd></div>
         <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Total</dt><dd class="tabular text-lg font-semibold">{{ c.stats.total }}</dd></div>
       </dl>

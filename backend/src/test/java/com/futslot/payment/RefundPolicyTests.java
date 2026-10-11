@@ -2,30 +2,30 @@ package com.futslot.payment;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Duration;
-import java.time.Instant;
+import java.math.BigDecimal;
 
 import org.junit.jupiter.api.Test;
 
 class RefundPolicyTests {
 
-	private static final Instant START = Instant.parse("2026-11-07T13:15:00Z");
-
 	@Test
-	void venueCancellationAlwaysRefundsEverything() {
-		assertThat(RefundPolicy.refundPercent(false, START.minusSeconds(60), START, 24, 0)).isEqualTo(100);
+	void noFeeRefundsEverything() {
+		assertThat(RefundPolicy.refundAmount(new BigDecimal("600.00"), new BigDecimal("2000.00"), 0))
+			.isEqualByComparingTo("600.00");
 	}
 
 	@Test
-	void playerCancellingInTimeGetsEverythingBack() {
-		assertThat(RefundPolicy.refundPercent(true, START.minus(Duration.ofHours(30)), START, 24, 0)).isEqualTo(100);
-		assertThat(RefundPolicy.refundPercent(true, START.minus(Duration.ofHours(24)), START, 24, 0)).isEqualTo(100);
+	void feeIsAShareOfTheBookingPrice() {
+		assertThat(RefundPolicy.refundAmount(new BigDecimal("2000.00"), new BigDecimal("2000.00"), 50))
+			.isEqualByComparingTo("1000.00");
+		assertThat(RefundPolicy.refundAmount(new BigDecimal("1000.00"), new BigDecimal("1500.00"), 20))
+			.isEqualByComparingTo("700.00");
 	}
 
 	@Test
-	void playerCancellingLateGetsTheLateShare() {
-		assertThat(RefundPolicy.refundPercent(true, START.minus(Duration.ofHours(23)), START, 24, 50)).isEqualTo(50);
-		assertThat(RefundPolicy.refundPercent(true, START.minus(Duration.ofHours(1)), START, 24, 0)).isZero();
+	void feeNeverTakesMoreThanWasPaid() {
+		assertThat(RefundPolicy.refundAmount(new BigDecimal("600.00"), new BigDecimal("2000.00"), 50)).isZero();
+		assertThat(RefundPolicy.refundAmount(new BigDecimal("600.00"), new BigDecimal("2000.00"), 100)).isZero();
 	}
 
 }

@@ -86,6 +86,8 @@ class CustomerService {
 		CustomerDetailResponse.Stats stats = new CustomerDetailResponse.Stats(all,
 				count(totals, BookingStatus.CONFIRMED) + count(totals, BookingStatus.PENDING_PAYMENT),
 				count(totals, BookingStatus.COMPLETED), count(totals, BookingStatus.CANCELLED),
+				this.bookings.countByCustomerIdAndStatusAndCancellationFeePercentGreaterThan(customer.getId(),
+						BookingStatus.CANCELLED, 0),
 				count(totals, BookingStatus.NO_SHOW),
 				totals.containsKey(BookingStatus.COMPLETED) ? totals.get(BookingStatus.COMPLETED).getAmount()
 						: BigDecimal.ZERO);

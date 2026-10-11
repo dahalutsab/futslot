@@ -7,13 +7,16 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
-/** Start and end are in the venue's local offset. */
+/**
+ * Start and end are in the venue's local offset. {@code cancellationFeePercent} is the venue's fee share when the
+ * player cancelled late, 0 otherwise.
+ */
 public record BookingResponse(UUID id, String reference, VenueRef venue, CourtRef court, CustomerRef customer,
 		BookingSource source, BookingStatus status, OffsetDateTime startsAt, OffsetDateTime endsAt,
 		BigDecimal priceAmount, BigDecimal addOnsAmount, List<AddOn> addOns, BigDecimal discountAmount,
 		UUID membershipId, UUID discountCodeId,
 		BigDecimal totalAmount, BigDecimal advanceRequired, BigDecimal paidAmount, PaymentStatus paymentStatus,
-		Instant holdExpiresAt, String notes, Instant cancelledAt, String cancellationReason, Instant createdAt) {
+		Instant holdExpiresAt, String notes, Instant cancelledAt, String cancellationReason, int cancellationFeePercent, Instant createdAt) {
 
 	public static BookingResponse from(Booking booking) {
 		ZoneId zone = ZoneId.of(booking.getVenue().getTimezone());
@@ -32,7 +35,7 @@ public record BookingResponse(UUID id, String reference, VenueRef venue, CourtRe
 				booking.getDiscountAmount(), booking.getMembershipId(), booking.getDiscountCodeId(),
 				booking.getTotalAmount(), booking.getAdvanceRequired(), booking.getPaidAmount(),
 				booking.getPaymentStatus(), booking.getHoldExpiresAt(), booking.getNotes(), booking.getCancelledAt(),
-				booking.getCancellationReason(), booking.getCreatedAt());
+				booking.getCancellationReason(), booking.getCancellationFeePercent(), booking.getCreatedAt());
 	}
 
 	public record AddOn(UUID itemId, String name, int quantity, BigDecimal unitPrice) {

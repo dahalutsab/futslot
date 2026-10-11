@@ -248,7 +248,8 @@ public class BookingService {
 			throw new ApiException(HttpStatus.CONFLICT, "CANCELLATION_CLOSED",
 					"This booking has started. Contact the venue");
 		}
-		booking.cancel(userId, reason, now);
+		int fee = booking.getVenue().policy().feePercent(Duration.between(now, booking.getStartsAt()));
+		booking.cancel(userId, reason, now, fee);
 		publish(BookingEventType.CANCELLED, booking, userId, reason);
 		return BookingResponse.from(booking);
 	}

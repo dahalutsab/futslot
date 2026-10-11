@@ -156,7 +156,7 @@ class NotificationFlowTests {
 		TestUser owner = this.users.signUp("Expiry Owner");
 		TestVenue venue = this.venues.active(owner, "Expiry Futsal");
 		send(owner, put("/api/v1/owner/venues/" + venue.id() + "/policy"), """
-				{"advancePercent":20,"bookingHoldMinutes":10,"freeCancelHours":24,"lateCancelRefundPct":0,"maxAdvanceBookingDays":30}""");
+				{"advancePercent":20,"bookingHoldMinutes":10,"cancellationTiers":[{"withinHours":24,"feePercent":100}],"maxAdvanceBookingDays":30}""");
 		TestUser slow = this.users.signUp("Slow");
 		String held = bookingId(book(slow, venue, "14:00"));
 		inbox(slow).andExpect(jsonPath("$.content[0].type").value("BOOKING_PAYMENT_DUE"))

@@ -59,6 +59,9 @@ interface BookingRepository extends JpaRepository<Booking, UUID> {
 			from Booking b where b.customer.id = :customerId group by b.status""")
 	List<StatusTotal> totalsByStatus(UUID customerId);
 
+	long countByCustomerIdAndStatusAndCancellationFeePercentGreaterThan(UUID customerId, BookingStatus status,
+			int feePercent);
+
 	interface StatusTotal {
 
 		BookingStatus getStatus();

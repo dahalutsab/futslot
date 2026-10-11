@@ -12,8 +12,9 @@ import java.util.UUID;
 public record CustomerDetailResponse(UUID id, String name, String phone, boolean hasApp, String notes,
 		Instant customerSince, Instant lastBookingAt, Stats stats, List<BookingResponse> recentBookings) {
 
-	public record Stats(long total, long upcoming, long completed, long cancelled, long noShows,
-			BigDecimal completedValue) {
+	/** {@code lateCancellations}: the customer's own cancellations that fell inside a fee tier. */
+	public record Stats(long total, long upcoming, long completed, long cancelled, long lateCancellations,
+			long noShows, BigDecimal completedValue) {
 
 	}
 

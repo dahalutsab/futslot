@@ -5463,20 +5463,29 @@ components:
           format: int32
           maximum: 120
           minimum: 5
-        freeCancelHours:
-          type: integer
-          format: int32
-          maximum: 168
-          minimum: 0
-        lateCancelRefundPct:
-          type: integer
-          format: int32
-          maximum: 100
-          minimum: 0
+        cancellationTiers:
+          type: array
+          items:
+            $ref: "#/components/schemas/CancellationTier"
+          maxItems: 6
+          minItems: 0
         maxAdvanceBookingDays:
           type: integer
           format: int32
           maximum: 180
+          minimum: 1
+    CancellationTier:
+      type: object
+      properties:
+        withinHours:
+          type: integer
+          format: int32
+          maximum: 24
+          minimum: 1
+        feePercent:
+          type: integer
+          format: int32
+          maximum: 100
           minimum: 1
     VenueResponse:
       type: object
@@ -6510,6 +6519,9 @@ components:
           format: date-time
         cancellationReason:
           type: string
+        cancellationFeePercent:
+          type: integer
+          format: int32
         createdAt:
           type: string
           format: date-time
@@ -8102,6 +8114,9 @@ components:
           type: integer
           format: int64
         cancelled:
+          type: integer
+          format: int64
+        lateCancellations:
           type: integer
           format: int64
         noShows:
