@@ -36,6 +36,7 @@ The migrations are the source of truth; this page explains them.
 | V14 | Tournament scheduling | `tournaments.match_minutes`, `tournaments.group_count`, `tournament_matches.court_block_id` |
 | V15 | Subscription billing | `venue_subscriptions.next_plan_id` / `next_billing_cycle`, `subscription_invoices.plan_id` / `billing_cycle` |
 | V19 | Cancellation fee tiers | `venue_cancellation_tiers` (replaces `venues.free_cancel_hours` / `late_cancel_refund_pct`), `bookings.cancellation_fee_percent` |
+| V20 | Strike advance | `venues.strike_limit` / `strike_advance_percent` |
 
 ## Key design decisions
 

@@ -76,7 +76,7 @@ class VenueFlowTests {
 			.andExpect(jsonPath("$.amenities[*].code").value(org.hamcrest.Matchers.contains("PARKING", "SHOWER")));
 		send(owner, put(base + "/policy"), """
 				{"advancePercent":30,"bookingHoldMinutes":10,"cancellationTiers":[{"withinHours":12,"feePercent":40},{"withinHours":12,"feePercent":60}],"maxAdvanceBookingDays":14}""")
-			.andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_CANCELLATION_TIERS"));
+			.andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_POLICY"));
 		send(owner, put(base + "/policy"), """
 				{"advancePercent":30,"bookingHoldMinutes":10,"cancellationTiers":[{"withinHours":48,"feePercent":10}],"maxAdvanceBookingDays":14}""")
 			.andExpect(status().isBadRequest());

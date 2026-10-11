@@ -229,6 +229,38 @@ class PaymentFlowTests {
 	}
 
 	@Test
+	void playersAtTheStrikeLimitPayMoreUpFront() throws Exception {
+		TestUser owner = this.users.signUp("Strike Owner");
+		TestVenue venue = this.venues.active(owner, "Strike Futsal");
+		send(owner, put(venuePath(venue) + "/policy"), """
+				{"advancePercent":0,"bookingHoldMinutes":15,"cancellationTiers":%s,"maxAdvanceBookingDays":30,"strikeLimit":1,"strikeAdvancePercent":50}"""
+			.formatted(RISING_FEES)).andExpect(status().isOk());
+		TestUser player = this.users.signUp("Strike Player");
+		String quote = "{\"courtId\":\"%s\",\"startsAt\":\"%sT08:00:00+05:45\"}".formatted(venue.courtId(), GAME_DAY);
+
+		send(player, post("/api/v1/bookings/quote"), quote).andExpect(jsonPath("$.advanceRequired").value(0))
+			.andExpect(jsonPath("$.strikeAdvance").value(false));
+		String booked = book(player, venue, "07:00").andReturn().getResponse().getContentAsString();
+		String bookingId = JsonPath.read(booked, "$.id");
+		startsIn(bookingId, Duration.ofHours(5));
+		send(player, post("/api/v1/bookings/" + bookingId + "/cancel"), "{}").andExpect(status().isOk());
+
+		// One late cancellation reaches the limit: half the price up front from now on
+		send(player, post("/api/v1/bookings/quote"), quote).andExpect(jsonPath("$.advanceRequired").value(600.0))
+			.andExpect(jsonPath("$.strikeAdvance").value(true));
+		book(player, venue, "08:00").andExpect(status().isCreated())
+			.andExpect(jsonPath("$.status").value("PENDING_PAYMENT"))
+			.andExpect(jsonPath("$.advanceRequired").value(600.0));
+		String customerId = JsonPath.read(booked, "$.customer.id");
+		send(owner, get(venuePath(venue) + "/customers/" + customerId), null)
+			.andExpect(jsonPath("$.stats.recentStrikes").value(1))
+			.andExpect(jsonPath("$.strikeAdvancePercent").value(50));
+
+		// Another player at the same venue is unaffected
+		book(this.users.signUp("Clean Player"), venue, "09:00").andExpect(jsonPath("$.status").value("CONFIRMED"));
+	}
+
+	@Test
 	void venueCancellationAndExpiredHoldsRefundInFull() throws Exception {
 		TestUser owner = this.users.signUp("Full Refund Owner");
 		TestVenue venue = advanceVenue(owner, "Full Refund Futsal", 50, FULL_FEE_INSIDE_A_DAY);

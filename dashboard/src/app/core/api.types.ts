@@ -213,7 +213,9 @@ export interface CustomerDetail {
   notes: string | null;
   customerSince: string;
   lastBookingAt: string | null;
-  stats: { total: number; upcoming: number; completed: number; cancelled: number; lateCancellations: number; noShows: number; completedValue: number };
+  stats: { total: number; upcoming: number; completed: number; cancelled: number; lateCancellations: number; noShows: number; recentStrikes: number; completedValue: number };
+  /** What this customer must pay up front because of recent strikes; null when the usual advance applies. */
+  strikeAdvancePercent: number | null;
   recentBookings: Booking[];
 }
 
@@ -307,7 +309,14 @@ export interface VenuePolicy {
   /** Furthest from the start first; empty means cancelling is always free. */
   cancellationTiers: CancellationTier[];
   maxAdvanceBookingDays: number;
+  /** Late cancellations and no-shows in {@link STRIKE_WINDOW_DAYS} that raise the advance; null when off. */
+  strikeLimit: number | null;
+  /** The advance for players at the strike limit; set exactly when {@link strikeLimit} is. */
+  strikeAdvancePercent: number | null;
 }
+
+/** How far back the server counts late cancellations and no-shows as strikes. */
+export const STRIKE_WINDOW_DAYS = 90;
 
 export interface Amenity {
   code: string;

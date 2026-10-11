@@ -1,4 +1,4 @@
-import { CancellationTier, DayHours, VenuePolicy, Weekday } from '../../core/api.types';
+import { CancellationTier, DayHours, STRIKE_WINDOW_DAYS, VenuePolicy, Weekday } from '../../core/api.types';
 
 /** The week as people in Nepal count it, Sunday first. */
 export const WEEK: { day: Weekday; label: string; short: string }[] = [
@@ -90,6 +90,10 @@ export function policySummary(policy: VenuePolicy): string[] {
     const listed = fees.length === 1 ? fees[0] : `${fees.slice(0, -1).join(', ')} and ${fees[fees.length - 1]}`;
     lines.push(`Cancelling ${tiers[0].withinHours} ${hours(tiers[0].withinHours)} or more before the game is free.`);
     lines.push(`Cancelling later costs a share of the booking price: ${listed}. It's never more than the player has paid.`);
+  }
+  if (policy.strikeLimit !== null && policy.strikeAdvancePercent !== null && policy.strikeAdvancePercent > policy.advancePercent) {
+    const strikes = policy.strikeLimit === 1 ? 'a late cancellation or no-show' : `${policy.strikeLimit} late cancellations or no-shows`;
+    lines.push(`After ${strikes} in ${STRIKE_WINDOW_DAYS} days, a player pays ${policy.strikeAdvancePercent}% up front to book.`);
   }
   lines.push('If you cancel, players always get everything back.');
   lines.push(`Players can book up to ${policy.maxAdvanceBookingDays} days ahead.`);

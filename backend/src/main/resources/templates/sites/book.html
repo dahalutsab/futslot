@@ -90,6 +90,7 @@
       <p class="book-muted" th:if="${book.slot.advance != null}"
         th:text="${'We hold it for ' + book.slot.holdMinutes + ' minutes while you pay ' + book.slot.advance + ' to the venue. The rest is paid at the venue.'}">Hold</p>
       <p class="book-muted" th:if="${book.slot.advance == null}">Nothing to pay now. Pay at the venue when you play.</p>
+      <p class="book-muted" th:if="${book.slot.strikeAdvance}">You've cancelled late or missed games here recently, so this venue asks for more up front.</p>
       <form method="post" th:action="${book.site.base + '/book/confirm'}" class="book-form">
         <input type="hidden" name="court" th:value="${book.slot.courtId}">
         <input type="hidden" name="start" th:value="${book.slot.start}">

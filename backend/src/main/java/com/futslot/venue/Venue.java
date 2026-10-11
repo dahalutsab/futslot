@@ -88,6 +88,10 @@ public class Venue {
 	@Column(nullable = false)
 	private int maxAdvanceBookingDays = 30;
 
+	private Integer strikeLimit;
+
+	private Integer strikeAdvancePercent;
+
 	private String paymentInstructions;
 
 	@Column(nullable = false, precision = 3, scale = 2)
@@ -149,11 +153,13 @@ public class Venue {
 		this.cancellationTiers.clear();
 		this.cancellationTiers.addAll(policy.cancellationTiers());
 		this.maxAdvanceBookingDays = policy.maxAdvanceBookingDays();
+		this.strikeLimit = policy.strikeLimit();
+		this.strikeAdvancePercent = policy.strikeAdvancePercent();
 	}
 
 	public VenuePolicy policy() {
 		return new VenuePolicy(this.advancePercent, this.bookingHoldMinutes, this.cancellationTiers,
-				this.maxAdvanceBookingDays);
+				this.maxAdvanceBookingDays, this.strikeLimit, this.strikeAdvancePercent);
 	}
 
 	void setPaymentInstructions(String instructions) {

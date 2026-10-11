@@ -77,6 +77,11 @@
         <span class="tabular font-medium">{{ fmt.phone(c.phone) }}</span>
         <span class="ml-auto text-sm text-subtle">{{ c.hasApp ? 'Uses the app · ' : '' }}Call</span>
       </a>
+      @if (c.strikeAdvancePercent !== null) {
+        <p class="mt-3 rounded-lg bg-noshow-bg px-3 py-2 text-sm text-noshow-fg">
+          {{ c.stats.recentStrikes }} late {{ c.stats.recentStrikes === 1 ? 'cancellation or no-show' : 'cancellations and no-shows' }} recently, so they pay {{ c.strikeAdvancePercent }}% up front when they book.
+        </p>
+      }
 
       <dl class="mt-4 grid grid-cols-3 gap-2 text-center">
         <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Played</dt><dd class="tabular text-lg font-semibold">{{ c.stats.completed }}</dd></div>

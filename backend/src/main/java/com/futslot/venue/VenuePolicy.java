@@ -16,10 +16,17 @@ import jakarta.validation.constraints.Size;
  * @param cancellationTiers fees for late cancellations, ordered from furthest to closest to the start;
  * empty means cancelling is always free
  * @param maxAdvanceBookingDays how far ahead players can book
+ * @param strikeLimit late cancellations and no-shows within {@link #STRIKE_WINDOW} after which a player pays
+ * {@code strikeAdvancePercent} up front; both null when the venue doesn't use strikes
+ * @param strikeAdvancePercent the advance for players at the strike limit, if higher than the usual one
  */
 public record VenuePolicy(@Min(0) @Max(100) int advancePercent, @Min(5) @Max(120) int bookingHoldMinutes,
 		@NotNull @Size(max = 6) List<@NotNull @Valid CancellationTier> cancellationTiers,
-		@Min(1) @Max(180) int maxAdvanceBookingDays) {
+		@Min(1) @Max(180) int maxAdvanceBookingDays, @Min(1) @Max(10) Integer strikeLimit,
+		@Min(1) @Max(100) Integer strikeAdvancePercent) {
+
+	/** How far back late cancellations and no-shows count as strikes. */
+	public static final Duration STRIKE_WINDOW = Duration.ofDays(90);
 
 	public VenuePolicy {
 		cancellationTiers = (cancellationTiers != null) ? cancellationTiers.stream()
@@ -38,8 +45,17 @@ public record VenuePolicy(@Min(0) @Max(100) int advancePercent, @Min(5) @Max(120
 		return fee;
 	}
 
-	/** Why the tiers can't be used, or null when they can. */
-	String tierProblem() {
+	/** The share a player with {@code strikes} recent strikes pays up front. */
+	public int advancePercentFor(long strikes) {
+		boolean struck = this.strikeLimit != null && strikes >= this.strikeLimit;
+		return struck ? Math.max(this.advancePercent, this.strikeAdvancePercent) : this.advancePercent;
+	}
+
+	/** Why the policy can't be used, or null when it can. */
+	String problem() {
+		if ((this.strikeLimit == null) != (this.strikeAdvancePercent == null)) {
+			return "Set both the number of strikes and the advance they require, or neither";
+		}
 		for (int i = 1; i < this.cancellationTiers.size(); i++) {
 			CancellationTier further = this.cancellationTiers.get(i - 1);
 			CancellationTier closer = this.cancellationTiers.get(i);

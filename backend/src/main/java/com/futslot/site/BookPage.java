@@ -16,8 +16,9 @@ public record BookPage(Site site, String step, Slot slot, String phone, boolean 
 	}
 
 	/** {@code advance} is null when nothing is paid up front. */
+	/** {@code strikeAdvance}: the advance is higher because of the player's recent late cancellations and no-shows. */
 	public record Slot(String courtId, String start, String court, String day, String time, String price, String advance,
-			String holdMinutes) {
+			String holdMinutes, boolean strikeAdvance) {
 	}
 
 	/**

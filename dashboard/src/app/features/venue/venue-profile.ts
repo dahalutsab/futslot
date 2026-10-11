@@ -6,7 +6,7 @@ import { CircleAlert, Clock, Copy, ExternalLink, LucideAngularModule, MapPin, Pl
 import { firstValueFrom } from 'rxjs';
 
 import { problemOf } from '../../core/api-error';
-import { Amenity, CancellationTier, VenueDetail, VenuePolicy } from '../../core/api.types';
+import { Amenity, CancellationTier, STRIKE_WINDOW_DAYS, VenueDetail, VenuePolicy } from '../../core/api.types';
 import { VenueContext } from '../../core/venue-context';
 import { HoursRow, hoursProblem, hoursRows, nextTier, overnight, parseLocation, policySummary, tiersProblem, toDayHours } from './venue-model';
 
@@ -51,6 +51,8 @@ export class VenueProfile {
   private readonly http = inject(HttpClient);
 
   protected readonly venues = inject(VenueContext);
+
+  protected readonly strikeWindowDays = STRIKE_WINDOW_DAYS;
 
   protected readonly icons = { CircleAlert, Clock, Copy, ExternalLink, MapPin, Plus, Send, Trash2 };
 
@@ -144,6 +146,19 @@ export class VenueProfile {
 
   protected setPolicy(field: keyof VenuePolicy, value: number): void {
     this.policy.update((policy) => (policy ? { ...policy, [field]: value } : policy));
+    this.touched('policy');
+  }
+
+  /** Turns the strike rule on with a suggested limit and advance, or off. */
+  protected toggleStrikes(): void {
+    this.policy.update((policy) => {
+      if (!policy) {
+        return policy;
+      }
+      return policy.strikeLimit === null
+        ? { ...policy, strikeLimit: 2, strikeAdvancePercent: Math.max(50, policy.advancePercent) }
+        : { ...policy, strikeLimit: null, strikeAdvancePercent: null };
+    });
     this.touched('policy');
   }
 

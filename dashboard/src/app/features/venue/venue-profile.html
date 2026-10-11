@@ -200,6 +200,30 @@
               </button>
             }
           </fieldset>
+          <fieldset>
+            <legend class="sr-only">Repeat late cancellations and no-shows</legend>
+            <button type="button" role="switch" [attr.aria-checked]="p.strikeLimit !== null" (click)="toggleStrikes()"
+              class="flex min-h-11 items-center gap-3 text-left">
+              <span class="relative block h-6 w-10 shrink-0 rounded-full transition-colors" [class]="p.strikeLimit !== null ? 'bg-ink' : 'bg-subtle'">
+                <span class="absolute left-0 top-0.5 block size-5 rounded-full bg-surface shadow transition-transform" [class]="p.strikeLimit !== null ? 'translate-x-[18px]' : 'translate-x-0.5'"></span>
+              </span>
+              <span class="font-medium">Make players who keep cancelling late or not showing up pay more up front</span>
+            </button>
+            @if (p.strikeLimit !== null) {
+              <div class="mt-3 flex flex-wrap items-center gap-2">
+                <label for="strike-limit" class="text-muted">After</label>
+                <input id="strike-limit" type="number" inputmode="numeric" min="1" max="10" [value]="p.strikeLimit"
+                  (input)="setPolicy('strikeLimit', +$any($event.target).value)"
+                  class="tabular h-11 w-20 rounded-lg border border-border bg-surface px-3 text-base" />
+                <label for="strike-advance" class="text-muted">in {{ strikeWindowDays }} days, they pay</label>
+                <input id="strike-advance" type="number" inputmode="numeric" min="1" max="100" [value]="p.strikeAdvancePercent"
+                  (input)="setPolicy('strikeAdvancePercent', +$any($event.target).value)"
+                  class="tabular h-11 w-20 rounded-lg border border-border bg-surface px-3 text-base" />
+                <span class="text-muted">% up front</span>
+              </div>
+              <p class="mt-1 text-sm text-muted">Only bookings players make themselves. Bookings you add for them aren't affected.</p>
+            }
+          </fieldset>
           <div class="rounded-lg bg-surface-2 px-4 py-3">
             <p class="text-sm font-medium text-muted">What players are told</p>
             <ul class="mt-1 list-disc space-y-0.5 pl-5">

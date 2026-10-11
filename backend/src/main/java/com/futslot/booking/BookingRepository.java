@@ -62,6 +62,13 @@ interface BookingRepository extends JpaRepository<Booking, UUID> {
 	long countByCustomerIdAndStatusAndCancellationFeePercentGreaterThan(UUID customerId, BookingStatus status,
 			int feePercent);
 
+	/** Late cancellations (ones that cost a fee) and no-shows starting from {@code since}. */
+	@Query("""
+			select count(b) from Booking b where b.customer.id = :customerId and b.startsAt >= :since
+			  and (b.status = com.futslot.booking.BookingStatus.NO_SHOW
+			       or (b.status = com.futslot.booking.BookingStatus.CANCELLED and b.cancellationFeePercent > 0))""")
+	long countStrikes(UUID customerId, Instant since);
+
 	interface StatusTotal {
 
 		BookingStatus getStatus();
