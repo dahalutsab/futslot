@@ -11,8 +11,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -287,7 +289,14 @@ public class SubscriptionService implements PlanLimits {
 			return List.of();
 		}
 		Set<UUID> pending = new HashSet<>(this.invoices.withPendingPayment(invoices.stream().map(SubscriptionInvoice::getId).toList()));
-		return invoices.stream().map(invoice -> BillingViews.Invoice.from(invoice, pending.contains(invoice.getId()))).toList();
+		Map<UUID, String> names = this.venues
+			.findAllById(invoices.stream().map(invoice -> invoice.getSubscription().getVenueId()).collect(Collectors.toSet()))
+			.stream()
+			.collect(Collectors.toMap(Venue::getId, Venue::getName));
+		return invoices.stream()
+			.map(invoice -> BillingViews.Invoice.from(invoice, names.get(invoice.getSubscription().getVenueId()),
+					pending.contains(invoice.getId())))
+			.toList();
 	}
 
 	private BillingViews.Subscription view(Venue venue) {
