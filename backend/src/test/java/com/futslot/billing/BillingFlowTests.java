@@ -152,6 +152,9 @@ class BillingFlowTests {
 		send(owner, get("/api/v1/notifications"), null)
 			.andExpect(jsonPath("$.content[0].type").value("SUBSCRIPTION_PAST_DUE"));
 
+		// Admins see whose invoice it is
+		send(admin, get("/api/v1/admin/invoices"), null)
+			.andExpect(jsonPath("$[?(@.id == '%s')].venueName".formatted(renewal)).value(hasItem("Renewing Futsal")));
 		send(admin, post("/api/v1/admin/invoices/" + renewal + "/payments"), "{\"method\":\"CASH\"}")
 			.andExpect(status().isCreated());
 		send(owner, get(subscription), null)

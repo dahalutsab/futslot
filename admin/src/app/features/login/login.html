@@ -1,0 +1,92 @@
+<div class="grid min-h-dvh lg:grid-cols-2">
+  <section class="hidden flex-col justify-between bg-[#0f2a1a] p-12 text-white lg:flex" aria-hidden="true">
+    <div class="flex items-center gap-2">
+      <span class="grid size-8 place-items-center rounded-md bg-[#22c55e] font-bold text-[#0f2a1a]">F</span>
+      <span class="text-lg font-semibold">FutSlot</span>
+    </div>
+    <div>
+      <p class="text-3xl font-semibold leading-tight">Running FutSlot.</p>
+      <p class="mt-4 max-w-md text-white/70">Approve venues, check payments to FutSlot, send deposits and payouts, and keep
+        reviews fair.</p>
+    </div>
+    <p class="text-sm text-white/50">FutSlot staff only</p>
+  </section>
+
+  <section class="flex items-center justify-center px-5 py-12">
+    <div class="w-full max-w-sm">
+      <div class="mb-8 flex items-center gap-2 lg:hidden">
+        <span class="grid size-8 place-items-center rounded-md bg-brand font-bold text-white" aria-hidden="true">F</span>
+        <span class="text-lg font-semibold">FutSlot admin</span>
+      </div>
+
+      <h1 class="text-2xl font-semibold tracking-tight">FutSlot admin</h1>
+      <p class="mt-1 text-muted">We'll text a code to your phone. No password needed.</p>
+
+      @if (expired) {
+        <p class="mt-4 rounded-lg bg-held-bg px-3 py-2 text-held-fg" role="status">You were signed out. Please sign in again.</p>
+      }
+
+      @if (step() === 'phone') {
+        <form class="mt-8 space-y-4" (ngSubmit)="sendCode()">
+          <div>
+            <label for="phone" class="mb-1.5 block font-medium">Mobile number</label>
+            <div class="flex h-12 items-center rounded-lg border border-border bg-surface focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring">
+              <span class="tabular border-r border-border px-3 text-muted">+977</span>
+              <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98XXXXXXXX"
+                class="tabular h-full min-w-0 flex-1 bg-transparent px-3 text-base outline-none"
+                [ngModel]="phone()" (ngModelChange)="phone.set($event)" aria-describedby="phone-help" required autofocus />
+            </div>
+            <p id="phone-help" class="mt-1.5 text-sm text-subtle">The number of your FutSlot admin account.</p>
+          </div>
+          @if (error(); as message) {
+            <p class="text-danger" role="alert">{{ message }}</p>
+          }
+          <button type="submit" [disabled]="busy()" [attr.aria-disabled]="!phoneValid()"
+            class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60 aria-disabled:opacity-40">
+            @if (busy()) {
+              <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> Sending…
+            } @else {
+              Send code <lucide-icon [img]="icons.ArrowRight" [size]="18" />
+            }
+          </button>
+        </form>
+      } @else {
+        <form class="mt-8 space-y-4" (ngSubmit)="verify()">
+          <div>
+            <label for="code" class="mb-1.5 block font-medium">6-digit code</label>
+            <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+              class="tabular h-12 w-full rounded-lg border border-border bg-surface px-3 text-center text-xl tracking-[0.5em]"
+              [ngModel]="code()" (ngModelChange)="code.set($event.replace(/\D/g, ''))" aria-describedby="code-help" required />
+            <p id="code-help" class="mt-1.5 text-sm text-subtle">
+              Sent to <span class="tabular">+977 {{ phone() }}</span> ·
+              <button type="button" class="font-medium text-text underline underline-offset-2" (click)="changeNumber()">Change</button>
+            </p>
+          </div>
+
+          @if (notice(); as message) {
+            <p class="rounded-lg bg-surface-2 px-3 py-2 text-muted" role="status">{{ message }}</p>
+          }
+
+          @if (error(); as message) {
+            <p class="text-danger" role="alert">{{ message }}</p>
+          }
+          <button type="submit" [disabled]="busy()" [attr.aria-disabled]="!codeValid()"
+            class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60 aria-disabled:opacity-40">
+            @if (busy()) {
+              <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> Checking…
+            } @else {
+              <lucide-icon [img]="icons.ShieldCheck" [size]="18" /> Sign in
+            }
+          </button>
+          <p class="text-center text-sm text-subtle">
+            @if (resendIn() > 0) {
+              Resend code in <span class="tabular">{{ resendIn() }}</span>s
+            } @else {
+              <button type="button" class="font-medium text-text underline underline-offset-2" (click)="sendCode()">Resend code</button>
+            }
+          </p>
+        </form>
+      }
+    </div>
+  </section>
+</div>
