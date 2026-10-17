@@ -26,7 +26,13 @@
           <lucide-icon [img]="icons.MapPin" [size]="14" />{{ v.addressLine }}{{ v.area ? ', ' + v.area : '' }}, {{ v.city }}
         </p>
       }
-      <p class="tabular mt-3 text-sm text-subtle">Booking {{ b.reference }}</p>
+      <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+        <p class="tabular flex-1 whitespace-nowrap text-sm text-subtle">Booking {{ b.reference }}</p>
+        <a routerLink="/messages" [queryParams]="{ venue: b.venue.id, name: b.venue.name, booking: b.id }"
+          class="flex h-11 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">
+          <lucide-icon [img]="icons.MessageSquare" [size]="16" /> Message the venue
+        </a>
+      </div>
     </section>
 
     <!-- Paying the advance -->
@@ -121,6 +127,39 @@
           }
           @if (b.cancellationReason) { <span class="block mt-1">“{{ b.cancellationReason }}”</span> }
         </p>
+      </section>
+    }
+
+    <!-- Reviewing a played game -->
+    @if (b.status === 'COMPLETED' && review() !== undefined) {
+      <section id="review" class="mt-4 scroll-mt-20 rounded-xl border border-border bg-surface p-5" aria-labelledby="review-title">
+        @let r = review();
+        @if (r && !editingReview()) {
+          <h2 id="review-title" class="font-semibold">Your review</h2>
+          <p class="mt-1 text-held-line" [attr.aria-label]="r.rating + ' out of 5'">{{ '★'.repeat(r.rating) }}{{ '☆'.repeat(5 - r.rating) }}</p>
+          @if (r.comment) {
+            <p class="mt-1 whitespace-pre-line">{{ r.comment }}</p>
+          }
+          @if (r.ownerReply) {
+            <div class="mt-3 rounded-lg bg-surface-2 px-3 py-2 text-sm">
+              <p class="font-medium">{{ b.venue.name }} replied</p>
+              <p class="mt-0.5 whitespace-pre-line text-muted">{{ r.ownerReply }}</p>
+            </div>
+          }
+          <div class="mt-3 flex gap-2">
+            <button type="button" (click)="editingReview.set(true)" class="h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Edit</button>
+            <button type="button" (click)="deleteReview()" [disabled]="reviewBusy()" class="h-11 rounded-lg px-4 font-medium text-danger hover:bg-danger-bg">Delete</button>
+          </div>
+        } @else {
+          <h2 id="review-title" class="font-semibold">{{ r ? 'Edit your review' : 'How was ' + b.venue.name + '?' }}</h2>
+          <p class="mb-3 text-sm text-muted">Other players see it with your first name and last initial.</p>
+          <fs-review-form [initial]="r ? { rating: r.rating, comment: r.comment ?? undefined } : null" [label]="r ? 'Save' : 'Post review'"
+            [busy]="reviewBusy()" [error]="reviewError()" (saved)="saveReview($event)">
+            @if (r) {
+              <button type="button" (click)="editingReview.set(false)" class="h-11 rounded-lg px-4 font-medium">Cancel</button>
+            }
+          </fs-review-form>
+        }
       </section>
     }
 

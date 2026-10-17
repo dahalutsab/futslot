@@ -378,3 +378,66 @@ export interface RatingSummary {
   reviewCount: number;
   stars: Record<string, number>;
 }
+
+/** What a player sends to review a booking; a star rating alone is a review. */
+export interface ReviewWrite {
+  rating: number;
+  comment?: string;
+}
+
+// Notifications
+
+/** {@code data} holds ids to open what it's about: bookingId, conversationId, tournamentSlug... */
+export interface AppNotification {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  data: Record<string, string>;
+  read: boolean;
+  createdAt: string;
+}
+
+// Messages with venues
+
+export interface ConversationSummary {
+  id: string;
+  venueId: string;
+  venueName: string;
+  venueSlug: string;
+  playerId: string;
+  playerName: string;
+  lastMessage: string | null;
+  lastMessageAt: string | null;
+  unread: number;
+}
+
+/** {@code fromYou}: sent by the player; venue replies are signed with the venue's name. */
+export interface ChatMessage {
+  id: string;
+  senderName: string;
+  fromYou: boolean;
+  bookingId: string | null;
+  body: string;
+  readAt: string | null;
+  createdAt: string;
+}
+
+// Waitlist
+
+export type WaitlistStatus = 'WAITING' | 'NOTIFIED' | 'BOOKED' | 'EXPIRED' | 'CANCELLED';
+
+/** A booked slot the player wants if it frees up; NOTIFIED means it did and they were told. */
+export interface WaitlistEntry {
+  id: string;
+  venueId: string;
+  venueName: string;
+  venueSlug: string;
+  courtId: string;
+  courtName: string;
+  startsAt: string;
+  endsAt: string;
+  status: WaitlistStatus;
+  notifiedAt: string | null;
+  createdAt: string;
+}

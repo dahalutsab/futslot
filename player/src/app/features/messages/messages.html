@@ -1,0 +1,173 @@
+<div class="mx-auto flex h-[calc(100dvh-8.5rem)] max-w-6xl lg:mt-6 lg:grid lg:h-[calc(100dvh-7rem)] lg:grid-cols-[320px_1fr] lg:overflow-hidden lg:rounded-xl lg:border lg:border-border">
+  <!-- Conversations -->
+  <section class="min-h-0 flex-1 flex-col border-border bg-surface lg:flex lg:border-r" [class]="open() ? 'hidden' : 'flex'"
+    aria-label="Conversations">
+    <div class="px-4 pb-3 pt-4 lg:pt-6">
+      <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">Messages</h1>
+      @if ((conversations()?.length ?? 0) > 6) {
+        <label class="relative mt-3 block">
+          <span class="sr-only">Find a conversation</span>
+          <lucide-icon [img]="icons.Search" [size]="18" class="pointer-events-none absolute left-3 top-1/2 flex -translate-y-1/2 text-subtle" />
+          <input type="search" [value]="filter()" (input)="filter.set($any($event.target).value)" autocomplete="off" placeholder="Find a venue"
+            class="h-11 w-full rounded-lg border border-border bg-surface pl-11 pr-3 text-base lg:h-10 [&::-webkit-search-cancel-button]:hidden" />
+        </label>
+      }
+    </div>
+
+    <div class="min-h-0 flex-1 overflow-y-auto">
+      @if (listError(); as message) {
+        <div class="px-4 py-8 text-center">
+          <p class="text-muted">{{ message }}</p>
+          <button type="button" (click)="retryList()" class="mt-3 h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Try again</button>
+        </div>
+      } @else if (conversations(); as list) {
+        @if (list.length === 0) {
+          <div class="px-6 py-10 text-center">
+            <lucide-icon [img]="icons.MessageSquare" [size]="28" class="mx-auto text-subtle" />
+            <p class="mt-3 font-medium">No messages yet</p>
+            <p class="mt-1 text-sm text-muted">Ask a venue about courts, a booking or anything else: tap Message on its page or on your booking.</p>
+          </div>
+        } @else if (shown().length === 0) {
+          <p class="px-4 py-8 text-center text-muted">Nobody matches "{{ filter().trim() }}".</p>
+        } @else {
+          <ul>
+            @for (conversation of shown(); track conversation.id) {
+              <li>
+                <button type="button" (click)="select(conversation)" [attr.aria-current]="conversation.id === selectedId() ? 'true' : null"
+                  class="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-surface-2"
+                  [class.bg-surface-2]="conversation.id === selectedId()">
+                  <span class="grid size-10 shrink-0 place-items-center rounded-full bg-surface-2 font-semibold text-muted"
+                    [class.bg-surface]="conversation.id === selectedId()" aria-hidden="true">
+                    {{ conversation.venueName.charAt(0).toUpperCase() }}
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="flex items-baseline gap-2">
+                      <span class="min-w-0 flex-1 truncate" [class]="conversation.unread ? 'font-semibold' : 'font-medium'">{{ conversation.venueName }}</span>
+                      @if (conversation.lastMessageAt) {
+                        <span class="shrink-0 text-xs text-subtle">{{ fmt.ago(conversation.lastMessageAt) }}</span>
+                      }
+                    </span>
+                    <span class="mt-0.5 flex items-center gap-2">
+                      <span class="min-w-0 flex-1 truncate text-sm" [class]="conversation.unread ? 'text-text' : 'text-muted'">{{ conversation.lastMessage }}</span>
+                      @if (conversation.unread) {
+                        <span class="tabular shrink-0 rounded-full bg-ink px-2 text-xs font-medium text-ink-fg" [attr.aria-label]="conversation.unread + ' unread'">{{ conversation.unread }}</span>
+                      }
+                    </span>
+                  </span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      } @else {
+        <div class="space-y-2 px-4" aria-label="Loading">
+          @for (row of [1, 2, 3]; track row) {
+            <div class="h-14 animate-pulse rounded-lg bg-surface-2"></div>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Thread -->
+  <section class="min-h-0 min-w-0 flex-1 flex-col lg:flex" [class]="open() ? 'flex' : 'hidden'" aria-label="Conversation">
+    @if (open()) {
+      <header class="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface px-2 lg:h-16 lg:px-6">
+        <button type="button" (click)="back()" aria-label="Back to conversations"
+          class="grid size-11 place-items-center rounded-md text-muted hover:bg-surface-2 lg:hidden">
+          <lucide-icon [img]="icons.ArrowLeft" [size]="20" />
+        </button>
+        <h2 class="min-w-0 flex-1 truncate font-semibold">{{ title() }}</h2>
+        @if (selected(); as c) {
+          <a [routerLink]="['/venues', c.venueSlug]" class="flex h-11 shrink-0 items-center rounded-md px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">Venue</a>
+        }
+      </header>
+
+      <!-- Reversed so the view stays pinned to the newest message as messages arrive -->
+      <div class="flex min-h-0 flex-1 flex-col-reverse overflow-y-auto px-3 py-4 lg:px-6" aria-live="polite">
+        <div>
+          @if (threadError(); as message) {
+            <div class="py-8 text-center">
+              <p class="text-muted">{{ message }}</p>
+              <button type="button" (click)="retryThread()" class="mt-3 h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Try again</button>
+            </div>
+          } @else if (threadLoading()) {
+            <div class="space-y-3" aria-label="Loading">
+              <div class="h-12 w-2/3 animate-pulse rounded-2xl bg-surface"></div>
+              <div class="ml-auto h-12 w-1/2 animate-pulse rounded-2xl bg-surface"></div>
+            </div>
+          } @else {
+            @if (hasEarlier()) {
+              <div class="mb-4 text-center">
+                <button type="button" (click)="earlier()" [disabled]="loadingEarlier()"
+                  class="h-10 rounded-full border border-border px-4 text-sm font-medium hover:bg-surface disabled:opacity-60">
+                  {{ loadingEarlier() ? 'Loading…' : 'Show earlier messages' }}
+                </button>
+              </div>
+            }
+            @if (groups().length === 0) {
+              <p class="py-10 text-center text-muted">
+                Ask {{ title() }} about courts, prices or {{ compose()?.booking ? 'this booking' : 'a booking' }}. They reply here, and we'll let you know.
+              </p>
+            }
+            @for (group of groups(); track group.day) {
+              <div class="my-4 flex items-center gap-3 text-xs text-subtle first:mt-0" role="separator">
+                <span class="h-px flex-1 bg-border"></span>{{ group.label }}<span class="h-px flex-1 bg-border"></span>
+              </div>
+              @for (message of group.messages; track message.id; let i = $index) {
+                @let next = group.messages[i + 1];
+                @let joined = continues(group.messages[i - 1], message);
+                @let last = !next || !continues(message, next);
+                <div class="flex" [class]="(message.fromYou ? 'justify-end' : 'justify-start') + (joined ? ' mt-0.5' : ' mt-3')">
+                  <div class="max-w-[85%] sm:max-w-[70%]" [class.text-right]="message.fromYou">
+                    @if (message.bookingId) {
+                      @let booking = bookings()[message.bookingId];
+                      @if (booking) {
+                        <a [routerLink]="['/bookings', booking.id]"
+                          class="mb-1 inline-flex max-w-full items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-left text-sm hover:bg-surface-2">
+                          <lucide-icon [img]="icons.CalendarDays" [size]="16" class="shrink-0 text-muted" />
+                          <span class="tabular min-w-0 truncate">{{ fmt.dayLabel(booking.startsAt.slice(0, 10)) }} · {{ fmt.localClock(booking.startsAt) }} · {{ booking.court.name }}</span>
+                          <fs-status-chip [value]="chip(booking)" />
+                        </a>
+                      }
+                    }
+                    <p class="whitespace-pre-wrap break-words px-3.5 py-2 text-left"
+                      [class]="(message.fromYou ? 'bg-ink text-ink-fg rounded-2xl' : 'bg-surface border border-border rounded-2xl')
+                        + (message.fromYou ? (joined ? ' rounded-tr-md' : '') + (last ? '' : ' rounded-br-md') : (joined ? ' rounded-tl-md' : '') + (last ? '' : ' rounded-bl-md'))">{{ message.body }}</p>
+                    @if (last) {
+                      <p class="tabular mt-1 px-1 text-xs text-subtle">
+                        {{ time(message) }}@if (message.id === seenId()) { · Seen }
+                      </p>
+                    }
+                  </div>
+                </div>
+              }
+            }
+          }
+        </div>
+      </div>
+
+      <form class="shrink-0 border-t border-border bg-surface px-3 py-3 lg:px-6" (submit)="$event.preventDefault(); send()">
+        @if (sendError(); as message) {
+          <p class="mb-2 text-sm text-danger" role="alert">{{ message }}</p>
+        }
+        <div class="flex items-end gap-2">
+          <label for="reply" class="sr-only">Message {{ title() }}</label>
+          <textarea id="reply" rows="1" maxlength="2000" [value]="draft()" (input)="typed($any($event.target).value)" (keydown)="keydown($event)"
+            placeholder="Message {{ title() }}"
+            class="max-h-40 min-h-11 flex-1 resize-none rounded-xl border border-border bg-surface px-3 py-2.5 text-base [field-sizing:content]"></textarea>
+          <button type="submit" [disabled]="sending()" aria-label="Send"
+            class="grid size-11 shrink-0 place-items-center rounded-xl bg-ink text-ink-fg hover:opacity-90 disabled:opacity-60">
+            <lucide-icon [img]="icons.SendHorizontal" [size]="20" />
+          </button>
+        </div>
+        <p class="mt-1.5 hidden text-xs text-subtle lg:block">Enter to send, Shift + Enter for a new line.</p>
+      </form>
+    } @else {
+      <div class="m-auto max-w-xs px-6 text-center">
+        <lucide-icon [img]="icons.MessageSquare" [size]="28" class="mx-auto text-subtle" />
+        <p class="mt-3 text-muted">Pick a conversation to read it.</p>
+      </div>
+    }
+  </section>
+</div>

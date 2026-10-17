@@ -1,32 +1,35 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, OnDestroy, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { CircleCheck, Clock, LucideAngularModule, MapPin, Wallet } from 'lucide-angular';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { CircleCheck, Clock, LucideAngularModule, MapPin, MessageSquare, Wallet } from 'lucide-angular';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
-import { Booking, BookingPayments, PaymentClaim, VenueDetail } from '../../core/api.types';
+import { Booking, BookingPayments, PaymentClaim, Review, ReviewWrite, VenueDetail } from '../../core/api.types';
 import { bookingChip, cancellable, cancelOutcome } from '../../shared/booking-model';
 import { clockAt, dayLabel, localClock, methodLabel, rupees } from '../../shared/format';
 import { PayForm } from '../../shared/pay-form';
+import { ReviewForm } from '../../shared/review-form';
 import { StatusChip } from '../../shared/status-chip';
 
 /** One booking: when and where, paying the advance, the money so far, and cancelling. */
 @Component({
   selector: 'fs-booking',
-  imports: [FormsModule, RouterLink, LucideAngularModule, PayForm, StatusChip],
+  imports: [FormsModule, RouterLink, LucideAngularModule, PayForm, ReviewForm, StatusChip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './booking.html',
 })
 export class BookingPage implements OnDestroy {
   private readonly api = inject(Api);
 
+  private readonly route = inject(ActivatedRoute);
+
   readonly id = input.required<string>();
 
   /** Set when the player has just booked it. */
   readonly booked = input<string | undefined>();
 
-  protected readonly icons = { CircleCheck, Clock, MapPin, Wallet };
+  protected readonly icons = { CircleCheck, Clock, MapPin, MessageSquare, Wallet };
 
   protected readonly fmt = { rupees, localClock, dayLabel, methodLabel, clockAt };
 
@@ -49,6 +52,15 @@ export class BookingPage implements OnDestroy {
   protected readonly cancelError = signal<string | null>(null);
 
   protected readonly reason = signal('');
+
+  /** The player's review of this game; undefined until looked up, null when there's none. */
+  protected readonly review = signal<Review | null | undefined>(undefined);
+
+  protected readonly editingReview = signal(false);
+
+  protected readonly reviewBusy = signal(false);
+
+  protected readonly reviewError = signal<string | null>(null);
 
   /** Ticks every 30 seconds, so the time left to pay and the cancel fee stay current. */
   protected readonly now = signal(new Date());
@@ -141,6 +153,58 @@ export class BookingPage implements OnDestroy {
     }
   }
 
+  protected async saveReview(write: ReviewWrite): Promise<void> {
+    const booking = this.booking();
+    if (!booking || this.reviewBusy()) {
+      return;
+    }
+    this.reviewBusy.set(true);
+    this.reviewError.set(null);
+    try {
+      this.review.set(await this.api.writeReview(booking.id, write, !!this.review()));
+      this.editingReview.set(false);
+    }
+    catch (error) {
+      this.reviewError.set(problemOf(error).message);
+    }
+    finally {
+      this.reviewBusy.set(false);
+    }
+  }
+
+  protected async deleteReview(): Promise<void> {
+    const booking = this.booking();
+    if (!booking || this.reviewBusy()) {
+      return;
+    }
+    this.reviewBusy.set(true);
+    try {
+      await this.api.deleteReview(booking.id);
+      this.review.set(null);
+      this.editingReview.set(false);
+    }
+    catch (error) {
+      this.reviewError.set(problemOf(error).message);
+    }
+    finally {
+      this.reviewBusy.set(false);
+    }
+  }
+
+  private async loadReview(id: string): Promise<void> {
+    try {
+      this.review.set(await this.api.bookingReview(id));
+    }
+    catch (error) {
+      if (problemOf(error).code === 'REVIEW_NOT_FOUND') {
+        this.review.set(null);
+      }
+    }
+    if (this.route.snapshot.fragment === 'review') {
+      queueMicrotask(() => document.getElementById('review')?.scrollIntoView({ block: 'start' }));
+    }
+  }
+
   private async load(id: string): Promise<void> {
     this.error.set(null);
     try {
@@ -148,6 +212,9 @@ export class BookingPage implements OnDestroy {
       this.booking.set(booking);
       this.payments.set(payments);
       this.now.set(new Date());
+      if (booking.status === 'COMPLETED' && this.review() === undefined) {
+        void this.loadReview(booking.id);
+      }
       if (this.venue()?.id !== booking.venue.id) {
         this.venue.set(await this.api.venue(booking.venue.slug));
       }

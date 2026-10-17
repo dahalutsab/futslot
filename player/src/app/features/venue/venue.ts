@@ -1,13 +1,18 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, MapPin, Phone, Star } from 'lucide-angular';
+import { Heart, LucideAngularModule, MapPin, MessageSquare, Phone, Star } from 'lucide-angular';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
+import { Session } from '../../core/session';
 import { Availability, CourtSlots, RatingSummary, Review, Slot, VenueDetail } from '../../core/api.types';
 import { hoursLabel, policyLines, WEEK } from '../../shared/booking-model';
 import { addDays, ago, dayLabel, localClock, phone, rupees, today } from '../../shared/format';
+
+function slotKey(courtId: string, startsAt: string): string {
+  return `${courtId}@${Date.parse(startsAt)}`;
+}
 
 /** How many days the day strip offers, at most. */
 const DAYS_SHOWN = 14;
@@ -26,12 +31,14 @@ export class VenuePage {
 
   private readonly title = inject(Title);
 
+  protected readonly session = inject(Session);
+
   readonly slug = input.required<string>();
 
   /** YYYY-MM-DD from the address, so a shared link opens the same day. */
   readonly date = input<string | undefined>();
 
-  protected readonly icons = { MapPin, Phone, Star };
+  protected readonly icons = { Heart, MapPin, MessageSquare, Phone, Star };
 
   protected readonly fmt = { rupees, localClock, dayLabel, phone, ago };
 
@@ -48,6 +55,16 @@ export class VenuePage {
   protected readonly slotsError = signal<string | null>(null);
 
   protected readonly photo = signal(0);
+
+  protected readonly saved = signal(false);
+
+  /** Booked slots the player chose to wait for here, by court and start. */
+  protected readonly waiting = signal<Set<string>>(new Set());
+
+  /** The booked slot whose "wait for it" choice is open. */
+  protected readonly asking = signal<string | null>(null);
+
+  protected readonly waitNote = signal<{ key: string; text: string; ok: boolean } | null>(null);
 
   protected readonly days = computed(() => {
     const venue = this.venue();
@@ -115,6 +132,54 @@ export class VenuePage {
     void this.router.navigate(['/venues', this.slug(), 'book'], { queryParams: { court: court.courtId, start: slot.startsAt } });
   }
 
+  /** By instant, since the waitlist and availability may write the same start with different offsets. */
+  protected key(court: CourtSlots, slot: Slot): string {
+    return slotKey(court.courtId, slot.startsAt);
+  }
+
+  protected async toggleSaved(): Promise<void> {
+    const venue = this.venue();
+    if (!venue) {
+      return;
+    }
+    if (!this.session.signedIn()) {
+      void this.router.navigate(['/login'], { queryParams: { next: this.router.url } });
+      return;
+    }
+    const on = !this.saved();
+    this.saved.set(on);
+    try {
+      await this.api.favourite(venue.id, on);
+    }
+    catch {
+      this.saved.set(!on);
+    }
+  }
+
+  protected message(): void {
+    const venue = this.venue();
+    if (venue) {
+      void this.router.navigate(['/messages'], { queryParams: { venue: venue.id, name: venue.name } });
+    }
+  }
+
+  protected async wait(court: CourtSlots, slot: Slot): Promise<void> {
+    const key = this.key(court, slot);
+    if (!this.session.signedIn()) {
+      void this.router.navigate(['/login'], { queryParams: { next: this.router.url } });
+      return;
+    }
+    try {
+      await this.api.joinWaitlist(court.courtId, slot.startsAt);
+      this.waiting.update((set) => new Set(set).add(key));
+      this.waitNote.set({ key, ok: true, text: "We'll tell you if it frees up." });
+    }
+    catch (error) {
+      this.waitNote.set({ key, ok: false, text: problemOf(error).message });
+    }
+    this.asking.set(null);
+  }
+
   protected stars(rating: number): string {
     return '★'.repeat(rating) + '☆'.repeat(5 - rating);
   }
@@ -129,6 +194,12 @@ export class VenuePage {
       const [rating, reviews] = await Promise.all([this.api.ratingSummary(slug), this.api.reviews(slug)]);
       this.rating.set(rating);
       this.reviews.set(reviews.content);
+      if (this.session.signedIn()) {
+        const [favourites, waitlist] = await Promise.all([this.api.favourites(), this.api.waitlist()]);
+        this.saved.set(favourites.some((f) => f.id === venue.id));
+        this.waiting.set(new Set(waitlist.filter((w) => w.venueId === venue.id && (w.status === 'WAITING' || w.status === 'NOTIFIED'))
+          .map((w) => slotKey(w.courtId, w.startsAt))));
+      }
     }
     catch (error) {
       if (!this.venue()) {

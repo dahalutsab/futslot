@@ -48,6 +48,36 @@ export const routes: Routes = [
         loadComponent: () => import('./features/deposit/deposit').then((m) => m.DepositPage),
       },
       {
+        path: 'messages',
+        title: 'Messages · FutSlot',
+        canActivate: [signedIn],
+        loadComponent: () => import('./features/messages/messages').then((m) => m.Messages),
+      },
+      {
+        path: 'notifications',
+        title: 'Notifications · FutSlot',
+        canActivate: [signedIn],
+        loadComponent: () => import('./features/notifications/notifications').then((m) => m.Notifications),
+      },
+      {
+        path: 'favourites',
+        title: 'Saved venues · FutSlot',
+        canActivate: [signedIn],
+        loadComponent: () => import('./features/favourites/favourites').then((m) => m.Favourites),
+      },
+      {
+        path: 'reviews',
+        title: 'Reviews · FutSlot',
+        canActivate: [signedIn],
+        loadComponent: () => import('./features/reviews/reviews').then((m) => m.Reviews),
+      },
+      {
+        path: 'waitlist',
+        title: 'Waitlist · FutSlot',
+        canActivate: [signedIn],
+        loadComponent: () => import('./features/waitlist/waitlist').then((m) => m.Waitlist),
+      },
+      {
         path: 'me',
         title: 'Me · FutSlot',
         canActivate: [signedIn],

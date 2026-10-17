@@ -25,7 +25,19 @@
 
   <div class="mx-auto max-w-6xl px-4 py-5 lg:grid lg:grid-cols-[1fr_340px] lg:gap-10 lg:px-8">
     <div class="min-w-0">
-      <h1 class="text-2xl font-semibold tracking-tight lg:text-3xl">{{ v.name }}</h1>
+      <div class="flex items-start gap-3">
+        <h1 class="min-w-0 flex-1 text-2xl font-semibold tracking-tight lg:text-3xl">{{ v.name }}</h1>
+        <button type="button" (click)="toggleSaved()" [attr.aria-pressed]="saved()"
+          class="flex h-11 shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">
+          <lucide-icon [img]="icons.Heart" [size]="16" [class]="saved() ? 'fill-current text-noshow-line' : ''" />{{ saved() ? 'Saved' : 'Save' }}
+        </button>
+        @if (session.signedIn()) {
+          <button type="button" (click)="message()"
+            class="flex h-11 shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">
+            <lucide-icon [img]="icons.MessageSquare" [size]="16" /><span class="sr-only sm:not-sr-only">Message</span>
+          </button>
+        }
+      </div>
       <p class="mt-1 flex items-center gap-1 text-muted">
         <lucide-icon [img]="icons.MapPin" [size]="16" />{{ v.addressLine }}{{ v.area ? ', ' + v.area : '' }}, {{ v.city }}
       </p>
@@ -86,15 +98,40 @@
                           <span class="tabular font-medium">{{ fmt.localClock(slot.startsAt) }}</span>
                           <span class="tabular text-xs text-muted">{{ fmt.rupees(slot.price) }}</span>
                         </button>
+                      } @else if (slot.status === 'BOOKED') {
+                        @let k = key(court, slot);
+                        @if (waiting().has(k)) {
+                          <div class="flex h-16 w-full flex-col items-center justify-center rounded-lg border border-dashed border-held-line bg-held-bg text-held-fg">
+                            <span class="tabular font-medium">{{ fmt.localClock(slot.startsAt) }}</span>
+                            <span class="text-xs">Waiting</span>
+                          </div>
+                        } @else if (asking() === k) {
+                          <button type="button" (click)="wait(court, slot)"
+                            class="flex h-16 w-full flex-col items-center justify-center rounded-lg bg-ink text-ink-fg">
+                            <span class="text-sm font-medium">Wait for it</span>
+                            <span class="text-xs opacity-80">Tell me if it frees up</span>
+                          </button>
+                        } @else {
+                          <button type="button" (click)="asking.set(k)" [attr.aria-label]="fmt.localClock(slot.startsAt) + ' is booked. Wait for it?'"
+                            class="flex h-16 w-full flex-col items-center justify-center rounded-lg bg-surface-2 text-subtle hover:text-muted">
+                            <span class="tabular font-medium line-through decoration-1">{{ fmt.localClock(slot.startsAt) }}</span>
+                            <span class="text-xs">Booked</span>
+                          </button>
+                        }
                       } @else {
                         <div class="flex h-16 w-full flex-col items-center justify-center rounded-lg bg-surface-2 text-subtle">
                           <span class="tabular font-medium line-through decoration-1">{{ fmt.localClock(slot.startsAt) }}</span>
-                          <span class="text-xs">{{ slot.status === 'BLOCKED' ? 'Closed' : 'Booked' }}</span>
+                          <span class="text-xs">Closed</span>
                         </div>
                       }
                     </li>
                   }
                 </ul>
+                @if (waitNote(); as note) {
+                  @if (note.key.startsWith(court.courtId)) {
+                    <p class="mt-2 text-sm" [class]="note.ok ? 'text-confirmed-fg' : 'text-danger'" role="status">{{ note.text }}</p>
+                  }
+                }
               }
             </div>
           }

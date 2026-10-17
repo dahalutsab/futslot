@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ChevronRight, LogOut, LucideAngularModule, LucideIconData, Monitor, Moon, Sun, Wallet } from 'lucide-angular';
+import { ChevronRight, Heart, Hourglass, LogOut, LucideAngularModule, LucideIconData, Monitor, Moon, Star, Sun, Wallet } from 'lucide-angular';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -100,6 +100,9 @@ export class Me {
 
   protected readonly links: Link[] = [
     { path: '/deposit', label: 'Booking deposit', detail: 'Top up or take it back', icon: Wallet },
+    { path: '/favourites', label: 'Saved venues', detail: 'Venues you like, to book again', icon: Heart },
+    { path: '/reviews', label: 'Reviews', detail: 'Rate the venues you played at', icon: Star },
+    { path: '/waitlist', label: 'Waitlist', detail: 'Booked slots you want if they free up', icon: Hourglass },
   ];
 
   protected readonly languages: { value: 'en' | 'ne'; label: string }[] = [
