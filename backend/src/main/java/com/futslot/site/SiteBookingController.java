@@ -34,6 +34,7 @@ import com.futslot.booking.PlayerBookingRequest;
 import com.futslot.booking.QuoteResponse;
 import com.futslot.common.ApiException;
 import com.futslot.deposit.DepositService;
+import com.futslot.deposit.DepositViews;
 import com.futslot.payment.PaymentMethod;
 import com.futslot.payment.PlayerPayments;
 import com.futslot.slot.AvailabilityResponse;
@@ -58,6 +59,10 @@ class SiteBookingController {
 	private static final List<BookPage.Method> METHODS = List.of(new BookPage.Method("ESEWA", "eSewa"),
 			new BookPage.Method("KHALTI", "Khalti"), new BookPage.Method("FONEPAY", "Fonepay"),
 			new BookPage.Method("BANK_TRANSFER", "Bank transfer"));
+
+	/** Where FutSlot can send a deposit back. */
+	private static final List<BookPage.Method> SEND_METHODS = List.of(new BookPage.Method("ESEWA", "eSewa"),
+			new BookPage.Method("KHALTI", "Khalti"), new BookPage.Method("BANK_TRANSFER", "Bank account"));
 
 	private final VenueSiteRepository sites;
 
@@ -254,13 +259,58 @@ class SiteBookingController {
 		}
 	}
 
+	/** Taking the deposit back: FutSlot sends it a few days later. */
+	@PostMapping("/sites/{subdomain}/deposit/withdraw")
+	String withdraw(@PathVariable String subdomain, @RequestParam String method, @RequestParam String sendTo,
+			HttpServletRequest request, Model model) {
+		Context context = context(subdomain, request);
+		UUID player = this.session.player(request).orElse(null);
+		if (player == null) {
+			return "redirect:" + context.base() + "/";
+		}
+		try {
+			if (!StringUtils.hasText(sendTo) || sendTo.strip().length() > 200) {
+				throw new IllegalArgumentException();
+			}
+			this.deposits.requestWithdrawal(player, PaymentMethod.valueOf(method), sendTo);
+			return "redirect:" + context.base() + "/deposit";
+		}
+		catch (ApiException | IllegalArgumentException ex) {
+			String message = (ex instanceof ApiException api) ? api.getMessage()
+					: "Choose where to send it, and give the number or account.";
+			return renderDeposit(model, context, player, null, null, message, null);
+		}
+	}
+
+	@PostMapping("/sites/{subdomain}/deposit/withdrawals/{withdrawalId}/cancel")
+	String keepDeposit(@PathVariable String subdomain, @PathVariable UUID withdrawalId, HttpServletRequest request,
+			Model model) {
+		Context context = context(subdomain, request);
+		UUID player = this.session.player(request).orElse(null);
+		if (player == null) {
+			return "redirect:" + context.base() + "/";
+		}
+		try {
+			this.deposits.cancelWithdrawal(player, withdrawalId);
+			return "redirect:" + context.base() + "/deposit";
+		}
+		catch (ApiException ex) {
+			return renderDeposit(model, context, player, null, null, ex.getMessage(), null);
+		}
+	}
+
 	private String renderDeposit(Model model, Context context, UUID player, String court, String start, String error,
 			String notice) {
-		BigDecimal toAdd = this.deposits.toAdd(player);
+		DepositViews.Deposit mine = this.deposits.forPlayer(player);
+		BigDecimal toAdd = mine.toAdd();
+		DepositViews.Withdrawal open = mine.withdrawal();
+		BookPage.Withdrawal withdrawal = (open != null) ? new BookPage.Withdrawal(open.id().toString(),
+				SiteFormat.rupees(open.amount()), label(SEND_METHODS, open.method().name()), open.sendTo(),
+				SiteFormat.day(open.dueAt().atZone(ZoneId.of(context.venue().timezone())).toLocalDate())) : null;
 		BookPage.Deposit deposit = new BookPage.Deposit(SiteFormat.rupees(DepositService.AMOUNT),
-				SiteFormat.rupees(DepositService.AMOUNT.subtract(toAdd)),
-				(toAdd.signum() > 0) ? SiteFormat.rupees(toAdd) : null, toAdd.toPlainString(),
-				this.payments.depositTopUpBeingChecked(player), this.futslotPaymentInstructions, METHODS,
+				SiteFormat.rupees(mine.balance()), (toAdd.signum() > 0) ? SiteFormat.rupees(toAdd) : null,
+				toAdd.toPlainString(), this.payments.depositTopUpBeingChecked(player), this.futslotPaymentInstructions,
+				METHODS, withdrawal, open == null && mine.balance().signum() > 0, SEND_METHODS,
 				StringUtils.hasText(court) ? court : null, StringUtils.hasText(start) ? start : null);
 		model.addAttribute("book", new BookPage(context.site(), "deposit", null, null, false, error, notice, true, null,
 				List.of(), deposit));
@@ -399,6 +449,10 @@ class SiteBookingController {
 						: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
 				color, SiteFormat.inkOn(color), SiteFormat.readableOn(color, dark ? "#131715" : "#ffffff"), base);
 		return new Context(view, venue, slug, base);
+	}
+
+	private static String label(List<BookPage.Method> methods, String value) {
+		return methods.stream().filter(m -> m.value().equals(value)).map(BookPage.Method::label).findFirst().orElse(value);
 	}
 
 	private static String encode(String value) {

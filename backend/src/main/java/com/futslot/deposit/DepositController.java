@@ -60,7 +60,7 @@ class DepositController {
 	@ResponseStatus(HttpStatus.CREATED)
 	DepositViews.Withdrawal withdraw(@AuthenticationPrincipal Jwt jwt,
 			@Valid @RequestBody DepositRequests.Withdraw request) {
-		return this.deposits.requestWithdrawal(CurrentUser.id(jwt), request);
+		return this.deposits.requestWithdrawal(CurrentUser.id(jwt), request.method(), request.sendTo());
 	}
 
 	@PostMapping("/me/deposit/withdrawals/{withdrawalId}/cancel")

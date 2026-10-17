@@ -156,7 +156,7 @@ public class DepositService {
 	// Players
 
 	@Transactional(readOnly = true)
-	DepositViews.Deposit forPlayer(UUID userId) {
+	public DepositViews.Deposit forPlayer(UUID userId) {
 		BigDecimal balance = balanceOf(userId);
 		DepositViews.Withdrawal open = this.withdrawals.findByUserIdAndStatus(userId, WithdrawalStatus.REQUESTED)
 			.map(w -> DepositViews.Withdrawal.from(w, null, null))
@@ -169,10 +169,13 @@ public class DepositService {
 				open, history);
 	}
 
-	/** Takes the whole balance out now; FutSlot sends it once the wait is over. */
+	/**
+	 * Takes the whole balance out now; FutSlot sends it to {@code sendTo} (a wallet number or bank account) once
+	 * the wait is over.
+	 */
 	@Transactional
-	DepositViews.Withdrawal requestWithdrawal(UUID userId, DepositRequests.Withdraw request) {
-		if (!SEND_METHODS.contains(request.method())) {
+	public DepositViews.Withdrawal requestWithdrawal(UUID userId, PaymentMethod method, String sendTo) {
+		if (!SEND_METHODS.contains(method)) {
 			throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_METHOD", "Choose eSewa, Khalti or bank transfer");
 		}
 		DepositWallet wallet = this.wallets.lock(userId).orElse(null);
@@ -187,14 +190,14 @@ public class DepositService {
 			throw new ApiException(HttpStatus.CONFLICT, "DEPOSIT_IN_USE",
 					"Your deposit covers bookings you haven't played yet. You can take it back once they're played or cancelled");
 		}
-		Withdrawal withdrawal = this.withdrawals.save(new Withdrawal(userId, wallet.getBalance(), request.method(),
-				request.sendTo().strip(), this.clock.instant().plus(WITHDRAWAL_WAIT)));
+		Withdrawal withdrawal = this.withdrawals.save(new Withdrawal(userId, wallet.getBalance(), method,
+				sendTo.strip(), this.clock.instant().plus(WITHDRAWAL_WAIT)));
 		this.entries.save(DepositEntry.withdrawal(wallet, withdrawal));
 		return DepositViews.Withdrawal.from(withdrawal, null, null);
 	}
 
 	@Transactional
-	DepositViews.Withdrawal cancelWithdrawal(UUID userId, UUID withdrawalId) {
+	public DepositViews.Withdrawal cancelWithdrawal(UUID userId, UUID withdrawalId) {
 		DepositWallet wallet = this.wallets.lock(userId).orElseThrow(DepositService::withdrawalNotFound);
 		Withdrawal withdrawal = this.withdrawals.findByIdAndUserId(withdrawalId, userId)
 			.orElseThrow(DepositService::withdrawalNotFound);

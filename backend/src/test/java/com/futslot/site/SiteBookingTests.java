@@ -156,6 +156,73 @@ class SiteBookingTests {
 	}
 
 	@Test
+	void playersTopUpAndTakeBackTheirDepositOnAVenuesSite() throws Exception {
+		TestUser owner = this.users.signUp("Deposit Site Owner");
+		TestVenue venue = this.venues.active(owner, "Deposit Site Futsal");
+		ownerSends(owner, put("/api/v1/owner/venues/" + venue.id() + "/policy"),
+				"{\"advancePercent\":0,\"bookingHoldMinutes\":15,\"cancellationTiers\":[{\"withinHours\":12,\"feePercent\":50}],\"maxAdvanceBookingDays\":30,\"depositRequired\":true}");
+		ownerSends(owner, put("/api/v1/owner/venues/" + venue.id() + "/site"), "{\"template\":\"FLOODLIGHT\",\"subdomain\":\"depositsite\"}");
+		ownerSends(owner, post("/api/v1/owner/venues/" + venue.id() + "/site/publish"), null);
+		TestUser account = this.users.signUp("Deposit Site Player");
+		MockHttpServletResponse signedIn = new MockHttpServletResponse();
+		this.siteSession.signIn(account.id(), new MockHttpServletRequest(), signedIn);
+		Cookie player = signedIn.getCookie(SiteSession.COOKIE);
+
+		String availability = this.mvc.perform(get("/api/v1/venues/" + venue.slug() + "/availability").param("date", TOMORROW.toString()))
+			.andReturn().getResponse().getContentAsString();
+		String start = JsonPath.<List<String>>read(availability, "$.courts[0].slots[?(@.status == 'AVAILABLE')].startsAt").getFirst();
+		String court = venue.courtId().toString();
+		String site = "/sites/depositsite";
+
+		// The venue needs the deposit, so the player tops it up first
+		this.mvc.perform(get(site + "/book").param("court", court).param("start", start).cookie(player))
+			.andExpect(content().string(containsString("Add your booking deposit first")))
+			.andExpect(content().string(not(containsString("Book this slot?"))));
+		this.mvc.perform(get(site + "/deposit").param("court", court).param("start", start).cookie(player))
+			.andExpect(content().string(containsString("Send Rs 1,000 to FutSlot")))
+			.andExpect(content().string(not(containsString("Take your deposit back"))));
+		String transaction = "DEP-SITE-" + UUID.randomUUID();
+		this.mvc.perform(post(site + "/deposit").cookie(player).param("method", "ESEWA").param("transactionId", transaction)
+				.param("amount", "1000").param("court", court).param("start", start))
+			.andExpect(redirectedUrlPattern(site + "/deposit?sent=1&court=*"));
+		this.mvc.perform(get(site + "/deposit").cookie(player))
+			.andExpect(content().string(containsString("Top-up sent")));
+		TestUser admin = this.users.signUpAdmin("Deposit Site Admin");
+		String paymentId = JsonPath.<List<String>>read(ownerSends(admin, get("/api/v1/admin/payments/pending"), null),
+				"$[?(@.transactionId == '%s')].id".formatted(transaction)).getFirst();
+		ownerSends(admin, post("/api/v1/admin/payments/" + paymentId + "/approve"), null);
+
+		// Full: they can book, and can't take it back while that game is still to come
+		String location = this.mvc.perform(post(site + "/book/confirm").param("court", court).param("start", start).cookie(player))
+			.andExpect(redirectedUrlPattern(site + "/bookings/*"))
+			.andReturn().getResponse().getRedirectedUrl();
+		this.mvc.perform(post(site + "/deposit/withdraw").cookie(player).param("method", "ESEWA").param("sendTo", "9800000009"))
+			.andExpect(content().string(containsString("role=\"alert\"")))
+			.andExpect(content().string(containsString("bookings you haven")));
+		ownerSends(account, post("/api/v1/bookings/" + location.substring(location.lastIndexOf('/') + 1) + "/cancel"), "{}");
+
+		this.mvc.perform(post(site + "/deposit/withdraw").cookie(player).param("method", "ESEWA").param("sendTo", " "))
+			.andExpect(content().string(containsString("role=\"alert\"")));
+		this.mvc.perform(post(site + "/deposit/withdraw").cookie(player).param("method", "ESEWA").param("sendTo", "9800000009"))
+			.andExpect(redirectedUrl(site + "/deposit"));
+		this.mvc.perform(get(site + "/deposit").cookie(player))
+			.andExpect(content().string(containsString("Rs 1,000 is coming back to you")))
+			.andExpect(content().string(containsString("eSewa 9800000009")))
+			.andExpect(content().string(not(containsString("Send Rs 1,000 to FutSlot"))))
+			.andExpect(content().string(not(containsString("Take your deposit back"))));
+
+		// Changed their mind
+		String withdrawalId = JsonPath.read(ownerSends(account, get("/api/v1/me/deposit"), null), "$.withdrawal.id");
+		this.mvc.perform(post(site + "/deposit/withdrawals/" + withdrawalId + "/cancel").cookie(player))
+			.andExpect(redirectedUrl(site + "/deposit"));
+		this.mvc.perform(get(site + "/deposit").cookie(player))
+			.andExpect(content().string(containsString("Take your deposit back")))
+			.andExpect(content().string(not(containsString("coming back to you"))));
+		this.mvc.perform(post(site + "/deposit/withdraw").param("method", "ESEWA").param("sendTo", "9800000009"))
+			.andExpect(redirectedUrl(site + "/"));
+	}
+
+	@Test
 	void bookingPagesWorkOnTheVenuesOwnAddress() throws Exception {
 		TestUser owner = this.users.signUp("Host Booking Owner");
 		TestVenue venue = this.venues.active(owner, "Host Booking Futsal");
@@ -166,6 +233,10 @@ class SiteBookingTests {
 		this.mvc.perform(post("http://hostbook.localhost/book/confirm")).andExpect(forwardedUrl("/sites/hostbook/book/confirm"));
 		this.mvc.perform(post("http://hostbook.localhost/sign-out")).andExpect(forwardedUrl("/sites/hostbook/sign-out"));
 		this.mvc.perform(get("http://hostbook.localhost/bookings")).andExpect(forwardedUrl("/sites/hostbook/bookings"));
+		this.mvc.perform(get("http://hostbook.localhost/deposit")).andExpect(forwardedUrl("/sites/hostbook/deposit"));
+		this.mvc.perform(post("http://hostbook.localhost/deposit/withdraw")).andExpect(forwardedUrl("/sites/hostbook/deposit/withdraw"));
+		String withdrawal = "/deposit/withdrawals/" + UUID.randomUUID() + "/cancel";
+		this.mvc.perform(post("http://hostbook.localhost" + withdrawal)).andExpect(forwardedUrl("/sites/hostbook" + withdrawal));
 		this.mvc.perform(post("http://hostbook.localhost/")).andExpect(status().isNotFound());
 		this.mvc.perform(post("http://hostbook.localhost/api/v1/bookings")).andExpect(status().isNotFound());
 	}

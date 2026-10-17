@@ -56,3 +56,4 @@
 .book-row-time { font-size: 18px; }
 .book-row .book-status { margin: 0; text-align: center; }
 .book-deposit-note { margin: 12px 0 0; font-size: 14px; }
+.book-secondary { border-color: var(--line); background: transparent; color: inherit; }

@@ -24,7 +24,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 class SiteHostFilter extends OncePerRequestFilter {
 
-	private static final Pattern BOOKING = Pattern.compile("/book(/code|/verify|/confirm)?|/bookings(/[0-9a-f-]{36}(/pay)?)?|/sign-out");
+	private static final Pattern BOOKING = Pattern.compile(
+			"/book(/code|/verify|/confirm)?|/bookings(/[0-9a-f-]{36}(/pay)?)?|/deposit(/withdraw|/withdrawals/[0-9a-f-]{36}/cancel)?|/sign-out");
 
 	private final VenueSiteRepository sites;
 
@@ -54,7 +55,7 @@ class SiteHostFilter extends OncePerRequestFilter {
 		if (reading && (path.isEmpty() || path.equals("/") || path.equals("/robots.txt") || path.equals("/sitemap.xml"))) {
 			target = site + (path.length() > 1 ? path : "");
 		}
-		// Booking: the slot, signing in and confirming, then the booking itself (pages and their forms)
+		// Booking: the slot, signing in and confirming, the booking itself and the player's deposit (pages and their forms)
 		else if (BOOKING.matcher(path).matches()) {
 			target = site + path;
 		}
