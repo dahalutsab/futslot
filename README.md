@@ -9,6 +9,7 @@ Futsal booking platform: players find and book slots, venue owners manage courts
 | `backend/`   | Spring Boot API (Java 25, PostgreSQL, Flyway) |
 | `dashboard/` | Owner web dashboard                          |
 | `player/`    | Player web app                               |
+| `admin/`     | FutSlot admin web app                        |
 | `mobile/`    | Flutter player app                           |
 | `docs/api/`  | OpenAPI contract shared by all clients       |
 | `docs/db/`   | Database schema and ER diagrams              |
@@ -247,6 +248,12 @@ The web dashboard for venue owners and staff lives in `dashboard/` (Angular). Wi
 Players find venues, book and pay, and manage their bookings and booking deposit in `player/` (Angular),
 until the mobile app is built. With the API running: `cd player && npm install && npm start`, then open
 http://localhost:4300. See `player/README.md`.
+
+### Admin web app
+
+FutSlot staff approve venues, check payments to FutSlot, send deposits and payouts, and moderate reviews in
+`admin/` (Angular). With the API running: `cd admin && npm install && npm start`, then open
+http://localhost:4400 and sign in with an admin account (see Venue onboarding above for making one). See `admin/README.md`.
 
 ### API contract
 

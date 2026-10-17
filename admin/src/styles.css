@@ -1,0 +1,172 @@
+/*
+ * FutSlot admin design tokens, shared with the owner dashboard and player web: neutral surfaces and ink buttons,
+ * and each state has one colour used everywhere (see docs/design/admin-web.md). Components use these tokens
+ * through Tailwind classes (bg-surface, text-muted, bg-confirmed-bg...), never raw hex.
+ */
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource/noto-sans-devanagari/400.css";
+@import "@fontsource/noto-sans-devanagari/600.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: "Inter Variable", "Noto Sans Devanagari", ui-sans-serif, system-ui, sans-serif;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-subtle: var(--text-subtle);
+  --color-ink: var(--ink);
+  --color-ink-fg: var(--ink-fg);
+  --color-ring: var(--ring);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-brand: var(--brand);
+
+  /* Booking states: -bg fills, -line borders and accents, -fg text on the fill */
+  --color-confirmed-bg: var(--confirmed-bg);
+  --color-confirmed-line: var(--confirmed-line);
+  --color-confirmed-fg: var(--confirmed-fg);
+  --color-held-bg: var(--held-bg);
+  --color-held-line: var(--held-line);
+  --color-held-fg: var(--held-fg);
+  --color-verify-bg: var(--verify-bg);
+  --color-verify-line: var(--verify-line);
+  --color-verify-fg: var(--verify-fg);
+  --color-blocked-bg: var(--blocked-bg);
+  --color-blocked-line: var(--blocked-line);
+  --color-blocked-fg: var(--blocked-fg);
+  --color-tournament-bg: var(--tournament-bg);
+  --color-tournament-line: var(--tournament-line);
+  --color-tournament-fg: var(--tournament-fg);
+  --color-noshow-bg: var(--noshow-bg);
+  --color-noshow-line: var(--noshow-line);
+  --color-noshow-fg: var(--noshow-fg);
+
+}
+
+:root {
+  --bg: #f7f7f8;
+  --surface: #ffffff;
+  --surface-2: #f4f4f5;
+  --border: #e4e4e7;
+  --text: #18181b;
+  --text-muted: #52525b;
+  --text-subtle: #71717a;
+  --ink: #18181b;
+  --ink-fg: #ffffff;
+  --ring: #2563eb;
+  --danger: #b91c1c;
+  --danger-bg: #fef2f2;
+  --brand: #15803d;
+
+  --confirmed-bg: #ecfdf5;
+  --confirmed-line: #10b981;
+  --confirmed-fg: #065f46;
+  --held-bg: #fffbeb;
+  --held-line: #f59e0b;
+  --held-fg: #92400e;
+  --verify-bg: #f5f3ff;
+  --verify-line: #8b5cf6;
+  --verify-fg: #5b21b6;
+  --blocked-bg: #f4f4f5;
+  --blocked-line: #a1a1aa;
+  --blocked-fg: #3f3f46;
+  --tournament-bg: #f0f9ff;
+  --tournament-line: #0ea5e9;
+  --tournament-fg: #075985;
+  --noshow-bg: #fef2f2;
+  --noshow-line: #ef4444;
+  --noshow-fg: #991b1b;
+
+
+  color-scheme: light;
+}
+
+/* A cool, very dark grey rather than black, for long shifts */
+.dark {
+  --bg: #0f1012;
+  --surface: #17181b;
+  --surface-2: #1f2125;
+  --border: #2c2e33;
+  --text: #ececef;
+  --text-muted: #a1a1aa;
+  --text-subtle: #8b8b93;
+  --ink: #fafafa;
+  --ink-fg: #18181b;
+  --ring: #60a5fa;
+  --danger: #f87171;
+  --danger-bg: rgb(248 113 113 / 0.12);
+  --brand: #4ade80;
+
+  --confirmed-bg: rgb(16 185 129 / 0.14);
+  --confirmed-line: #34d399;
+  --confirmed-fg: #6ee7b7;
+  --held-bg: rgb(245 158 11 / 0.14);
+  --held-line: #fbbf24;
+  --held-fg: #fcd34d;
+  --verify-bg: rgb(139 92 246 / 0.16);
+  --verify-line: #a78bfa;
+  --verify-fg: #c4b5fd;
+  --blocked-bg: rgb(161 161 170 / 0.12);
+  --blocked-line: #71717a;
+  --blocked-fg: #d4d4d8;
+  --tournament-bg: rgb(14 165 233 / 0.14);
+  --tournament-line: #38bdf8;
+  --tournament-fg: #7dd3fc;
+  --noshow-bg: rgb(239 68 68 / 0.14);
+  --noshow-line: #f87171;
+  --noshow-fg: #fca5a5;
+
+
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-bg text-text font-sans antialiased;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  @media (min-width: 1024px) {
+    body {
+      font-size: 14px;
+    }
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  button,
+  [role="button"],
+  a {
+    touch-action: manipulation;
+  }
+}
+
+@layer utilities {
+  /* Money, times and counts line up and don't jiggle as they change */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
