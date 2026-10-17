@@ -2,6 +2,7 @@ package com.futslot.booking;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -78,6 +79,8 @@ interface BookingRepository extends JpaRepository<Booking, UUID> {
 		BigDecimal getAmount();
 
 	}
+
+	boolean existsByBookedByUserIdAndDepositBackedTrueAndStatusIn(UUID userId, Collection<BookingStatus> statuses);
 
 	@Query("""
 			select count(b) from Booking b

@@ -68,6 +68,13 @@ export function dayLabel(day: string): string {
     .format(new Date(Date.UTC(y, m - 1, d)));
 }
 
+/** "September 2026" for a YYYY-MM-DD in that month. */
+export function monthLabel(day: string): string {
+  const [y, m] = day.split('-').map(Number);
+  return new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+    .format(new Date(Date.UTC(y, m - 1, 1)));
+}
+
 const METHOD_LABELS: Record<string, string> = {
   CASH: 'Cash',
   ESEWA: 'eSewa',

@@ -19,11 +19,13 @@ import jakarta.validation.constraints.Size;
  * @param strikeLimit late cancellations and no-shows within {@link #STRIKE_WINDOW} after which a player pays
  * {@code strikeAdvancePercent} up front; both null when the venue doesn't use strikes
  * @param strikeAdvancePercent the advance for players at the strike limit, if higher than the usual one
+ * @param depositRequired players need a full FutSlot booking deposit to book in the app or on the website; late
+ * cancellation and no-show fees their advance doesn't cover come out of it; never null, false when left out
  */
 public record VenuePolicy(@Min(0) @Max(100) int advancePercent, @Min(5) @Max(120) int bookingHoldMinutes,
 		@NotNull @Size(max = 6) List<@NotNull @Valid CancellationTier> cancellationTiers,
 		@Min(1) @Max(180) int maxAdvanceBookingDays, @Min(1) @Max(10) Integer strikeLimit,
-		@Min(1) @Max(100) Integer strikeAdvancePercent) {
+		@Min(1) @Max(100) Integer strikeAdvancePercent, Boolean depositRequired) {
 
 	/** How far back late cancellations and no-shows count as strikes. */
 	public static final Duration STRIKE_WINDOW = Duration.ofDays(90);
@@ -32,6 +34,7 @@ public record VenuePolicy(@Min(0) @Max(100) int advancePercent, @Min(5) @Max(120
 		cancellationTiers = (cancellationTiers != null) ? cancellationTiers.stream()
 			.sorted(Comparator.comparingInt(CancellationTier::withinHours).reversed())
 			.toList() : null;
+		depositRequired = Boolean.TRUE.equals(depositRequired);
 	}
 
 	/** The fee share for a player cancelling {@code notice} before the start; 0 when it's free. */
@@ -43,6 +46,11 @@ public record VenuePolicy(@Min(0) @Max(100) int advancePercent, @Min(5) @Max(120
 			}
 		}
 		return fee;
+	}
+
+	/** The fee for not showing up: the same as cancelling at the last minute, 0 without tiers. */
+	public int topFeePercent() {
+		return this.cancellationTiers.stream().mapToInt(CancellationTier::feePercent).max().orElse(0);
 	}
 
 	/** The share a player with {@code strikes} recent strikes pays up front. */

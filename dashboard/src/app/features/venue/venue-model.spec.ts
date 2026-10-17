@@ -33,23 +33,34 @@ describe('venue model', () => {
   });
 
   it('describes the booking rules in plain words', () => {
-    expect(policySummary({ advancePercent: 30, bookingHoldMinutes: 15, cancellationTiers: [{ withinHours: 24, feePercent: 100 }], maxAdvanceBookingDays: 30, strikeLimit: null, strikeAdvancePercent: null }))
+    expect(policySummary({ advancePercent: 30, bookingHoldMinutes: 15, cancellationTiers: [{ withinHours: 24, feePercent: 100 }], maxAdvanceBookingDays: 30, strikeLimit: null, strikeAdvancePercent: null, depositRequired: false }))
       .toEqual(['Players pay 30% up front to confirm. Unpaid bookings are released after 15 minutes.',
         'Cancelling 24 hours or more before the game is free.',
         "Cancelling later costs a share of the booking price: 100% within 24 hours. It's never more than the player has paid.",
         'If you cancel, players always get everything back.',
         'Players can book up to 30 days ahead.']);
-    expect(policySummary({ advancePercent: 0, bookingHoldMinutes: 15, cancellationTiers: [], maxAdvanceBookingDays: 7, strikeLimit: null, strikeAdvancePercent: null })[1])
+    expect(policySummary({ advancePercent: 0, bookingHoldMinutes: 15, cancellationTiers: [], maxAdvanceBookingDays: 7, strikeLimit: null, strikeAdvancePercent: null, depositRequired: false })[1])
       .toBe('Cancelling any time before the game is free.');
-    expect(policySummary({ advancePercent: 0, bookingHoldMinutes: 15, cancellationTiers: [{ withinHours: 10, feePercent: 60 }, { withinHours: 24, feePercent: 20 }, { withinHours: 12, feePercent: 50 }], maxAdvanceBookingDays: 7, strikeLimit: null, strikeAdvancePercent: null })[2])
+    expect(policySummary({ advancePercent: 0, bookingHoldMinutes: 15, cancellationTiers: [{ withinHours: 10, feePercent: 60 }, { withinHours: 24, feePercent: 20 }, { withinHours: 12, feePercent: 50 }], maxAdvanceBookingDays: 7, strikeLimit: null, strikeAdvancePercent: null, depositRequired: false })[2])
       .toBe("Cancelling later costs a share of the booking price: 20% within 24 hours, 50% within 12 hours and 60% within 10 hours. It's never more than the player has paid.");
   });
 
   it('mentions the strike rule only when it raises the advance', () => {
-    const policy = { advancePercent: 0, bookingHoldMinutes: 15, cancellationTiers: [], maxAdvanceBookingDays: 7, strikeLimit: 2, strikeAdvancePercent: 50 };
+    const policy = { advancePercent: 0, bookingHoldMinutes: 15, cancellationTiers: [], maxAdvanceBookingDays: 7, strikeLimit: 2, strikeAdvancePercent: 50, depositRequired: false };
     expect(policySummary(policy)).toContain('After 2 late cancellations or no-shows in 90 days, a player pays 50% up front to book.');
     expect(policySummary({ ...policy, strikeLimit: 1 })).toContain('After a late cancellation or no-show in 90 days, a player pays 50% up front to book.');
     expect(policySummary({ ...policy, advancePercent: 60 }).some((line) => line.startsWith('After'))).toBe(false);
+  });
+
+  it('explains what the deposit pays for when the venue requires it', () => {
+    const policy = { advancePercent: 30, bookingHoldMinutes: 15, cancellationTiers: [{ withinHours: 24, feePercent: 20 }, { withinHours: 6, feePercent: 80 }], maxAdvanceBookingDays: 30, strikeLimit: null, strikeAdvancePercent: null, depositRequired: true };
+    expect(policySummary(policy)).toContain(
+      'Cancelling later costs a share of the booking price: 20% within 24 hours and 80% within 6 hours. What the player has paid covers it first; their FutSlot deposit covers the rest.');
+    expect(policySummary(policy)).toContain(
+      'Players need a Rs 1,000 FutSlot booking deposit to book in the app or online. Not showing up costs 80% of the booking price, like cancelling at the last minute.');
+    expect(policySummary({ ...policy, cancellationTiers: [] })).toContain(
+      'Players need a Rs 1,000 FutSlot booking deposit to book in the app or online. With no cancellation fees, nothing is ever taken from it.');
+    expect(policySummary({ ...policy, depositRequired: false }).some((line) => line.includes('deposit'))).toBe(false);
   });
 
   it('checks cancellation fees the way the server does', () => {

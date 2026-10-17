@@ -29,8 +29,9 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /**
- * Money paid to a venue for a booking, a membership or a tournament entry, or by a venue to FutSlot for
- * a subscription or featured listing ({@code venueId} is then null: it isn't the venue's income). Today
+ * Money paid to a venue for a booking, a membership or a tournament entry, or to FutSlot: by a venue for a
+ * subscription or featured listing, or by a player into their booking deposit ({@code venueId} is then null: it
+ * isn't the venue's income). Today
  * money goes straight to the payee's own wallet/QR or cash, so FutSlot only records and verifies payments; {@code transactionId} is the wallet's transaction
  * id (unique per method, so the same receipt can't be claimed twice).
  */
@@ -192,6 +193,12 @@ public class Payment {
 		return payment;
 	}
 
+	/** A player sent FutSlot money for their booking deposit; an admin checks it. */
+	static Payment forDeposit(UUID payerUserId, BigDecimal amount, PaymentMethod method, String transactionId) {
+		return new Payment(PaymentPurpose.DEPOSIT, null, null, null, payerUserId, amount, method, transactionId,
+				TransactionStatus.PENDING);
+	}
+
 	void approve(UUID by, Instant at) {
 		this.status = TransactionStatus.SUCCEEDED;
 		this.recordedBy = by;
@@ -244,7 +251,8 @@ public class Payment {
 
 	/** Paid to FutSlot rather than to a venue. */
 	boolean isPlatform() {
-		return this.purpose == PaymentPurpose.SUBSCRIPTION || this.purpose == PaymentPurpose.FEATURED_LISTING;
+		return this.purpose == PaymentPurpose.SUBSCRIPTION || this.purpose == PaymentPurpose.FEATURED_LISTING
+				|| this.purpose == PaymentPurpose.DEPOSIT;
 	}
 
 	public UUID getVenueId() {

@@ -124,6 +124,9 @@ public class Booking {
 	@Column(nullable = false)
 	private int cancellationFeePercent;
 
+	@Column(nullable = false, updatable = false)
+	private boolean depositBacked;
+
 	@Column(updatable = false)
 	private UUID createdBy;
 
@@ -267,8 +270,15 @@ public class Booking {
 		this.endsAt = endsAt;
 	}
 
-	void markNoShow() {
+	/** The player booked a venue that requires the deposit, so fees on this booking may come from it. */
+	void backWithDeposit() {
+		this.depositBacked = true;
+	}
+
+	/** {@code feePercent}: the fee share for not showing up, charged to the deposit; 0 if there's none. */
+	void markNoShow(int feePercent) {
 		this.status = BookingStatus.NO_SHOW;
+		this.cancellationFeePercent = feePercent;
 	}
 
 	void markCompleted() {
@@ -377,6 +387,10 @@ public class Booking {
 
 	public int getCancellationFeePercent() {
 		return this.cancellationFeePercent;
+	}
+
+	public boolean isDepositBacked() {
+		return this.depositBacked;
 	}
 
 	public Instant getCreatedAt() {

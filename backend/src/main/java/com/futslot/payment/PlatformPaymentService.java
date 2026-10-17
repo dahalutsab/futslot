@@ -17,18 +17,20 @@ import com.futslot.billing.FeaturedService;
 import com.futslot.billing.SubscriptionInvoice;
 import com.futslot.billing.SubscriptionService;
 import com.futslot.common.ApiException;
+import com.futslot.deposit.DepositService;
+import com.futslot.user.UserService;
 
 /**
- * Venues paying FutSlot (subscription invoices, featured listings). Until a gateway is connected the venue
- * pays FutSlot's own wallet or account and reports the transaction; a FutSlot admin verifies it, or
- * records a payment taken another way. These payments have no venue_id, so they never show up as a
- * venue's income or in its payment queue.
+ * Payments to FutSlot: venues paying subscription invoices and featured listings, and players filling their
+ * booking deposit. Until a gateway is connected the payer pays FutSlot's own wallet or account and reports the
+ * transaction; a FutSlot admin verifies it, or records a payment taken another way. These payments have no
+ * venue_id, so they never show up as a venue's income or in its payment queue.
  */
 @Service
 class PlatformPaymentService {
 
 	private static final EnumSet<PaymentPurpose> PLATFORM = EnumSet.of(PaymentPurpose.SUBSCRIPTION,
-			PaymentPurpose.FEATURED_LISTING);
+			PaymentPurpose.FEATURED_LISTING, PaymentPurpose.DEPOSIT);
 
 	private final PaymentRepository payments;
 
@@ -38,16 +40,23 @@ class PlatformPaymentService {
 
 	private final FeaturedService featured;
 
+	private final DepositService deposits;
+
+	private final UserService users;
+
 	private final ApplicationEventPublisher events;
 
 	private final Clock clock;
 
 	PlatformPaymentService(PaymentRepository payments, PaymentService paymentService, SubscriptionService subscriptions,
-			FeaturedService featured, ApplicationEventPublisher events, Clock clock) {
+			FeaturedService featured, DepositService deposits, UserService users, ApplicationEventPublisher events,
+			Clock clock) {
 		this.payments = payments;
 		this.paymentService = paymentService;
 		this.subscriptions = subscriptions;
 		this.featured = featured;
+		this.deposits = deposits;
+		this.users = users;
 		this.events = events;
 		this.clock = clock;
 	}
@@ -78,6 +87,20 @@ class PlatformPaymentService {
 		return PaymentResponse.from(payment);
 	}
 
+	// Players
+
+	@Transactional
+	PaymentResponse claimDeposit(UUID userId, PaymentRequests.Claim request) {
+		if (this.payments.existsByPurposeAndPayerUserIdAndStatus(PaymentPurpose.DEPOSIT, userId,
+				TransactionStatus.PENDING)) {
+			throw alreadyPending();
+		}
+		requireClaimable(request, this.deposits.topUpDue(userId));
+		Payment payment = this.payments.save(Payment.forDeposit(userId, request.amount(), request.method(),
+				this.paymentService.uniqueTransactionId(request.method(), request.transactionId())));
+		return response(payment);
+	}
+
 	// Admins
 
 	@Transactional(readOnly = true)
@@ -92,7 +115,11 @@ class PlatformPaymentService {
 	PaymentResponse approve(UUID adminId, UUID paymentId) {
 		Payment payment = pendingPlatform(paymentId);
 		Instant now = this.clock.instant();
-		if (payment.getInvoice() != null) {
+		if (payment.getPurpose() == PaymentPurpose.DEPOSIT) {
+			payment.approve(adminId, now);
+			this.deposits.toppedUp(payment.getPayerUserId(), payment.getId(), payment.getAmount());
+		}
+		else if (payment.getInvoice() != null) {
 			SubscriptionInvoice invoice = this.subscriptions.openInvoice(payment.getInvoice().getId());
 			payment.approve(adminId, now);
 			this.subscriptions.invoicePaid(invoice);
@@ -110,8 +137,9 @@ class PlatformPaymentService {
 		Payment payment = pendingPlatform(paymentId);
 		payment.reject(adminId, reason.strip());
 		this.events.publishEvent(new PlatformPaymentRejected(payment.getPayerUserId(), payment.getAmount(),
-				(payment.getInvoice() != null) ? "your " + payment.getInvoice().getInvoiceNumber() + " invoice"
-						: "your featured listing",
+				(payment.getPurpose() == PaymentPurpose.DEPOSIT) ? "your booking deposit"
+						: (payment.getInvoice() != null) ? "your " + payment.getInvoice().getInvoiceNumber() + " invoice"
+								: "your featured listing",
 				reason.strip()));
 		return response(payment);
 	}
@@ -162,9 +190,12 @@ class PlatformPaymentService {
 		return payment;
 	}
 
+	/** Names who paid: the venue for an invoice, the player for a deposit top-up. */
 	private PaymentResponse response(Payment payment) {
-		return PaymentResponse.from(payment,
-				(payment.getInvoice() != null) ? this.subscriptions.venueNameOf(payment.getInvoice()) : null);
+		String payer = (payment.getInvoice() != null) ? this.subscriptions.venueNameOf(payment.getInvoice())
+				: (payment.getPurpose() == PaymentPurpose.DEPOSIT) ? this.users.get(payment.getPayerUserId()).getFullName()
+						: null;
+		return PaymentResponse.from(payment, payer);
 	}
 
 	private static ApiException alreadyPending() {

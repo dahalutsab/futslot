@@ -42,6 +42,9 @@ class AuditListeners {
 			case RESCHEDULED -> this.trail.record(event.actorUserId(), event.venueId(), "BOOKING_RESCHEDULED", "BOOKING",
 					event.bookingId(), "reference", event.reference(), "court", event.courtName(), "startsAt",
 					event.startsAt());
+			case NO_SHOW -> this.trail.record(event.actorUserId(), event.venueId(), "BOOKING_NO_SHOW", "BOOKING",
+					event.bookingId(), "reference", event.reference(), "customer", event.customerName(), "startsAt",
+					event.startsAt());
 			case EXPIRED -> {
 			}
 		}

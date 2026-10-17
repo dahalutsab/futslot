@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
-import { Payment, Refund, RefundStatus } from '../../core/api.types';
+import { DepositFees, Payment, Refund, RefundStatus } from '../../core/api.types';
 
 @Injectable({ providedIn: 'root' })
 export class PaymentsApi {
@@ -28,5 +28,9 @@ export class PaymentsApi {
   refunded(venueId: string, refundId: string, reference: string): Promise<Refund> {
     return firstValueFrom(this.http.post<Refund>(`/api/v1/owner/venues/${venueId}/refunds/${refundId}/complete`,
       { reference: reference || undefined }));
+  }
+
+  depositFees(venueId: string): Promise<DepositFees> {
+    return firstValueFrom(this.http.get<DepositFees>(`/api/v1/owner/venues/${venueId}/deposit-fees`));
   }
 }

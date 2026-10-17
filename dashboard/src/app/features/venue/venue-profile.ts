@@ -6,8 +6,9 @@ import { CircleAlert, Clock, Copy, ExternalLink, LucideAngularModule, MapPin, Pl
 import { firstValueFrom } from 'rxjs';
 
 import { problemOf } from '../../core/api-error';
-import { Amenity, CancellationTier, STRIKE_WINDOW_DAYS, VenueDetail, VenuePolicy } from '../../core/api.types';
+import { Amenity, CancellationTier, DEPOSIT_AMOUNT, STRIKE_WINDOW_DAYS, VenueDetail, VenuePolicy } from '../../core/api.types';
 import { VenueContext } from '../../core/venue-context';
+import { rupees } from '../../shared/format';
 import { HoursRow, hoursProblem, hoursRows, nextTier, overnight, parseLocation, policySummary, tiersProblem, toDayHours } from './venue-model';
 
 type Section = 'details' | 'hours' | 'policy' | 'payment' | 'amenities';
@@ -53,6 +54,8 @@ export class VenueProfile {
   protected readonly venues = inject(VenueContext);
 
   protected readonly strikeWindowDays = STRIKE_WINDOW_DAYS;
+
+  protected readonly depositAmount = rupees(DEPOSIT_AMOUNT);
 
   protected readonly icons = { CircleAlert, Clock, Copy, ExternalLink, MapPin, Plus, Send, Trash2 };
 
@@ -159,6 +162,11 @@ export class VenueProfile {
         ? { ...policy, strikeLimit: 2, strikeAdvancePercent: Math.max(50, policy.advancePercent) }
         : { ...policy, strikeLimit: null, strikeAdvancePercent: null };
     });
+    this.touched('policy');
+  }
+
+  protected toggleDeposit(): void {
+    this.policy.update((policy) => (policy ? { ...policy, depositRequired: !policy.depositRequired } : policy));
     this.touched('policy');
   }
 
