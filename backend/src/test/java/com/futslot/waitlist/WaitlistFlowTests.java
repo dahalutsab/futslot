@@ -86,7 +86,7 @@ class WaitlistFlowTests {
 		TestUser owner = this.users.signUp("Lapse Waitlist Owner");
 		TestVenue venue = this.venues.active(owner, "Lapse Waitlist Futsal");
 		send(owner, put("/api/v1/owner/venues/" + venue.id() + "/policy"), """
-				{"advancePercent":30,"bookingHoldMinutes":15,"freeCancelHours":24,"lateCancelRefundPct":0,"maxAdvanceBookingDays":30}""");
+				{"advancePercent":30,"bookingHoldMinutes":15,"cancellationTiers":[{"withinHours":24,"feePercent":100}],"maxAdvanceBookingDays":30}""");
 		String held = id(book(this.users.signUp("Slow Payer"), venue, "18:00"));
 		TestUser waiting = this.users.signUp("Lapse Waiter");
 		String entry = id(send(waiting, post("/api/v1/waitlist"), slot(venue, "18:00")).andExpect(status().isCreated()));

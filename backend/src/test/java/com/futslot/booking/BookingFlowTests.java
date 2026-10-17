@@ -105,7 +105,7 @@ class BookingFlowTests {
 		TestUser owner = this.users.signUp("Advance Owner");
 		TestVenue venue = this.venues.active(owner, "Advance Futsal");
 		send(owner, put("/api/v1/owner/venues/" + venue.id() + "/policy"), """
-				{"advancePercent":30,"bookingHoldMinutes":10,"freeCancelHours":24,"lateCancelRefundPct":0,"maxAdvanceBookingDays":30}""")
+				{"advancePercent":30,"bookingHoldMinutes":10,"cancellationTiers":[{"withinHours":24,"feePercent":100}],"maxAdvanceBookingDays":30}""")
 			.andExpect(status().isOk());
 		TestUser player = this.users.signUp("Hold Player");
 
@@ -124,7 +124,7 @@ class BookingFlowTests {
 		TestUser owner = this.users.signUp("Lapse Owner");
 		TestVenue venue = this.venues.active(owner, "Lapse Futsal");
 		send(owner, put("/api/v1/owner/venues/" + venue.id() + "/policy"), """
-				{"advancePercent":50,"bookingHoldMinutes":10,"freeCancelHours":24,"lateCancelRefundPct":0,"maxAdvanceBookingDays":30}""");
+				{"advancePercent":50,"bookingHoldMinutes":10,"cancellationTiers":[{"withinHours":24,"feePercent":100}],"maxAdvanceBookingDays":30}""");
 		String first = JsonPath.read(book(this.users.signUp("Slow Payer"), venue, "10:00").andReturn().getResponse()
 			.getContentAsString(), "$.id");
 		this.jdbc.update("UPDATE bookings SET hold_expires_at = now() - interval '1 second' WHERE id = ?::uuid", first);

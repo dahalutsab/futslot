@@ -23,7 +23,7 @@ function booking(overrides: Partial<Booking>): Booking {
     startsAt: `${DATE}T18:00:00+05:45`, endsAt: `${DATE}T19:00:00+05:45`, priceAmount: 1200, addOnsAmount: 0,
     addOns: [], discountAmount: 0, membershipId: null, discountCodeId: null, totalAmount: 1200,
     advanceRequired: 0, paidAmount: 0, paymentStatus: 'UNPAID', holdExpiresAt: null, notes: null,
-    cancelledAt: null, cancellationReason: null, createdAt: '2026-10-01T00:00:00Z', ...overrides,
+    cancelledAt: null, cancellationReason: null, cancellationFeePercent: 0, createdAt: '2026-10-01T00:00:00Z', ...overrides,
   };
 }
 

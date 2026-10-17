@@ -60,7 +60,7 @@ class StaffAccessTests {
 			.andExpect(status().isOk());
 
 		send(receptionist, put("/api/v1/owner/venues/" + venue.id() + "/policy"), """
-				{"advancePercent":0,"bookingHoldMinutes":15,"freeCancelHours":24,"lateCancelRefundPct":0,"maxAdvanceBookingDays":30}""")
+				{"advancePercent":0,"bookingHoldMinutes":15,"cancellationTiers":[{"withinHours":24,"feePercent":100}],"maxAdvanceBookingDays":30}""")
 			.andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("PERMISSION_DENIED"));
 		send(receptionist, get(staff(venue)), null).andExpect(status().isForbidden());
 		send(receptionist, get("/api/v1/notifications"), null)
@@ -76,7 +76,7 @@ class StaffAccessTests {
 		TestUser manager = this.users.logIn(phone, "Manny");
 
 		send(manager, put("/api/v1/owner/venues/" + venue.id() + "/policy"), """
-				{"advancePercent":10,"bookingHoldMinutes":15,"freeCancelHours":24,"lateCancelRefundPct":0,"maxAdvanceBookingDays":30}""")
+				{"advancePercent":10,"bookingHoldMinutes":15,"cancellationTiers":[{"withinHours":24,"feePercent":100}],"maxAdvanceBookingDays":30}""")
 			.andExpect(status().isOk());
 		send(manager, post(staff(venue)), staffJson(TestUsers.nextLocalPhone(), "Sneaky", "RECEPTIONIST", null))
 			.andExpect(status().isForbidden());

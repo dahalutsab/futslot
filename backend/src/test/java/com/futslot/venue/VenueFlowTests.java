@@ -75,8 +75,15 @@ class VenueFlowTests {
 		send(owner, put(base + "/amenities"), "{\"codes\":[\"PARKING\",\"SHOWER\"]}").andExpect(status().isOk())
 			.andExpect(jsonPath("$.amenities[*].code").value(org.hamcrest.Matchers.contains("PARKING", "SHOWER")));
 		send(owner, put(base + "/policy"), """
-				{"advancePercent":30,"bookingHoldMinutes":10,"freeCancelHours":12,"lateCancelRefundPct":50,"maxAdvanceBookingDays":14}""")
-			.andExpect(status().isOk()).andExpect(jsonPath("$.policy.advancePercent").value(30));
+				{"advancePercent":30,"bookingHoldMinutes":10,"cancellationTiers":[{"withinHours":12,"feePercent":40},{"withinHours":12,"feePercent":60}],"maxAdvanceBookingDays":14}""")
+			.andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_POLICY"));
+		send(owner, put(base + "/policy"), """
+				{"advancePercent":30,"bookingHoldMinutes":10,"cancellationTiers":[{"withinHours":48,"feePercent":10}],"maxAdvanceBookingDays":14}""")
+			.andExpect(status().isBadRequest());
+		send(owner, put(base + "/policy"), """
+				{"advancePercent":30,"bookingHoldMinutes":10,"cancellationTiers":[{"withinHours":10,"feePercent":60},{"withinHours":12,"feePercent":50}],"maxAdvanceBookingDays":14}""")
+			.andExpect(status().isOk()).andExpect(jsonPath("$.policy.advancePercent").value(30))
+			.andExpect(jsonPath("$.policy.cancellationTiers[*].withinHours").value(org.hamcrest.Matchers.contains(12, 10)));
 
 		String court = send(owner, post(base + "/courts"), COURT_A).andExpect(status().isCreated())
 			.andReturn().getResponse().getContentAsString();

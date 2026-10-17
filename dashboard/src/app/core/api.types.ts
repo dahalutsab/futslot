@@ -123,6 +123,8 @@ export interface Booking {
   notes: string | null;
   cancelledAt: string | null;
   cancellationReason: string | null;
+  /** The venue's fee share when the player cancelled late, 0 otherwise. */
+  cancellationFeePercent: number;
   createdAt: string;
 }
 
@@ -211,7 +213,9 @@ export interface CustomerDetail {
   notes: string | null;
   customerSince: string;
   lastBookingAt: string | null;
-  stats: { total: number; upcoming: number; completed: number; cancelled: number; noShows: number; completedValue: number };
+  stats: { total: number; upcoming: number; completed: number; cancelled: number; lateCancellations: number; noShows: number; recentStrikes: number; completedValue: number };
+  /** What this customer must pay up front because of recent strikes; null when the usual advance applies. */
+  strikeAdvancePercent: number | null;
   recentBookings: Booking[];
 }
 
@@ -293,13 +297,26 @@ export interface DayHours {
   closed: boolean;
 }
 
+/** A player cancelling less than {@link withinHours} before the start pays {@link feePercent} of the price. */
+export interface CancellationTier {
+  withinHours: number;
+  feePercent: number;
+}
+
 export interface VenuePolicy {
   advancePercent: number;
   bookingHoldMinutes: number;
-  freeCancelHours: number;
-  lateCancelRefundPct: number;
+  /** Furthest from the start first; empty means cancelling is always free. */
+  cancellationTiers: CancellationTier[];
   maxAdvanceBookingDays: number;
+  /** Late cancellations and no-shows in {@link STRIKE_WINDOW_DAYS} that raise the advance; null when off. */
+  strikeLimit: number | null;
+  /** The advance for players at the strike limit; set exactly when {@link strikeLimit} is. */
+  strikeAdvancePercent: number | null;
 }
+
+/** How far back the server counts late cancellations and no-shows as strikes. */
+export const STRIKE_WINDOW_DAYS = 90;
 
 export interface Amenity {
   code: string;

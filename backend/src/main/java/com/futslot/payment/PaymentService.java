@@ -1,7 +1,6 @@
 package com.futslot.payment;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -371,20 +370,16 @@ class PaymentService {
 		if (booking.getPaidAmount().signum() <= 0) {
 			return;
 		}
-		Instant now = this.clock.instant();
-		VenuePolicy policy = booking.getVenue().policy();
 		boolean byPlayer = event.type() == BookingEventType.CANCELLED && event.actorUserId() != null
 				&& event.actorUserId().equals(event.playerUserId());
-		int percent = RefundPolicy.refundPercent(byPlayer, now, booking.getStartsAt(), policy.freeCancelHours(),
-				policy.lateCancelRefundPct());
-		BigDecimal owed = booking.getPaidAmount()
-			.multiply(BigDecimal.valueOf(percent))
-			.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+		int feePercent = booking.getCancellationFeePercent();
+		BigDecimal owed = RefundPolicy.refundAmount(booking.getPaidAmount(), booking.getTotalAmount(), feePercent);
 		if (owed.signum() <= 0) {
 			return;
 		}
 		String reason = (event.type() == BookingEventType.EXPIRED) ? "Booking expired before confirmation"
-				: (byPlayer ? "Cancelled by player (" + percent + "% refund)" : "Cancelled by venue");
+				: !byPlayer ? "Cancelled by venue"
+						: (feePercent > 0) ? "Cancelled by player late (" + feePercent + "% fee)" : "Cancelled by player";
 		BigDecimal remaining = owed;
 		List<Payment> paid = this.payments.findByBookingIdAndStatusIn(booking.getId(), REFUNDABLE)
 			.stream()

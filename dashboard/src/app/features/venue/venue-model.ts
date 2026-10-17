@@ -1,4 +1,4 @@
-import { DayHours, VenuePolicy, Weekday } from '../../core/api.types';
+import { CancellationTier, DayHours, STRIKE_WINDOW_DAYS, VenuePolicy, Weekday } from '../../core/api.types';
 
 /** The week as people in Nepal count it, Sunday first. */
 export const WEEK: { day: Weekday; label: string; short: string }[] = [
@@ -82,11 +82,57 @@ export function policySummary(policy: VenuePolicy): string[] {
   lines.push(policy.advancePercent === 0
     ? 'Players book without paying anything up front and pay at the venue.'
     : `Players pay ${policy.advancePercent}% up front to confirm. Unpaid bookings are released after ${policy.bookingHoldMinutes} minutes.`);
-  const late = policy.lateCancelRefundPct === 0 ? 'nothing back' : `${policy.lateCancelRefundPct}% back`;
-  lines.push(policy.freeCancelHours === 0
-    ? 'Cancelling any time before the game gets a full refund.'
-    : `Cancelling ${policy.freeCancelHours} hours or more before the game gets a full refund; later gets ${late}.`);
+  const tiers = byHoursBefore(policy.cancellationTiers);
+  if (tiers.length === 0) {
+    lines.push('Cancelling any time before the game is free.');
+  } else {
+    const fees = tiers.map((tier) => `${tier.feePercent}% within ${tier.withinHours} ${hours(tier.withinHours)}`);
+    const listed = fees.length === 1 ? fees[0] : `${fees.slice(0, -1).join(', ')} and ${fees[fees.length - 1]}`;
+    lines.push(`Cancelling ${tiers[0].withinHours} ${hours(tiers[0].withinHours)} or more before the game is free.`);
+    lines.push(`Cancelling later costs a share of the booking price: ${listed}. It's never more than the player has paid.`);
+  }
+  if (policy.strikeLimit !== null && policy.strikeAdvancePercent !== null && policy.strikeAdvancePercent > policy.advancePercent) {
+    const strikes = policy.strikeLimit === 1 ? 'a late cancellation or no-show' : `${policy.strikeLimit} late cancellations or no-shows`;
+    lines.push(`After ${strikes} in ${STRIKE_WINDOW_DAYS} days, a player pays ${policy.strikeAdvancePercent}% up front to book.`);
+  }
   lines.push('If you cancel, players always get everything back.');
   lines.push(`Players can book up to ${policy.maxAdvanceBookingDays} days ahead.`);
   return lines;
+}
+
+/** Mirrors the server's rule: within 1–24 hours, 1–100%, and the fee goes up as the start gets closer. */
+export function tiersProblem(tiers: CancellationTier[]): string | null {
+  const invalid = tiers.find((tier) => !Number.isInteger(tier.withinHours) || tier.withinHours < 1 || tier.withinHours > 24);
+  if (invalid) {
+    return 'Cancellation fees can start from 1 to 24 hours before the game.';
+  }
+  if (tiers.some((tier) => !Number.isInteger(tier.feePercent) || tier.feePercent < 1 || tier.feePercent > 100)) {
+    return 'A cancellation fee is 1% to 100% of the booking price.';
+  }
+  const sorted = byHoursBefore(tiers);
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i].withinHours === sorted[i - 1].withinHours) {
+      return `Two cancellation fees start ${sorted[i].withinHours} hours before.`;
+    }
+    if (sorted[i].feePercent <= sorted[i - 1].feePercent) {
+      return `The fee within ${sorted[i].withinHours} hours must be more than the ${sorted[i - 1].feePercent}% within ${sorted[i - 1].withinHours} hours.`;
+    }
+  }
+  return null;
+}
+
+/** A fee to add below the closest one: half the notice, a bigger share. */
+export function nextTier(tiers: CancellationTier[]): CancellationTier {
+  const closest = byHoursBefore(tiers).at(-1);
+  return closest
+    ? { withinHours: Math.max(1, Math.floor(closest.withinHours / 2)), feePercent: Math.min(100, closest.feePercent + 20) }
+    : { withinHours: 24, feePercent: 50 };
+}
+
+function byHoursBefore(tiers: CancellationTier[]): CancellationTier[] {
+  return [...tiers].sort((a, b) => b.withinHours - a.withinHours);
+}
+
+function hours(count: number): string {
+  return count === 1 ? 'hour' : 'hours';
 }

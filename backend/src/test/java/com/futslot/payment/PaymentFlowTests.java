@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.UUID;
@@ -37,6 +38,10 @@ class PaymentFlowTests {
 	/** Far enough ahead that a 24h free-cancellation window is always still open. */
 	private static final LocalDate GAME_DAY = TODAY.plusDays(3);
 
+	private static final String FULL_FEE_INSIDE_A_DAY = "[{\"withinHours\":24,\"feePercent\":100}]";
+
+	private static final String RISING_FEES = "[{\"withinHours\":24,\"feePercent\":20},{\"withinHours\":12,\"feePercent\":50}]";
+
 	@Autowired
 	MockMvc mvc;
 
@@ -52,7 +57,7 @@ class PaymentFlowTests {
 	@Test
 	void verifiedWalletPaymentConfirmsTheBookingAndKeepsTheSlotMeanwhile() throws Exception {
 		TestUser owner = this.users.signUp("Pay Owner");
-		TestVenue venue = advanceVenue(owner, "Pay Futsal", 30, 24, 0);
+		TestVenue venue = advanceVenue(owner, "Pay Futsal", 30, FULL_FEE_INSIDE_A_DAY);
 		TestUser player = this.users.signUp("Pay Player");
 		String bookingId = id(book(player, venue, "07:00"));
 
@@ -85,7 +90,7 @@ class PaymentFlowTests {
 	@Test
 	void rejectedPaymentGivesThePlayerTimeToPayAgain() throws Exception {
 		TestUser owner = this.users.signUp("Reject Owner");
-		TestVenue venue = advanceVenue(owner, "Reject Futsal", 30, 24, 0);
+		TestVenue venue = advanceVenue(owner, "Reject Futsal", 30, FULL_FEE_INSIDE_A_DAY);
 		TestUser player = this.users.signUp("Reject Player");
 		String bookingId = id(book(player, venue, "08:00"));
 		String paymentId = id(claim(player, bookingId, "KHALTI", "KH-" + UUID.randomUUID(), 360));
@@ -104,7 +109,7 @@ class PaymentFlowTests {
 	@Test
 	void claimsAreValidated() throws Exception {
 		TestUser owner = this.users.signUp("Rules Pay Owner");
-		TestVenue venue = advanceVenue(owner, "Rules Pay Futsal", 30, 24, 0);
+		TestVenue venue = advanceVenue(owner, "Rules Pay Futsal", 30, FULL_FEE_INSIDE_A_DAY);
 		TestUser player = this.users.signUp("Rules Pay Player");
 		String bookingId = id(book(player, venue, "09:00"));
 		String otherBooking = id(book(this.users.signUp("Other Payer"), venue, "10:00"));
@@ -174,24 +179,91 @@ class PaymentFlowTests {
 	}
 
 	@Test
-	void lateCancellationRefundsOnlyThePolicyShare() throws Exception {
+	void lateCancellationKeepsTheTierFeeOfTheBookingPrice() throws Exception {
 		TestUser owner = this.users.signUp("Late Owner");
-		// A week's notice for a full refund, half back otherwise
-		TestVenue venue = advanceVenue(owner, "Late Futsal", 0, 168, 50);
+		TestVenue venue = advanceVenue(owner, "Late Futsal", 0, RISING_FEES);
 		TestUser player = this.users.signUp("Late Player");
+		String booked = book(player, venue, "07:00").andReturn().getResponse().getContentAsString();
+		String bookingId = JsonPath.read(booked, "$.id");
+		record(owner, venue, bookingId, "CASH", 1200);
+		startsIn(bookingId, Duration.ofHours(5));
+
+		send(player, post("/api/v1/bookings/" + bookingId + "/cancel"), "{}").andExpect(status().isOk())
+			.andExpect(jsonPath("$.cancellationFeePercent").value(50));
+
+		send(owner, get(venuePath(venue) + "/refunds"), null).andExpect(jsonPath("$[0].amount").value(600.0))
+			.andExpect(jsonPath("$[0].reason").value(containsString("50% fee")));
+		String customerId = JsonPath.read(booked, "$.customer.id");
+		send(owner, get(venuePath(venue) + "/customers/" + customerId), null)
+			.andExpect(jsonPath("$.stats.lateCancellations").value(1));
+	}
+
+	@Test
+	void lateCancellationFeeIsCappedAtWhatWasPaid() throws Exception {
+		TestUser owner = this.users.signUp("Capped Owner");
+		TestVenue venue = advanceVenue(owner, "Capped Futsal", 0, RISING_FEES);
+		TestUser player = this.users.signUp("Capped Player");
+		String bookingId = id(book(player, venue, "07:00"));
+		record(owner, venue, bookingId, "CASH", 400);
+		startsIn(bookingId, Duration.ofHours(5));
+
+		// Half of 1200 is more than the 400 paid, so the venue keeps the 400
+		send(player, post("/api/v1/bookings/" + bookingId + "/cancel"), "{}").andExpect(status().isOk());
+
+		send(owner, get(venuePath(venue) + "/refunds"), null).andExpect(jsonPath("$.length()").value(0));
+	}
+
+	@Test
+	void cancellingADayAheadIsFree() throws Exception {
+		TestUser owner = this.users.signUp("Early Owner");
+		TestVenue venue = advanceVenue(owner, "Early Futsal", 0, RISING_FEES);
+		TestUser player = this.users.signUp("Early Player");
 		String bookingId = id(book(player, venue, "07:00"));
 		record(owner, venue, bookingId, "CASH", 1200);
 
+		send(player, post("/api/v1/bookings/" + bookingId + "/cancel"), "{}").andExpect(status().isOk())
+			.andExpect(jsonPath("$.cancellationFeePercent").value(0));
+
+		send(owner, get(venuePath(venue) + "/refunds"), null).andExpect(jsonPath("$[0].amount").value(1200.0))
+			.andExpect(jsonPath("$[0].reason").value("Cancelled by player"));
+	}
+
+	@Test
+	void playersAtTheStrikeLimitPayMoreUpFront() throws Exception {
+		TestUser owner = this.users.signUp("Strike Owner");
+		TestVenue venue = this.venues.active(owner, "Strike Futsal");
+		send(owner, put(venuePath(venue) + "/policy"), """
+				{"advancePercent":0,"bookingHoldMinutes":15,"cancellationTiers":%s,"maxAdvanceBookingDays":30,"strikeLimit":1,"strikeAdvancePercent":50}"""
+			.formatted(RISING_FEES)).andExpect(status().isOk());
+		TestUser player = this.users.signUp("Strike Player");
+		String quote = "{\"courtId\":\"%s\",\"startsAt\":\"%sT08:00:00+05:45\"}".formatted(venue.courtId(), GAME_DAY);
+
+		send(player, post("/api/v1/bookings/quote"), quote).andExpect(jsonPath("$.advanceRequired").value(0))
+			.andExpect(jsonPath("$.strikeAdvance").value(false));
+		String booked = book(player, venue, "07:00").andReturn().getResponse().getContentAsString();
+		String bookingId = JsonPath.read(booked, "$.id");
+		startsIn(bookingId, Duration.ofHours(5));
 		send(player, post("/api/v1/bookings/" + bookingId + "/cancel"), "{}").andExpect(status().isOk());
 
-		send(owner, get(venuePath(venue) + "/refunds"), null).andExpect(jsonPath("$[0].amount").value(600.0))
-			.andExpect(jsonPath("$[0].reason").value(containsString("50%")));
+		// One late cancellation reaches the limit: half the price up front from now on
+		send(player, post("/api/v1/bookings/quote"), quote).andExpect(jsonPath("$.advanceRequired").value(600.0))
+			.andExpect(jsonPath("$.strikeAdvance").value(true));
+		book(player, venue, "08:00").andExpect(status().isCreated())
+			.andExpect(jsonPath("$.status").value("PENDING_PAYMENT"))
+			.andExpect(jsonPath("$.advanceRequired").value(600.0));
+		String customerId = JsonPath.read(booked, "$.customer.id");
+		send(owner, get(venuePath(venue) + "/customers/" + customerId), null)
+			.andExpect(jsonPath("$.stats.recentStrikes").value(1))
+			.andExpect(jsonPath("$.strikeAdvancePercent").value(50));
+
+		// Another player at the same venue is unaffected
+		book(this.users.signUp("Clean Player"), venue, "09:00").andExpect(jsonPath("$.status").value("CONFIRMED"));
 	}
 
 	@Test
 	void venueCancellationAndExpiredHoldsRefundInFull() throws Exception {
 		TestUser owner = this.users.signUp("Full Refund Owner");
-		TestVenue venue = advanceVenue(owner, "Full Refund Futsal", 50, 168, 0);
+		TestVenue venue = advanceVenue(owner, "Full Refund Futsal", 50, FULL_FEE_INSIDE_A_DAY);
 		TestUser player = this.users.signUp("Full Refund Player");
 		String confirmed = id(book(player, venue, "07:00"));
 		record(owner, venue, confirmed, "CASH", 600);
@@ -209,12 +281,12 @@ class PaymentFlowTests {
 			.andExpect(jsonPath("$[1].reason").value(containsString("expired")));
 	}
 
-	private TestVenue advanceVenue(TestUser owner, String name, int advancePercent, int freeCancelHours, int latePct)
+	private TestVenue advanceVenue(TestUser owner, String name, int advancePercent, String cancellationTiers)
 			throws Exception {
 		TestVenue venue = this.venues.active(owner, name);
 		send(owner, put(venuePath(venue) + "/policy"), """
-				{"advancePercent":%d,"bookingHoldMinutes":15,"freeCancelHours":%d,"lateCancelRefundPct":%d,"maxAdvanceBookingDays":30}"""
-			.formatted(advancePercent, freeCancelHours, latePct)).andExpect(status().isOk());
+				{"advancePercent":%d,"bookingHoldMinutes":15,"cancellationTiers":%s,"maxAdvanceBookingDays":30}"""
+			.formatted(advancePercent, cancellationTiers)).andExpect(status().isOk());
 		send(owner, put(venuePath(venue) + "/payment-instructions"), "{\"instructions\":\"eSewa/Khalti 9800000001\"}")
 			.andExpect(status().isOk());
 		return venue;
@@ -239,6 +311,13 @@ class PaymentFlowTests {
 
 	private static String venuePath(TestVenue venue) {
 		return "/api/v1/owner/venues/" + venue.id();
+	}
+
+	/** Moves a booking to start {@code notice} from now, keeping its length. */
+	private void startsIn(String bookingId, Duration notice) {
+		this.jdbc.update("""
+				UPDATE bookings SET ends_at = now() + ?::interval + (ends_at - starts_at), starts_at = now() + ?::interval
+				WHERE id = ?::uuid""", notice.toString(), notice.toString(), bookingId);
 	}
 
 	private static String id(ResultActions result) throws Exception {

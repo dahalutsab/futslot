@@ -229,12 +229,14 @@ class SiteBookingController {
 		BigDecimal total = found.slot().price();
 		BigDecimal advance = total.multiply(BigDecimal.valueOf(venue.policy().advancePercent()))
 			.divide(BigDecimal.valueOf(100), 0, RoundingMode.CEILING);
+		boolean strikeAdvance = false;
 		if (player != null) {
 			try {
 				QuoteResponse quote = this.bookings.quote(player,
 						new PlayerBookingRequest(found.courtId(), found.slot().startsAt(), null, null, null, null));
 				total = quote.total();
 				advance = quote.advanceRequired();
+				strikeAdvance = quote.strikeAdvance();
 			}
 			catch (ApiException ex) {
 				// Shown again when they confirm
@@ -243,7 +245,8 @@ class SiteBookingController {
 		LocalDate day = found.slot().startsAt().atZoneSameInstant(ZoneId.of(venue.timezone())).toLocalDate();
 		String time = SiteFormat.clock(found.slot().startsAt().toLocalTime()) + " – " + SiteFormat.clock(found.slot().endsAt().toLocalTime());
 		return new BookPage.Slot(court, start, found.courtName(), SiteFormat.day(day), time, SiteFormat.rupees(total),
-				advance.signum() > 0 ? SiteFormat.rupees(advance) : null, String.valueOf(venue.policy().bookingHoldMinutes()));
+				advance.signum() > 0 ? SiteFormat.rupees(advance) : null, String.valueOf(venue.policy().bookingHoldMinutes()),
+				strikeAdvance);
 	}
 
 	/** The free slot on this venue's court starting at {@code start}, if it's still free. */

@@ -77,12 +77,23 @@
         <span class="tabular font-medium">{{ fmt.phone(c.phone) }}</span>
         <span class="ml-auto text-sm text-subtle">{{ c.hasApp ? 'Uses the app · ' : '' }}Call</span>
       </a>
+      @if (c.strikeAdvancePercent !== null) {
+        <p class="mt-3 rounded-lg bg-noshow-bg px-3 py-2 text-sm text-noshow-fg">
+          {{ c.stats.recentStrikes }} late {{ c.stats.recentStrikes === 1 ? 'cancellation or no-show' : 'cancellations and no-shows' }} recently, so they pay {{ c.strikeAdvancePercent }}% up front when they book.
+        </p>
+      }
 
       <dl class="mt-4 grid grid-cols-3 gap-2 text-center">
         <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Played</dt><dd class="tabular text-lg font-semibold">{{ c.stats.completed }}</dd></div>
         <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Upcoming</dt><dd class="tabular text-lg font-semibold">{{ c.stats.upcoming }}</dd></div>
         <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Spent</dt><dd class="tabular text-lg font-semibold">{{ fmt.rupees(c.stats.completedValue) }}</dd></div>
-        <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Cancelled</dt><dd class="tabular text-lg font-semibold">{{ c.stats.cancelled }}</dd></div>
+        <div class="rounded-lg px-2 py-3" [class]="c.stats.lateCancellations > 0 ? 'bg-noshow-bg text-noshow-fg' : 'bg-surface-2'">
+          <dt class="text-xs" [class.text-muted]="c.stats.lateCancellations === 0">Cancelled</dt>
+          <dd class="tabular text-lg font-semibold">{{ c.stats.cancelled }}</dd>
+          @if (c.stats.lateCancellations > 0) {
+            <dd class="text-xs">{{ c.stats.lateCancellations }} late</dd>
+          }
+        </div>
         <div class="rounded-lg px-2 py-3" [class]="c.stats.noShows > 0 ? 'bg-noshow-bg text-noshow-fg' : 'bg-surface-2'"><dt class="text-xs" [class.text-muted]="c.stats.noShows === 0">No-shows</dt><dd class="tabular text-lg font-semibold">{{ c.stats.noShows }}</dd></div>
         <div class="rounded-lg bg-surface-2 px-2 py-3"><dt class="text-xs text-muted">Total</dt><dd class="tabular text-lg font-semibold">{{ c.stats.total }}</dd></div>
       </dl>

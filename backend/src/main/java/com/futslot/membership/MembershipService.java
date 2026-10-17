@@ -3,7 +3,6 @@ package com.futslot.membership;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -196,8 +195,8 @@ public class MembershipService {
 	}
 
 	/**
-	 * The game comes back when the booking ends without being played, unless the player cancelled
-	 * inside the venue's free-cancellation window (the same rule that decides a full refund).
+	 * The game comes back when the booking ends without being played, unless the player cancelled late
+	 * enough to owe the venue a cancellation fee.
 	 */
 	@EventListener
 	void onBookingEnded(BookingEvent event) {
@@ -208,11 +207,7 @@ public class MembershipService {
 		if (booking.getMembershipId() == null) {
 			return;
 		}
-		boolean byPlayer = event.type() == BookingEventType.CANCELLED && event.actorUserId() != null
-				&& event.actorUserId().equals(event.playerUserId());
-		Duration notice = Duration.between(this.clock.instant(), booking.getStartsAt());
-		boolean late = notice.compareTo(Duration.ofHours(booking.getVenue().policy().freeCancelHours())) < 0;
-		if (byPlayer && late) {
+		if (booking.getCancellationFeePercent() > 0) {
 			return;
 		}
 		this.memberships.lockById(booking.getMembershipId()).ifPresent(Membership::returnGame);

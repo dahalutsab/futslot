@@ -5463,20 +5463,39 @@ components:
           format: int32
           maximum: 120
           minimum: 5
-        freeCancelHours:
-          type: integer
-          format: int32
-          maximum: 168
-          minimum: 0
-        lateCancelRefundPct:
-          type: integer
-          format: int32
-          maximum: 100
-          minimum: 0
+        cancellationTiers:
+          type: array
+          items:
+            $ref: "#/components/schemas/CancellationTier"
+          maxItems: 6
+          minItems: 0
         maxAdvanceBookingDays:
           type: integer
           format: int32
           maximum: 180
+          minimum: 1
+        strikeLimit:
+          type: integer
+          format: int32
+          maximum: 10
+          minimum: 1
+        strikeAdvancePercent:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+    CancellationTier:
+      type: object
+      properties:
+        withinHours:
+          type: integer
+          format: int32
+          maximum: 24
+          minimum: 1
+        feePercent:
+          type: integer
+          format: int32
+          maximum: 100
           minimum: 1
     VenueResponse:
       type: object
@@ -6510,6 +6529,9 @@ components:
           format: date-time
         cancellationReason:
           type: string
+        cancellationFeePercent:
+          type: integer
+          format: int32
         createdAt:
           type: string
           format: date-time
@@ -7942,6 +7964,8 @@ components:
           type: number
         advanceRequired:
           type: number
+        strikeAdvance:
+          type: boolean
         membershipId:
           type: string
           format: uuid
@@ -8085,6 +8109,9 @@ components:
           format: date-time
         stats:
           $ref: "#/components/schemas/Stats"
+        strikeAdvancePercent:
+          type: integer
+          format: int32
         recentBookings:
           type: array
           items:
@@ -8104,7 +8131,13 @@ components:
         cancelled:
           type: integer
           format: int64
+        lateCancellations:
+          type: integer
+          format: int64
         noShows:
+          type: integer
+          format: int64
+        recentStrikes:
           type: integer
           format: int64
         completedValue:

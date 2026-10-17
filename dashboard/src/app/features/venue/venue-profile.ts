@@ -2,13 +2,13 @@ import { NgTemplateOutlet } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CircleAlert, Clock, Copy, ExternalLink, LucideAngularModule, MapPin, Send } from 'lucide-angular';
+import { CircleAlert, Clock, Copy, ExternalLink, LucideAngularModule, MapPin, Plus, Send, Trash2 } from 'lucide-angular';
 import { firstValueFrom } from 'rxjs';
 
 import { problemOf } from '../../core/api-error';
-import { Amenity, VenueDetail, VenuePolicy } from '../../core/api.types';
+import { Amenity, CancellationTier, STRIKE_WINDOW_DAYS, VenueDetail, VenuePolicy } from '../../core/api.types';
 import { VenueContext } from '../../core/venue-context';
-import { HoursRow, hoursProblem, hoursRows, overnight, parseLocation, policySummary, toDayHours } from './venue-model';
+import { HoursRow, hoursProblem, hoursRows, nextTier, overnight, parseLocation, policySummary, tiersProblem, toDayHours } from './venue-model';
 
 type Section = 'details' | 'hours' | 'policy' | 'payment' | 'amenities';
 
@@ -52,7 +52,12 @@ export class VenueProfile {
 
   protected readonly venues = inject(VenueContext);
 
-  protected readonly icons = { CircleAlert, Clock, Copy, ExternalLink, MapPin, Send };
+  protected readonly strikeWindowDays = STRIKE_WINDOW_DAYS;
+
+  protected readonly icons = { CircleAlert, Clock, Copy, ExternalLink, MapPin, Plus, Send, Trash2 };
+
+  /** The server takes at most this many cancellation fees. */
+  protected readonly maxTiers = 6;
 
   protected readonly overnight = overnight;
 
@@ -141,6 +146,36 @@ export class VenueProfile {
 
   protected setPolicy(field: keyof VenuePolicy, value: number): void {
     this.policy.update((policy) => (policy ? { ...policy, [field]: value } : policy));
+    this.touched('policy');
+  }
+
+  /** Turns the strike rule on with a suggested limit and advance, or off. */
+  protected toggleStrikes(): void {
+    this.policy.update((policy) => {
+      if (!policy) {
+        return policy;
+      }
+      return policy.strikeLimit === null
+        ? { ...policy, strikeLimit: 2, strikeAdvancePercent: Math.max(50, policy.advancePercent) }
+        : { ...policy, strikeLimit: null, strikeAdvancePercent: null };
+    });
+    this.touched('policy');
+  }
+
+  protected setTier(index: number, change: Partial<CancellationTier>): void {
+    this.setTiers((tiers) => tiers.map((tier, i) => (i === index ? { ...tier, ...change } : tier)));
+  }
+
+  protected addTier(): void {
+    this.setTiers((tiers) => [...tiers, nextTier(tiers)]);
+  }
+
+  protected removeTier(index: number): void {
+    this.setTiers((tiers) => tiers.filter((_, i) => i !== index));
+  }
+
+  private setTiers(change: (tiers: CancellationTier[]) => CancellationTier[]): void {
+    this.policy.update((policy) => (policy ? { ...policy, cancellationTiers: change(policy.cancellationTiers) } : policy));
     this.touched('policy');
   }
 
@@ -244,7 +279,7 @@ export class VenueProfile {
       case 'hours':
         return hoursProblem(this.rows()) ?? { url: `${base}/operating-hours`, body: toDayHours(this.rows()) };
       case 'policy':
-        return { url: `${base}/policy`, body: this.policy() };
+        return tiersProblem(this.policy()?.cancellationTiers ?? []) ?? { url: `${base}/policy`, body: this.policy() };
       case 'payment':
         return { url: `${base}/payment-instructions`, body: { instructions: this.instructions().trim() || null } };
       case 'amenities':

@@ -42,7 +42,7 @@ class AddOnFlowTests {
 		TestUser owner = this.users.signUp("Extras Owner");
 		TestVenue venue = this.venues.active(owner, "Extras Futsal");
 		send(owner, put(venuePath(venue) + "/policy"), """
-				{"advancePercent":30,"bookingHoldMinutes":15,"freeCancelHours":24,"lateCancelRefundPct":0,"maxAdvanceBookingDays":30}""");
+				{"advancePercent":30,"bookingHoldMinutes":15,"cancellationTiers":[{"withinHours":24,"feePercent":100}],"maxAdvanceBookingDays":30}""");
 		String water = item(owner, venue, "Water (1L)", "FOOD_DRINK", 50);
 		String bibs = item(owner, venue, "Bibs", "EQUIPMENT_RENTAL", 100);
 		send(owner, post(venuePath(venue) + "/add-ons"), "{\"name\":\"water (1l)\",\"category\":\"FOOD_DRINK\",\"price\":60}")

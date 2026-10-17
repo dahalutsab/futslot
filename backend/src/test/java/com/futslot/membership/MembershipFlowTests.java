@@ -164,7 +164,7 @@ class MembershipFlowTests {
 	private TestVenue advanceVenue(TestUser owner, String name) throws Exception {
 		TestVenue venue = this.venues.active(owner, name);
 		send(owner, put(venuePath(venue) + "/policy"), """
-				{"advancePercent":30,"bookingHoldMinutes":15,"freeCancelHours":24,"lateCancelRefundPct":0,"maxAdvanceBookingDays":30}""")
+				{"advancePercent":30,"bookingHoldMinutes":15,"cancellationTiers":[{"withinHours":24,"feePercent":100}],"maxAdvanceBookingDays":30}""")
 			.andExpect(status().isOk());
 		return venue;
 	}

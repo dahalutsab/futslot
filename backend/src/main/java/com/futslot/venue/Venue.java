@@ -86,13 +86,11 @@ public class Venue {
 	private int bookingHoldMinutes = 15;
 
 	@Column(nullable = false)
-	private int freeCancelHours = 24;
-
-	@Column(nullable = false)
-	private int lateCancelRefundPct;
-
-	@Column(nullable = false)
 	private int maxAdvanceBookingDays = 30;
+
+	private Integer strikeLimit;
+
+	private Integer strikeAdvancePercent;
 
 	private String paymentInstructions;
 
@@ -111,6 +109,11 @@ public class Venue {
 	@CollectionTable(name = "venue_amenities", joinColumns = @JoinColumn(name = "venue_id"))
 	@Column(name = "amenity_code", nullable = false)
 	private Set<String> amenityCodes = new HashSet<>();
+
+	@ElementCollection
+	@CollectionTable(name = "venue_cancellation_tiers", joinColumns = @JoinColumn(name = "venue_id"))
+	@OrderBy("withinHours desc")
+	private List<CancellationTier> cancellationTiers = new ArrayList<>();
 
 	@OneToMany(mappedBy = "venue")
 	@OrderBy("sortOrder, name")
@@ -147,14 +150,16 @@ public class Venue {
 	void applyPolicy(VenuePolicy policy) {
 		this.advancePercent = policy.advancePercent();
 		this.bookingHoldMinutes = policy.bookingHoldMinutes();
-		this.freeCancelHours = policy.freeCancelHours();
-		this.lateCancelRefundPct = policy.lateCancelRefundPct();
+		this.cancellationTiers.clear();
+		this.cancellationTiers.addAll(policy.cancellationTiers());
 		this.maxAdvanceBookingDays = policy.maxAdvanceBookingDays();
+		this.strikeLimit = policy.strikeLimit();
+		this.strikeAdvancePercent = policy.strikeAdvancePercent();
 	}
 
 	public VenuePolicy policy() {
-		return new VenuePolicy(this.advancePercent, this.bookingHoldMinutes, this.freeCancelHours,
-				this.lateCancelRefundPct, this.maxAdvanceBookingDays);
+		return new VenuePolicy(this.advancePercent, this.bookingHoldMinutes, this.cancellationTiers,
+				this.maxAdvanceBookingDays, this.strikeLimit, this.strikeAdvancePercent);
 	}
 
 	void setPaymentInstructions(String instructions) {

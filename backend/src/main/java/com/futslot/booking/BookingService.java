@@ -39,6 +39,7 @@ import com.futslot.venue.CourtRepository;
 import com.futslot.venue.Venue;
 import com.futslot.venue.VenueAccess;
 import com.futslot.venue.VenuePermission;
+import com.futslot.venue.VenuePolicy;
 import com.futslot.venue.VenueStatus;
 
 /**
@@ -147,7 +148,7 @@ public class BookingService {
 				request.discountCode(), now, true);
 		booking.applyDiscount(benefit.discount(), benefit.membershipId(), benefit.discountCodeId());
 		booking.setAddOns(this.addOns.resolve(venue.getId(), request.addOns()));
-		BigDecimal advance = advanceFor(venue, booking.getTotalAmount());
+		BigDecimal advance = advanceFor(venue, booking.getTotalAmount(), strikes(customer, now));
 		if (advance.signum() > 0) {
 			booking.holdForPayment(advance, now.plus(Duration.ofMinutes(venue.policy().bookingHoldMinutes())));
 		}
@@ -174,8 +175,11 @@ public class BookingService {
 			.map(line -> line.getKey().getPrice().multiply(BigDecimal.valueOf(line.getValue())))
 			.reduce(BigDecimal.ZERO, BigDecimal::add);
 		BigDecimal total = slot.price().add(extras).subtract(benefit.discount());
-		return new QuoteResponse(slot.price(), extras, benefit.discount(), total, advanceFor(venue, total),
-				benefit.membershipId(), (benefit.code() != null) ? benefit.code().getCode() : null);
+		long strikes = strikes(customer, this.clock.instant());
+		VenuePolicy policy = venue.policy();
+		return new QuoteResponse(slot.price(), extras, benefit.discount(), total, advanceFor(venue, total, strikes),
+				policy.advancePercentFor(strikes) > policy.advancePercent(), benefit.membershipId(),
+				(benefit.code() != null) ? benefit.code().getCode() : null);
 	}
 
 	@Transactional
@@ -248,7 +252,8 @@ public class BookingService {
 			throw new ApiException(HttpStatus.CONFLICT, "CANCELLATION_CLOSED",
 					"This booking has started. Contact the venue");
 		}
-		booking.cancel(userId, reason, now);
+		int fee = booking.getVenue().policy().feePercent(Duration.between(now, booking.getStartsAt()));
+		booking.cancel(userId, reason, now, fee);
 		publish(BookingEventType.CANCELLED, booking, userId, reason);
 		return BookingResponse.from(booking);
 	}
@@ -365,10 +370,19 @@ public class BookingService {
 		return dated;
 	}
 
-	/** The venue's advance on {@code total}; nothing when nothing is left to pay. */
-	private static BigDecimal advanceFor(Venue venue, BigDecimal total) {
-		return total.multiply(BigDecimal.valueOf(venue.policy().advancePercent()))
+	/**
+	 * The venue's advance on {@code total}, raised for a player with too many recent strikes; nothing when
+	 * nothing is left to pay.
+	 */
+	private static BigDecimal advanceFor(Venue venue, BigDecimal total, long strikes) {
+		return total.multiply(BigDecimal.valueOf(venue.policy().advancePercentFor(strikes)))
 			.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+	}
+
+	/** The customer's late cancellations and no-shows at their venue within the strike window. */
+	private long strikes(VenueCustomer customer, Instant now) {
+		return (customer != null) ? this.bookings.countStrikes(customer.getId(), now.minus(VenuePolicy.STRIKE_WINDOW))
+				: 0;
 	}
 
 	/**
