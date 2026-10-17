@@ -4,7 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
-import { Booking, MatchPostRequest, MatchPostType, SkillLevel, Team } from '../../core/api.types';
+import { Booking, MatchPostRequest, MatchPostType, SkillLevel, Team, VenueSummary } from '../../core/api.types';
 import { dayLabel, localClock } from '../../shared/format';
 import { SKILL } from '../../shared/labels';
 import { PlayNav } from '../../shared/play-nav';
@@ -14,7 +14,7 @@ const NEPAL_OFFSET = '+05:45';
 
 /**
  * Posting a game: short of players for one of your bookings, or your team looking for an opponent. Where and
- * when come from the booking, or from a city and a time when nothing's booked yet.
+ * when come from the booking, or when nothing's booked yet, from a venue (or just a city) and a time.
  */
 @Component({
   selector: 'fs-new-match',
@@ -71,12 +71,23 @@ const NEPAL_OFFSET = '+05:45';
             </div>
           }
           @if (bookingId() === null) {
+            <div class="mt-3">
+              <label for="venue" class="mb-1.5 block font-medium">Venue <span class="font-normal text-subtle">(optional)</span></label>
+              <select id="venue" name="venue" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" [ngModel]="venueId()" (ngModelChange)="venueId.set($event || null)">
+                <option value="">Not decided: just a city</option>
+                @for (v of venues(); track v.id) {
+                  <option [value]="v.id">{{ v.name }}, {{ v.city }}</option>
+                }
+              </select>
+            </div>
             <div class="mt-3 grid gap-3 sm:grid-cols-2">
-              <div>
-                <label for="city" class="mb-1.5 block font-medium">City</label>
-                <input id="city" name="city" type="text" maxlength="60" placeholder="Kathmandu" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
-                  [ngModel]="city()" (ngModelChange)="city.set($event)" />
-              </div>
+              @if (!venueId()) {
+                <div>
+                  <label for="city" class="mb-1.5 block font-medium">City</label>
+                  <input id="city" name="city" type="text" maxlength="60" placeholder="Kathmandu" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+                    [ngModel]="city()" (ngModelChange)="city.set($event)" />
+                </div>
+              }
               <div>
                 <label for="when" class="mb-1.5 block font-medium">When</label>
                 <input id="when" name="when" type="datetime-local" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
@@ -151,6 +162,10 @@ export class NewMatch {
 
   protected readonly city = signal('');
 
+  protected readonly venues = signal<VenueSummary[]>([]);
+
+  protected readonly venueId = signal<string | null>(null);
+
   protected readonly when = signal('');
 
   protected readonly needed = signal(2);
@@ -176,19 +191,22 @@ export class NewMatch {
       this.teams.set(led);
       this.teamId.set(led[0]?.id ?? null);
     }, (error) => this.error.set(problemOf(error).message));
+    this.api.venues({ size: 50 }).then((page) => this.venues.set(page.content), () => undefined);
   }
 
   protected async post(): Promise<void> {
     const bookingId = this.bookingId();
-    if (!bookingId && (!this.city().trim() || !this.when())) {
-      this.error.set('Say which city and when, or pick one of your bookings.');
+    const venueId = bookingId ? null : this.venueId();
+    if (!bookingId && (!this.when() || (!venueId && !this.city().trim()))) {
+      this.error.set('Say where (a venue or a city) and when, or pick one of your bookings.');
       return;
     }
     const request: MatchPostRequest = {
       type: this.type(),
       teamId: this.type() === 'FIND_OPPONENT' ? this.teamId() ?? undefined : undefined,
       bookingId: bookingId ?? undefined,
-      city: bookingId ? undefined : this.city().trim(),
+      venueId: venueId ?? undefined,
+      city: bookingId || venueId ? undefined : this.city().trim(),
       startsAt: bookingId ? undefined : `${this.when()}:00${NEPAL_OFFSET}`,
       playersNeeded: this.type() === 'NEED_PLAYERS' ? this.needed() : undefined,
       costPerPlayer: this.type() === 'NEED_PLAYERS' && this.cost() ? this.cost()! : undefined,
