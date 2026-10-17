@@ -1,0 +1,380 @@
+/** Shapes returned by the FutSlot API (backend: docs/api/openapi.yaml), as players see them. */
+
+export type Role = 'PLAYER' | 'OWNER' | 'STAFF' | 'ADMIN';
+
+export interface User {
+  id: string;
+  fullName: string;
+  phone: string;
+  email: string | null;
+  avatarUrl: string | null;
+  preferredLanguage: string;
+  roles: Role[];
+  createdAt: string;
+}
+
+export interface TokenResponse {
+  accessToken: string;
+  tokenType: string;
+  expiresInSeconds: number;
+  refreshToken: string;
+  user: User;
+}
+
+export interface OtpSent {
+  expiresInSeconds: number;
+  resendAfterSeconds: number;
+}
+
+/** RFC 7807 problem body; {@code code} is stable and machine-readable. */
+export interface ApiProblem {
+  status: number;
+  detail: string;
+  code?: string;
+}
+
+export interface Page<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+// Venues
+
+export interface VenueSummary {
+  id: string;
+  slug: string;
+  name: string;
+  area: string | null;
+  city: string;
+  latitude: number | null;
+  longitude: number | null;
+  averageRating: number;
+  reviewCount: number;
+  fromPrice: number | null;
+  courtCount: number;
+  amenities: string[];
+  coverPhotoUrl: string | null;
+}
+
+export type Weekday = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+
+/** Times are "HH:mm:ss"; a close at or before the open means open past midnight. */
+export interface DayHours {
+  day: Weekday;
+  openTime: string | null;
+  closeTime: string | null;
+  closed: boolean;
+}
+
+/** Cancelling less than {@link withinHours} before the start costs {@link feePercent} of the price. */
+export interface CancellationTier {
+  withinHours: number;
+  feePercent: number;
+}
+
+export interface VenuePolicy {
+  advancePercent: number;
+  bookingHoldMinutes: number;
+  /** Furthest from the start first; empty means cancelling is always free. */
+  cancellationTiers: CancellationTier[];
+  maxAdvanceBookingDays: number;
+  /** Late cancellations and no-shows in {@link STRIKE_WINDOW_DAYS} that raise the advance; null when off. */
+  strikeLimit: number | null;
+  strikeAdvancePercent: number | null;
+  /** Players need a full {@link DEPOSIT_AMOUNT} FutSlot deposit to book here. */
+  depositRequired: boolean;
+}
+
+/** How far back late cancellations and no-shows count as strikes. */
+export const STRIKE_WINDOW_DAYS = 90;
+
+/** The booking deposit players keep with FutSlot to book venues that require it. */
+export const DEPOSIT_AMOUNT = 1000;
+
+export interface Amenity {
+  code: string;
+  name: string;
+  icon: string;
+}
+
+export type CourtFormat = 'FIVE_A_SIDE' | 'SIX_A_SIDE' | 'SEVEN_A_SIDE';
+export type CourtSurface = 'ARTIFICIAL_TURF' | 'HARDWOOD' | 'CONCRETE' | 'RUBBER';
+
+export interface Court {
+  id: string;
+  name: string;
+  format: CourtFormat;
+  surface: CourtSurface;
+  indoor: boolean;
+  slotDurationMinutes: number;
+  status: 'ACTIVE' | 'INACTIVE';
+  sortOrder: number;
+}
+
+export interface VenuePhoto {
+  id: string;
+  url: string;
+  caption: string | null;
+  sortOrder: number;
+  cover: boolean;
+}
+
+export interface VenueDetail {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  phone: string | null;
+  email: string | null;
+  addressLine: string;
+  area: string | null;
+  city: string;
+  latitude: number | null;
+  longitude: number | null;
+  timezone: string;
+  policy: VenuePolicy;
+  /** Where to pay the venue's advance: its own eSewa, Khalti or bank account. */
+  paymentInstructions: string | null;
+  averageRating: number;
+  reviewCount: number;
+  fromPrice: number | null;
+  operatingHours: DayHours[];
+  amenities: Amenity[];
+  courts: Court[];
+  photos: VenuePhoto[];
+}
+
+export interface AddOnItem {
+  id: string;
+  name: string;
+  category: 'EQUIPMENT_RENTAL' | 'FOOD_DRINK' | 'OTHER';
+  price: number;
+  active: boolean;
+}
+
+// Slots and bookings
+
+export type SlotStatus = 'AVAILABLE' | 'BOOKED' | 'BLOCKED' | 'PAST';
+
+export interface Slot {
+  /** Venue-local, with offset, e.g. 2026-10-09T18:00:00+05:45. */
+  startsAt: string;
+  endsAt: string;
+  price: number;
+  label: string | null;
+  status: SlotStatus;
+}
+
+export interface CourtSlots {
+  courtId: string;
+  name: string;
+  format: string;
+  slotDurationMinutes: number;
+  slots: Slot[];
+}
+
+export interface Availability {
+  venueId: string;
+  date: string;
+  timezone: string;
+  courts: CourtSlots[];
+}
+
+export interface AddOnLine {
+  itemId: string;
+  quantity: number;
+}
+
+/** One slot, by its start from the availability response. A membership or a discount code, not both. */
+export interface BookingRequest {
+  courtId: string;
+  startsAt: string;
+  notes?: string;
+  membershipId?: string;
+  discountCode?: string;
+  addOns?: AddOnLine[];
+}
+
+/**
+ * {@code total = price + addOns - discount}; {@code advanceRequired} is what must be paid to confirm.
+ * {@code strikeAdvance}: higher than usual because of recent late cancellations and no-shows.
+ * {@code depositToAdd}: what the player must add to their FutSlot deposit before booking (0 when nothing).
+ */
+export interface Quote {
+  price: number;
+  addOns: number;
+  discount: number;
+  total: number;
+  advanceRequired: number;
+  strikeAdvance: boolean;
+  depositRequired: boolean;
+  depositToAdd: number;
+  membershipId: string | null;
+  discountCode: string | null;
+}
+
+export type BookingStatus = 'PENDING_PAYMENT' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'EXPIRED';
+
+export type BookingSource = 'APP' | 'WEBSITE' | 'WALK_IN' | 'PHONE' | 'RECURRING' | 'TOURNAMENT' | 'ADMIN';
+
+export type PaymentStatus = 'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'PARTIALLY_REFUNDED' | 'REFUNDED';
+
+export interface Booking {
+  id: string;
+  reference: string;
+  venue: { id: string; name: string; slug: string };
+  court: { id: string; name: string };
+  customer: { id: string; name: string; phone: string };
+  source: BookingSource;
+  status: BookingStatus;
+  startsAt: string;
+  endsAt: string;
+  priceAmount: number;
+  addOnsAmount: number;
+  addOns: { itemId: string; name: string; quantity: number; unitPrice: number }[];
+  discountAmount: number;
+  membershipId: string | null;
+  discountCodeId: string | null;
+  totalAmount: number;
+  advanceRequired: number;
+  paidAmount: number;
+  paymentStatus: PaymentStatus;
+  holdExpiresAt: string | null;
+  notes: string | null;
+  cancelledAt: string | null;
+  cancellationReason: string | null;
+  /** The venue's fee share when the player cancelled late (or, if {@link depositBacked}, didn't show up). */
+  cancellationFeePercent: number;
+  /** Booked at a venue that requires the deposit, so fees the advance doesn't cover come out of it. */
+  depositBacked: boolean;
+  createdAt: string;
+}
+
+// Payments
+
+export type PaymentMethod = 'CASH' | 'ESEWA' | 'KHALTI' | 'FONEPAY' | 'BANK_TRANSFER';
+
+export type TransactionStatus = 'INITIATED' | 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'CANCELLED' | 'REFUNDED' | 'PARTIALLY_REFUNDED';
+
+export interface Payment {
+  id: string;
+  purpose: 'BOOKING' | 'SPLIT_SHARE' | 'MEMBERSHIP' | 'TOURNAMENT_ENTRY' | 'DEPOSIT';
+  bookingId: string | null;
+  bookingReference: string | null;
+  membershipId: string | null;
+  membershipPlanName: string | null;
+  tournamentRegistrationId: string | null;
+  tournamentName: string | null;
+  customerName: string | null;
+  amount: number;
+  method: PaymentMethod;
+  status: TransactionStatus;
+  transactionId: string | null;
+  failureReason: string | null;
+  paidAt: string | null;
+  createdAt: string;
+}
+
+/** "I paid Rs X on eSewa, transaction Y". */
+export interface PaymentClaim {
+  method: PaymentMethod;
+  transactionId: string;
+  amount: number;
+}
+
+export type RefundStatus = 'REQUESTED' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED' | 'REJECTED';
+
+export interface Refund {
+  id: string;
+  bookingId: string;
+  bookingReference: string;
+  amount: number;
+  originalMethod: PaymentMethod;
+  reason: string;
+  status: RefundStatus;
+  reference: string | null;
+  createdAt: string;
+  processedAt: string | null;
+}
+
+/** The money side of one booking, and where to pay the venue. */
+export interface BookingPayments {
+  totalAmount: number;
+  advanceRequired: number;
+  paidAmount: number;
+  amountDue: number;
+  paymentStatus: PaymentStatus;
+  paymentInstructions: string | null;
+  payments: Payment[];
+  refunds: Refund[];
+}
+
+// The FutSlot booking deposit
+
+export type DepositEntryType = 'TOP_UP' | 'FEE' | 'WITHDRAWAL' | 'WITHDRAWAL_CANCELLED';
+
+/** Positive money in, negative money out. {@code bookingReference} and {@code venueName} are set for fees. */
+export interface DepositEntry {
+  id: string;
+  type: DepositEntryType;
+  amount: number;
+  balanceAfter: number;
+  bookingReference: string | null;
+  venueName: string | null;
+  createdAt: string;
+}
+
+/** The whole balance on its way back; FutSlot sends it once {@code dueAt} has passed. */
+export interface DepositWithdrawal {
+  id: string;
+  amount: number;
+  method: PaymentMethod;
+  sendTo: string;
+  status: 'REQUESTED' | 'PAID' | 'CANCELLED';
+  dueAt: string;
+  reference: string | null;
+  paidAt: string | null;
+  createdAt: string;
+}
+
+/**
+ * {@code toAdd} is what fills it (0 when full). {@code topUpBeingChecked}: a top-up was sent that FutSlot
+ * hasn't checked yet; {@code paymentInstructions} says where to send one.
+ */
+export interface Deposit {
+  required: number;
+  balance: number;
+  toAdd: number;
+  topUpBeingChecked: boolean;
+  paymentInstructions: string | null;
+  withdrawal: DepositWithdrawal | null;
+  history: DepositEntry[];
+}
+
+// Reviews
+
+export interface Review {
+  id: string;
+  venueId: string;
+  venueName: string;
+  bookingId: string | null;
+  playedOn: string;
+  rating: number;
+  comment: string | null;
+  reviewerName: string;
+  reviewerAvatarUrl: string | null;
+  ownerReply: string | null;
+  ownerRepliedAt: string | null;
+  status: 'PUBLISHED' | 'HIDDEN' | 'REMOVED';
+  createdAt: string;
+}
+
+/** {@code stars} maps each rating 1–5 to how many published reviews gave it. */
+export interface RatingSummary {
+  averageRating: number | null;
+  reviewCount: number;
+  stars: Record<string, number>;
+}

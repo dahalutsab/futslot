@@ -8,6 +8,7 @@ Futsal booking platform: players find and book slots, venue owners manage courts
 |--------------|----------------------------------------------|
 | `backend/`   | Spring Boot API (Java 25, PostgreSQL, Flyway) |
 | `dashboard/` | Owner web dashboard                          |
+| `player/`    | Player web app                               |
 | `mobile/`    | Flutter player app                           |
 | `docs/api/`  | OpenAPI contract shared by all clients       |
 | `docs/db/`   | Database schema and ER diagrams              |
@@ -240,6 +241,12 @@ commits. Players get a reminder 2 hours before a confirmed booking
 
 The web dashboard for venue owners and staff lives in `dashboard/` (Angular). With the API running:
 `cd dashboard && npm install && npm start`, then open http://localhost:4200. See `dashboard/README.md`.
+
+### Player web app
+
+Players find venues, book and pay, and manage their bookings and booking deposit in `player/` (Angular),
+until the mobile app is built. With the API running: `cd player && npm install && npm start`, then open
+http://localhost:4300. See `player/README.md`.
 
 ### API contract
 
