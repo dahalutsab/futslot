@@ -82,6 +82,13 @@ interface BookingRepository extends JpaRepository<Booking, UUID> {
 
 	boolean existsByBookedByUserIdAndDepositBackedTrueAndStatusIn(UUID userId, Collection<BookingStatus> statuses);
 
+	/** Live bookings of the player's (made by them, or by the venue for them) on the court overlapping the time. */
+	@Query("""
+			select count(b) > 0 from Booking b
+			where b.court.id = :courtId and (b.bookedByUserId = :userId or b.customer.userId = :userId)
+			  and b.status in :statuses and b.startsAt < :to and b.endsAt > :from""")
+	boolean playerHolds(UUID userId, UUID courtId, Instant from, Instant to, Collection<BookingStatus> statuses);
+
 	@Query("""
 			select count(b) from Booking b
 			where b.bookedByUserId = :userId and b.status = com.futslot.booking.BookingStatus.PENDING_PAYMENT

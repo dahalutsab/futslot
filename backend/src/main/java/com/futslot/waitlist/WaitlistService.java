@@ -72,6 +72,9 @@ class WaitlistService {
 		if (slot.status() != SlotStatus.BOOKED) {
 			throw new ApiException(HttpStatus.CONFLICT, "SLOT_NOT_WAITABLE", "You can only wait for a booked slot");
 		}
+		if (this.bookings.playerHolds(userId, court.getId(), start, slot.endsAt().toInstant())) {
+			throw new ApiException(HttpStatus.CONFLICT, "SLOT_IS_YOURS", "You've booked this slot already");
+		}
 		WaitlistEntry entry = this.entries.findByCourtIdAndUserIdAndStartsAt(court.getId(), userId, start).orElse(null);
 		Instant now = this.clock.instant();
 		if (entry != null && entry.isOpenAt(now)) {

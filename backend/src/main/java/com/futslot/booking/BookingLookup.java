@@ -1,5 +1,6 @@
 package com.futslot.booking;
 
+import java.time.Instant;
 import java.util.EnumSet;
 import java.util.UUID;
 
@@ -37,6 +38,12 @@ public class BookingLookup {
 	/** Whether the player has bookings, not yet played or cancelled, that their deposit covers. */
 	public boolean hasLiveDepositBookings(UUID userId) {
 		return this.bookings.existsByBookedByUserIdAndDepositBackedTrueAndStatusIn(userId,
+				EnumSet.of(BookingStatus.PENDING_PAYMENT, BookingStatus.CONFIRMED));
+	}
+
+	/** Whether the player already has this court for (part of) this time. */
+	public boolean playerHolds(UUID userId, UUID courtId, Instant from, Instant to) {
+		return this.bookings.playerHolds(userId, courtId, from, to,
 				EnumSet.of(BookingStatus.PENDING_PAYMENT, BookingStatus.CONFIRMED));
 	}
 

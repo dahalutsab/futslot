@@ -54,6 +54,8 @@ class WaitlistFlowTests {
 
 		send(keen, post("/api/v1/waitlist"), slot(venue, "20:00")).andExpect(status().isConflict())
 			.andExpect(jsonPath("$.code").value("SLOT_AVAILABLE"));
+		send(holder, post("/api/v1/waitlist"), slot(venue, "19:00")).andExpect(status().isConflict())
+			.andExpect(jsonPath("$.code").value("SLOT_IS_YOURS"));
 		send(keen, post("/api/v1/waitlist"), slot(venue, "19:00")).andExpect(status().isCreated())
 			.andExpect(jsonPath("$.status").value("WAITING"))
 			.andExpect(jsonPath("$.courtName").value("Court A"));
