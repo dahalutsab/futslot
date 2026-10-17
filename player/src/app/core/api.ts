@@ -17,8 +17,8 @@ export class Api {
 
   // Venues
 
-  venues(filter: { q?: string; city?: string; page?: number }): Promise<Page<VenueSummary>> {
-    const params: Record<string, string> = { size: '20', page: String(filter.page ?? 0) };
+  venues(filter: { q?: string; city?: string; page?: number; size?: number }): Promise<Page<VenueSummary>> {
+    const params: Record<string, string> = { size: String(filter.size ?? 20), page: String(filter.page ?? 0) };
     if (filter.q) {
       params['q'] = filter.q;
     }
