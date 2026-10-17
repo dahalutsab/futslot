@@ -8,6 +8,7 @@ import { problemOf } from '../../core/api-error';
 import { Session } from '../../core/session';
 import { Availability, CourtSlots, RatingSummary, Review, Slot, VenueDetail } from '../../core/api.types';
 import { hoursLabel, policyLines, WEEK } from '../../shared/booking-model';
+import { VenuePlans } from './plans';
 import { addDays, ago, dayLabel, localClock, phone, rupees, today } from '../../shared/format';
 
 function slotKey(courtId: string, startsAt: string): string {
@@ -20,7 +21,7 @@ const DAYS_SHOWN = 14;
 /** One venue: photos and details, free slots by day and court, the booking rules, and reviews. */
 @Component({
   selector: 'fs-venue',
-  imports: [RouterLink, LucideAngularModule],
+  imports: [RouterLink, LucideAngularModule, VenuePlans],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './venue.html',
 })

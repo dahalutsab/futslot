@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ChevronRight, Heart, Hourglass, LogOut, LucideAngularModule, LucideIconData, Monitor, Moon, Star, Sun, Wallet } from 'lucide-angular';
+import { BadgeCheck, ChevronRight, Coins, Heart, Hourglass, LogOut, LucideAngularModule, LucideIconData, Monitor, Moon, Shirt, Star, Sun, Wallet } from 'lucide-angular';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -99,7 +99,10 @@ export class Me {
   protected readonly fmt = { phone };
 
   protected readonly links: Link[] = [
+    { path: '/me/profile', label: 'Player profile', detail: 'Your position and level, for games and teams', icon: Shirt },
     { path: '/deposit', label: 'Booking deposit', detail: 'Top up or take it back', icon: Wallet },
+    { path: '/memberships', label: 'Memberships', detail: 'Game packs and passes', icon: BadgeCheck },
+    { path: '/splits', label: 'What you owe', detail: 'Your share of games friends booked', icon: Coins },
     { path: '/favourites', label: 'Saved venues', detail: 'Venues you like, to book again', icon: Heart },
     { path: '/reviews', label: 'Reviews', detail: 'Rate the venues you played at', icon: Star },
     { path: '/waitlist', label: 'Waitlist', detail: 'Booked slots you want if they free up', icon: Hourglass },

@@ -5,9 +5,10 @@ import { LoaderCircle, LucideAngularModule, Minus, Plus, ShieldCheck } from 'luc
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
-import { AddOnItem, BookingRequest, DEPOSIT_AMOUNT, Quote, VenueDetail } from '../../core/api.types';
+import { AddOnItem, BookingRequest, DEPOSIT_AMOUNT, Membership, Quote, VenueDetail } from '../../core/api.types';
 import { policyLines } from '../../shared/booking-model';
 import { dayLabel, localClock, rupees } from '../../shared/format';
+import { planTerms } from '../../shared/labels';
 
 /** Booking one slot: extras, a discount code, what it costs and what to pay now, then confirm. */
 @Component({
@@ -47,6 +48,14 @@ export class Book {
 
   protected readonly notes = signal('');
 
+  protected readonly terms = planTerms;
+
+  /** The player's active memberships at this venue. */
+  protected readonly memberships = signal<Membership[]>([]);
+
+  /** The membership used for this booking, instead of a discount code. */
+  protected readonly membershipId = signal<string | null>(null);
+
   protected readonly quote = signal<Quote | null>(null);
 
   /** Why this slot can't be booked as asked (taken, too far ahead...). */
@@ -75,7 +84,8 @@ export class Book {
   private readonly request = computed<BookingRequest>(() => ({
     courtId: this.court(),
     startsAt: this.start(),
-    discountCode: this.appliedCode() ?? undefined,
+    membershipId: this.membershipId() ?? undefined,
+    discountCode: this.membershipId() ? undefined : this.appliedCode() ?? undefined,
     addOns: Object.entries(this.picked()).flatMap(([itemId, quantity]) => (quantity ? [{ itemId, quantity }] : [])),
   }));
 
@@ -125,9 +135,10 @@ export class Book {
 
   private async load(slug: string): Promise<void> {
     try {
-      const [venue, extras] = await Promise.all([this.api.venue(slug), this.api.addOns(slug)]);
+      const [venue, extras, memberships] = await Promise.all([this.api.venue(slug), this.api.addOns(slug), this.api.memberships()]);
       this.venue.set(venue);
       this.extras.set(extras.filter((item) => item.active));
+      this.memberships.set(memberships.filter((m) => m.venue.slug === slug && m.status === 'ACTIVE'));
     }
     catch (error) {
       this.problem.set(problemOf(error).message);

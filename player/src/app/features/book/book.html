@@ -51,27 +51,46 @@
       </section>
     }
 
-    <section class="mt-4 rounded-xl border border-border bg-surface p-4" aria-labelledby="code-title">
-      <h2 id="code-title" class="font-semibold">Discount code</h2>
-      @if (appliedCode() && quote()?.discountCode) {
-        <p class="mt-2 flex items-center gap-2">
-          <span class="tabular rounded-md bg-confirmed-bg px-2 py-1 font-medium text-confirmed-fg">{{ quote()?.discountCode }}</span>
-          <span class="tabular text-muted">−{{ fmt.rupees(quote()?.discount) }}</span>
-          <button type="button" (click)="removeCode()" class="ml-auto min-h-11 text-sm font-medium underline underline-offset-2">Remove</button>
-        </p>
-      } @else {
-        <form class="mt-2 flex gap-2" (ngSubmit)="applyCode()">
-          <label for="code" class="sr-only">Discount code</label>
-          <input id="code" name="code" type="text" maxlength="32" autocomplete="off" placeholder="e.g. DASHAIN20"
-            class="tabular h-11 min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 text-base uppercase placeholder:normal-case"
-            [ngModel]="code()" (ngModelChange)="code.set($event)" />
-          <button type="submit" class="h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Apply</button>
-        </form>
-        @if (codeError(); as message) {
-          <p class="mt-2 text-sm text-danger" role="alert">{{ message }}</p>
+    @if (memberships().length) {
+      <section class="mt-4 rounded-xl border border-border bg-surface p-4" aria-labelledby="membership-title">
+        <h2 id="membership-title" class="font-semibold">Use a membership</h2>
+        <div class="mt-2 space-y-2" role="radiogroup" aria-labelledby="membership-title">
+          <button type="button" role="radio" [attr.aria-checked]="membershipId() === null" (click)="membershipId.set(null)"
+            class="flex min-h-11 w-full items-center rounded-lg border px-3 text-left" [class]="membershipId() === null ? 'border-ink' : 'border-border text-muted'">Don't use one</button>
+          @for (m of memberships(); track m.id) {
+            <button type="button" role="radio" [attr.aria-checked]="membershipId() === m.id" (click)="membershipId.set(m.id)"
+              class="flex min-h-11 w-full flex-col justify-center rounded-lg border px-3 py-2 text-left" [class]="membershipId() === m.id ? 'border-ink' : 'border-border text-muted'">
+              <span class="font-medium">{{ m.plan.name }}</span>
+              <span class="text-sm">{{ terms(m.plan) }}@if (m.gamesRemaining !== null) { · {{ m.gamesRemaining }} left }</span>
+            </button>
+          }
+        </div>
+      </section>
+    }
+
+    @if (!membershipId()) {
+      <section class="mt-4 rounded-xl border border-border bg-surface p-4" aria-labelledby="code-title">
+        <h2 id="code-title" class="font-semibold">Discount code</h2>
+        @if (appliedCode() && quote()?.discountCode) {
+          <p class="mt-2 flex items-center gap-2">
+            <span class="tabular rounded-md bg-confirmed-bg px-2 py-1 font-medium text-confirmed-fg">{{ quote()?.discountCode }}</span>
+            <span class="tabular text-muted">−{{ fmt.rupees(quote()?.discount) }}</span>
+            <button type="button" (click)="removeCode()" class="ml-auto min-h-11 text-sm font-medium underline underline-offset-2">Remove</button>
+          </p>
+        } @else {
+          <form class="mt-2 flex gap-2" (ngSubmit)="applyCode()">
+            <label for="code" class="sr-only">Discount code</label>
+            <input id="code" name="code" type="text" maxlength="32" autocomplete="off" placeholder="e.g. DASHAIN20"
+              class="tabular h-11 min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 text-base uppercase placeholder:normal-case"
+              [ngModel]="code()" (ngModelChange)="code.set($event)" />
+            <button type="submit" class="h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Apply</button>
+          </form>
+          @if (codeError(); as message) {
+            <p class="mt-2 text-sm text-danger" role="alert">{{ message }}</p>
+          }
         }
-      }
-    </section>
+      </section>
+    }
 
     <section class="mt-4 rounded-xl border border-border bg-surface p-4">
       <label for="notes" class="font-semibold">Note for the venue <span class="font-normal text-subtle">(optional)</span></label>

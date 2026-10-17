@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { Bell, CalendarDays, CircleUser, Compass, LogIn, LucideAngularModule, LucideIconData, MessageSquare } from 'lucide-angular';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Bell, CalendarDays, CircleUser, Compass, LogIn, LucideAngularModule, LucideIconData, MessageSquare, Trophy } from 'lucide-angular';
+import { filter, map } from 'rxjs';
 
 import { Badges } from '../core/badges';
 import { Session } from '../core/session';
@@ -14,11 +16,14 @@ interface NavItem {
   /** Shown in the phone's bottom bar (the rest are under Me). */
   onPhoneBar: boolean;
   badge?: 'messages';
+  /** Other paths that belong to this item, so it shows as current there too. */
+  also?: string[];
 }
 
 const NAVIGATION: NavItem[] = [
   { path: '/', label: 'Explore', icon: Compass, private: false, onPhoneBar: true },
   { path: '/bookings', label: 'Bookings', icon: CalendarDays, private: true, onPhoneBar: true },
+  { path: '/matches', label: 'Play', icon: Trophy, private: true, onPhoneBar: true, also: ['/tournaments', '/teams'] },
   { path: '/messages', label: 'Messages', icon: MessageSquare, private: true, onPhoneBar: true, badge: 'messages' },
   { path: '/me', label: 'Me', icon: CircleUser, private: true, onPhoneBar: true },
 ];
@@ -26,7 +31,7 @@ const NAVIGATION: NavItem[] = [
 /** The frame around every screen: a top bar, and a bottom bar on phones. Browsing works signed out. */
 @Component({
   selector: 'fs-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule],
+  imports: [RouterOutlet, RouterLink, LucideAngularModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2">Skip to content</a>
@@ -39,8 +44,8 @@ const NAVIGATION: NavItem[] = [
         </a>
         <nav class="hidden flex-1 items-center gap-1 lg:flex" aria-label="Main">
           @for (item of desktopItems(); track item.path) {
-            <a [routerLink]="item.path" routerLinkActive="bg-surface-2 text-text" [routerLinkActiveOptions]="{ exact: item.path === '/' }"
-              ariaCurrentWhenActive="page" class="flex h-9 items-center gap-2 rounded-md px-3 font-medium text-muted hover:bg-surface-2 hover:text-text">
+            <a [routerLink]="item.path" [attr.aria-current]="current(item) ? 'page' : null" [class.bg-surface-2]="current(item)" [class.text-text]="current(item)"
+              class="flex h-9 items-center gap-2 rounded-md px-3 font-medium text-muted hover:bg-surface-2 hover:text-text">
               <lucide-icon [img]="item.icon" [size]="17" [strokeWidth]="1.75" />{{ item.label }}
               @if (item.badge && badges.messages()) {
                 <span class="tabular rounded-full bg-ink px-1.5 text-xs text-ink-fg" [attr.aria-label]="badges.messages() + ' unread'">{{ badges.messages() }}</span>
@@ -75,8 +80,8 @@ const NAVIGATION: NavItem[] = [
       <ul class="grid" [style.grid-template-columns]="'repeat(' + phoneItems().length + ', minmax(0, 1fr))'">
         @for (item of phoneItems(); track item.path) {
           <li>
-            <a [routerLink]="item.path" routerLinkActive="text-text" [routerLinkActiveOptions]="{ exact: item.path === '/' }"
-              ariaCurrentWhenActive="page" class="relative flex h-16 flex-col items-center justify-center gap-1 text-xs font-medium text-muted">
+            <a [routerLink]="item.path" [attr.aria-current]="current(item) ? 'page' : null" [class.text-text]="current(item)"
+              class="relative flex h-16 flex-col items-center justify-center gap-1 text-xs font-medium text-muted">
               <lucide-icon [img]="item.icon" [size]="22" [strokeWidth]="1.75" />{{ item.label }}
               @if (item.badge && badges.messages()) {
                 <span class="tabular absolute left-1/2 top-2 ml-2 min-w-4 rounded-full bg-ink px-1 text-center text-[11px] font-semibold leading-4 text-ink-fg"
@@ -95,6 +100,18 @@ export class Shell {
   protected readonly badges = inject(Badges);
 
   protected readonly icons = { Bell, LogIn };
+
+  private readonly router = inject(Router);
+
+  private readonly url = toSignal(this.router.events.pipe(filter((e) => e instanceof NavigationEnd), map(() => this.router.url)),
+    { initialValue: this.router.url });
+
+  /** Whether the page shown belongs to {@code item}. */
+  protected current(item: NavItem): boolean {
+    const path = this.url().split(/[?#]/)[0];
+    const under = (base: string) => path === base || path.startsWith(base + '/');
+    return item.path === '/' ? path === '/' || path.startsWith('/venues') : under(item.path) || (item.also ?? []).some(under);
+  }
 
   protected readonly desktopItems = computed(() => NAVIGATION.filter((item) => !item.private || this.session.signedIn()));
 

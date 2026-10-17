@@ -1,0 +1,249 @@
+<div class="mx-auto max-w-2xl px-4 py-6 lg:py-10">
+  @if (split()?.youAreBooker === false) {
+    <a routerLink="/splits" class="text-sm text-muted hover:text-text">← What you owe</a>
+  } @else {
+    <a [routerLink]="['/bookings', id()]" class="text-sm text-muted hover:text-text">← The booking</a>
+  }
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight">Split the cost</h1>
+
+  @if (error(); as message) {
+    <p class="mt-6 rounded-xl border border-border bg-surface px-6 py-10 text-center text-muted">{{ message }}</p>
+  } @else if (split() === undefined) {
+    <div class="mt-6 h-48 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+  } @else if (split() === null || editing()) {
+    <!-- Setting up, or changing, the rules -->
+    <p class="mt-1 text-muted">{{ split() ? 'Change how the cost is shared.' : 'Share what this game costs with the players: equally, or baazi-style.' }}</p>
+    <form class="mt-5 space-y-5" (ngSubmit)="saveRules()">
+      <fieldset>
+        <legend class="mb-2 font-semibold">Who pays</legend>
+        <div class="space-y-2">
+          @for (r of rules; track r.value) {
+            <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
+              [class]="rule() === r.value ? 'bg-surface' : 'border-border bg-surface'">
+              <input type="radio" name="rule" class="mt-1" [value]="r.value" [checked]="rule() === r.value" (change)="rule.set(r.value)" />
+              <span><span class="block font-medium">{{ r.label }}</span><span class="block text-sm text-muted">{{ r.detail }}</span></span>
+            </label>
+          }
+        </div>
+      </fieldset>
+      @if (rule() === 'LOSERS_PAY_PERCENT') {
+        <div>
+          <label for="percent" class="mb-1.5 block font-medium">The losing side pays</label>
+          <div class="flex items-center gap-2">
+            <input id="percent" name="percent" type="number" inputmode="numeric" min="50" max="100" class="tabular h-11 w-24 rounded-lg border border-border bg-surface px-3 text-base"
+              [ngModel]="percent()" (ngModelChange)="percent.set(+$event)" />
+            <span class="text-muted">% of everything</span>
+          </div>
+        </div>
+      }
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label for="side-a" class="mb-1.5 block font-medium">One side</label>
+          <input id="side-a" name="sideA" type="text" maxlength="30" placeholder="Team A" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+            [ngModel]="sideA()" (ngModelChange)="sideA.set($event)" />
+        </div>
+        <div>
+          <label for="side-b" class="mb-1.5 block font-medium">The other side</label>
+          <input id="side-b" name="sideB" type="text" maxlength="30" placeholder="Team B" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+            [ngModel]="sideB()" (ngModelChange)="sideB.set($event)" />
+        </div>
+      </div>
+      @if (!split()) {
+        <fieldset>
+          <legend class="mb-1.5 font-medium">You play for</legend>
+          <div class="flex rounded-lg bg-surface-2 p-1" role="radiogroup">
+            @for (s of ['A', 'B']; track s) {
+              <button type="button" role="radio" [attr.aria-checked]="mySide() === s" (click)="mySide.set($any(s))"
+                class="h-9 flex-1 rounded-md font-medium text-muted" [class.bg-surface]="mySide() === s" [class.text-text]="mySide() === s">
+                {{ s === 'A' ? (sideA() || 'Team A') : (sideB() || 'Team B') }}
+              </button>
+            }
+          </div>
+        </fieldset>
+      }
+      <div class="grid gap-3 sm:grid-cols-[160px_1fr]">
+        <div>
+          <label for="extras" class="mb-1.5 block font-medium">Extras <span class="font-normal text-subtle">(Rs)</span></label>
+          <input id="extras" name="extras" type="number" inputmode="decimal" min="0" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+            [ngModel]="extras()" (ngModelChange)="extras.set(+$event)" />
+        </div>
+        <div>
+          <label for="extras-note" class="mb-1.5 block font-medium">For <span class="font-normal text-subtle">(optional)</span></label>
+          <input id="extras-note" name="extrasNote" type="text" maxlength="100" placeholder="Water, drinks…" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+            [ngModel]="extrasNote()" (ngModelChange)="extrasNote.set($event)" />
+        </div>
+      </div>
+      @if (actionError(); as message) {
+        <p class="text-danger" role="alert">{{ message }}</p>
+      }
+      <div class="flex gap-2">
+        <button type="submit" [disabled]="busy()" class="h-12 rounded-lg bg-ink px-6 font-medium text-ink-fg disabled:opacity-60">{{ split() ? 'Save' : 'Start splitting' }}</button>
+        @if (split()) {
+          <button type="button" (click)="editing.set(false)" class="h-12 rounded-lg px-4 font-medium">Cancel</button>
+        }
+      </div>
+    </form>
+  } @else if (split(); as s) {
+    <p class="mt-1 text-muted"><span class="tabular">{{ fmt.dayLabel(s.startsAt.slice(0, 10)) }} · {{ fmt.localClock(s.startsAt) }}</span> · {{ s.venueName }}, {{ s.courtName }}</p>
+
+    <!-- What it costs and the rule -->
+    <section class="mt-5 rounded-xl border border-border bg-surface p-5">
+      <div class="flex items-start gap-3">
+        <div class="min-w-0 flex-1">
+          <p class="font-semibold">{{ ruleText[s.rule].label }}@if (s.rule === 'LOSERS_PAY_PERCENT') { ({{ s.losersPercent }}%)}</p>
+          <p class="text-sm text-muted">{{ ruleText[s.rule].detail }}</p>
+        </div>
+        @if (s.youAreBooker && !s.result) {
+          <button type="button" (click)="edit()" class="h-11 shrink-0 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">Change</button>
+        }
+      </div>
+      <dl class="mt-3 space-y-1 text-sm">
+        <div class="flex justify-between"><dt class="text-muted">Court</dt><dd class="tabular">{{ fmt.rupees(s.courtAmount) }}</dd></div>
+        @if (s.extrasAmount > 0) {
+          <div class="flex justify-between"><dt class="text-muted">Extras{{ s.extrasNote ? ' · ' + s.extrasNote : '' }}</dt><dd class="tabular">{{ fmt.rupees(s.extrasAmount) }}</dd></div>
+        }
+        <div class="flex justify-between font-semibold"><dt>Total</dt><dd class="tabular">{{ fmt.rupees(s.total) }}</dd></div>
+      </dl>
+      @if (!s.result && s.rule !== 'EQUAL' && s.outcomes.length) {
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <caption class="mb-1 text-left font-medium">Each player pays, roughly</caption>
+            <thead class="text-muted"><tr><th scope="col" class="py-1 font-normal">If</th><th scope="col" class="py-1 text-right font-normal">{{ s.sideAName }}</th><th scope="col" class="py-1 text-right font-normal">{{ s.sideBName }}</th></tr></thead>
+            <tbody>
+              @for (o of s.outcomes; track o.result) {
+                <tr class="border-t border-border">
+                  <th scope="row" class="py-1.5 font-normal">{{ resultLabel(o.result, s.sideAName, s.sideBName) }}</th>
+                  <td class="tabular py-1.5 text-right">{{ fmt.rupees(o.sideAEach) }}</td>
+                  <td class="tabular py-1.5 text-right">{{ fmt.rupees(o.sideBEach) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+    <!-- What you owe, for players other than the booker -->
+    @if (!s.youAreBooker) {
+      @if (me(); as m) {
+        <section class="mt-4 rounded-xl border p-5" [class]="m.settled ? 'border-confirmed-line bg-confirmed-bg text-confirmed-fg' : 'border-border bg-surface'">
+          @if (m.share === null) {
+            <p>Your share is worked out once {{ s.bookedBy.name }} records the result.</p>
+          } @else if (m.settled) {
+            <p class="font-medium">Paid. {{ s.bookedBy.name }} has your {{ fmt.rupees(m.share) }}.</p>
+          } @else {
+            <p class="font-semibold">You owe {{ s.bookedBy.name }} {{ fmt.rupees(m.share) }}</p>
+            @if (s.bookedBy.phone) {
+              <p class="mt-1 text-muted">Pay them on eSewa or Khalti: <a [href]="'tel:' + s.bookedBy.phone" class="tabular font-medium text-text underline-offset-2 hover:underline">{{ fmt.phone(s.bookedBy.phone) }}</a>. They tick you off once it's in.</p>
+            }
+          }
+        </section>
+      }
+    }
+
+    <!-- The result -->
+    @if (s.result) {
+      <section class="mt-4 rounded-xl border border-border bg-surface p-5">
+        <div class="flex items-center gap-3">
+          <p class="min-w-0 flex-1 font-semibold">{{ s.rule === 'EQUAL' ? 'Played' : resultLabel(s.result, s.sideAName, s.sideBName) }}</p>
+          @if (s.youAreBooker) {
+            <button type="button" (click)="undoResult()" [disabled]="busy()" class="h-11 rounded-lg px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">Undo</button>
+          }
+        </div>
+        @if (s.youAreBooker) {
+          <p class="mt-1 text-sm text-muted"><span class="tabular font-medium text-text">{{ fmt.rupees(s.collected) }}</span> collected · <span class="tabular font-medium text-text">{{ fmt.rupees(s.outstanding) }}</span> still to come</p>
+        }
+      </section>
+    } @else if (s.youAreBooker && started()) {
+      <section class="mt-4 rounded-xl border border-held-line bg-surface p-5">
+        <p class="font-semibold">{{ s.rule === 'EQUAL' ? 'Played the game?' : 'Who won?' }}</p>
+        <p class="text-sm text-muted">This works out everyone's share and tells the players with the app.</p>
+        <div class="mt-3 flex flex-wrap gap-2">
+          @if (s.rule === 'EQUAL') {
+            <button type="button" (click)="record(null)" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">Work out shares</button>
+          } @else {
+            <button type="button" (click)="record('A_WON')" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">{{ s.sideAName }}</button>
+            <button type="button" (click)="record('B_WON')" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">{{ s.sideBName }}</button>
+            <button type="button" (click)="record('DRAW')" [disabled]="busy()" class="h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2 disabled:opacity-60">Draw</button>
+          }
+        </div>
+      </section>
+    }
+
+    @if (actionError(); as message) {
+      <p class="mt-4 text-danger" role="alert">{{ message }}</p>
+    }
+
+    <!-- The two sides -->
+    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+      @for (side of sides(); track side.side) {
+        <section class="rounded-xl border border-border bg-surface p-4" [attr.aria-label]="side.name">
+          <h2 class="font-semibold">{{ side.name }} <span class="font-normal text-muted">· {{ side.players.length }}</span></h2>
+          <ul class="mt-2 divide-y divide-border">
+            @for (p of side.players; track p.id) {
+              <li class="flex items-center gap-2 py-2">
+                <div class="min-w-0 flex-1">
+                  <p class="truncate">{{ p.name }}@if (p.you) {<span class="text-muted"> (you)</span>}@if (p.booker && !p.you) {<span class="text-muted"> (booked)</span>}</p>
+                  @if (p.phone && s.youAreBooker) {
+                    <p class="tabular text-xs text-subtle">{{ fmt.phone(p.phone) }}</p>
+                  }
+                </div>
+                @if (p.share !== null) {
+                  <span class="tabular text-sm" [class.text-subtle]="p.settled" [class.line-through]="p.settled && !p.booker">{{ fmt.rupees(p.share) }}</span>
+                }
+                @if (s.youAreBooker && !p.booker) {
+                  @if (s.result) {
+                    <button type="button" (click)="paid(p)" [disabled]="busy()" [attr.aria-pressed]="p.settled" [attr.aria-label]="(p.settled ? 'Paid: ' : 'Mark paid: ') + p.name"
+                      class="grid size-11 place-items-center rounded-md border" [class]="p.settled ? 'border-confirmed-line bg-confirmed-bg text-confirmed-fg' : 'border-border text-subtle hover:text-text'">
+                      <lucide-icon [img]="icons.Check" [size]="16" />
+                    </button>
+                  } @else {
+                    <button type="button" (click)="move(p)" [disabled]="busy()" [attr.aria-label]="'Move ' + p.name + ' to the other side'"
+                      class="grid size-11 place-items-center rounded-md text-subtle hover:bg-surface-2 hover:text-text">
+                      <lucide-icon [img]="icons.ArrowLeftRight" [size]="16" />
+                    </button>
+                    <button type="button" (click)="remove(p)" [disabled]="busy()" [attr.aria-label]="'Remove ' + p.name"
+                      class="grid size-11 place-items-center rounded-md text-subtle hover:bg-surface-2 hover:text-danger">
+                      <lucide-icon [img]="icons.Trash2" [size]="16" />
+                    </button>
+                  }
+                }
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+
+    <!-- Adding players -->
+    @if (s.youAreBooker && !s.result) {
+      <section class="mt-4 rounded-xl border border-border bg-surface p-5" aria-labelledby="add-title">
+        <h2 id="add-title" class="font-semibold">Add a player</h2>
+        <p class="text-sm text-muted">By the phone number they use FutSlot with, so they see their share, or just a name.</p>
+        <form class="mt-3 space-y-3" (ngSubmit)="addPlayer()">
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label for="new-phone" class="mb-1.5 block font-medium">Phone</label>
+              <input id="new-phone" name="phone" type="tel" inputmode="numeric" placeholder="98XXXXXXXX" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+                [ngModel]="newPhone()" (ngModelChange)="newPhone.set($event)" />
+            </div>
+            <div>
+              <label for="new-name" class="mb-1.5 block font-medium">Name</label>
+              <input id="new-name" name="name" type="text" maxlength="60" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+                [ngModel]="newName()" (ngModelChange)="newName.set($event)" />
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="flex rounded-lg bg-surface-2 p-1" role="radiogroup" aria-label="Side">
+              @for (side of sides(); track side.side) {
+                <button type="button" role="radio" [attr.aria-checked]="newSide() === side.side" (click)="newSide.set(side.side)"
+                  class="h-9 rounded-md px-3 text-sm font-medium text-muted" [class.bg-surface]="newSide() === side.side" [class.text-text]="newSide() === side.side">{{ side.name }}</button>
+              }
+            </div>
+            <button type="submit" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Add</button>
+          </div>
+        </form>
+      </section>
+    }
+  }
+</div>

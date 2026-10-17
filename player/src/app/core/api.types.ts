@@ -441,3 +441,350 @@ export interface WaitlistEntry {
   notifiedAt: string | null;
   createdAt: string;
 }
+
+// Memberships
+
+export type MembershipType = 'GAME_PACK' | 'MONTHLY_PASS';
+
+export type MembershipStatus = 'PENDING_PAYMENT' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
+
+/** A game pack ({@link gamesIncluded} games) or a pass ({@link discountPercent} off every game). */
+export interface MembershipPlan {
+  id: string;
+  venueId: string;
+  name: string;
+  description: string | null;
+  type: MembershipType;
+  gamesIncluded: number | null;
+  discountPercent: number | null;
+  validityDays: number;
+  price: number;
+  active: boolean;
+}
+
+export interface Membership {
+  id: string;
+  venue: { id: string; name: string; slug: string };
+  plan: { id: string; name: string; type: MembershipType; gamesIncluded: number | null; discountPercent: number | null };
+  customer: { id: string; name: string; phone: string };
+  startsOn: string;
+  expiresOn: string;
+  gamesRemaining: number | null;
+  status: MembershipStatus;
+  createdAt: string;
+}
+
+// Splitting a booking's cost
+
+export type SplitRule = 'EQUAL' | 'LOSERS_PAY_ALL' | 'LOSERS_PAY_PERCENT' | 'LOSERS_PAY_COURT';
+
+export type Side = 'A' | 'B';
+
+export type MatchResult = 'A_WON' | 'B_WON' | 'DRAW';
+
+export interface SplitPerson {
+  userId: string;
+  name: string;
+  phone: string | null;
+}
+
+/** {@code share} is set once the result is in; {@code phone} only for the booker. */
+export interface SplitPlayer {
+  id: string;
+  name: string;
+  side: Side;
+  booker: boolean;
+  you: boolean;
+  appUser: boolean;
+  phone: string | null;
+  share: number | null;
+  settled: boolean;
+  settledAt: string | null;
+}
+
+/** What each player on a side pays for one result, roughly (shares differ by at most a rupee). */
+export interface SplitOutcome {
+  result: MatchResult;
+  sideATotal: number;
+  sideAEach: number;
+  sideBTotal: number;
+  sideBEach: number;
+}
+
+export interface Split {
+  bookingId: string;
+  reference: string;
+  venueName: string;
+  courtName: string;
+  startsAt: string;
+  bookedBy: SplitPerson;
+  rule: SplitRule;
+  losersPercent: number | null;
+  courtAmount: number;
+  extrasAmount: number;
+  extrasNote: string | null;
+  total: number;
+  sideAName: string;
+  sideBName: string;
+  players: SplitPlayer[];
+  result: MatchResult | null;
+  resultRecordedAt: string | null;
+  outcomes: SplitOutcome[];
+  collected: number;
+  outstanding: number;
+  youAreBooker: boolean;
+}
+
+export interface SplitRules {
+  rule: SplitRule;
+  losersPercent?: number;
+  extrasAmount?: number;
+  extrasNote?: string;
+  sideAName?: string;
+  sideBName?: string;
+  bookerSide?: Side;
+}
+
+/** Money the player owes whoever booked a game they played in. */
+export interface OwedShare {
+  bookingId: string;
+  venueName: string;
+  startsAt: string;
+  side: string;
+  result: MatchResult | null;
+  amount: number;
+  payTo: SplitPerson;
+}
+
+// Players and teams
+
+export type SkillLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'PRO';
+
+export type Position = 'GOALKEEPER' | 'DEFENDER' | 'MIDFIELDER' | 'FORWARD' | 'ANY';
+
+export type PreferredFoot = 'LEFT' | 'RIGHT' | 'BOTH';
+
+/** A player as others see them (short name); profile fields are null when not filled in or kept private. */
+export interface PlayerCard {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  position: Position | null;
+  skillLevel: SkillLevel | null;
+  preferredFoot: PreferredFoot | null;
+  city: string | null;
+  bio: string | null;
+  gamesPlayed: number;
+  /** Only on the player's own card: whether other players see the profile. */
+  isPublic: boolean | null;
+}
+
+export interface PlayerProfileRequest {
+  position?: Position;
+  skillLevel?: SkillLevel;
+  preferredFoot?: PreferredFoot;
+  city?: string;
+  bio?: string;
+  isPublic?: boolean;
+}
+
+export type TeamRole = 'CAPTAIN' | 'VICE_CAPTAIN' | 'MEMBER';
+
+export type MemberStatus = 'INVITED' | 'ACTIVE' | 'LEFT' | 'REMOVED';
+
+export interface TeamSummary {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  city: string | null;
+  skillLevel: SkillLevel | null;
+  memberCount: number;
+}
+
+/** Members see full names and their own role; leaders also see pending invites. */
+export interface Team {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  city: string | null;
+  skillLevel: SkillLevel | null;
+  isPublic: boolean;
+  captainId: string;
+  memberCount: number;
+  members: { userId: string; name: string; avatarUrl: string | null; role: TeamRole; status: MemberStatus }[];
+  myRole: TeamRole | null;
+  myStatus: MemberStatus | null;
+}
+
+export interface TeamRequest {
+  name: string;
+  city?: string;
+  skillLevel?: SkillLevel;
+  isPublic?: boolean;
+}
+
+// Matchmaking
+
+export type MatchPostType = 'NEED_PLAYERS' | 'FIND_OPPONENT';
+
+export type MatchPostStatus = 'OPEN' | 'FILLED' | 'CANCELLED' | 'EXPIRED';
+
+export type JoinRequestStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'WITHDRAWN';
+
+export interface TeamRef {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+/**
+ * Phones are shared once a request is accepted: the poster sees accepted players' numbers, accepted players see
+ * the poster's ({@code contactPhone}). {@code requests} is only filled in for the poster.
+ */
+export interface MatchPost {
+  id: string;
+  type: MatchPostType;
+  status: MatchPostStatus;
+  postedBy: { userId: string; name: string };
+  team: TeamRef | null;
+  venue: { id: string; name: string; slug: string } | null;
+  city: string | null;
+  startsAt: string;
+  playersNeeded: number | null;
+  placesTaken: number;
+  skillLevel: SkillLevel | null;
+  costPerPlayer: number | null;
+  note: string | null;
+  mine: boolean;
+  myRequest: { id: string; status: JoinRequestStatus; team: TeamRef | null } | null;
+  contactPhone: string | null;
+  requests: { id: string; player: PlayerCard; team: TeamRef | null; message: string | null; status: JoinRequestStatus; phone: string | null; createdAt: string }[];
+  createdAt: string;
+}
+
+/** Where and when: a booking of the player's, or a venue and time, or a city and time. */
+export interface MatchPostRequest {
+  type: MatchPostType;
+  teamId?: string;
+  bookingId?: string;
+  venueId?: string;
+  city?: string;
+  startsAt?: string;
+  playersNeeded?: number;
+  skillLevel?: SkillLevel;
+  costPerPlayer?: number;
+  note?: string;
+}
+
+// Tournaments
+
+export type TournamentFormat = 'KNOCKOUT' | 'LEAGUE' | 'GROUP_KNOCKOUT';
+
+export type TournamentStatus = 'DRAFT' | 'REGISTRATION_OPEN' | 'REGISTRATION_CLOSED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+
+export type Stage = 'GROUP' | 'LEAGUE' | 'ROUND_OF_32' | 'ROUND_OF_16' | 'QUARTER_FINAL' | 'SEMI_FINAL' | 'THIRD_PLACE' | 'FINAL';
+
+export interface EntryTeam {
+  registrationId: string;
+  teamId: string;
+  name: string;
+  slug: string;
+}
+
+export interface TournamentSummary {
+  id: string;
+  slug: string;
+  name: string;
+  venue: { id: string; name: string; slug: string; city: string };
+  format: TournamentFormat;
+  status: TournamentStatus;
+  startsOn: string;
+  endsOn: string;
+  entryFee: number;
+  teamsIn: number;
+  maxTeams: number;
+  bannerUrl: string | null;
+}
+
+export type EntryStatus = 'PENDING_PAYMENT' | 'CONFIRMED' | 'WAITLISTED' | 'WITHDRAWN' | 'REJECTED';
+
+export interface TournamentEntry {
+  id: string;
+  team: EntryTeam;
+  status: EntryStatus;
+  groupName: string | null;
+  seed: number | null;
+  squad: { userId: string; name: string; jerseyNumber: number | null }[];
+  registeredAt: string;
+}
+
+export interface TournamentMatch {
+  id: string;
+  stage: Stage;
+  groupName: string | null;
+  round: number;
+  matchNumber: number;
+  home: EntryTeam | null;
+  away: EntryTeam | null;
+  court: { id: string; name: string } | null;
+  /** Venue-local with offset. */
+  scheduledAt: string | null;
+  homeScore: number | null;
+  awayScore: number | null;
+  homePenalties: number | null;
+  awayPenalties: number | null;
+  winnerRegistrationId: string | null;
+  status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'WALKOVER' | 'POSTPONED' | 'CANCELLED';
+  bye: boolean;
+}
+
+export interface Standing {
+  team: EntryTeam;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+}
+
+export interface TournamentDetail {
+  id: string;
+  slug: string;
+  name: string;
+  venue: { id: string; name: string; slug: string; city: string };
+  description: string | null;
+  rules: string | null;
+  bannerUrl: string | null;
+  format: TournamentFormat;
+  status: TournamentStatus;
+  teamSize: number;
+  maxSquadSize: number;
+  maxTeams: number;
+  entryFee: number;
+  prizeDetails: string | null;
+  pointsForWin: number;
+  pointsForDraw: number;
+  registrationOpensAt: string | null;
+  registrationClosesAt: string | null;
+  startsOn: string;
+  endsOn: string;
+  matchMinutes: number;
+  groupCount: number | null;
+  acceptingTeams: boolean;
+  teamsIn: number;
+  waitlisted: number;
+  registrations: TournamentEntry[];
+  matches: TournamentMatch[];
+  tables: { groupName: string | null; rows: Standing[] }[];
+  champion: EntryTeam | null;
+}
+
+export interface MyTournamentEntry {
+  tournament: TournamentSummary;
+  entry: TournamentEntry;
+}

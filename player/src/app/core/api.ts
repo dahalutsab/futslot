@@ -4,8 +4,10 @@ import { firstValueFrom } from 'rxjs';
 
 import {
   AddOnItem, AppNotification, Availability, Booking, BookingPayments, BookingRequest, ChatMessage, ConversationSummary,
-  Deposit, DepositWithdrawal, Page, Payment, PaymentClaim, PaymentMethod, Quote, RatingSummary, Review, ReviewWrite, User,
-  VenueDetail, VenueSummary, WaitlistEntry,
+  Deposit, DepositWithdrawal, MatchPost, MatchPostRequest, MatchPostType, MatchResult, Membership, MembershipPlan,
+  MyTournamentEntry, OwedShare, Page, Payment, PaymentClaim, PaymentMethod, PlayerCard, PlayerProfileRequest, Quote,
+  RatingSummary, Review, ReviewWrite, Side, SkillLevel, Split, SplitRules, Team, TeamRequest, TeamRole, TeamSummary,
+  TournamentDetail, TournamentSummary, User, VenueDetail, VenueSummary, WaitlistEntry,
 } from './api.types';
 
 /** Every API call the player app makes. Calls under /venues work signed out too. */
@@ -188,6 +190,196 @@ export class Api {
 
   readConversation(conversationId: string): Promise<void> {
     return this.post<void>(`/api/v1/me/conversations/${conversationId}/read`, {});
+  }
+
+  // Memberships
+
+  membershipPlans(slug: string): Promise<MembershipPlan[]> {
+    return this.get<MembershipPlan[]>(`/api/v1/venues/${slug}/membership-plans`);
+  }
+
+  memberships(): Promise<Membership[]> {
+    return this.get<Membership[]>('/api/v1/me/memberships');
+  }
+
+  /** Payment details are left out for a free plan. */
+  buyMembership(planId: string, claim: PaymentClaim | null): Promise<Membership> {
+    return this.post<Membership>('/api/v1/me/memberships', { planId, ...claim });
+  }
+
+  // Splitting a booking's cost
+
+  /** Rejects with SPLIT_NOT_FOUND until the booker sets one up. */
+  split(bookingId: string): Promise<Split> {
+    return this.get<Split>(`/api/v1/bookings/${bookingId}/split`);
+  }
+
+  setUpSplit(bookingId: string, rules: SplitRules): Promise<Split> {
+    return firstValueFrom(this.http.put<Split>(`/api/v1/bookings/${bookingId}/split`, rules));
+  }
+
+  /** An app user by phone, or a guest by name. */
+  addSplitPlayer(bookingId: string, player: { name?: string; phone?: string; side: Side }): Promise<Split> {
+    return this.post<Split>(`/api/v1/bookings/${bookingId}/split/players`, player);
+  }
+
+  moveSplitPlayer(bookingId: string, playerId: string, side: Side): Promise<Split> {
+    return firstValueFrom(this.http.put<Split>(`/api/v1/bookings/${bookingId}/split/players/${playerId}`, { side }));
+  }
+
+  removeSplitPlayer(bookingId: string, playerId: string): Promise<Split> {
+    return firstValueFrom(this.http.delete<Split>(`/api/v1/bookings/${bookingId}/split/players/${playerId}`));
+  }
+
+  splitResult(bookingId: string, result: MatchResult | null): Promise<Split> {
+    return this.post<Split>(`/api/v1/bookings/${bookingId}/split/result`, { result });
+  }
+
+  undoSplitResult(bookingId: string): Promise<Split> {
+    return firstValueFrom(this.http.delete<Split>(`/api/v1/bookings/${bookingId}/split/result`));
+  }
+
+  splitPaid(bookingId: string, playerId: string, paid: boolean): Promise<Split> {
+    const url = `/api/v1/bookings/${bookingId}/split/players/${playerId}/paid`;
+    return firstValueFrom(paid ? this.http.post<Split>(url, null) : this.http.delete<Split>(url));
+  }
+
+  splitDues(): Promise<OwedShare[]> {
+    return this.get<OwedShare[]>('/api/v1/me/split-dues');
+  }
+
+  // Players and teams
+
+  myProfile(): Promise<PlayerCard> {
+    return this.get<PlayerCard>('/api/v1/me/player-profile');
+  }
+
+  saveProfile(profile: PlayerProfileRequest): Promise<PlayerCard> {
+    return firstValueFrom(this.http.put<PlayerCard>('/api/v1/me/player-profile', profile));
+  }
+
+  player(userId: string): Promise<PlayerCard> {
+    return this.get<PlayerCard>(`/api/v1/players/${userId}`);
+  }
+
+  teams(filter: { q?: string; city?: string; page?: number }): Promise<Page<TeamSummary>> {
+    const params: Record<string, string> = { page: String(filter.page ?? 0), size: '20' };
+    if (filter.q) {
+      params['q'] = filter.q;
+    }
+    if (filter.city) {
+      params['city'] = filter.city;
+    }
+    return this.get<Page<TeamSummary>>('/api/v1/teams', params);
+  }
+
+  team(slug: string): Promise<Team> {
+    return this.get<Team>(`/api/v1/teams/${slug}`);
+  }
+
+  /** Teams the player is in or invited to. */
+  myTeams(): Promise<Team[]> {
+    return this.get<Team[]>('/api/v1/me/teams');
+  }
+
+  createTeam(team: TeamRequest): Promise<Team> {
+    return this.post<Team>('/api/v1/teams', team);
+  }
+
+  updateTeam(teamId: string, team: TeamRequest): Promise<Team> {
+    return firstValueFrom(this.http.put<Team>(`/api/v1/teams/${teamId}`, team));
+  }
+
+  invite(teamId: string, phone: string): Promise<Team> {
+    return this.post<Team>(`/api/v1/teams/${teamId}/invitations`, { phone });
+  }
+
+  answerInvite(teamId: string, accept: boolean): Promise<Team | null> {
+    return this.post<Team | null>(`/api/v1/teams/${teamId}/invitation/${accept ? 'accept' : 'decline'}`, {});
+  }
+
+  leaveTeam(teamId: string): Promise<void> {
+    return this.post<void>(`/api/v1/teams/${teamId}/leave`, {});
+  }
+
+  removeMember(teamId: string, userId: string): Promise<Team> {
+    return firstValueFrom(this.http.delete<Team>(`/api/v1/teams/${teamId}/members/${userId}`));
+  }
+
+  changeRole(teamId: string, userId: string, role: TeamRole): Promise<Team> {
+    return firstValueFrom(this.http.put<Team>(`/api/v1/teams/${teamId}/members/${userId}/role`, { role }));
+  }
+
+  // Matchmaking
+
+  /** Open posts, soonest first. {@code date} is a Nepal date. */
+  matchPosts(filter: { city?: string; type?: MatchPostType; date?: string; skillLevel?: SkillLevel; page?: number }): Promise<Page<MatchPost>> {
+    const params: Record<string, string> = { page: String(filter.page ?? 0), size: '20' };
+    for (const key of ['city', 'type', 'date', 'skillLevel'] as const) {
+      if (filter[key]) {
+        params[key] = filter[key]!;
+      }
+    }
+    return this.get<Page<MatchPost>>('/api/v1/match-posts', params);
+  }
+
+  matchPost(id: string): Promise<MatchPost> {
+    return this.get<MatchPost>(`/api/v1/match-posts/${id}`);
+  }
+
+  createMatchPost(post: MatchPostRequest): Promise<MatchPost> {
+    return this.post<MatchPost>('/api/v1/match-posts', post);
+  }
+
+  cancelMatchPost(id: string): Promise<MatchPost> {
+    return this.post<MatchPost>(`/api/v1/match-posts/${id}/cancel`, {});
+  }
+
+  /** {@code teamId}: the team asking, to answer a FIND_OPPONENT post. */
+  askToJoin(id: string, message: string, teamId?: string): Promise<MatchPost> {
+    return this.post<MatchPost>(`/api/v1/match-posts/${id}/requests`, { message: message || undefined, teamId });
+  }
+
+  withdrawRequest(id: string): Promise<MatchPost> {
+    return this.post<MatchPost>(`/api/v1/match-posts/${id}/requests/withdraw`, {});
+  }
+
+  answerRequest(id: string, requestId: string, accept: boolean): Promise<MatchPost> {
+    return this.post<MatchPost>(`/api/v1/match-posts/${id}/requests/${requestId}/${accept ? 'accept' : 'decline'}`, {});
+  }
+
+  myMatchPosts(): Promise<Page<MatchPost>> {
+    return this.get<Page<MatchPost>>('/api/v1/me/match-posts', { size: '50' });
+  }
+
+  myMatchRequests(): Promise<Page<MatchPost>> {
+    return this.get<Page<MatchPost>>('/api/v1/me/match-requests', { size: '50' });
+  }
+
+  // Tournaments
+
+  tournaments(upcoming = true, city?: string): Promise<TournamentSummary[]> {
+    return this.get<TournamentSummary[]>('/api/v1/tournaments', city ? { upcoming: String(upcoming), city } : { upcoming: String(upcoming) });
+  }
+
+  tournament(slug: string): Promise<TournamentDetail> {
+    return this.get<TournamentDetail>(`/api/v1/tournaments/${slug}`);
+  }
+
+  register(tournamentId: string, teamId: string, squad: { userId: string; jerseyNumber?: number }[]): Promise<TournamentDetail> {
+    return this.post<TournamentDetail>(`/api/v1/tournaments/${tournamentId}/registrations`, { teamId, squad });
+  }
+
+  withdrawEntry(tournamentId: string, registrationId: string): Promise<TournamentDetail> {
+    return this.post<TournamentDetail>(`/api/v1/tournaments/${tournamentId}/registrations/${registrationId}/withdraw`, {});
+  }
+
+  myEntries(): Promise<MyTournamentEntry[]> {
+    return this.get<MyTournamentEntry[]>('/api/v1/me/tournament-entries');
+  }
+
+  payEntry(registrationId: string, claim: PaymentClaim): Promise<Payment> {
+    return this.post<Payment>(`/api/v1/tournament-entries/${registrationId}/payments`, claim);
   }
 
   // Account

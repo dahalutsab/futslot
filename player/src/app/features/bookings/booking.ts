@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, OnDestroy, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { CircleCheck, Clock, LucideAngularModule, MapPin, MessageSquare, Wallet } from 'lucide-angular';
+import { CircleCheck, Clock, LucideAngularModule, MapPin, MessageSquare, Users, Wallet } from 'lucide-angular';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -29,7 +29,7 @@ export class BookingPage implements OnDestroy {
   /** Set when the player has just booked it. */
   readonly booked = input<string | undefined>();
 
-  protected readonly icons = { CircleCheck, Clock, MapPin, MessageSquare, Wallet };
+  protected readonly icons = { CircleCheck, Clock, MapPin, MessageSquare, Users, Wallet };
 
   protected readonly fmt = { rupees, localClock, dayLabel, methodLabel, clockAt };
 

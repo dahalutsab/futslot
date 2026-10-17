@@ -109,6 +109,14 @@
       }
     </section>
 
+    @if (b.status === 'CONFIRMED' || b.status === 'PENDING_PAYMENT' || b.status === 'COMPLETED') {
+      <a [routerLink]="['/bookings', b.id, 'split']" class="mt-4 flex min-h-14 items-center gap-3 rounded-xl border border-border bg-surface px-5 py-3 hover:border-subtle">
+        <lucide-icon [img]="icons.Users" [size]="20" class="text-muted" />
+        <span class="min-w-0 flex-1"><span class="block font-medium">Split the cost</span><span class="block text-sm text-muted">Share it equally, or baazi: the losers pay</span></span>
+        <span aria-hidden="true" class="text-subtle">›</span>
+      </a>
+    }
+
     @if (b.notes) {
       <section class="mt-4 rounded-xl border border-border bg-surface p-5">
         <h2 class="font-semibold">Your note</h2>

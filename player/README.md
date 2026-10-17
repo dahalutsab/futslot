@@ -1,7 +1,9 @@
 # FutSlot player web app
 
 The web app players use until the mobile app is built: find a venue, see its free slots and prices, book
-and pay the advance, manage bookings and the FutSlot booking deposit. Angular 21 (standalone components,
+and pay the advance, manage bookings and the FutSlot booking deposit, split a game's cost, message venues,
+review them, wait for a booked slot, buy memberships, and play: pickup games, teams and tournaments.
+Angular 21 (standalone components,
 signals, OnPush), Tailwind CSS v4, Angular CDK and Lucide icons, on the same design tokens as the owner
 dashboard. Design notes: [docs/design/player-web.md](../docs/design/player-web.md).
 
