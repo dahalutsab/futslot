@@ -1,4 +1,5 @@
-import { CancellationTier, DayHours, STRIKE_WINDOW_DAYS, VenuePolicy, Weekday } from '../../core/api.types';
+import { CancellationTier, DayHours, DEPOSIT_AMOUNT, STRIKE_WINDOW_DAYS, VenuePolicy, Weekday } from '../../core/api.types';
+import { rupees } from '../../shared/format';
 
 /** The week as people in Nepal count it, Sunday first. */
 export const WEEK: { day: Weekday; label: string; short: string }[] = [
@@ -89,7 +90,15 @@ export function policySummary(policy: VenuePolicy): string[] {
     const fees = tiers.map((tier) => `${tier.feePercent}% within ${tier.withinHours} ${hours(tier.withinHours)}`);
     const listed = fees.length === 1 ? fees[0] : `${fees.slice(0, -1).join(', ')} and ${fees[fees.length - 1]}`;
     lines.push(`Cancelling ${tiers[0].withinHours} ${hours(tiers[0].withinHours)} or more before the game is free.`);
-    lines.push(`Cancelling later costs a share of the booking price: ${listed}. It's never more than the player has paid.`);
+    lines.push(`Cancelling later costs a share of the booking price: ${listed}. ${policy.depositRequired
+      ? "What the player has paid covers it first; their FutSlot deposit covers the rest."
+      : "It's never more than the player has paid."}`);
+  }
+  if (policy.depositRequired) {
+    const top = Math.max(0, ...tiers.map((tier) => tier.feePercent));
+    lines.push(`Players need a ${rupees(DEPOSIT_AMOUNT)} FutSlot booking deposit to book in the app or online. ${top > 0
+      ? `Not showing up costs ${top}% of the booking price, like cancelling at the last minute.`
+      : 'With no cancellation fees, nothing is ever taken from it.'}`);
   }
   if (policy.strikeLimit !== null && policy.strikeAdvancePercent !== null && policy.strikeAdvancePercent > policy.advancePercent) {
     const strikes = policy.strikeLimit === 1 ? 'a late cancellation or no-show' : `${policy.strikeLimit} late cancellations or no-shows`;

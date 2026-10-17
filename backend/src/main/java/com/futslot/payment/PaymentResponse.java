@@ -13,7 +13,8 @@ import com.futslot.tournament.Registration;
 /**
  * Only the fields for the payment's purpose are set: booking ones for BOOKING, membership ones for
  * MEMBERSHIP, tournament ones for TOURNAMENT_ENTRY (where {@code customerName} is the team), invoice or
- * listing ones for payments to FutSlot (where it's the venue).
+ * listing ones for payments to FutSlot (where it's the venue). A DEPOSIT top-up only names the player, in
+ * {@code customerName}.
  */
 public record PaymentResponse(UUID id, PaymentPurpose purpose, UUID bookingId, String bookingReference,
 		UUID membershipId, String membershipPlanName, UUID tournamentRegistrationId, String tournamentName,

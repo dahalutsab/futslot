@@ -92,6 +92,9 @@ public class Venue {
 
 	private Integer strikeAdvancePercent;
 
+	@Column(nullable = false)
+	private boolean depositRequired;
+
 	private String paymentInstructions;
 
 	@Column(nullable = false, precision = 3, scale = 2)
@@ -155,11 +158,12 @@ public class Venue {
 		this.maxAdvanceBookingDays = policy.maxAdvanceBookingDays();
 		this.strikeLimit = policy.strikeLimit();
 		this.strikeAdvancePercent = policy.strikeAdvancePercent();
+		this.depositRequired = policy.depositRequired();
 	}
 
 	public VenuePolicy policy() {
 		return new VenuePolicy(this.advancePercent, this.bookingHoldMinutes, this.cancellationTiers,
-				this.maxAdvanceBookingDays, this.strikeLimit, this.strikeAdvancePercent);
+				this.maxAdvanceBookingDays, this.strikeLimit, this.strikeAdvancePercent, this.depositRequired);
 	}
 
 	void setPaymentInstructions(String instructions) {

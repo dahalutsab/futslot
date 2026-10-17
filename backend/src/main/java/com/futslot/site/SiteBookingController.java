@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,6 +33,7 @@ import com.futslot.booking.BookingStatus;
 import com.futslot.booking.PlayerBookingRequest;
 import com.futslot.booking.QuoteResponse;
 import com.futslot.common.ApiException;
+import com.futslot.deposit.DepositService;
 import com.futslot.payment.PaymentMethod;
 import com.futslot.payment.PlayerPayments;
 import com.futslot.slot.AvailabilityResponse;
@@ -47,7 +49,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Booking on a venue's website: pick a free slot, sign in with a texted code, book, and (if the venue asks
- * for an advance) say how it was paid. Forms post back to the site itself; each step checks the slot again.
+ * for an advance) say how it was paid. A venue may also require the player's FutSlot booking deposit, which can be
+ * topped up here. Forms post back to the site itself; each step checks the slot again.
  */
 @Controller
 class SiteBookingController {
@@ -72,11 +75,18 @@ class SiteBookingController {
 
 	private final SiteSession session;
 
+	private final DepositService deposits;
+
+	/** Where players send deposit top-ups: FutSlot's own wallet or account. */
+	private final String futslotPaymentInstructions;
+
 	private final Clock clock;
 
 	SiteBookingController(VenueSiteRepository sites, SitePageService pages, VenueService venues,
 			AvailabilityService availability, BookingService bookings, CodeSignIn signIn, PlayerPayments payments,
-			SiteSession session, Clock clock) {
+			SiteSession session, DepositService deposits,
+			@Value("${futslot.subscriptions.payment-instructions:Contact FutSlot for payment details}") String futslotPaymentInstructions,
+			Clock clock) {
 		this.sites = sites;
 		this.pages = pages;
 		this.venues = venues;
@@ -85,6 +95,8 @@ class SiteBookingController {
 		this.signIn = signIn;
 		this.payments = payments;
 		this.session = session;
+		this.deposits = deposits;
+		this.futslotPaymentInstructions = futslotPaymentInstructions;
 		this.clock = clock;
 	}
 
@@ -207,6 +219,54 @@ class SiteBookingController {
 		}
 	}
 
+	/** The player's FutSlot deposit, to top up before booking a venue that requires it. */
+	@GetMapping("/sites/{subdomain}/deposit")
+	String deposit(@PathVariable String subdomain, @RequestParam(required = false) String court,
+			@RequestParam(required = false) String start, @RequestParam(required = false) String sent,
+			HttpServletRequest request, Model model) {
+		Context context = context(subdomain, request);
+		UUID player = this.session.player(request).orElse(null);
+		if (player == null) {
+			return "redirect:" + context.base() + "/";
+		}
+		return renderDeposit(model, context, player, court, start, null,
+				(sent != null) ? "Sent. FutSlot will check it, usually within a few hours. You can book once it's in." : null);
+	}
+
+	@PostMapping("/sites/{subdomain}/deposit")
+	String topUp(@PathVariable String subdomain, @RequestParam String method, @RequestParam String transactionId,
+			@RequestParam BigDecimal amount, @RequestParam(required = false) String court,
+			@RequestParam(required = false) String start, HttpServletRequest request, Model model) {
+		Context context = context(subdomain, request);
+		UUID player = this.session.player(request).orElse(null);
+		if (player == null) {
+			return "redirect:" + context.base() + "/";
+		}
+		try {
+			this.payments.claimDepositTopUp(player, PaymentMethod.valueOf(method), transactionId.strip(), amount);
+			String back = StringUtils.hasText(court) && StringUtils.hasText(start)
+					? "&court=" + encode(court) + "&start=" + encode(start) : "";
+			return "redirect:" + context.base() + "/deposit?sent=1" + back;
+		}
+		catch (ApiException | IllegalArgumentException ex) {
+			String message = (ex instanceof ApiException api) ? api.getMessage() : "Choose how you paid.";
+			return renderDeposit(model, context, player, court, start, message, null);
+		}
+	}
+
+	private String renderDeposit(Model model, Context context, UUID player, String court, String start, String error,
+			String notice) {
+		BigDecimal toAdd = this.deposits.toAdd(player);
+		BookPage.Deposit deposit = new BookPage.Deposit(SiteFormat.rupees(DepositService.AMOUNT),
+				SiteFormat.rupees(DepositService.AMOUNT.subtract(toAdd)),
+				(toAdd.signum() > 0) ? SiteFormat.rupees(toAdd) : null, toAdd.toPlainString(),
+				this.payments.depositTopUpBeingChecked(player), this.futslotPaymentInstructions, METHODS,
+				StringUtils.hasText(court) ? court : null, StringUtils.hasText(start) ? start : null);
+		model.addAttribute("book", new BookPage(context.site(), "deposit", null, null, false, error, notice, true, null,
+				List.of(), deposit));
+		return "sites/book";
+	}
+
 	@PostMapping("/sites/{subdomain}/sign-out")
 	String signOut(@PathVariable String subdomain, HttpServletRequest request, HttpServletResponse response) {
 		Context context = context(subdomain, request);
@@ -230,6 +290,7 @@ class SiteBookingController {
 		BigDecimal advance = total.multiply(BigDecimal.valueOf(venue.policy().advancePercent()))
 			.divide(BigDecimal.valueOf(100), 0, RoundingMode.CEILING);
 		boolean strikeAdvance = false;
+		String depositToAdd = null;
 		if (player != null) {
 			try {
 				QuoteResponse quote = this.bookings.quote(player,
@@ -237,6 +298,7 @@ class SiteBookingController {
 				total = quote.total();
 				advance = quote.advanceRequired();
 				strikeAdvance = quote.strikeAdvance();
+				depositToAdd = (quote.depositToAdd().signum() > 0) ? SiteFormat.rupees(quote.depositToAdd()) : null;
 			}
 			catch (ApiException ex) {
 				// Shown again when they confirm
@@ -246,7 +308,7 @@ class SiteBookingController {
 		String time = SiteFormat.clock(found.slot().startsAt().toLocalTime()) + " – " + SiteFormat.clock(found.slot().endsAt().toLocalTime());
 		return new BookPage.Slot(court, start, found.courtName(), SiteFormat.day(day), time, SiteFormat.rupees(total),
 				advance.signum() > 0 ? SiteFormat.rupees(advance) : null, String.valueOf(venue.policy().bookingHoldMinutes()),
-				strikeAdvance);
+				strikeAdvance, venue.policy().depositRequired(), depositToAdd);
 	}
 
 	/** The free slot on this venue's court starting at {@code start}, if it's still free. */

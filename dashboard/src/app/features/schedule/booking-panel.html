@@ -192,6 +192,9 @@
           <button type="button" (click)="noShow()" [disabled]="busy()"
             class="h-12 flex-1 rounded-lg border border-border font-medium hover:bg-surface-2 disabled:opacity-60">No-show</button>
         </div>
+        @if (booking().depositBacked) {
+          <p class="text-sm text-muted">A no-show costs them your last-minute cancellation fee: what they paid covers it first, then their FutSlot deposit.</p>
+        }
       }
       @if (live()) {
         <button type="button" (click)="go('cancel')"

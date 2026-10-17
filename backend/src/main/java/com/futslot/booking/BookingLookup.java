@@ -1,5 +1,6 @@
 package com.futslot.booking;
 
+import java.util.EnumSet;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,12 @@ public class BookingLookup {
 	public Booking forVenue(UUID userId, UUID venueId, UUID bookingId) {
 		this.access.require(userId, venueId, VenuePermission.MANAGE_BOOKINGS);
 		return this.bookings.findByIdAndVenueId(bookingId, venueId).orElseThrow(BookingLookup::notFound);
+	}
+
+	/** Whether the player has bookings, not yet played or cancelled, that their deposit covers. */
+	public boolean hasLiveDepositBookings(UUID userId) {
+		return this.bookings.existsByBookedByUserIdAndDepositBackedTrueAndStatusIn(userId,
+				EnumSet.of(BookingStatus.PENDING_PAYMENT, BookingStatus.CONFIRMED));
 	}
 
 	/** No access check: for reacting to events about a booking. */

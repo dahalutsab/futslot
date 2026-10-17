@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.futslot.common.ApiException;
 import com.futslot.common.PhoneNumbers;
+import com.futslot.deposit.DepositService;
 import com.futslot.discount.DiscountCode;
 import com.futslot.discount.DiscountCodeService;
 import com.futslot.membership.Membership;
@@ -86,6 +87,8 @@ public class BookingService {
 
 	private final AddOnService addOns;
 
+	private final DepositService deposits;
+
 	private final ApplicationEventPublisher events;
 
 	private final Clock clock;
@@ -94,7 +97,8 @@ public class BookingService {
 			CourtRepository courts, CourtBlockRepository blocks, BookedRanges bookedRanges,
 			AvailabilityService availability, UserService userService, UserRepository users,
 			BookingReferences references, HoldExpiry holdExpiry, MembershipService memberships,
-			DiscountCodeService discountCodes, AddOnService addOns, ApplicationEventPublisher events, Clock clock) {
+			DiscountCodeService discountCodes, AddOnService addOns, DepositService deposits,
+			ApplicationEventPublisher events, Clock clock) {
 		this.bookings = bookings;
 		this.customers = customers;
 		this.access = access;
@@ -109,6 +113,7 @@ public class BookingService {
 		this.memberships = memberships;
 		this.discountCodes = discountCodes;
 		this.addOns = addOns;
+		this.deposits = deposits;
 		this.events = events;
 		this.clock = clock;
 	}
@@ -139,11 +144,18 @@ public class BookingService {
 					"Pay for or cancel your pending bookings before holding more slots");
 		}
 
+		if (venue.policy().depositRequired()) {
+			this.deposits.requireFull(userId);
+		}
+
 		User user = this.userService.get(userId);
 		VenueCustomer customer = customerForPlayer(venue, user);
 		Slot slot = dated.slot();
 		Booking booking = new Booking(this.references.next(), venue, court, customer, userId, source,
 				start, slot.endsAt().toInstant(), slot.price(), userId, request.notes());
+		if (venue.policy().depositRequired()) {
+			booking.backWithDeposit();
+		}
 		Benefit benefit = benefit(venue, customer, userId, start, slot.price(), request.membershipId(),
 				request.discountCode(), now, true);
 		booking.applyDiscount(benefit.discount(), benefit.membershipId(), benefit.discountCodeId());
@@ -178,7 +190,8 @@ public class BookingService {
 		long strikes = strikes(customer, this.clock.instant());
 		VenuePolicy policy = venue.policy();
 		return new QuoteResponse(slot.price(), extras, benefit.discount(), total, advanceFor(venue, total, strikes),
-				policy.advancePercentFor(strikes) > policy.advancePercent(), benefit.membershipId(),
+				policy.advancePercentFor(strikes) > policy.advancePercent(), policy.depositRequired(),
+				policy.depositRequired() ? this.deposits.toAdd(userId) : BigDecimal.ZERO, benefit.membershipId(),
 				(benefit.code() != null) ? benefit.code().getCode() : null);
 	}
 
@@ -271,7 +284,8 @@ public class BookingService {
 	@Transactional
 	public BookingResponse markNoShow(UUID ownerId, UUID venueId, UUID bookingId) {
 		Booking booking = startedConfirmedBooking(ownerId, venueId, bookingId);
-		booking.markNoShow();
+		booking.markNoShow(booking.isDepositBacked() ? booking.getVenue().policy().topFeePercent() : 0);
+		publish(BookingEventType.NO_SHOW, booking, ownerId, null);
 		return BookingResponse.from(booking);
 	}
 

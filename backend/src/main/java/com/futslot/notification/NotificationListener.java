@@ -13,6 +13,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import com.futslot.billing.BillingEvent;
 import com.futslot.booking.BookingEvent;
 import com.futslot.chat.ChatMessageSent;
+import com.futslot.deposit.DepositEvent;
+import com.futslot.deposit.DepositService;
 import com.futslot.booking.BookingStatus;
 import com.futslot.booking.RecurringBookingEvent;
 import com.futslot.matchmaking.MatchEvent;
@@ -362,6 +364,31 @@ class NotificationListener {
 				"FutSlot couldn't find your " + Messages.rupees(event.amount()) + " payment for " + event.what() + ": "
 						+ event.reason() + ".",
 				Map.of());
+	}
+
+	@TransactionalEventListener
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	void on(DepositEvent event) {
+		switch (event.type()) {
+			case TOPPED_UP -> this.notifications.send(event.userId(), NotificationType.DEPOSIT_TOPPED_UP,
+					"Deposit topped up", "FutSlot found your " + Messages.rupees(event.amount())
+							+ ". Your booking deposit is now " + Messages.rupees(event.balance()) + ".",
+					Map.of());
+			case FEE_TAKEN -> this.notifications.send(event.userId(), NotificationType.DEPOSIT_FEE_TAKEN,
+					Messages.rupees(event.amount()) + " taken from your deposit",
+					event.venueName() + " was paid " + Messages.rupees(event.amount()) + " from your deposit for "
+							+ event.detail() + ". Top it back up to " + Messages.rupees(DepositService.AMOUNT)
+							+ " to book venues that need it.",
+					Map.of());
+			case WITHDRAWAL_PAID -> this.notifications.send(event.userId(), NotificationType.DEPOSIT_RETURNED,
+					"Deposit sent back",
+					"FutSlot sent your " + Messages.rupees(event.amount()) + " deposit to " + event.detail() + ".",
+					Map.of());
+			case PAYOUT_SENT -> this.notifications.send(event.userId(), NotificationType.DEPOSIT_PAYOUT_SENT,
+					"Deposit fees paid", "FutSlot sent " + event.venueName() + " " + Messages.rupees(event.amount())
+							+ " for " + event.detail() + ".",
+					Map.of());
+		}
 	}
 
 	@TransactionalEventListener

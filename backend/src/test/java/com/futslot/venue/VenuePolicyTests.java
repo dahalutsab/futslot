@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 class VenuePolicyTests {
 
 	private static VenuePolicy tiers(CancellationTier... tiers) {
-		return new VenuePolicy(30, 15, List.of(tiers), 30, null, null);
+		return new VenuePolicy(30, 15, List.of(tiers), 30, null, null, false);
 	}
 
 	@Test
@@ -39,6 +39,12 @@ class VenuePolicyTests {
 	}
 
 	@Test
+	void notShowingUpCostsTheLastMinuteFee() {
+		assertThat(tiers(new CancellationTier(12, 50), new CancellationTier(24, 20)).topFeePercent()).isEqualTo(50);
+		assertThat(tiers().topFeePercent()).isZero();
+	}
+
+	@Test
 	void feesMustRiseAsTheStartGetsCloser() {
 		assertThat(tiers(new CancellationTier(24, 20), new CancellationTier(12, 50)).problem()).isNull();
 		assertThat(tiers(new CancellationTier(24, 50), new CancellationTier(12, 50)).problem())
@@ -51,7 +57,7 @@ class VenuePolicyTests {
 
 	@Test
 	void playersAtTheStrikeLimitPayTheStrikeAdvance() {
-		VenuePolicy policy = new VenuePolicy(0, 15, List.of(), 30, 2, 50);
+		VenuePolicy policy = new VenuePolicy(0, 15, List.of(), 30, 2, 50, false);
 		assertThat(policy.advancePercentFor(0)).isZero();
 		assertThat(policy.advancePercentFor(1)).isZero();
 		assertThat(policy.advancePercentFor(2)).isEqualTo(50);
@@ -60,7 +66,7 @@ class VenuePolicyTests {
 
 	@Test
 	void theUsualAdvanceWinsWhenItIsHigher() {
-		assertThat(new VenuePolicy(60, 15, List.of(), 30, 1, 50).advancePercentFor(3)).isEqualTo(60);
+		assertThat(new VenuePolicy(60, 15, List.of(), 30, 1, 50, false).advancePercentFor(3)).isEqualTo(60);
 	}
 
 	@Test
@@ -70,9 +76,9 @@ class VenuePolicyTests {
 
 	@Test
 	void theStrikeRuleNeedsBothValues() {
-		assertThat(new VenuePolicy(0, 15, List.of(), 30, 2, null).problem()).contains("both");
-		assertThat(new VenuePolicy(0, 15, List.of(), 30, null, 50).problem()).contains("both");
-		assertThat(new VenuePolicy(0, 15, List.of(), 30, 2, 50).problem()).isNull();
+		assertThat(new VenuePolicy(0, 15, List.of(), 30, 2, null, false).problem()).contains("both");
+		assertThat(new VenuePolicy(0, 15, List.of(), 30, null, 50, false).problem()).contains("both");
+		assertThat(new VenuePolicy(0, 15, List.of(), 30, 2, 50, false).problem()).isNull();
 	}
 
 }

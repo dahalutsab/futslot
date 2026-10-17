@@ -9,14 +9,16 @@ import java.util.UUID;
 
 /**
  * Start and end are in the venue's local offset. {@code cancellationFeePercent} is the venue's fee share when the
- * player cancelled late, 0 otherwise.
+ * player cancelled late (or, for a deposit-backed booking, didn't show up), 0 otherwise. {@code depositBacked}: booked
+ * at a venue that requires the FutSlot deposit, so fees the advance doesn't cover come out of the deposit.
  */
 public record BookingResponse(UUID id, String reference, VenueRef venue, CourtRef court, CustomerRef customer,
 		BookingSource source, BookingStatus status, OffsetDateTime startsAt, OffsetDateTime endsAt,
 		BigDecimal priceAmount, BigDecimal addOnsAmount, List<AddOn> addOns, BigDecimal discountAmount,
 		UUID membershipId, UUID discountCodeId,
 		BigDecimal totalAmount, BigDecimal advanceRequired, BigDecimal paidAmount, PaymentStatus paymentStatus,
-		Instant holdExpiresAt, String notes, Instant cancelledAt, String cancellationReason, int cancellationFeePercent, Instant createdAt) {
+		Instant holdExpiresAt, String notes, Instant cancelledAt, String cancellationReason, int cancellationFeePercent,
+		boolean depositBacked, Instant createdAt) {
 
 	public static BookingResponse from(Booking booking) {
 		ZoneId zone = ZoneId.of(booking.getVenue().getTimezone());
@@ -35,7 +37,8 @@ public record BookingResponse(UUID id, String reference, VenueRef venue, CourtRe
 				booking.getDiscountAmount(), booking.getMembershipId(), booking.getDiscountCodeId(),
 				booking.getTotalAmount(), booking.getAdvanceRequired(), booking.getPaidAmount(),
 				booking.getPaymentStatus(), booking.getHoldExpiresAt(), booking.getNotes(), booking.getCancelledAt(),
-				booking.getCancellationReason(), booking.getCancellationFeePercent(), booking.getCreatedAt());
+				booking.getCancellationReason(), booking.getCancellationFeePercent(), booking.isDepositBacked(),
+				booking.getCreatedAt());
 	}
 
 	public record AddOn(UUID itemId, String name, int quantity, BigDecimal unitPrice) {

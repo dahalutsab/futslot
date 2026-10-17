@@ -123,8 +123,10 @@ export interface Booking {
   notes: string | null;
   cancelledAt: string | null;
   cancellationReason: string | null;
-  /** The venue's fee share when the player cancelled late, 0 otherwise. */
+  /** The venue's fee share when the player cancelled late (or, if {@link depositBacked}, didn't show up), 0 otherwise. */
   cancellationFeePercent: number;
+  /** Booked while the venue required the FutSlot deposit, so fees the advance doesn't cover come out of it. */
+  depositBacked: boolean;
   createdAt: string;
 }
 
@@ -313,10 +315,47 @@ export interface VenuePolicy {
   strikeLimit: number | null;
   /** The advance for players at the strike limit; set exactly when {@link strikeLimit} is. */
   strikeAdvancePercent: number | null;
+  /** Players need a full {@link DEPOSIT_AMOUNT} FutSlot deposit to book in the app or on the website. */
+  depositRequired: boolean;
 }
 
 /** How far back the server counts late cancellations and no-shows as strikes. */
 export const STRIKE_WINDOW_DAYS = 90;
+
+/** The booking deposit every player keeps with FutSlot to book venues that require it. */
+export const DEPOSIT_AMOUNT = 1000;
+
+/** A late cancellation or no-show fee FutSlot took from a player's deposit for the venue. */
+export interface DepositFee {
+  bookingId: string;
+  bookingReference: string;
+  customerName: string;
+  playedOn: string;
+  noShow: boolean;
+  feePercent: number;
+  /** What came out of the deposit, on top of any advance the venue kept. */
+  amount: number;
+  chargedAt: string;
+}
+
+/** A month of deposit fees FutSlot sends the venue. */
+export interface DepositPayout {
+  id: string;
+  periodStart: string;
+  periodEnd: string;
+  amount: number;
+  status: 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
+  method: PaymentMethod | null;
+  reference: string | null;
+  paidAt: string | null;
+}
+
+/** {@link unpaid}: fees FutSlot holds for the venue, paid out after the month ends. */
+export interface DepositFees {
+  unpaid: number;
+  fees: DepositFee[];
+  payouts: DepositPayout[];
+}
 
 export interface Amenity {
   code: string;

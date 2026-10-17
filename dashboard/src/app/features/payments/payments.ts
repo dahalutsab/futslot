@@ -1,25 +1,26 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Check, CircleCheck, LucideAngularModule, Phone, Undo2, Wallet } from 'lucide-angular';
 
 import { problemOf } from '../../core/api-error';
-import { Payment, Refund } from '../../core/api.types';
+import { DepositFees, Payment, Refund } from '../../core/api.types';
 import { VenueContext } from '../../core/venue-context';
 import { Badges } from '../../layout/badges';
-import { ago, methodLabel, phone, rupees } from '../../shared/format';
+import { ago, dayLabel, methodLabel, monthLabel, phone, rupees } from '../../shared/format';
 import { PaymentsApi } from './payments-api';
 
-type Tab = 'verify' | 'refunds' | 'refunded';
+type Tab = 'verify' | 'refunds' | 'refunded' | 'deposit';
 
 /**
  * The money queue. "To verify": wallet payments players reported, to check against the venue's own wallet.
  * "Refunds to pay": what cancellations left owed, to send back the way it came. Each item carries its
- * own action so a busy desk can clear the list top to bottom.
+ * own action so a busy desk can clear the list top to bottom. "Deposit fees": late cancellation and no-show fees
+ * FutSlot took from players' deposits for the venue, and its monthly payouts of them (for staff who see reports).
  */
 @Component({
   selector: 'fs-payments',
-  imports: [FormsModule, LucideAngularModule],
+  imports: [FormsModule, LucideAngularModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './payments.html',
 })
@@ -34,7 +35,7 @@ export class Payments {
 
   protected readonly icons = { Check, CircleCheck, Phone, Undo2, Wallet };
 
-  protected readonly fmt = { rupees, methodLabel, phone, ago };
+  protected readonly fmt = { rupees, methodLabel, phone, ago, dayLabel, monthLabel };
 
   protected readonly tab = signal<Tab>((inject(ActivatedRoute).snapshot.queryParamMap.get('tab') as Tab) ?? 'verify');
 
@@ -43,6 +44,10 @@ export class Payments {
   protected readonly refunds = signal<Refund[] | null>(null);
 
   protected readonly refunded = signal<Refund[] | null>(null);
+
+  protected readonly depositFees = signal<DepositFees | null>(null);
+
+  protected readonly seesDepositFees = computed(() => this.venues.can('VIEW_REPORTS'));
 
   protected readonly error = signal<string | null>(null);
 
@@ -136,14 +141,16 @@ export class Payments {
   private async load(venueId: string): Promise<void> {
     this.error.set(null);
     try {
-      const [pending, refunds, refunded] = await Promise.all([
+      const [pending, refunds, refunded, depositFees] = await Promise.all([
         this.api.pending(venueId),
         this.api.refunds(venueId, 'REQUESTED'),
         this.api.refunds(venueId, 'SUCCEEDED'),
+        this.seesDepositFees() ? this.api.depositFees(venueId) : Promise.resolve(null),
       ]);
       this.pending.set(pending);
       this.refunds.set(refunds);
       this.refunded.set(refunded.slice().reverse());
+      this.depositFees.set(depositFees);
     }
     catch (error) {
       this.error.set(problemOf(error).message);
