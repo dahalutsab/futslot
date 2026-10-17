@@ -69,10 +69,12 @@ public class PlayerService {
 		String name = own ? user.getFullName() : Names.shortName(user.getFullName());
 		long games = gamesPlayed(user.getId());
 		if (profile == null) {
-			return new PlayerCard(user.getId(), name, user.getAvatarUrl(), null, null, null, null, null, games);
+			// Profiles are public until the player says otherwise
+			return new PlayerCard(user.getId(), name, user.getAvatarUrl(), null, null, null, null, null, games,
+					own ? Boolean.TRUE : null);
 		}
 		return new PlayerCard(user.getId(), name, user.getAvatarUrl(), profile.getPosition(), profile.getSkillLevel(),
-				profile.getPreferredFoot(), profile.getCity(), profile.getBio(), games);
+				profile.getPreferredFoot(), profile.getCity(), profile.getBio(), games, own ? profile.isPublic() : null);
 	}
 
 	private User user(UUID userId) {

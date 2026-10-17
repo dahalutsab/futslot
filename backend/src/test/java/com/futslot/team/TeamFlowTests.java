@@ -111,19 +111,24 @@ class TeamFlowTests {
 		TestUser player = this.users.signUp("Sunil Thapa");
 		send(player, put("/api/v1/me/player-profile"),
 				"{\"position\":\"GOALKEEPER\",\"skillLevel\":\"INTERMEDIATE\",\"city\":\"Kathmandu\",\"bio\":\"Safe hands\"}")
-			.andExpect(status().isOk()).andExpect(jsonPath("$.name").value("Sunil Thapa"));
+			.andExpect(status().isOk()).andExpect(jsonPath("$.name").value("Sunil Thapa"))
+			.andExpect(jsonPath("$.isPublic").value(true));
 		TestUser other = this.users.signUp("Profile Viewer");
 		send(other, get("/api/v1/players/" + player.id()), null)
 			.andExpect(jsonPath("$.name").value("Sunil T."))
 			.andExpect(jsonPath("$.position").value("GOALKEEPER"))
-			.andExpect(jsonPath("$.gamesPlayed").value(0));
+			.andExpect(jsonPath("$.gamesPlayed").value(0))
+			.andExpect(jsonPath("$.isPublic").doesNotExist());
 
 		send(player, put("/api/v1/me/player-profile"), "{\"position\":\"GOALKEEPER\",\"isPublic\":false}")
 			.andExpect(status().isOk());
 		send(other, get("/api/v1/players/" + player.id()), null)
 			.andExpect(jsonPath("$.name").value("Sunil T."))
 			.andExpect(jsonPath("$.position").doesNotExist());
-		send(player, get("/api/v1/me/player-profile"), null).andExpect(jsonPath("$.position").value("GOALKEEPER"));
+		send(player, get("/api/v1/me/player-profile"), null).andExpect(jsonPath("$.position").value("GOALKEEPER"))
+			.andExpect(jsonPath("$.isPublic").value(false));
+		send(this.users.signUp("No Profile Yet"), get("/api/v1/me/player-profile"), null)
+			.andExpect(jsonPath("$.isPublic").value(true));
 	}
 
 	private ResultActions send(TestUser user, MockHttpServletRequestBuilder request, String json) throws Exception {
