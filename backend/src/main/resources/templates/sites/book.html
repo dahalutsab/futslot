@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" th:href="${book.site.fonts}">
   <link rel="stylesheet" th:href="@{'/site-assets/' + ${book.site.template} + '.css'(v=1)}">
-  <link rel="stylesheet" th:href="@{/site-assets/book.css(v=3)}">
+  <link rel="stylesheet" th:href="@{/site-assets/book.css(v=4)}">
   <!-- Validated #rrggbb values, so safe to write as they are -->
   <style th:inline="css">:root { --accent: [(${book.site.accent})]; --accent-ink: [(${book.site.accentInk})]; --accent-text: [(${book.site.accentText})]; }</style>
 </head>
@@ -119,7 +119,7 @@
       <section class="book-card">
         <p class="book-kicker">FutSlot booking deposit</p>
         <h1 th:text="${d.balance}">Rs 0</h1>
-        <p class="book-muted" th:text="${'of ' + d.required + '. It isn''t spent on your games: it only pays a venue''s fee if you cancel late or don''t show up. You can take it back in the FutSlot app whenever you have no games booked.'}">Deposit</p>
+        <p class="book-muted" th:text="${'of ' + d.required + '. It isn''t spent on your games: it only pays a venue''s fee if you cancel late or don''t show up. You can take it back here whenever you have no games booked.'}">Deposit</p>
       </section>
 
       <section th:if="${d.checking}" class="book-card">
@@ -127,7 +127,15 @@
         <p class="book-muted">FutSlot is checking it. You can book once it's in.</p>
       </section>
 
-      <section th:if="${d.toAdd != null and !d.checking}" class="book-card">
+      <section th:if="${d.withdrawal != null}" class="book-card">
+        <h2 th:text="${d.withdrawal.amount + ' is coming back to you'}">Rs 1,000 is coming back to you</h2>
+        <p class="book-muted" th:text="${'FutSlot sends it to your ' + d.withdrawal.method + ' ' + d.withdrawal.sendTo + ' on ' + d.withdrawal.due + '. Until then you can''t book venues that need the deposit.'}">Withdrawal</p>
+        <form method="post" th:action="${book.site.base + '/deposit/withdrawals/' + d.withdrawal.id + '/cancel'}">
+          <button type="submit" class="btn book-secondary book-submit">Keep my deposit instead</button>
+        </form>
+      </section>
+
+      <section th:if="${d.toAdd != null and !d.checking and d.withdrawal == null}" class="book-card">
         <h2 th:text="${'Send ' + d.toAdd + ' to FutSlot'}">Send</h2>
         <p class="book-muted">Pay FutSlot directly, then tell us the transaction ID.</p>
         <p class="book-pay-to" th:text="${d.instructions}">eSewa 98…</p>
@@ -145,6 +153,23 @@
           <label for="deposit-txn">Transaction ID</label>
           <input id="deposit-txn" name="transactionId" type="text" maxlength="100" required autocomplete="off" placeholder="From your payment receipt">
           <button type="submit" class="btn btn-accent book-submit">Send for checking</button>
+        </form>
+      </section>
+
+      <section th:if="${d.canWithdraw}" class="book-card">
+        <h2>Take your deposit back</h2>
+        <p class="book-muted" th:text="${'FutSlot sends all of ' + d.balance + ' to you 3 days after you ask. You can do this once no game you''ve booked at a venue that needs the deposit is still to be played.'}">Withdraw</p>
+        <form method="post" th:action="${book.site.base + '/deposit/withdraw'}" class="book-form">
+          <fieldset class="book-methods">
+            <legend>Send it to my</legend>
+            <label th:each="m, i : ${d.sendMethods}" class="book-method">
+              <input type="radio" name="method" th:value="${m.value}" th:checked="${i.first}" required>
+              <span th:text="${m.label}">eSewa</span>
+            </label>
+          </fieldset>
+          <label for="deposit-send-to">Number or account</label>
+          <input id="deposit-send-to" name="sendTo" type="text" maxlength="200" required autocomplete="off" placeholder="eSewa or Khalti number, or bank name and account">
+          <button type="submit" class="btn book-secondary book-submit">Ask for it back</button>
         </form>
       </section>
 
