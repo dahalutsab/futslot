@@ -10,7 +10,7 @@ Futsal booking platform: players find and book slots, venue owners manage courts
 | `dashboard/` | Owner web dashboard                          |
 | `player/`    | Player web app                               |
 | `admin/`     | FutSlot admin web app                        |
-| `mobile/`    | Flutter player app                           |
+| `mobile/`    | Flutter player app (Android and iOS)         |
 | `docs/api/`  | OpenAPI contract shared by all clients       |
 | `docs/db/`   | Database schema and ER diagrams              |
 | `docs/design/` | Design tokens and UI guidelines            |
@@ -248,6 +248,12 @@ The web dashboard for venue owners and staff lives in `dashboard/` (Angular). Wi
 Players find venues, book and pay, and manage their bookings and booking deposit in `player/` (Angular),
 until the mobile app is built. With the API running: `cd player && npm install && npm start`, then open
 http://localhost:4300. See `player/README.md`.
+
+### Mobile app
+
+The Flutter player app lives in `mobile/`. So far it covers signing in, finding and booking venues, paying the
+advance, bookings and the booking deposit; the web app (`player/`) still has every other player feature. With
+the API running and an emulator open: `cd mobile && flutter run`. See `mobile/README.md`.
 
 ### Admin web app
 
