@@ -5,8 +5,10 @@ The player web app's rules (see [player-web.md](player-web.md)), on a phone scre
 surfaces, ink buttons, colour only for meaning, Inter with Noto Sans Devanagari (bundled, so nothing is
 downloaded on mobile data), 44px touch targets.
 
-- **A bottom bar, three tabs.** Explore, Bookings, Me. Each tab keeps its own back stack; tapping the open tab
-  again goes back to its first screen. Signing in is a full screen over the tabs.
+- **A bottom bar, five tabs.** Explore, Bookings, Play, Messages, Me. Each tab keeps its own back stack; tapping
+  the open tab again goes back to its first screen. Play switches between games, tournaments and teams with a
+  segmented control at the top, like the web's play nav. Signing in, a conversation, notifications and splitting
+  a booking's cost are full screens over the tabs.
 - **Same words as the web.** Booking rules, the cancel fee, the deposit and payment states read exactly as they
   do on the web, worked out by the same rules (`shared/booking_model.dart`, tested with the web's cases).
 - **One column, at most 576px wide for tasks**, so a tablet doesn't stretch a form across the screen.

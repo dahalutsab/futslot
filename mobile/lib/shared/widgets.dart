@@ -278,3 +278,143 @@ class FieldLabel extends StatelessWidget {
     );
   }
 }
+
+/// One of a few options, as a bordered row that shows when it's picked (a membership, a split rule...).
+class ChoiceTile extends StatelessWidget {
+  const ChoiceTile({super.key, required this.selected, required this.onTap, required this.child});
+
+  final bool selected;
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.fs;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Semantics(
+        inMutuallyExclusiveGroup: true,
+        checked: selected,
+        button: true,
+        child: Material(
+          color: c.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(color: selected ? c.ink : c.border, width: selected ? 1.5 : 1),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: onTap,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 44),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              alignment: Alignment.centerLeft,
+              child: DefaultTextStyle.merge(style: TextStyle(color: selected ? c.text : c.muted), child: child),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A rounded filter or choice that fills in ink when picked: a city, a day, a level.
+class Pill extends StatelessWidget {
+  const Pill({super.key, required this.label, required this.selected, required this.onTap, this.height = 40});
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.fs;
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: Material(
+        color: selected ? c.ink : c.surface,
+        shape: StadiumBorder(side: BorderSide(color: selected ? c.ink : c.border)),
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: onTap,
+          child: SizedBox(
+            height: height,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                widthFactor: 1,
+                child: Text(
+                  label,
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: selected ? c.inkFg : c.muted),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A heading for a part of a screen, with room for an action beside it.
+class SectionTitle extends StatelessWidget {
+  const SectionTitle(this.text, {super.key, this.action});
+
+  final String text;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Expanded(child: Semantics(header: true, child: Text(text, style: Theme.of(context).textTheme.titleMedium))),
+          ?action,
+        ],
+      ),
+    );
+  }
+}
+
+/// A labelled group of pills where tapping the chosen one again clears it: a position, a level.
+class PillChoices<T> extends StatelessWidget {
+  const PillChoices({
+    super.key,
+    required this.label,
+    required this.options,
+    required this.value,
+    required this.onChanged,
+    this.optional = false,
+  });
+
+  final String label;
+  final bool optional;
+  final List<(T, String)> options;
+  final T? value;
+  final ValueChanged<T?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FieldLabel(label, optional: optional),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final (option, text) in options)
+                Pill(label: text, selected: value == option, onTap: () => onChanged(value == option ? null : option)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

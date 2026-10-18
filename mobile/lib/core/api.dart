@@ -225,6 +225,218 @@ class Api {
 
   Future<List<Membership>> memberships() => _get('/api/v1/me/memberships', (json) => _listOf(json, Membership.fromJson));
 
+  Future<List<MembershipPlan>> membershipPlans(String slug) =>
+      _get('/api/v1/venues/$slug/membership-plans', (json) => _listOf(json, MembershipPlan.fromJson));
+
+  /// [claim] is left out for a free plan.
+  Future<void> buyMembership(String planId, PaymentClaim? claim) =>
+      _post('/api/v1/me/memberships', {'planId': planId, ...?claim?.toJson()}, (_) {});
+
+  // Splitting a booking's cost
+
+  /// Fails with SPLIT_NOT_FOUND until the booker sets one up.
+  Future<CostSplit> split(String bookingId) => _get('/api/v1/bookings/$bookingId/split', _split);
+
+  /// [bookerSide] only when setting one up.
+  Future<CostSplit> setUpSplit(
+    String bookingId, {
+    required SplitRule rule,
+    int? losersPercent,
+    required double extrasAmount,
+    String? extrasNote,
+    String? sideAName,
+    String? sideBName,
+    Side? bookerSide,
+  }) =>
+      _put('/api/v1/bookings/$bookingId/split', {
+        'rule': rule.apiName,
+        'losersPercent': ?losersPercent,
+        'extrasAmount': extrasAmount,
+        'extrasNote': ?extrasNote,
+        'sideAName': ?sideAName,
+        'sideBName': ?sideBName,
+        'bookerSide': ?bookerSide?.apiName,
+      }, _split);
+
+  /// An app user by phone, or a guest by name.
+  Future<CostSplit> addSplitPlayer(String bookingId, {String? name, String? phone, required Side side}) => _post(
+        '/api/v1/bookings/$bookingId/split/players',
+        {'name': ?name, 'phone': ?phone, 'side': side.apiName},
+        _split,
+      );
+
+  Future<CostSplit> moveSplitPlayer(String bookingId, String playerId, Side side) =>
+      _put('/api/v1/bookings/$bookingId/split/players/$playerId', {'side': side.apiName}, _split);
+
+  Future<CostSplit> removeSplitPlayer(String bookingId, String playerId) =>
+      _delete('/api/v1/bookings/$bookingId/split/players/$playerId', _split);
+
+  /// Null for an equal split, where only the playing matters.
+  Future<CostSplit> splitResult(String bookingId, MatchResult? result) =>
+      _post('/api/v1/bookings/$bookingId/split/result', {'result': result?.apiName}, _split);
+
+  Future<CostSplit> undoSplitResult(String bookingId) => _delete('/api/v1/bookings/$bookingId/split/result', _split);
+
+  Future<CostSplit> splitPaid(String bookingId, String playerId, bool paid) {
+    final path = '/api/v1/bookings/$bookingId/split/players/$playerId/paid';
+    return paid ? _post(path, const <String, dynamic>{}, _split) : _delete(path, _split);
+  }
+
+  Future<List<OwedShare>> splitDues() => _get('/api/v1/me/split-dues', (json) => _listOf(json, OwedShare.fromJson));
+
+  static CostSplit _split(Object? json) => CostSplit.fromJson(json as Json);
+
+  // Players and teams
+
+  Future<PlayerCard> myProfile() => _get('/api/v1/me/player-profile', (json) => PlayerCard.fromJson(json as Json));
+
+  Future<PlayerCard> saveProfile({
+    Position? position,
+    SkillLevel? skillLevel,
+    PreferredFoot? preferredFoot,
+    String? city,
+    String? bio,
+    required bool isPublic,
+  }) =>
+      _put('/api/v1/me/player-profile', {
+        'position': ?position?.apiName,
+        'skillLevel': ?skillLevel?.apiName,
+        'preferredFoot': ?preferredFoot?.apiName,
+        'city': ?city,
+        'bio': ?bio,
+        'isPublic': isPublic,
+      }, (json) => PlayerCard.fromJson(json as Json));
+
+  Future<Paged<TeamSummary>> teams({String? q}) => _get(
+        '/api/v1/teams',
+        (json) => Paged.fromJson(json as Json, TeamSummary.fromJson),
+        {'q': ?q, 'page': 0, 'size': 20},
+      );
+
+  Future<Team> team(String slug) => _get('/api/v1/teams/$slug', _team);
+
+  /// Teams the player is in or invited to.
+  Future<List<Team>> myTeams() => _get('/api/v1/me/teams', (json) => _listOf(json, Team.fromJson));
+
+  Future<Team> createTeam({required String name, String? city, SkillLevel? skillLevel}) => _post(
+        '/api/v1/teams',
+        {'name': name, 'city': ?city, 'skillLevel': ?skillLevel?.apiName, 'isPublic': true},
+        _team,
+      );
+
+  Future<Team> invite(String teamId, String phone) =>
+      _post('/api/v1/teams/$teamId/invitations', {'phone': phone}, _team);
+
+  Future<void> answerInvite(String teamId, bool accept) =>
+      _post('/api/v1/teams/$teamId/invitation/${accept ? 'accept' : 'decline'}', const <String, dynamic>{}, (_) {});
+
+  Future<void> leaveTeam(String teamId) => _post('/api/v1/teams/$teamId/leave', const <String, dynamic>{}, (_) {});
+
+  Future<Team> removeMember(String teamId, String userId) => _delete('/api/v1/teams/$teamId/members/$userId', _team);
+
+  Future<Team> changeRole(String teamId, String userId, TeamRole role) =>
+      _put('/api/v1/teams/$teamId/members/$userId/role', {'role': role.apiName}, _team);
+
+  static Team _team(Object? json) => Team.fromJson(json as Json);
+
+  // Matchmaking
+
+  /// Open posts, soonest first. [date] is a Nepal date.
+  Future<Paged<MatchPost>> matchPosts({MatchPostType? type, String? date}) => _get(
+        '/api/v1/match-posts',
+        (json) => Paged.fromJson(json as Json, MatchPost.fromJson),
+        {'type': ?type?.apiName, 'date': ?date, 'page': 0, 'size': 20},
+      );
+
+  Future<MatchPost> matchPost(String id) => _get('/api/v1/match-posts/$id', _matchPost);
+
+  /// Where and when: one of the player's bookings, or a venue (or just a city) and [startsAt].
+  Future<MatchPost> createMatchPost({
+    required MatchPostType type,
+    String? teamId,
+    String? bookingId,
+    String? venueId,
+    String? city,
+    String? startsAt,
+    int? playersNeeded,
+    SkillLevel? skillLevel,
+    double? costPerPlayer,
+    String? note,
+  }) =>
+      _post('/api/v1/match-posts', {
+        'type': type.apiName,
+        'teamId': ?teamId,
+        'bookingId': ?bookingId,
+        'venueId': ?venueId,
+        'city': ?city,
+        'startsAt': ?startsAt,
+        'playersNeeded': ?playersNeeded,
+        'skillLevel': ?skillLevel?.apiName,
+        'costPerPlayer': ?costPerPlayer,
+        'note': ?note,
+      }, _matchPost);
+
+  Future<MatchPost> cancelMatchPost(String id) =>
+      _post('/api/v1/match-posts/$id/cancel', const <String, dynamic>{}, _matchPost);
+
+  /// [teamId]: the team asking, to answer a FIND_OPPONENT post.
+  Future<MatchPost> askToJoin(String id, {String? message, String? teamId}) =>
+      _post('/api/v1/match-posts/$id/requests', {'message': ?message, 'teamId': ?teamId}, _matchPost);
+
+  Future<MatchPost> withdrawRequest(String id) =>
+      _post('/api/v1/match-posts/$id/requests/withdraw', const <String, dynamic>{}, _matchPost);
+
+  Future<MatchPost> answerRequest(String id, String requestId, bool accept) => _post(
+        '/api/v1/match-posts/$id/requests/$requestId/${accept ? 'accept' : 'decline'}',
+        const <String, dynamic>{},
+        _matchPost,
+      );
+
+  Future<Paged<MatchPost>> myMatchPosts() =>
+      _get('/api/v1/me/match-posts', (json) => Paged.fromJson(json as Json, MatchPost.fromJson), {'size': 50});
+
+  Future<Paged<MatchPost>> myMatchRequests() =>
+      _get('/api/v1/me/match-requests', (json) => Paged.fromJson(json as Json, MatchPost.fromJson), {'size': 50});
+
+  static MatchPost _matchPost(Object? json) => MatchPost.fromJson(json as Json);
+
+  // Tournaments
+
+  Future<List<TournamentSummary>> tournaments({required bool upcoming}) => _get(
+        '/api/v1/tournaments',
+        (json) => _listOf(json, TournamentSummary.fromJson),
+        {'upcoming': upcoming},
+      );
+
+  Future<TournamentDetail> tournament(String slug) => _get('/api/v1/tournaments/$slug', _tournament);
+
+  /// [squad]: jersey number (or null) by player.
+  Future<TournamentDetail> register(String tournamentId, String teamId, Map<String, int?> squad) => _post(
+        '/api/v1/tournaments/$tournamentId/registrations',
+        {
+          'teamId': teamId,
+          'squad': [
+            for (final MapEntry(key: userId, value: number) in squad.entries)
+              {'userId': userId, 'jerseyNumber': ?number},
+          ],
+        },
+        _tournament,
+      );
+
+  Future<TournamentDetail> withdrawEntry(String tournamentId, String registrationId) => _post(
+        '/api/v1/tournaments/$tournamentId/registrations/$registrationId/withdraw',
+        const <String, dynamic>{},
+        _tournament,
+      );
+
+  Future<List<MyTournamentEntry>> myEntries() =>
+      _get('/api/v1/me/tournament-entries', (json) => _listOf(json, MyTournamentEntry.fromJson));
+
+  Future<void> payEntry(String registrationId, PaymentClaim claim) =>
+      _post('/api/v1/tournament-entries/$registrationId/payments', claim.toJson(), (_) {});
+
+  static TournamentDetail _tournament(Object? json) => TournamentDetail.fromJson(json as Json);
+
   // Account
 
   Future<User> updateMe({required String fullName, String? email, required String preferredLanguage}) async {
@@ -243,6 +455,16 @@ class Api {
 
   Future<T> _post<T>(String path, Object body, T Function(Object? json) read) async {
     final response = await _http.post<Object?>(path, data: body);
+    return read(response.data);
+  }
+
+  Future<T> _put<T>(String path, Object body, T Function(Object? json) read) async {
+    final response = await _http.put<Object?>(path, data: body);
+    return read(response.data);
+  }
+
+  Future<T> _delete<T>(String path, T Function(Object? json) read) async {
+    final response = await _http.delete<Object?>(path);
     return read(response.data);
   }
 

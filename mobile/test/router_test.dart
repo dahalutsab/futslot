@@ -109,6 +109,19 @@ void main() {
     await _close(tester, container);
   });
 
+  testWidgets('Play asks to sign in for games, but tournaments are open to everyone', (tester) async {
+    final container = await _app(tester);
+    await tester.tap(find.text('Play'));
+    await _settle(tester);
+    expect(_location(container), '/login?next=%2Fmatches');
+
+    _router(container).go('/tournaments');
+    await _settle(tester);
+    expect(_location(container), '/tournaments');
+    expect(find.text('No tournaments coming up'), findsOneWidget);
+    await _close(tester, container);
+  });
+
   test('only paths inside the app are followed after signing in', () {
     expect(safeNext('/bookings/1'), '/bookings/1');
     expect(safeNext('//evil.example'), isNull);
