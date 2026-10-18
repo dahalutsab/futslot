@@ -252,7 +252,8 @@ http://localhost:4300. See `player/README.md`.
 ### Mobile app
 
 The Flutter player app lives in `mobile/`. So far it covers signing in, finding and booking venues, paying the
-advance, bookings and the booking deposit; the web app (`player/`) still has every other player feature. With
+advance, bookings, the booking deposit, messages, notifications, saved venues, reviews and the waitlist; the
+web app (`player/`) still has memberships, splits, games, teams and tournaments. With
 the API running and an emulator open: `cd mobile && flutter run`. See `mobile/README.md`.
 
 ### Admin web app

@@ -10,6 +10,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/config.dart';
+import '../../core/session.dart';
 import '../../core/theme.dart';
 import '../../shared/booking_model.dart';
 import '../../shared/format.dart';
@@ -17,6 +18,10 @@ import '../../shared/widgets.dart';
 
 /// How many days the day strip offers, at most.
 const _daysShown = 14;
+
+/// A slot by court and instant, since the waitlist and availability may write the same start with different
+/// offsets.
+String _slotKey(String courtId, String startsAt) => '$courtId@${DateTime.parse(startsAt).millisecondsSinceEpoch}';
 
 /// One venue: photos and details, free slots by day and court, the booking rules, and reviews.
 class VenueScreen extends ConsumerStatefulWidget {
@@ -44,7 +49,17 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
 
   String? _day;
 
+  var _saved = false;
+
+  /// Booked slots the player is waiting for here.
+  var _waiting = <String>{};
+
+  /// What happened when the player last asked to wait for a slot, shown under that court.
+  ({String courtId, String text, bool ok})? _waitNote;
+
   Api get _api => ref.read(apiProvider);
+
+  bool get _signedIn => ref.read(sessionProvider) != null;
 
   List<String> get _days {
     final venue = _venue;
@@ -76,6 +91,18 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
       if (mounted) {
         setState(() => _reviews = reviews.content);
       }
+      if (_signedIn) {
+        final results = await Future.wait([_api.favourites(), _api.waitlist()]);
+        if (mounted) {
+          setState(() {
+            _saved = (results[0] as List<VenueSummary>).any((f) => f.id == venue.id);
+            _waiting = {
+              for (final entry in results[1] as List<WaitlistEntry>)
+                if (entry.venueId == venue.id && entry.live) _slotKey(entry.courtId, entry.startsAt),
+            };
+          });
+        }
+      }
     } catch (error) {
       if (mounted && _venue == null) {
         setState(() => _error = problemOf(error).message);
@@ -101,6 +128,82 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
     }
   }
 
+  /// Signing in comes back to this venue.
+  void _signIn() =>
+      context.push(Uri(path: '/login', queryParameters: {'next': '/venues/${widget.slug}'}).toString());
+
+  Future<void> _toggleSaved(VenueDetail venue) async {
+    if (!_signedIn) {
+      _signIn();
+      return;
+    }
+    final on = !_saved;
+    setState(() => _saved = on);
+    try {
+      await _api.favourite(venue.id, on);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _saved = !on);
+      }
+    }
+  }
+
+  void _message(VenueDetail venue) {
+    context.push(Uri(path: '/messages/new', queryParameters: {'venue': venue.id, 'name': venue.name}).toString());
+  }
+
+  /// A booked slot: offer to wait for it.
+  Future<void> _askToWait(CourtSlots court, Slot slot) async {
+    if (!_signedIn) {
+      _signIn();
+      return;
+    }
+    final c = context.fs;
+    final wait = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: c.surface,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '${localClock(slot.startsAt)} on ${court.name} is booked',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Wait for it, and we'll tell you if it frees up. Whoever books it first then gets it.",
+                style: TextStyle(color: c.muted),
+              ),
+              const SizedBox(height: 16),
+              FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Wait for it')),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (wait != true || !mounted) {
+      return;
+    }
+    try {
+      await _api.joinWaitlist(court.courtId, slot.startsAt);
+      if (mounted) {
+        setState(() {
+          _waiting = {..._waiting, _slotKey(court.courtId, slot.startsAt)};
+          _waitNote = (courtId: court.courtId, ok: true, text: "We'll tell you if ${localClock(slot.startsAt)} frees up.");
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() => _waitNote = (courtId: court.courtId, ok: false, text: problemOf(error).message));
+      }
+    }
+  }
+
   void _book(CourtSlots court, Slot slot) {
     context.push(Uri(
       path: '/venues/${widget.slug}/book',
@@ -112,7 +215,26 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
   Widget build(BuildContext context) {
     final venue = _venue;
     return Scaffold(
-      appBar: AppBar(title: Text(venue?.name ?? '')),
+      appBar: AppBar(
+        title: Text(venue?.name ?? ''),
+        actions: [
+          if (venue != null) ...[
+            IconButton(
+              tooltip: _saved ? 'Saved' : 'Save',
+              isSelected: _saved,
+              onPressed: () => _toggleSaved(venue),
+              icon: Icon(LucideIcons.heart, color: context.fs.muted),
+              selectedIcon: Icon(Icons.favorite_rounded, color: context.fs.noshow.line),
+            ),
+            if (ref.watch(sessionProvider) != null)
+              IconButton(
+                tooltip: 'Message',
+                onPressed: () => _message(venue),
+                icon: Icon(LucideIcons.messageSquare, color: context.fs.muted),
+              ),
+          ],
+        ],
+      ),
       body: switch ((venue, _error)) {
         (_, final String error) => ScreenBody(children: [
             ErrorPanel(message: error, onRetry: _load),
@@ -270,9 +392,18 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
             children: [
               // Past slots only clutter today's list
               for (final slot in court.slots.where((slot) => slot.status != SlotStatus.past))
-                _SlotTile(slot: slot, onBook: () => _book(court, slot)),
+                _SlotTile(
+                  slot: slot,
+                  waiting: _waiting.contains(_slotKey(court.courtId, slot.startsAt)),
+                  onBook: () => _book(court, slot),
+                  onWait: () => _askToWait(court, slot),
+                ),
             ],
           ),
+        if (_waitNote case final note? when note.courtId == court.courtId) ...[
+          const SizedBox(height: 8),
+          Notice(note.text, color: note.ok ? c.confirmed.fg : c.danger),
+        ],
       ],
     ];
   }
@@ -429,17 +560,73 @@ class _CourtHeading extends StatelessWidget {
 }
 
 class _SlotTile extends StatelessWidget {
-  const _SlotTile({required this.slot, required this.onBook});
+  const _SlotTile({required this.slot, required this.waiting, required this.onBook, required this.onWait});
 
   final Slot slot;
+
+  /// The player is on the waitlist for it.
+  final bool waiting;
   final VoidCallback onBook;
+  final VoidCallback onWait;
 
   @override
   Widget build(BuildContext context) {
     final c = context.fs;
     final time = localClock(slot.startsAt);
+    if (slot.status == SlotStatus.booked && waiting) {
+      return Semantics(
+        label: "$time, booked. You're waiting for it",
+        excludeSemantics: true,
+        child: Container(
+          decoration: BoxDecoration(
+            color: c.held.bg,
+            border: Border.all(color: c.held.line),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(time, style: TextStyle(fontWeight: FontWeight.w500, color: c.held.fg, fontFeatures: tabular)),
+              Text('Waiting', style: TextStyle(fontSize: 12, color: c.held.fg)),
+            ],
+          ),
+        ),
+      );
+    }
+    if (slot.status == SlotStatus.booked) {
+      return Semantics(
+        label: '$time is booked. Wait for it?',
+        button: true,
+        // Excluding the InkWell's semantics drops its tap, so screen readers act through this
+        onTap: onWait,
+        excludeSemantics: true,
+        child: Material(
+          color: c.surface2,
+          borderRadius: BorderRadius.circular(8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: onWait,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  time,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: c.subtle,
+                    decoration: TextDecoration.lineThrough,
+                    fontFeatures: tabular,
+                  ),
+                ),
+                Text('Booked', style: TextStyle(fontSize: 12, color: c.subtle)),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     if (slot.status != SlotStatus.available) {
-      final why = slot.status == SlotStatus.booked ? 'Booked' : 'Closed';
+      const why = 'Closed';
       return Semantics(
         label: '$time, $why',
         excludeSemantics: true,
@@ -466,6 +653,7 @@ class _SlotTile extends StatelessWidget {
     return Semantics(
       label: '$time, ${rupees(slot.price)}. Book',
       button: true,
+      onTap: onBook,
       excludeSemantics: true,
       child: Material(
         color: c.surface,

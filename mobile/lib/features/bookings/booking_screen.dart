@@ -13,17 +13,21 @@ import '../../core/theme.dart';
 import '../../shared/booking_model.dart';
 import '../../shared/format.dart';
 import '../../shared/pay_form.dart';
+import '../../shared/review_form.dart';
 import '../../shared/status_chip.dart';
 import '../../shared/widgets.dart';
 
 /// One booking: when and where, paying the advance, the money so far, and cancelling.
 class BookingScreen extends ConsumerStatefulWidget {
-  const BookingScreen({super.key, required this.id, this.justBooked = false});
+  const BookingScreen({super.key, required this.id, this.justBooked = false, this.toReview = false});
 
   final String id;
 
   /// The player has just booked it.
   final bool justBooked;
+
+  /// Opened to review the game: scrolls to the review.
+  final bool toReview;
 
   @override
   ConsumerState<BookingScreen> createState() => _BookingScreenState();
@@ -49,6 +53,20 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
   var _cancelling = false;
 
   String? _cancelError;
+
+  /// The player's review of this game; null when there's none.
+  Review? _review;
+
+  /// Whether [_review] has been looked up (only played games have one).
+  var _reviewLoaded = false;
+
+  var _editingReview = false;
+
+  var _reviewBusy = false;
+
+  String? _reviewError;
+
+  final _reviewKey = GlobalKey();
 
   /// Ticks every 30 seconds, so the time left to pay and the cancel fee stay current.
   var _now = DateTime.now();
@@ -102,6 +120,9 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
         _now = DateTime.now();
         _error = null;
       });
+      if (booking.status == BookingStatus.completed && !_reviewLoaded) {
+        _loadReview(booking.id);
+      }
       if (_venue?.id != booking.venue.id && booking.venue.slug != null) {
         final venue = await _api.venue(booking.venue.slug!);
         if (mounted) {
@@ -113,6 +134,87 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
         setState(() => _error = problemOf(error).message);
       }
     }
+  }
+
+  Future<void> _loadReview(String id) async {
+    try {
+      _review = await _api.bookingReview(id);
+    } catch (error) {
+      if (problemOf(error).code != 'REVIEW_NOT_FOUND') {
+        return;
+      }
+    }
+    if (!mounted) {
+      return;
+    }
+    setState(() => _reviewLoaded = true);
+    if (widget.toReview) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_reviewKey.currentContext case final section?) {
+          Scrollable.ensureVisible(section, duration: const Duration(milliseconds: 300));
+        }
+      });
+    }
+  }
+
+  Future<void> _saveReview(int rating, String? comment) async {
+    final booking = _booking;
+    if (booking == null || _reviewBusy) {
+      return;
+    }
+    setState(() {
+      _reviewBusy = true;
+      _reviewError = null;
+    });
+    try {
+      final review = await _api.writeReview(booking.id, rating: rating, comment: comment, update: _review != null);
+      if (mounted) {
+        setState(() {
+          _review = review;
+          _editingReview = false;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() => _reviewError = problemOf(error).message);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _reviewBusy = false);
+      }
+    }
+  }
+
+  Future<void> _deleteReview() async {
+    final booking = _booking;
+    if (booking == null || _reviewBusy) {
+      return;
+    }
+    setState(() => _reviewBusy = true);
+    try {
+      await _api.deleteReview(booking.id);
+      if (mounted) {
+        setState(() {
+          _review = null;
+          _editingReview = false;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() => _reviewError = problemOf(error).message);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _reviewBusy = false);
+      }
+    }
+  }
+
+  void _message(Booking b) {
+    context.push(Uri(
+      path: '/messages/new',
+      queryParameters: {'venue': b.venue.id, 'name': b.venue.name, 'booking': b.id},
+    ).toString());
   }
 
   Future<void> _pay(PaymentClaim claim) async {
@@ -243,6 +345,12 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 ],
               ),
             ],
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => _message(b),
+              icon: const Icon(LucideIcons.messageSquare, size: 16),
+              label: const Text('Message the venue', style: TextStyle(fontSize: 14)),
+            ),
           ],
         ),
       ),
@@ -287,8 +395,85 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           ),
         ),
       ],
+      if (b.status == BookingStatus.completed && _reviewLoaded) ...[
+        const SizedBox(height: 16),
+        KeyedSubtree(key: _reviewKey, child: _reviewSection(context, b)),
+      ],
       if (live && cancellable(b, _now)) ...[const SizedBox(height: 16), _cancelSection(context, b)],
     ];
+  }
+
+  Widget _reviewSection(BuildContext context, Booking b) {
+    final c = context.fs;
+    final text = Theme.of(context).textTheme;
+    final review = _review;
+    if (review != null && !_editingReview) {
+      return FsCard(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Your review', style: text.titleMedium),
+            const SizedBox(height: 4),
+            Stars(review.rating),
+            if (review.comment case final comment?) ...[const SizedBox(height: 4), Text(comment)],
+            if (review.ownerReply case final reply?) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(8)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${b.venue.name} replied', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                    Text(reply, style: TextStyle(fontSize: 14, color: c.muted)),
+                  ],
+                ),
+              ),
+            ],
+            if (_reviewError case final error?) ...[const SizedBox(height: 8), Notice(error)],
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                OutlinedButton(onPressed: () => setState(() => _editingReview = true), child: const Text('Edit')),
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: _reviewBusy ? null : _deleteReview,
+                  style: TextButton.styleFrom(foregroundColor: c.danger),
+                  child: const Text('Delete'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+    return FsCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(review != null ? 'Edit your review' : 'How was ${b.venue.name}?', style: text.titleMedium),
+          Text(
+            'Other players see it with your first name and last initial.',
+            style: TextStyle(fontSize: 14, color: c.muted),
+          ),
+          const SizedBox(height: 12),
+          ReviewForm(
+            rating: review?.rating ?? 0,
+            comment: review?.comment,
+            label: review != null ? 'Save' : 'Post review',
+            busy: _reviewBusy,
+            error: _reviewError,
+            onSaved: _saveReview,
+            extra: review != null
+                ? TextButton(onPressed: () => setState(() => _editingReview = false), child: const Text('Cancel'))
+                : null,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _payment(BuildContext context, Booking b) {

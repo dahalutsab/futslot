@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,14 +8,27 @@ import 'features/bookings/booking_screen.dart';
 import 'features/bookings/bookings_screen.dart';
 import 'features/deposit/deposit_screen.dart';
 import 'features/explore/explore_screen.dart';
+import 'features/favourites/favourites_screen.dart';
 import 'features/login/login_screen.dart';
 import 'features/me/me_screen.dart';
+import 'features/messages/messages_screen.dart';
+import 'features/messages/thread_screen.dart';
+import 'features/notifications/notifications_screen.dart';
+import 'features/reviews/reviews_screen.dart';
 import 'features/venue/venue_screen.dart';
+import 'features/waitlist/waitlist_screen.dart';
 import 'layout/shell.dart';
 
 /// Browsing never needs an account; booking, bookings and the account do. Signing in returns to [next].
 bool _needsSignIn(String path) =>
-    path.startsWith('/bookings') || path.startsWith('/me') || RegExp(r'^/venues/[^/]+/book').hasMatch(path);
+    path.startsWith('/bookings') ||
+    path.startsWith('/me') ||
+    path.startsWith('/messages') ||
+    path.startsWith('/notifications') ||
+    RegExp(r'^/venues/[^/]+/book').hasMatch(path);
+
+/// Screens that cover the bottom bar (sign-in, a conversation, notifications) open on this navigator.
+final _root = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 /// Only paths inside the app, so a crafted link can't send the player elsewhere.
 String? safeNext(String? next) => next != null && next.startsWith('/') && !next.startsWith('//') ? next : null;
@@ -32,6 +45,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     }
   });
   router = GoRouter(
+    navigatorKey: _root,
     refreshListenable: signedIn,
     redirect: (context, state) {
       final path = state.uri.path;
@@ -48,6 +62,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/login',
         builder: (context, state) => LoginScreen(next: safeNext(state.uri.queryParameters['next'])),
       ),
+      GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => Shell(shell: shell),
         branches: [
@@ -84,7 +99,31 @@ final routerProvider = Provider<GoRouter>((ref) {
                   builder: (context, state) => BookingScreen(
                     id: state.pathParameters['id']!,
                     justBooked: state.uri.queryParameters.containsKey('booked'),
+                    toReview: state.uri.queryParameters.containsKey('review'),
                   ),
+                ),
+              ],
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: '/messages',
+              builder: (context, state) => const MessagesScreen(),
+              routes: [
+                // Writing to a venue from its page or a booking: ?venue=<id>&name=<venue>&booking=<id>
+                GoRoute(
+                  path: 'new',
+                  parentNavigatorKey: _root,
+                  builder: (context, state) => ThreadScreen(
+                    venueId: state.uri.queryParameters['venue'],
+                    venueName: state.uri.queryParameters['name'],
+                    bookingId: state.uri.queryParameters['booking'],
+                  ),
+                ),
+                GoRoute(
+                  path: ':id',
+                  parentNavigatorKey: _root,
+                  builder: (context, state) => ThreadScreen(conversationId: state.pathParameters['id']),
                 ),
               ],
             ),
@@ -98,6 +137,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                   path: 'deposit',
                   builder: (context, state) => DepositScreen(back: safeNext(state.uri.queryParameters['back'])),
                 ),
+                GoRoute(path: 'favourites', builder: (context, state) => const FavouritesScreen()),
+                GoRoute(path: 'reviews', builder: (context, state) => const ReviewsScreen()),
+                GoRoute(path: 'waitlist', builder: (context, state) => const WaitlistScreen()),
               ],
             ),
           ]),

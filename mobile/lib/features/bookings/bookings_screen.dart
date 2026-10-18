@@ -8,6 +8,7 @@ import '../../core/api_types.dart';
 import '../../core/theme.dart';
 import '../../shared/booking_model.dart';
 import '../../shared/format.dart';
+import '../../shared/notification_bell.dart';
 import '../../shared/status_chip.dart';
 import '../../shared/widgets.dart';
 
@@ -88,7 +89,7 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
     final bookings = _bookings;
     final upcoming = _scope == _Scope.upcoming;
     return Scaffold(
-      appBar: AppBar(title: const Text('Your bookings')),
+      appBar: AppBar(title: const Text('Your bookings'), actions: const [NotificationBell()]),
       body: ScreenBody(
         maxWidth: 768,
         onRefresh: () => _load(0),
