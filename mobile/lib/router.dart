@@ -10,21 +10,35 @@ import 'features/deposit/deposit_screen.dart';
 import 'features/explore/explore_screen.dart';
 import 'features/favourites/favourites_screen.dart';
 import 'features/login/login_screen.dart';
+import 'features/matches/match_screen.dart';
+import 'features/matches/matches_screen.dart';
+import 'features/matches/new_match_screen.dart';
 import 'features/me/me_screen.dart';
+import 'features/memberships/memberships_screen.dart';
 import 'features/messages/messages_screen.dart';
 import 'features/messages/thread_screen.dart';
 import 'features/notifications/notifications_screen.dart';
+import 'features/profile/profile_screen.dart';
 import 'features/reviews/reviews_screen.dart';
+import 'features/split/dues_screen.dart';
+import 'features/split/split_screen.dart';
+import 'features/teams/team_screen.dart';
+import 'features/teams/teams_screen.dart';
+import 'features/tournaments/tournament_screen.dart';
+import 'features/tournaments/tournaments_screen.dart';
 import 'features/venue/venue_screen.dart';
 import 'features/waitlist/waitlist_screen.dart';
 import 'layout/shell.dart';
 
-/// Browsing never needs an account; booking, bookings and the account do. Signing in returns to [next].
+/// Browsing venues and tournaments never needs an account; booking, bookings, games, teams and the account do.
+/// Signing in returns to [next].
 bool _needsSignIn(String path) =>
     path.startsWith('/bookings') ||
     path.startsWith('/me') ||
     path.startsWith('/messages') ||
     path.startsWith('/notifications') ||
+    path.startsWith('/matches') ||
+    path.startsWith('/teams') ||
     RegExp(r'^/venues/[^/]+/book').hasMatch(path);
 
 /// Screens that cover the bottom bar (sign-in, a conversation, notifications) open on this navigator.
@@ -101,7 +115,43 @@ final routerProvider = Provider<GoRouter>((ref) {
                     justBooked: state.uri.queryParameters.containsKey('booked'),
                     toReview: state.uri.queryParameters.containsKey('review'),
                   ),
+                  routes: [
+                    // Also opened from what the player owes on Me, so it covers the tabs
+                    GoRoute(
+                      path: 'split',
+                      parentNavigatorKey: _root,
+                      builder: (context, state) => SplitScreen(bookingId: state.pathParameters['id']!),
+                    ),
+                  ],
                 ),
+              ],
+            ),
+          ]),
+          // Play: pickup games, tournaments and teams, switched between at the top
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: '/matches',
+              builder: (context, state) => const MatchesScreen(),
+              routes: [
+                GoRoute(path: 'new', builder: (context, state) => const NewMatchScreen()),
+                GoRoute(path: ':id', builder: (context, state) => MatchScreen(id: state.pathParameters['id']!)),
+              ],
+            ),
+            GoRoute(
+              path: '/tournaments',
+              builder: (context, state) => const TournamentsScreen(),
+              routes: [
+                GoRoute(
+                  path: ':slug',
+                  builder: (context, state) => TournamentScreen(slug: state.pathParameters['slug']!),
+                ),
+              ],
+            ),
+            GoRoute(
+              path: '/teams',
+              builder: (context, state) => const TeamsScreen(),
+              routes: [
+                GoRoute(path: ':slug', builder: (context, state) => TeamScreen(slug: state.pathParameters['slug']!)),
               ],
             ),
           ]),
@@ -140,6 +190,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                 GoRoute(path: 'favourites', builder: (context, state) => const FavouritesScreen()),
                 GoRoute(path: 'reviews', builder: (context, state) => const ReviewsScreen()),
                 GoRoute(path: 'waitlist', builder: (context, state) => const WaitlistScreen()),
+                GoRoute(path: 'profile', builder: (context, state) => const ProfileScreen()),
+                GoRoute(path: 'memberships', builder: (context, state) => const MembershipsScreen()),
+                GoRoute(path: 'splits', builder: (context, state) => const DuesScreen()),
               ],
             ),
           ]),

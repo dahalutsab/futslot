@@ -14,6 +14,14 @@ import '../../shared/widgets.dart';
 /// Everything else the player keeps with FutSlot.
 const _links = [
   (path: '/me/deposit', label: 'Booking deposit', detail: 'Top up or take it back', icon: LucideIcons.wallet),
+  (
+    path: '/me/profile',
+    label: 'Player profile',
+    detail: 'Your position and level, for games and teams',
+    icon: LucideIcons.shirt,
+  ),
+  (path: '/me/memberships', label: 'Memberships', detail: 'Game packs and passes', icon: LucideIcons.badgeCheck),
+  (path: '/me/splits', label: 'What you owe', detail: 'Your share of games friends booked', icon: LucideIcons.coins),
   (path: '/me/favourites', label: 'Saved venues', detail: 'Venues you like, to book again', icon: LucideIcons.heart),
   (path: '/me/reviews', label: 'Reviews', detail: 'Rate the venues you played at', icon: LucideIcons.star),
   (path: '/me/waitlist', label: 'Waitlist', detail: 'Booked slots you want if they free up', icon: LucideIcons.hourglass),

@@ -6,7 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../core/badges.dart';
 import '../core/theme.dart';
 
-/// The bottom bar: Explore, Bookings, Messages, Me. Each tab keeps its own back stack.
+/// The bottom bar: Explore, Bookings, Play, Messages, Me. Each tab keeps its own back stack.
 class Shell extends ConsumerWidget {
   const Shell({super.key, required this.shell});
 
@@ -26,6 +26,7 @@ class Shell extends ConsumerWidget {
           destinations: [
             const NavigationDestination(icon: Icon(LucideIcons.compass), label: 'Explore'),
             const NavigationDestination(icon: Icon(LucideIcons.calendarDays), label: 'Bookings'),
+            const NavigationDestination(icon: Icon(LucideIcons.trophy), label: 'Play'),
             NavigationDestination(
               // The tooltip says the count, so the badge isn't read out as well
               icon: ExcludeSemantics(

@@ -26,6 +26,7 @@ class FsColors extends ThemeExtension<FsColors> {
     required this.verify,
     required this.blocked,
     required this.noshow,
+    required this.tournament,
   });
 
   final Color bg;
@@ -49,6 +50,9 @@ class FsColors extends ThemeExtension<FsColors> {
   final StateColors blocked;
   final StateColors noshow;
 
+  /// Tournaments: a cool blue that stands apart from the booking states.
+  final StateColors tournament;
+
   static const light = FsColors(
     bg: Color(0xFFF7F7F8),
     surface: Color(0xFFFFFFFF),
@@ -68,6 +72,7 @@ class FsColors extends ThemeExtension<FsColors> {
     verify: StateColors(bg: Color(0xFFF5F3FF), line: Color(0xFF8B5CF6), fg: Color(0xFF5B21B6)),
     blocked: StateColors(bg: Color(0xFFF4F4F5), line: Color(0xFFA1A1AA), fg: Color(0xFF3F3F46)),
     noshow: StateColors(bg: Color(0xFFFEF2F2), line: Color(0xFFEF4444), fg: Color(0xFF991B1B)),
+    tournament: StateColors(bg: Color(0xFFF0F9FF), line: Color(0xFF0EA5E9), fg: Color(0xFF075985)),
   );
 
   /// A cool, very dark grey rather than black.
@@ -90,6 +95,7 @@ class FsColors extends ThemeExtension<FsColors> {
     verify: StateColors(bg: Color(0x298B5CF6), line: Color(0xFFA78BFA), fg: Color(0xFFC4B5FD)),
     blocked: StateColors(bg: Color(0x1FA1A1AA), line: Color(0xFF71717A), fg: Color(0xFFD4D4D8)),
     noshow: StateColors(bg: Color(0x24EF4444), line: Color(0xFFF87171), fg: Color(0xFFFCA5A5)),
+    tournament: StateColors(bg: Color(0x240EA5E9), line: Color(0xFF38BDF8), fg: Color(0xFF7DD3FC)),
   );
 
   @override

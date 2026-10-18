@@ -357,6 +357,24 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
       if (b.status == BookingStatus.pendingPayment) ...[const SizedBox(height: 16), _payment(context, b)],
       const SizedBox(height: 16),
       _money(context, b),
+      if (live || b.status == BookingStatus.completed) ...[
+        const SizedBox(height: 16),
+        FsCard(
+          padding: EdgeInsets.zero,
+          child: ListTile(
+            minTileHeight: 64,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+            onTap: () => context.push('/bookings/${b.id}/split'),
+            leading: Icon(LucideIcons.users, color: c.muted),
+            title: const Text('Split the cost', style: TextStyle(fontWeight: FontWeight.w500)),
+            subtitle: Text(
+              'Share it equally, or baazi: the losers pay',
+              style: TextStyle(fontSize: 14, color: c.muted),
+            ),
+            trailing: Icon(LucideIcons.chevronRight, size: 18, color: c.subtle),
+          ),
+        ),
+      ],
       if (b.notes case final notes?) ...[
         const SizedBox(height: 16),
         FsCard(

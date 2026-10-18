@@ -9,12 +9,8 @@ import '../../core/api_types.dart';
 import '../../core/theme.dart';
 import '../../shared/booking_model.dart';
 import '../../shared/format.dart';
+import '../../shared/labels.dart';
 import '../../shared/widgets.dart';
-
-/// "10 games", "15% off every game".
-String planTerms(Membership membership) => membership.planType == 'GAME_PACK'
-    ? '${membership.gamesIncluded} games'
-    : '${percent(membership.discountPercent ?? 0)}% off every game';
 
 /// Booking one slot: extras, a membership or discount code, what it costs and what to pay now, then confirm.
 class BookScreen extends ConsumerStatefulWidget {
@@ -304,13 +300,13 @@ class _BookScreenState extends ConsumerState<BookScreen> {
             children: [
               Text('Use a membership', style: text.titleMedium),
               const SizedBox(height: 8),
-              _Choice(
+              ChoiceTile(
                 selected: _membershipId == null,
                 onTap: () => _useMembership(null),
                 child: const Text("Don't use one"),
               ),
               for (final membership in _memberships)
-                _Choice(
+                ChoiceTile(
                   selected: _membershipId == membership.id,
                   onTap: () => _useMembership(membership.id),
                   child: Column(
@@ -318,7 +314,11 @@ class _BookScreenState extends ConsumerState<BookScreen> {
                     children: [
                       Text(membership.planName, style: const TextStyle(fontWeight: FontWeight.w500)),
                       Text(
-                        '${planTerms(membership)}'
+                        '${planTerms(
+                          membership.planType,
+                          gamesIncluded: membership.gamesIncluded,
+                          discountPercent: membership.discountPercent,
+                        )}'
                         '${membership.gamesRemaining != null ? ' · ${membership.gamesRemaining} left' : ''}',
                         style: TextStyle(fontSize: 14, color: c.muted),
                       ),
@@ -532,45 +532,6 @@ class _StepButton extends StatelessWidget {
         onPressed: onTap,
         style: OutlinedButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size.square(44)),
         child: Icon(icon, size: 16, semanticLabel: tooltip),
-      ),
-    );
-  }
-}
-
-class _Choice extends StatelessWidget {
-  const _Choice({required this.selected, required this.onTap, required this.child});
-
-  final bool selected;
-  final VoidCallback onTap;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.fs;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Semantics(
-        inMutuallyExclusiveGroup: true,
-        checked: selected,
-        button: true,
-        child: Material(
-          color: c.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: selected ? c.ink : c.border, width: selected ? 1.5 : 1),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(8),
-            onTap: onTap,
-            child: Container(
-              constraints: const BoxConstraints(minHeight: 44),
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              alignment: Alignment.centerLeft,
-              child: DefaultTextStyle.merge(style: TextStyle(color: selected ? c.text : c.muted), child: child),
-            ),
-          ),
-        ),
       ),
     );
   }

@@ -1,9 +1,9 @@
 # FutSlot mobile app
 
-The player app for Android and iOS, in Flutter. It's being built up to everything the player web app
-(`../player`) does. So far: signing in, finding a venue, booking and paying the advance, your bookings
-(cancelling with the fee shown first), the FutSlot booking deposit, messages with venues, notifications,
-saved venues, reviews and the waitlist. Design notes:
+The player app for Android and iOS, in Flutter. It does what the player web app (`../player`) does: signing in,
+finding a venue, booking and paying the advance, your bookings (cancelling with the fee shown first), the FutSlot
+booking deposit, messages with venues, notifications, saved venues, reviews, the waitlist, memberships, splitting
+a booking's cost (equally or baazi), pickup games, teams, tournaments and the player profile. Design notes:
 [docs/design/mobile.md](../docs/design/mobile.md).
 
 ## Run it
@@ -35,11 +35,13 @@ flutter build apk    # release APK in build/app/outputs/flutter-apk
 - `lib/shared`: booking rules in plain words and the cancel-fee preview (`booking_model.dart`, the same rules
   and test cases as the web app's `booking-model.ts`), formatting, the "I paid" form, venue cards, status chips.
 - `lib/features`: one folder per screen.
-- `lib/router.dart`: the screens and the bottom bar (Explore, Bookings, Messages, Me). Browsing works signed
-  out; booking, bookings, messages, notifications and the account ask to sign in and come back to the same
-  place after.
+- `lib/router.dart`: the screens and the bottom bar (Explore, Bookings, Play, Messages, Me). Play switches
+  between games, tournaments and teams at the top. Browsing venues and tournaments works signed out; booking,
+  bookings, games, teams, messages, notifications and the account ask to sign in and come back to the same place
+  after.
+- `lib/shared/labels.dart`: how API values read to a player (levels, roles, split rules...), the same words as
+  the web app's `labels.ts`.
 
 Riverpod holds the app-wide state (session, API client, theme, the unread counts in `core/badges.dart`, checked
 every minute and when the app comes back to the front); each screen loads its own data the way the
-web app's components do. Not here yet: push notifications (they need the Firebase project), and the rest of
-the player features (memberships, splits, games, teams, tournaments).
+web app's components do. Not here yet: push notifications (they need the Firebase project).

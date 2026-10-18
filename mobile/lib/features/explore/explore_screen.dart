@@ -172,9 +172,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    _CityChip(label: 'All cities', selected: _city == null, onTap: () => _pickCity(null)),
-                    for (final city in _cities)
-                      _CityChip(label: city, selected: _city == city, onTap: () => _pickCity(city)),
+                    for (final city in [null, ..._cities])
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Pill(label: city ?? 'All cities', selected: _city == city, onTap: () => _pickCity(city)),
+                      ),
                   ],
                 ),
               ),
@@ -208,43 +210,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 ),
             ],
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CityChip extends StatelessWidget {
-  const _CityChip({required this.label, required this.selected, required this.onTap});
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.fs;
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: Semantics(
-        selected: selected,
-        button: true,
-        child: Material(
-          color: selected ? c.ink : c.surface,
-          shape: StadiumBorder(side: BorderSide(color: selected ? c.ink : c.border)),
-          child: InkWell(
-            customBorder: const StadiumBorder(),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Center(
-                child: Text(
-                  label,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: selected ? c.inkFg : c.muted),
-                ),
-              ),
-            ),
-          ),
         ),
       ),
     );

@@ -15,6 +15,7 @@ import '../../core/theme.dart';
 import '../../shared/booking_model.dart';
 import '../../shared/format.dart';
 import '../../shared/widgets.dart';
+import 'plans.dart';
 
 /// How many days the day strip offers, at most.
 const _daysShown = 14;
@@ -342,6 +343,7 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
             ),
           ),
         ],
+        VenuePlans(venue: v),
         const SizedBox(height: 32),
         Text('Reviews', style: text.titleLarge),
         const SizedBox(height: 8),
