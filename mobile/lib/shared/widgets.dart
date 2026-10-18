@@ -14,42 +14,41 @@ class FsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.fs;
-    return Container(
-      width: double.infinity,
-      padding: padding,
-      decoration: BoxDecoration(
-        color: color ?? c.surface,
-        border: Border.all(color: borderColor ?? c.border),
+    // A Material, so rows inside it show their tap ripple
+    return Material(
+      color: color ?? c.surface,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: borderColor ?? c.border),
       ),
-      child: child,
+      child: Padding(padding: padding, child: SizedBox(width: double.infinity, child: child)),
     );
   }
 }
 
 /// Screen padding and the one-column width tasks are kept to, so a tablet doesn't stretch a form.
 class ScreenBody extends StatelessWidget {
-  const ScreenBody({super.key, required this.children, this.onRefresh, this.maxWidth = 576});
+  const ScreenBody({super.key, required this.children, this.onRefresh, this.maxWidth = 576, this.controller});
 
   final List<Widget> children;
+  final ScrollController? controller;
   final Future<void> Function()? onRefresh;
   final double maxWidth;
 
   @override
   Widget build(BuildContext context) {
-    final list = ListView(
+    // Built all at once (screens are short), so a section further down can be scrolled to
+    final list = SingleChildScrollView(
+      controller: controller,
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-      children: [
-        for (final child in children)
-          Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: maxWidth),
-              // Full width, so text starts at the left edge rather than centring at its own width
-              child: SizedBox(width: double.infinity, child: child),
-            ),
-          ),
-      ],
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+        ),
+      ),
     );
     return onRefresh == null ? list : RefreshIndicator(onRefresh: onRefresh!, child: list);
   }

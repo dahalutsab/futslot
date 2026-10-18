@@ -124,7 +124,7 @@ class _Rating extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.fs;
     return Semantics(
-      label: '${rating.toStringAsFixed(1)} out of 5 from $count reviews',
+      label: '${rating.toStringAsFixed(1)} out of 5 from $count ${count == 1 ? 'review' : 'reviews'}',
       excludeSemantics: true,
       child: Row(
         mainAxisSize: MainAxisSize.min,

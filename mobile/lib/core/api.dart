@@ -66,9 +66,9 @@ class Api {
 
   // Venues
 
-  Future<Page<VenueSummary>> venues({String? q, String? city, int page = 0, int size = 20}) => _get(
+  Future<Paged<VenueSummary>> venues({String? q, String? city, int page = 0, int size = 20}) => _get(
         '/api/v1/venues',
-        (json) => Page.fromJson(json as Json, VenueSummary.fromJson),
+        (json) => Paged.fromJson(json as Json, VenueSummary.fromJson),
         {'q': ?q, 'city': ?city, 'page': page, 'size': size},
       );
 
@@ -86,9 +86,9 @@ class Api {
   Future<List<AddOnItem>> addOns(String slug) =>
       _get('/api/v1/venues/$slug/add-ons', (json) => _listOf(json, AddOnItem.fromJson));
 
-  Future<Page<Review>> reviews(String slug) => _get(
+  Future<Paged<Review>> reviews(String slug) => _get(
         '/api/v1/venues/$slug/reviews',
-        (json) => Page.fromJson(json as Json, Review.fromJson),
+        (json) => Paged.fromJson(json as Json, Review.fromJson),
         {'page': 0, 'size': 10},
       );
 
@@ -133,6 +133,93 @@ class Api {
 
   Future<void> keepDeposit(String withdrawalId) =>
       _post('/api/v1/me/deposit/withdrawals/$withdrawalId/cancel', const <String, dynamic>{}, (_) {});
+
+  // Favourites
+
+  Future<List<VenueSummary>> favourites() => _get('/api/v1/me/favourites', (json) => _listOf(json, VenueSummary.fromJson));
+
+  Future<void> favourite(String venueId, bool on) async {
+    final path = '/api/v1/me/favourites/$venueId';
+    await (on ? _http.put<void>(path) : _http.delete<void>(path));
+  }
+
+  // Reviews
+
+  /// Fails with REVIEW_NOT_FOUND when the booking has no review yet.
+  Future<Review> bookingReview(String bookingId) =>
+      _get('/api/v1/bookings/$bookingId/review', (json) => Review.fromJson(json as Json));
+
+  Future<Review> writeReview(String bookingId, {required int rating, String? comment, required bool update}) async {
+    final path = '/api/v1/bookings/$bookingId/review';
+    final body = {'rating': rating, 'comment': ?comment};
+    final response = await (update ? _http.put<Json>(path, data: body) : _http.post<Json>(path, data: body));
+    return Review.fromJson(response.data!);
+  }
+
+  Future<void> deleteReview(String bookingId) => _http.delete<void>('/api/v1/bookings/$bookingId/review');
+
+  Future<Paged<Review>> myReviews() => _get(
+        '/api/v1/me/reviews',
+        (json) => Paged.fromJson(json as Json, Review.fromJson),
+        {'page': 0, 'size': 50},
+      );
+
+  /// Played bookings still waiting for a review.
+  Future<List<Booking>> toReview() => _get('/api/v1/me/reviews/pending', (json) => _listOf(json, Booking.fromJson));
+
+  // Waitlist
+
+  Future<void> joinWaitlist(String courtId, String startsAt) =>
+      _post('/api/v1/waitlist', {'courtId': courtId, 'startsAt': startsAt}, (_) {});
+
+  Future<List<WaitlistEntry>> waitlist() => _get('/api/v1/me/waitlist', (json) => _listOf(json, WaitlistEntry.fromJson));
+
+  Future<void> leaveWaitlist(String entryId) => _http.delete<void>('/api/v1/me/waitlist/$entryId');
+
+  // Notifications
+
+  Future<Paged<AppNotification>> notifications({int page = 0}) => _get(
+        '/api/v1/notifications',
+        (json) => Paged.fromJson(json as Json, AppNotification.fromJson),
+        {'page': page, 'size': 20},
+      );
+
+  Future<int> unreadNotifications() =>
+      _get('/api/v1/notifications/unread-count', (json) => (json as Json)['unread'] as int);
+
+  Future<void> readNotification(String id) => _post('/api/v1/notifications/$id/read', const <String, dynamic>{}, (_) {});
+
+  Future<void> readAllNotifications() => _post('/api/v1/notifications/read-all', const <String, dynamic>{}, (_) {});
+
+  // Messages
+
+  Future<List<ConversationSummary>> conversations() =>
+      _get('/api/v1/me/conversations', (json) => _listOf(json, ConversationSummary.fromJson));
+
+  /// Newest first, [messagesPage] at a time; [before] pages back through older ones.
+  Future<List<ChatMessage>> messages(String conversationId, {String? before}) => _get(
+        '/api/v1/me/conversations/$conversationId/messages',
+        (json) => _listOf(json, ChatMessage.fromJson),
+        {'before': ?before},
+      );
+
+  static const messagesPage = 50;
+
+  Future<ChatMessage> reply(String conversationId, String body) => _post(
+        '/api/v1/me/conversations/$conversationId/messages',
+        {'body': body},
+        (json) => ChatMessage.fromJson(json as Json),
+      );
+
+  /// Starts (or continues) the conversation with a venue, optionally about one of the player's bookings there.
+  Future<ChatMessage> messageVenue(String venueId, String body, {String? bookingId}) => _post(
+        '/api/v1/venues/$venueId/messages',
+        {'body': body, 'bookingId': ?bookingId},
+        (json) => ChatMessage.fromJson(json as Json),
+      );
+
+  Future<void> readConversation(String conversationId) =>
+      _post('/api/v1/me/conversations/$conversationId/read', const <String, dynamic>{}, (_) {});
 
   // Memberships
 

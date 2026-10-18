@@ -35,7 +35,6 @@ Future<ProviderContainer> _app(WidgetTester tester, {StoredSession? signedIn}) a
   ]);
   // Only the transport: the real client keeps its token handling
   container.read(apiHttpProvider).httpClientAdapter = FakeAdapter(_api);
-  addTearDown(container.dispose);
   await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const FutSlotApp()));
   await tester.pump();
   return container;
@@ -45,6 +44,12 @@ GoRouter _router(ProviderContainer container) => container.read(routerProvider);
 
 /// Where the player is, pushed screens included.
 String _location(ProviderContainer container) => _router(container).state.uri.toString();
+
+/// Takes the app down before the test ends, so its timers (unread counts, polling) stop with it.
+Future<void> _close(WidgetTester tester, ProviderContainer container) async {
+  await tester.pumpWidget(const SizedBox());
+  container.dispose();
+}
 
 /// Lets page transitions finish. Requests go through Dio, whose timeouts are real timers the test clock doesn't
 /// run on its own, so they get a moment of real time too.
@@ -71,6 +76,7 @@ void main() {
     await _settle(tester);
     expect(_location(container), '/bookings');
     expect(find.text('No games coming up'), findsOneWidget);
+    await _close(tester, container);
   });
 
   testWidgets('signing in from a screen pushed over another goes on to it', (tester) async {
@@ -89,6 +95,7 @@ void main() {
 
     expect(_location(container), '/me/deposit');
     expect(find.text('Booking deposit'), findsOneWidget);
+    await _close(tester, container);
   });
 
   testWidgets('a session that runs out on a pushed screen goes back to sign in', (tester) async {
@@ -99,6 +106,7 @@ void main() {
 
     expect(_location(container), '/login?next=%2Fbookings%2Fb1');
     expect(find.text('You were signed out. Please sign in again.'), findsOneWidget);
+    await _close(tester, container);
   });
 
   test('only paths inside the app are followed after signing in', () {

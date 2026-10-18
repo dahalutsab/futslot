@@ -68,15 +68,15 @@ class OtpSent {
       );
 }
 
-class Page<T> {
-  const Page({required this.content, required this.page, required this.totalElements, required this.totalPages});
+class Paged<T> {
+  const Paged({required this.content, required this.page, required this.totalElements, required this.totalPages});
 
   final List<T> content;
   final int page;
   final int totalElements;
   final int totalPages;
 
-  factory Page.fromJson(Json json, T Function(Json) from) => Page(
+  factory Paged.fromJson(Json json, T Function(Json) from) => Paged(
         content: _list(json['content'], from),
         page: json['page'] as int,
         totalElements: json['totalElements'] as int,
@@ -731,30 +731,198 @@ class Deposit {
 
 // Reviews
 
+enum ReviewStatus { published, hidden, removed }
+
 class Review {
   const Review({
     required this.id,
+    required this.venueName,
+    required this.bookingId,
     required this.playedOn,
     required this.rating,
     required this.comment,
     required this.reviewerName,
     required this.ownerReply,
+    required this.status,
   });
 
   final String id;
+  final String venueName;
+  final String? bookingId;
   final String playedOn;
   final int rating;
   final String? comment;
   final String reviewerName;
   final String? ownerReply;
+  final ReviewStatus status;
 
   factory Review.fromJson(Json json) => Review(
         id: json['id'] as String,
+        venueName: json['venueName'] as String? ?? '',
+        bookingId: json['bookingId'] as String?,
         playedOn: json['playedOn'] as String,
         rating: json['rating'] as int,
         comment: json['comment'] as String?,
         reviewerName: json['reviewerName'] as String,
         ownerReply: json['ownerReply'] as String?,
+        status: ReviewStatus.values.byName((json['status'] as String? ?? 'PUBLISHED').toLowerCase()),
+      );
+}
+
+// Notifications
+
+/// [data] holds ids to open what it's about: bookingId, conversationId, venueSlug...
+class AppNotification {
+  const AppNotification({
+    required this.id,
+    required this.type,
+    required this.title,
+    required this.body,
+    required this.data,
+    required this.read,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String type;
+  final String title;
+  final String body;
+  final Map<String, String> data;
+  final bool read;
+  final String createdAt;
+
+  AppNotification markedRead() =>
+      AppNotification(id: id, type: type, title: title, body: body, data: data, read: true, createdAt: createdAt);
+
+  factory AppNotification.fromJson(Json json) => AppNotification(
+        id: json['id'] as String,
+        type: json['type'] as String,
+        title: json['title'] as String,
+        body: json['body'] as String,
+        data: {
+          for (final MapEntry(:key, :value) in (json['data'] as Map<String, dynamic>? ?? const {}).entries)
+            if (value != null) key: value.toString(),
+        },
+        read: json['read'] as bool? ?? false,
+        createdAt: json['createdAt'] as String,
+      );
+}
+
+// Messages
+
+/// One thread per player and venue.
+class ConversationSummary {
+  const ConversationSummary({
+    required this.id,
+    required this.venueId,
+    required this.venueName,
+    required this.venueSlug,
+    required this.lastMessage,
+    required this.lastMessageAt,
+    required this.unread,
+  });
+
+  final String id;
+  final String venueId;
+  final String venueName;
+  final String venueSlug;
+  final String? lastMessage;
+  final String? lastMessageAt;
+  final int unread;
+
+  ConversationSummary copyWith({String? lastMessage, String? lastMessageAt, int? unread}) => ConversationSummary(
+        id: id,
+        venueId: venueId,
+        venueName: venueName,
+        venueSlug: venueSlug,
+        lastMessage: lastMessage ?? this.lastMessage,
+        lastMessageAt: lastMessageAt ?? this.lastMessageAt,
+        unread: unread ?? this.unread,
+      );
+
+  factory ConversationSummary.fromJson(Json json) => ConversationSummary(
+        id: json['id'] as String,
+        venueId: json['venueId'] as String,
+        venueName: json['venueName'] as String,
+        venueSlug: json['venueSlug'] as String,
+        lastMessage: json['lastMessage'] as String?,
+        lastMessageAt: json['lastMessageAt'] as String?,
+        unread: json['unread'] as int? ?? 0,
+      );
+}
+
+/// [fromYou]: sent by the player; venue replies are signed with the venue's name.
+class ChatMessage {
+  const ChatMessage({
+    required this.id,
+    required this.senderName,
+    required this.fromYou,
+    required this.bookingId,
+    required this.body,
+    required this.readAt,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String senderName;
+  final bool fromYou;
+  final String? bookingId;
+  final String body;
+  final String? readAt;
+  final String createdAt;
+
+  factory ChatMessage.fromJson(Json json) => ChatMessage(
+        id: json['id'] as String,
+        senderName: json['senderName'] as String,
+        fromYou: json['fromYou'] as bool? ?? false,
+        bookingId: json['bookingId'] as String?,
+        body: json['body'] as String,
+        readAt: json['readAt'] as String?,
+        createdAt: json['createdAt'] as String,
+      );
+}
+
+// Waitlist
+
+enum WaitlistStatus { waiting, notified, booked, expired, cancelled }
+
+/// A booked slot the player wants if it frees up; [WaitlistStatus.notified] means it did and they were told.
+class WaitlistEntry {
+  const WaitlistEntry({
+    required this.id,
+    required this.venueId,
+    required this.venueName,
+    required this.venueSlug,
+    required this.courtId,
+    required this.courtName,
+    required this.startsAt,
+    required this.endsAt,
+    required this.status,
+  });
+
+  final String id;
+  final String venueId;
+  final String venueName;
+  final String venueSlug;
+  final String courtId;
+  final String courtName;
+  final String startsAt;
+  final String endsAt;
+  final WaitlistStatus status;
+
+  /// Still waiting, or told it freed up: the slot can still be had.
+  bool get live => status == WaitlistStatus.waiting || status == WaitlistStatus.notified;
+
+  factory WaitlistEntry.fromJson(Json json) => WaitlistEntry(
+        id: json['id'] as String,
+        venueId: json['venueId'] as String,
+        venueName: json['venueName'] as String,
+        venueSlug: json['venueSlug'] as String,
+        courtId: json['courtId'] as String,
+        courtName: json['courtName'] as String,
+        startsAt: json['startsAt'] as String,
+        endsAt: json['endsAt'] as String,
+        status: WaitlistStatus.values.byName((json['status'] as String).toLowerCase()),
       );
 }
 

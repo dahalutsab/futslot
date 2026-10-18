@@ -6,6 +6,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../shared/notification_bell.dart';
 import '../../shared/venue_card.dart';
 import '../../shared/widgets.dart';
 
@@ -132,8 +133,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           maxWidth: 720,
           onRefresh: _refresh,
           children: [
-            const SizedBox(height: 8),
-            Text('Book a futsal court', style: Theme.of(context).textTheme.headlineSmall),
+            Row(
+              children: [
+                Expanded(child: Text('Book a futsal court', style: Theme.of(context).textTheme.headlineSmall)),
+                const NotificationBell(),
+              ],
+            ),
             const SizedBox(height: 4),
             Text(
               'Free slots and prices at venues near you. Pay the advance with eSewa or Khalti.',

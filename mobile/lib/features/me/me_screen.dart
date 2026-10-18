@@ -8,9 +8,18 @@ import '../../core/api_error.dart';
 import '../../core/session.dart';
 import '../../core/theme.dart';
 import '../../shared/format.dart';
+import '../../shared/notification_bell.dart';
 import '../../shared/widgets.dart';
 
-/// The player's account: their details, the deposit, the theme and signing out.
+/// Everything else the player keeps with FutSlot.
+const _links = [
+  (path: '/me/deposit', label: 'Booking deposit', detail: 'Top up or take it back', icon: LucideIcons.wallet),
+  (path: '/me/favourites', label: 'Saved venues', detail: 'Venues you like, to book again', icon: LucideIcons.heart),
+  (path: '/me/reviews', label: 'Reviews', detail: 'Rate the venues you played at', icon: LucideIcons.star),
+  (path: '/me/waitlist', label: 'Waitlist', detail: 'Booked slots you want if they free up', icon: LucideIcons.hourglass),
+];
+
+/// The player's account: their details, the deposit and other things they keep, the theme and signing out.
 class MeScreen extends ConsumerStatefulWidget {
   const MeScreen({super.key});
 
@@ -82,19 +91,30 @@ class _MeScreenState extends ConsumerState<MeScreen> {
         bottom: false,
         child: ScreenBody(
           children: [
-            const SizedBox(height: 8),
-            Text(user?.fullName ?? '', style: text.headlineSmall),
+            Row(
+              children: [
+                Expanded(child: Text(user?.fullName ?? '', style: text.headlineSmall)),
+                const NotificationBell(),
+              ],
+            ),
             Text(phone(user?.phone), style: TextStyle(color: c.muted, fontFeatures: tabular)),
             const SizedBox(height: 20),
             FsCard(
               padding: EdgeInsets.zero,
-              child: ListTile(
-                minTileHeight: 56,
-                leading: Icon(LucideIcons.wallet, color: c.muted),
-                title: const Text('Booking deposit', style: TextStyle(fontWeight: FontWeight.w500)),
-                subtitle: Text('Top up or take it back', style: TextStyle(fontSize: 14, color: c.muted)),
-                trailing: Icon(LucideIcons.chevronRight, size: 18, color: c.subtle),
-                onTap: () => context.push('/me/deposit'),
+              child: Column(
+                children: [
+                  for (final (index, link) in _links.indexed) ...[
+                    if (index > 0) const Divider(),
+                    ListTile(
+                      minTileHeight: 56,
+                      leading: Icon(link.icon, color: c.muted),
+                      title: Text(link.label, style: const TextStyle(fontWeight: FontWeight.w500)),
+                      subtitle: Text(link.detail, style: TextStyle(fontSize: 14, color: c.muted)),
+                      trailing: Icon(LucideIcons.chevronRight, size: 18, color: c.subtle),
+                      onTap: () => context.push(link.path),
+                    ),
+                  ],
+                ],
               ),
             ),
             const SizedBox(height: 24),
