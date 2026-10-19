@@ -12,6 +12,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -37,6 +39,7 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/actuator/health/**", "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/v1/auth/options").permitAll()
 				.requestMatchers(HttpMethod.GET, "/media/**").permitAll()
 				// Venue websites and what they load
 				.requestMatchers(HttpMethod.GET, "/sites/**", "/site-preview/**", "/site-assets/**", "/internal/sites/domain-check").permitAll()
@@ -52,6 +55,12 @@ public class SecurityConfig {
 			.oauth2ResourceServer(oauth2 -> oauth2
 				.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
 		return http.build();
+	}
+
+	/** bcrypt, with the scheme stored in front of each hash so a stronger one can take over later. */
+	@Bean
+	PasswordEncoder passwordEncoder() {
+		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 	}
 
 	@Bean

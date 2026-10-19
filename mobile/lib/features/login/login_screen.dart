@@ -7,12 +7,14 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/api_error.dart';
+import '../../core/api_types.dart';
+import '../../core/google.dart';
 import '../../core/session.dart';
 import '../../core/theme.dart';
 import '../../shared/widgets.dart';
 
-/// Sign in with a phone number and the 6-digit code sent to it. New numbers are asked for a name. Signing in
-/// takes the player on to [next], where they were going.
+/// Sign in with a phone number and password, or with Google; create an account; or reset a forgotten password.
+/// Signing in takes the player on to [next], where they were going.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key, this.next});
 
@@ -22,21 +24,35 @@ class LoginScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-enum _Step { phone, code }
+/// signIn: phone and password. The others text a code first: signUp makes an account, reset sets a new password (or
+/// the first one, for an account from before passwords), google proves the number on a first Google sign-in.
+enum _Mode { signIn, signUp, reset, google }
+
+const _minPassword = 8;
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _phone = TextEditingController();
+
+  final _password = TextEditingController();
 
   final _code = TextEditingController();
 
   final _fullName = TextEditingController();
 
+  final _passwordFocus = FocusNode();
+
   final _codeFocus = FocusNode();
 
   final _nameFocus = FocusNode();
 
-  var _step = _Step.phone;
+  var _mode = _Mode.signIn;
 
+  /// For the modes that text a code: whether it's been sent.
+  var _codeSent = false;
+
+  var _showPassword = false;
+
+  /// Google's sign-in needs a name typed in only when Google didn't give one.
   var _needsName = false;
 
   var _busy = false;
@@ -49,7 +65,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Timer? _timer;
 
+  String? _googleClientId;
+
+  /// The ID token from Google, kept while the player proves their number.
+  String? _googleToken;
+
   late final bool _expired = ref.read(sessionProvider.notifier).takeExpired();
+
+  Session get _session => ref.read(sessionProvider.notifier);
 
   /// Accepts "98-1234 5678", "+977 9812345678" and so on; the API wants the 10 local digits.
   String get _digits {
@@ -57,22 +80,68 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return digits.startsWith('977') && digits.length == 13 ? digits.substring(3) : digits;
   }
 
+  bool get _phoneValid => RegExp(r'^\d{10}$').hasMatch(_digits);
+
+  @override
+  void initState() {
+    super.initState();
+    _session.options().then((options) {
+      if (mounted) {
+        setState(() => _googleClientId = options.googleWebClientId);
+      }
+    }, onError: (_) {});
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
-    _phone.dispose();
-    _code.dispose();
-    _fullName.dispose();
-    _codeFocus.dispose();
-    _nameFocus.dispose();
+    for (final field in [_phone, _password, _code, _fullName]) {
+      field.dispose();
+    }
+    for (final focus in [_passwordFocus, _codeFocus, _nameFocus]) {
+      focus.dispose();
+    }
     super.dispose();
   }
 
-  Future<void> _sendCode() async {
+  void _switchTo(_Mode mode, [String? notice]) {
+    setState(() {
+      _mode = mode;
+      _codeSent = false;
+      _code.clear();
+      _password.clear();
+      _needsName = false;
+      _error = null;
+      _notice = notice;
+    });
+  }
+
+  Future<void> _signIn() async {
     if (_busy) {
       return;
     }
-    if (!RegExp(r'^\d{10}$').hasMatch(_digits)) {
+    if (!_phoneValid) {
+      setState(() => _error = 'Enter your 10-digit mobile number, like 98XXXXXXXX.');
+      return;
+    }
+    if (_password.text.isEmpty) {
+      setState(() => _error = 'Enter your password.');
+      return;
+    }
+    await _run(() => _session.signIn(_digits, _password.text), (code) {
+      if (code == 'PASSWORD_NOT_SET') {
+        _switchTo(_Mode.reset, "Your account doesn't have a password yet. We'll text you a code to set one.");
+        return true;
+      }
+      return false;
+    });
+  }
+
+  Future<void> _sendCode() async {
+    if (_busy || _mode == _Mode.signIn) {
+      return;
+    }
+    if (!_phoneValid) {
       setState(() => _error = 'Enter your 10-digit mobile number, like 98XXXXXXXX.');
       return;
     }
@@ -81,16 +150,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _error = null;
     });
     try {
-      final sent = await ref.read(sessionProvider.notifier).requestCode(_digits);
+      final purpose = switch (_mode) {
+        _Mode.reset => CodePurpose.resetPassword,
+        _Mode.google => CodePurpose.linkGoogle,
+        _ => CodePurpose.signUp,
+      };
+      final sent = await _session.requestCode(_digits, purpose);
       _showCodeStep(sent.resendAfterSeconds);
     } catch (error) {
       final problem = problemOf(error);
-      if (problem.code == 'OTP_COOLDOWN') {
-        // A code went out under a minute ago (a double tap, or coming back): let them use it
-        _notice = 'We sent you a code a moment ago. Enter it below.';
-        _showCodeStep(60);
-      } else {
-        setState(() => _error = problem.message);
+      switch (problem.code) {
+        case 'OTP_COOLDOWN':
+          // A code went out under a minute ago (a double tap, or coming back): let them use it
+          _notice = 'We sent you a code a moment ago. Enter it below.';
+          _showCodeStep(60);
+        case 'ACCOUNT_EXISTS':
+          _switchTo(
+            _Mode.signIn,
+            'This number already has an account. Sign in, or reset your password if you forgot it.',
+          );
+        case 'ACCOUNT_NOT_FOUND':
+          _switchTo(_Mode.signUp, 'No account uses this number yet. Create one below.');
+        default:
+          setState(() => _error = problem.message);
       }
     } finally {
       if (mounted) {
@@ -103,39 +185,86 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!mounted) {
       return;
     }
-    setState(() => _step = _Step.code);
+    setState(() => _codeSent = true);
     _startCountdown(resendAfter);
     WidgetsBinding.instance.addPostFrameCallback((_) => _codeFocus.requestFocus());
   }
 
-  Future<void> _verify() async {
-    if (_busy) {
+  /// The code step: create the account, set the new password, or link Google.
+  Future<void> _finish() async {
+    if (_busy || _mode == _Mode.signIn) {
       return;
     }
     final name = _fullName.text.trim();
-    if (!RegExp(r'^\d{6}$').hasMatch(_code.text) || (_needsName && name.length < 2)) {
-      setState(() => _error = _needsName && name.length < 2 ? 'Enter your name.' : 'Enter the 6-digit code we sent.');
+    final problem = !RegExp(r'^\d{6}$').hasMatch(_code.text)
+        ? 'Enter the 6-digit code we sent.'
+        : (_mode == _Mode.signUp || _needsName) && name.length < 2
+            ? 'Enter your name.'
+            : _mode != _Mode.google && _password.text.runes.length < _minPassword
+                ? 'Use at least $_minPassword characters for your password.'
+                : null;
+    if (problem != null) {
+      setState(() => _error = problem);
       return;
     }
+    await _run(
+      () => switch (_mode) {
+        _Mode.signUp => _session.signUp(_digits, _code.text, name, _password.text),
+        _Mode.reset => _session.resetPassword(_digits, _code.text, _password.text),
+        _ => _session.linkGoogle(_googleToken!, _digits, _code.text, name),
+      },
+      (code) {
+        if (code == 'FULL_NAME_REQUIRED') {
+          setState(() => _needsName = true);
+          WidgetsBinding.instance.addPostFrameCallback((_) => _nameFocus.requestFocus());
+          return true;
+        }
+        return false;
+      },
+    );
+  }
+
+  Future<void> _google() async {
+    final clientId = _googleClientId;
+    if (_busy || clientId == null) {
+      return;
+    }
+    setState(() => _error = null);
+    String? token;
+    try {
+      token = await ref.read(googleIdTokenProvider)(clientId);
+    } catch (_) {
+      setState(() => _error = "Google sign-in didn't work. Use your number and password instead.");
+      return;
+    }
+    if (token == null) {
+      return;
+    }
+    _googleToken = token;
+    await _run(() => _session.google(token!), (code) {
+      if (code == 'GOOGLE_PHONE_NEEDED') {
+        _switchTo(_Mode.google);
+        return true;
+      }
+      return false;
+    });
+  }
+
+  /// Signs in with [action], then goes where the player was headed. [handled] deals with known codes.
+  Future<void> _run(Future<User> Function() action, bool Function(String? code) handled) async {
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
-      await ref.read(sessionProvider.notifier).verify(_digits, _code.text, name);
+      await action();
       // Sign-in may have been pushed over another screen, where the router's redirect doesn't reach
       if (mounted) {
         context.go(widget.next ?? '/');
       }
     } catch (error) {
       final problem = problemOf(error);
-      if (problem.code == 'FULL_NAME_REQUIRED') {
-        setState(() {
-          _needsName = true;
-          _error = null;
-        });
-        WidgetsBinding.instance.addPostFrameCallback((_) => _nameFocus.requestFocus());
-      } else {
+      if (!handled(problem.code) && mounted) {
         setState(() => _error = problem.message);
       }
     } finally {
@@ -148,9 +277,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _changeNumber() {
     setState(() {
       _notice = null;
-      _step = _Step.phone;
+      _codeSent = false;
       _code.clear();
-      _needsName = false;
       _error = null;
     });
   }
@@ -169,6 +297,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final c = context.fs;
+    final (title, subtitle) = switch (_mode) {
+      _Mode.signIn => ('Sign in to FutSlot', 'Use your mobile number and password.'),
+      _Mode.signUp => ('Create your account', "We'll text a code to check the number is yours."),
+      _Mode.reset => ('Reset your password', "We'll text a code to your number, then you choose a new password."),
+      _Mode.google => (
+          'One more step',
+          "Add your mobile number. Venues and teammates find you by it, so we'll text a code to check it's yours."
+        ),
+    };
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -178,62 +315,143 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       ),
       body: SafeArea(
-        child: ScreenBody(
-          maxWidth: 384,
-          children: [
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(color: c.brand, borderRadius: BorderRadius.circular(6)),
-                  child: const Text('F', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                ),
-                const SizedBox(width: 8),
-                const Text('FutSlot', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+        child: AutofillGroup(
+          child: ScreenBody(
+            maxWidth: 384,
+            children: [
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(color: c.brand, borderRadius: BorderRadius.circular(6)),
+                    child: const Text('F', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text('FutSlot', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                ],
+              ),
+              const SizedBox(height: 32),
+              Text(title, style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 4),
+              Text(subtitle, style: TextStyle(color: c.muted)),
+              if (_expired && _mode == _Mode.signIn) ...[
+                const SizedBox(height: 16),
+                _Banner(text: 'You were signed out. Please sign in again.', colors: c.held),
               ],
-            ),
-            const SizedBox(height: 32),
-            Text('Sign in to FutSlot', style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 4),
-            Text("We'll text a code to your phone. No password needed.", style: TextStyle(color: c.muted)),
-            if (_expired) ...[
-              const SizedBox(height: 16),
-              _Banner(text: 'You were signed out. Please sign in again.', colors: c.held),
+              if (_notice case final notice?) ...[
+                const SizedBox(height: 16),
+                Semantics(
+                  liveRegion: true,
+                  child: _Banner(text: notice, colors: StateColors(bg: c.surface2, line: c.border, fg: c.muted)),
+                ),
+              ],
+              const SizedBox(height: 32),
+              if (_mode == _Mode.signIn)
+                ..._signInForm(c)
+              else if (!_codeSent)
+                ..._phoneStep(c)
+              else
+                ..._codeStep(c),
+              if (_mode != _Mode.signIn) ...[
+                const SizedBox(height: 24),
+                Center(child: _LinkButton(label: 'Back to sign in', onTap: () => _switchTo(_Mode.signIn))),
+              ],
             ],
-            const SizedBox(height: 32),
-            if (_step == _Step.phone) ..._phoneStep(c) else ..._codeStep(c),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  List<Widget> _phoneStep(FsColors c) => [
-        const FieldLabel('Mobile number'),
-        TextField(
-          controller: _phone,
-          autofocus: true,
-          keyboardType: TextInputType.phone,
-          autofillHints: const [AutofillHints.telephoneNumberNational],
-          textInputAction: TextInputAction.go,
-          onSubmitted: (_) => _sendCode(),
-          style: const TextStyle(fontSize: 16, fontFeatures: tabular),
-          decoration: InputDecoration(
-            hintText: '98XXXXXXXX',
-            prefixIcon: Container(
-              width: 64,
-              alignment: Alignment.center,
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(border: Border(right: BorderSide(color: c.border))),
-              child: Text('+977', style: TextStyle(color: c.muted, fontFeatures: tabular)),
-            ),
+  Widget _phoneField(FsColors c, {required TextInputAction action, required VoidCallback onDone}) => TextField(
+        controller: _phone,
+        autofocus: true,
+        keyboardType: TextInputType.phone,
+        autofillHints: const [AutofillHints.telephoneNumberNational],
+        textInputAction: action,
+        onSubmitted: (_) => onDone(),
+        style: const TextStyle(fontSize: 16, fontFeatures: tabular),
+        decoration: InputDecoration(
+          hintText: '98XXXXXXXX',
+          prefixIcon: Container(
+            width: 64,
+            alignment: Alignment.center,
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(border: Border(right: BorderSide(color: c.border))),
+            child: Text('+977', style: TextStyle(color: c.muted, fontFeatures: tabular)),
           ),
         ),
-        const SizedBox(height: 6),
-        Text('New here? The same number signs you up.', style: TextStyle(fontSize: 14, color: c.subtle)),
+      );
+
+  Widget _passwordField({required bool isNew, required VoidCallback onDone}) => TextField(
+        controller: _password,
+        focusNode: _passwordFocus,
+        obscureText: !_showPassword,
+        autocorrect: false,
+        enableSuggestions: false,
+        autofillHints: [isNew ? AutofillHints.newPassword : AutofillHints.password],
+        textInputAction: TextInputAction.go,
+        onSubmitted: (_) => onDone(),
+        decoration: InputDecoration(
+          suffixIcon: IconButton(
+            tooltip: _showPassword ? 'Hide password' : 'Show password',
+            icon: Icon(_showPassword ? LucideIcons.eyeOff : LucideIcons.eye, size: 18),
+            onPressed: () => setState(() => _showPassword = !_showPassword),
+          ),
+        ),
+      );
+
+  List<Widget> _signInForm(FsColors c) => [
+        const FieldLabel('Mobile number'),
+        _phoneField(c, action: TextInputAction.next, onDone: _passwordFocus.requestFocus),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            const Expanded(child: FieldLabel('Password')),
+            _LinkButton(label: 'Forgot password?', onTap: () => _switchTo(_Mode.reset)),
+          ],
+        ),
+        _passwordField(isNew: false, onDone: _signIn),
+        if (_error case final error?) ...[const SizedBox(height: 16), Notice(error)],
+        const SizedBox(height: 16),
+        FilledButton(
+          onPressed: _busy ? null : _signIn,
+          child: BusyLabel(busy: _busy, label: 'Sign in', busyLabel: 'Signing in…', icon: LucideIcons.shieldCheck),
+        ),
+        if (_googleClientId != null) ...[
+          const SizedBox(height: 24),
+          ExcludeSemantics(
+            child: Row(
+              children: [
+                Expanded(child: Divider(color: c.border)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text('or', style: TextStyle(fontSize: 14, color: c.subtle)),
+                ),
+                Expanded(child: Divider(color: c.border)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          OutlinedButton(onPressed: _busy ? null : _google, child: const Text('Continue with Google')),
+        ],
+        const SizedBox(height: 32),
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text('New to FutSlot?', style: TextStyle(color: c.muted)),
+            _LinkButton(label: 'Create an account', onTap: () => _switchTo(_Mode.signUp)),
+          ],
+        ),
+      ];
+
+  List<Widget> _phoneStep(FsColors c) => [
+        const FieldLabel('Mobile number'),
+        _phoneField(c, action: TextInputAction.go, onDone: _sendCode),
         if (_error case final error?) ...[const SizedBox(height: 16), Notice(error)],
         const SizedBox(height: 16),
         FilledButton(
@@ -251,8 +469,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           autofillHints: const [AutofillHints.oneTimeCode],
           inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
           textAlign: TextAlign.center,
-          textInputAction: TextInputAction.go,
-          onSubmitted: (_) => _verify(),
+          textInputAction: TextInputAction.next,
           style: const TextStyle(fontSize: 20, letterSpacing: 10, fontFeatures: tabular),
         ),
         const SizedBox(height: 6),
@@ -263,15 +480,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             _LinkButton(label: 'Change', onTap: _changeNumber),
           ],
         ),
-        if (_notice case final notice?) ...[
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(8)),
-            child: Text(notice, style: TextStyle(color: c.muted)),
-          ),
-        ],
-        if (_needsName) ...[
+        if (_mode == _Mode.signUp || _needsName) ...[
           const SizedBox(height: 16),
           const FieldLabel('Your name'),
           TextField(
@@ -279,20 +488,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             focusNode: _nameFocus,
             textCapitalization: TextCapitalization.words,
             autofillHints: const [AutofillHints.name],
-            textInputAction: TextInputAction.go,
-            onSubmitted: (_) => _verify(),
+            textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 6),
+          Text('Venues see this name on your bookings.', style: TextStyle(fontSize: 14, color: c.subtle)),
+        ],
+        if (_mode != _Mode.google) ...[
+          const SizedBox(height: 16),
+          FieldLabel(_mode == _Mode.reset ? 'New password' : 'Password'),
+          _passwordField(isNew: true, onDone: _finish),
+          const SizedBox(height: 6),
           Text(
-            'This number is new to FutSlot. Venues see this name on your bookings.',
+            'At least $_minPassword characters. Not your phone number, or something as easy to guess.',
             style: TextStyle(fontSize: 14, color: c.subtle),
           ),
         ],
         if (_error case final error?) ...[const SizedBox(height: 16), Notice(error)],
         const SizedBox(height: 16),
         FilledButton(
-          onPressed: _busy ? null : _verify,
-          child: BusyLabel(busy: _busy, label: 'Sign in', busyLabel: 'Checking…', icon: LucideIcons.shieldCheck),
+          onPressed: _busy ? null : _finish,
+          child: BusyLabel(
+            busy: _busy,
+            label: switch (_mode) {
+              _Mode.signUp => 'Create account',
+              _Mode.reset => 'Save password and sign in',
+              _ => 'Continue',
+            },
+            busyLabel: 'Checking…',
+            icon: LucideIcons.shieldCheck,
+          ),
         ),
         const SizedBox(height: 8),
         Center(

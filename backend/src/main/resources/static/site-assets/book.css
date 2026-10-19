@@ -18,7 +18,7 @@
 .book-sums dd { margin: 0; font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .book-form { display: grid; gap: 10px; margin-top: 14px; }
 .book-form label, .book-form legend { font-weight: 600; font-size: 14px; }
-.book-form input[type="text"], .book-form input[type="tel"] {
+.book-form input[type="text"], .book-form input[type="tel"], .book-form input[type="password"] {
   width: 100%; min-height: 50px; padding: 0 14px; border-radius: 10px; border: 1.5px solid var(--line);
   background: var(--bg); color: var(--ink, var(--text)); font: inherit; font-size: 17px;
 }

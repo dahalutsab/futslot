@@ -17,8 +17,8 @@ const _emptyPage = {'content': <Object>[], 'page': 0, 'size': 20, 'totalElements
 
 (int, Object?) _api(RequestOptions request) => switch (request.path) {
       '/api/v1/venues' => (200, _emptyPage),
-      '/api/v1/auth/otp/request' => (200, {'expiresInSeconds': 300, 'resendAfterSeconds': 60}),
-      '/api/v1/auth/otp/verify' => (200, tokens('fresh')),
+      '/api/v1/auth/options' => (200, {'googleWebClientId': null}),
+      '/api/v1/auth/sign-in' => (200, tokens('fresh')),
       '/api/v1/auth/refresh' => (401, {'status': 401, 'detail': 'Refresh token expired'}),
       final path when path.startsWith('/api/v1/bookings/') => (401, {'status': 401, 'detail': 'Expired'}),
       _ => (200, <Object>[]),
@@ -71,7 +71,7 @@ void main() {
     expect(_location(container), '/login?next=%2Fbookings');
     expect(find.text('Sign in to FutSlot'), findsOneWidget);
 
-    await tester.runAsync(() => container.read(sessionProvider.notifier).verify('9800000000', '123456'));
+    await tester.runAsync(() => container.read(sessionProvider.notifier).signIn('9800000000', 'kick-off-at-seven'));
     await _settle(tester);
     await _settle(tester);
     expect(_location(container), '/bookings');
@@ -85,10 +85,8 @@ void main() {
     await _settle(tester);
     expect(find.text('Sign in to FutSlot'), findsOneWidget);
 
-    await tester.enterText(find.byType(EditableText), '9800000000');
-    await tester.tap(find.text('Send code'));
-    await _settle(tester);
-    await tester.enterText(find.byType(EditableText), '123456');
+    await tester.enterText(find.byType(EditableText).first, '9800000000');
+    await tester.enterText(find.byType(EditableText).last, 'kick-off-at-seven');
     await tester.tap(find.text('Sign in'));
     await _settle(tester);
     await _settle(tester);

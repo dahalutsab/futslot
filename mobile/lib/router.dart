@@ -14,6 +14,7 @@ import 'features/matches/match_screen.dart';
 import 'features/matches/matches_screen.dart';
 import 'features/matches/new_match_screen.dart';
 import 'features/me/me_screen.dart';
+import 'features/password/password_screen.dart';
 import 'features/memberships/memberships_screen.dart';
 import 'features/messages/messages_screen.dart';
 import 'features/messages/thread_screen.dart';
@@ -193,6 +194,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 GoRoute(path: 'profile', builder: (context, state) => const ProfileScreen()),
                 GoRoute(path: 'memberships', builder: (context, state) => const MembershipsScreen()),
                 GoRoute(path: 'splits', builder: (context, state) => const DuesScreen()),
+                GoRoute(path: 'password', builder: (context, state) => const PasswordScreen()),
               ],
             ),
           ]),

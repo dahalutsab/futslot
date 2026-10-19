@@ -17,6 +17,12 @@ public class TestSupportConfig {
 
 	@Bean
 	@Primary
+	FakeGoogleTokens fakeGoogleTokens() {
+		return new FakeGoogleTokens();
+	}
+
+	@Bean
+	@Primary
 	RecordingPushSender recordingPushSender() {
 		return new RecordingPushSender();
 	}

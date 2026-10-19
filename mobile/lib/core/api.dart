@@ -451,6 +451,15 @@ class Api {
     return User.fromJson(response.data!);
   }
 
+  /// Changes (or first sets) the password. Every device is signed out; the new tokens keep this one in.
+  Future<TokenResponse> changePassword({String? currentPassword, required String newPassword}) async {
+    final response = await _http.put<Json>('/api/v1/me/password', data: {
+      'currentPassword': ?currentPassword,
+      'newPassword': newPassword,
+    });
+    return TokenResponse.fromJson(response.data!);
+  }
+
   Future<T> _get<T>(String path, T Function(Object? json) read, [Map<String, Object?>? query]) async {
     final response = await _http.get<Object?>(path, queryParameters: query);
     return read(response.data);

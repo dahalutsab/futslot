@@ -9,10 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import com.jayway.jsonpath.JsonPath;
 
-/** Signs up fresh users through the real OTP flow and hands back their tokens. */
+/** Signs up fresh users through the real sign-up flow (texted code, then a password) and hands back their tokens. */
 public class TestUsers {
 
 	private static final AtomicInteger phoneSequence = new AtomicInteger();
@@ -38,19 +39,43 @@ public class TestUsers {
 		return logIn(nextLocalPhone(), fullName);
 	}
 
-	/** Logs in with a specific local phone number; {@code fullName} only matters if the account is new. */
+	/** Every test account's password. */
+	public static final String PASSWORD = "kick-off-at-seven";
+
+	/**
+	 * Signs in with a specific local phone number: signs up if it's new ({@code fullName} only matters then), or
+	 * sets the password with a reset code if the number already has an account (made by a venue adding staff, say).
+	 */
 	public TestUser logIn(String phone, String fullName) throws Exception {
-		this.mvc.perform(post("/api/v1/auth/otp/request").contentType(MediaType.APPLICATION_JSON)
-			.content("{\"phone\":\"%s\"}".formatted(phone))).andExpect(status().isAccepted());
-		String code = this.sms.lastCodeFor("+977" + phone);
-		String body = this.mvc
-			.perform(post("/api/v1/auth/otp/verify").contentType(MediaType.APPLICATION_JSON)
-				.content("{\"phone\":\"%s\",\"code\":\"%s\",\"fullName\":\"%s\"}".formatted(phone, code, fullName)))
+		int status = requestCode(phone, "SIGN_UP").andReturn().getResponse().getStatus();
+		String body;
+		if (status == 202) {
+			body = send("/api/v1/auth/sign-up", "{\"phone\":\"%s\",\"code\":\"%s\",\"fullName\":\"%s\",\"password\":\"%s\"}"
+				.formatted(phone, lastCode(phone), fullName, PASSWORD));
+		}
+		else {
+			requestCode(phone, "RESET_PASSWORD").andExpect(status().isAccepted());
+			body = send("/api/v1/auth/password/reset", "{\"phone\":\"%s\",\"code\":\"%s\",\"password\":\"%s\"}"
+				.formatted(phone, lastCode(phone), PASSWORD));
+		}
+		return toUser(body);
+	}
+
+	private ResultActions requestCode(String phone, String purpose) throws Exception {
+		return this.mvc.perform(post("/api/v1/auth/codes").contentType(MediaType.APPLICATION_JSON)
+			.content("{\"phone\":\"%s\",\"purpose\":\"%s\"}".formatted(phone, purpose)));
+	}
+
+	private String send(String path, String json) throws Exception {
+		return this.mvc.perform(post(path).contentType(MediaType.APPLICATION_JSON).content(json))
 			.andExpect(status().isOk())
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
-		return toUser(body);
+	}
+
+	private String lastCode(String phone) {
+		return this.sms.lastCodeFor("+977" + phone);
 	}
 
 	public TestUser signUpAdmin(String fullName) throws Exception {

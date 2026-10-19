@@ -68,8 +68,9 @@ final authHttpProvider = Provider<Dio>((ref) => Dio(BaseOptions(
 
 final sessionProvider = NotifierProvider<Session, StoredSession?>(Session.new);
 
-/// Who is signed in. Login is by phone and a one-time code. The access token lasts 15 minutes and is refreshed
-/// on demand with the refresh token.
+/// Who is signed in. Players sign in with their phone number and password, or with Google; a texted code proves the
+/// number when signing up, linking Google, or resetting the password. The access token lasts 15 minutes and is
+/// refreshed on demand with the refresh token.
 class Session extends Notifier<StoredSession?> {
   Future<void>? _refreshing;
 
@@ -86,18 +87,48 @@ class Session extends Notifier<StoredSession?> {
 
   String? get accessToken => state?.accessToken;
 
-  Future<OtpSent> requestCode(String phone) async {
-    final response = await _http.post<Json>('/api/v1/auth/otp/request', data: {'phone': phone});
+  Future<AuthOptions> options() async {
+    final response = await _http.get<Json>('/api/v1/auth/options');
+    return AuthOptions.fromJson(response.data!);
+  }
+
+  Future<OtpSent> requestCode(String phone, CodePurpose purpose) async {
+    final response = await _http.post<Json>('/api/v1/auth/codes', data: {'phone': phone, 'purpose': purpose.apiName});
     return OtpSent.fromJson(response.data!);
   }
 
-  /// [fullName] is only needed when this phone number hasn't been used before.
-  Future<User> verify(String phone, String code, [String? fullName]) async {
-    final response = await _http.post<Json>('/api/v1/auth/otp/verify', data: {
-      'phone': phone,
-      'code': code,
-      if (fullName != null && fullName.isNotEmpty) 'fullName': fullName,
-    });
+  Future<User> signIn(String phone, String password) =>
+      _signInWith('/api/v1/auth/sign-in', {'phone': phone, 'password': password});
+
+  Future<User> signUp(String phone, String code, String fullName, String password) =>
+      _signInWith('/api/v1/auth/sign-up', {
+        'phone': phone,
+        'code': code,
+        'fullName': fullName,
+        'password': password,
+      });
+
+  /// Also how accounts from before passwords set their first one. Signs out every other device.
+  Future<User> resetPassword(String phone, String code, String password) =>
+      _signInWith('/api/v1/auth/password/reset', {'phone': phone, 'code': code, 'password': password});
+
+  /// [idToken] is from Google's sign-in; GOOGLE_PHONE_NEEDED the first time, until [linkGoogle].
+  Future<User> google(String idToken) => _signInWith('/api/v1/auth/google', {'idToken': idToken});
+
+  /// A first Google sign-in, with a LINK_GOOGLE code. [fullName] only if Google didn't give a name.
+  Future<User> linkGoogle(String idToken, String phone, String code, [String? fullName]) =>
+      _signInWith('/api/v1/auth/google/link', {
+        'idToken': idToken,
+        'phone': phone,
+        'code': code,
+        if (fullName != null && fullName.isNotEmpty) 'fullName': fullName,
+      });
+
+  /// A password change signs out every device; the API hands this one a new session.
+  void replaceTokens(TokenResponse tokens) => _store(tokens);
+
+  Future<User> _signInWith(String path, Json body) async {
+    final response = await _http.post<Json>(path, data: body);
     final tokens = TokenResponse.fromJson(response.data!);
     _store(tokens);
     return tokens.user;

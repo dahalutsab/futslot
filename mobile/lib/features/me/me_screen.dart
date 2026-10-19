@@ -25,6 +25,12 @@ const _links = [
   (path: '/me/favourites', label: 'Saved venues', detail: 'Venues you like, to book again', icon: LucideIcons.heart),
   (path: '/me/reviews', label: 'Reviews', detail: 'Rate the venues you played at', icon: LucideIcons.star),
   (path: '/me/waitlist', label: 'Waitlist', detail: 'Booked slots you want if they free up', icon: LucideIcons.hourglass),
+  (
+    path: '/me/password',
+    label: 'Password',
+    detail: 'Change it, and sign out other devices',
+    icon: LucideIcons.keyRound,
+  ),
 ];
 
 /// The player's account: their details, the deposit and other things they keep, the theme and signing out.

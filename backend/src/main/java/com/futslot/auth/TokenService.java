@@ -4,6 +4,7 @@ import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -87,6 +88,14 @@ class TokenService {
 	void revoke(String rawRefreshToken) {
 		this.refreshTokens.findByTokenHash(Hashing.sha256Hex(rawRefreshToken))
 			.ifPresent(token -> token.revoke(this.clock.instant()));
+	}
+
+	/**
+	 * Signs the user out everywhere, after a password change. The tokens are deleted rather than revoked: a device
+	 * still holding one is simply signed out, instead of looking like a thief and ending the new session too.
+	 */
+	void signOutEverywhere(UUID userId) {
+		this.refreshTokens.deleteAllForUser(userId);
 	}
 
 	private static ApiException invalid() {

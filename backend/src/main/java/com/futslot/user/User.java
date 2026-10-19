@@ -43,6 +43,16 @@ public class User {
 
 	private String avatarUrl;
 
+	private String passwordHash;
+
+	private Instant passwordChangedAt;
+
+	private int failedSignIns;
+
+	private Instant signInLockedUntil;
+
+	private String googleSubject;
+
 	@Column(nullable = false)
 	private String preferredLanguage = "en";
 
@@ -88,6 +98,45 @@ public class User {
 
 	public void recordLogin(Instant at) {
 		this.lastLoginAt = at;
+		this.failedSignIns = 0;
+		this.signInLockedUntil = null;
+	}
+
+	public boolean hasPassword() {
+		return this.passwordHash != null;
+	}
+
+	public String getPasswordHash() {
+		return this.passwordHash;
+	}
+
+	/** A new password also lifts any lock from wrong guesses at the old one. */
+	public void changePassword(String passwordHash, Instant at) {
+		this.passwordHash = passwordHash;
+		this.passwordChangedAt = at;
+		this.failedSignIns = 0;
+		this.signInLockedUntil = null;
+	}
+
+	public boolean isSignInLocked(Instant now) {
+		return this.signInLockedUntil != null && this.signInLockedUntil.isAfter(now);
+	}
+
+	/** Counts a wrong password; the {@code maxFailures}th in a row locks signing in until {@code lockedUntil}. */
+	public void recordFailedSignIn(int maxFailures, Instant lockedUntil) {
+		this.failedSignIns++;
+		if (this.failedSignIns >= maxFailures) {
+			this.failedSignIns = 0;
+			this.signInLockedUntil = lockedUntil;
+		}
+	}
+
+	public String getGoogleSubject() {
+		return this.googleSubject;
+	}
+
+	public void linkGoogle(String subject) {
+		this.googleSubject = subject;
 	}
 
 	public UUID getId() {

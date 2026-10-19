@@ -3,7 +3,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom, Observable, shareReplay, tap, finalize } from 'rxjs';
 
-import { OtpSent, TokenResponse, User } from './api.types';
+import { AuthOptions, CodePurpose, OtpSent, TokenResponse, User } from './api.types';
 
 const STORAGE_KEY = 'futslot.session';
 
@@ -14,7 +14,8 @@ interface StoredSession {
 }
 
 /**
- * Who is signed in. Login is by phone and a one-time code. The access token lasts 15 minutes and is
+ * Who is signed in. Owners and staff sign in with their phone number and password, or with Google; a texted code
+ * proves the number when signing up, linking Google, or resetting the password. The access token lasts 15 minutes and is
  * refreshed on demand with the refresh token; both are kept in localStorage so a page reload stays signed in.
  */
 @Injectable({ providedIn: 'root' })
@@ -35,17 +36,40 @@ export class Session {
     return this.state()?.accessToken ?? null;
   }
 
-  requestCode(phone: string): Promise<OtpSent> {
-    return firstValueFrom(this.http.post<OtpSent>('/api/v1/auth/otp/request', { phone }));
+  options(): Promise<AuthOptions> {
+    return firstValueFrom(this.http.get<AuthOptions>('/api/v1/auth/options'));
   }
 
-  /** {@code fullName} is only needed when this phone number hasn't been used before. */
-  async verify(phone: string, code: string, fullName?: string): Promise<User> {
-    const tokens = await firstValueFrom(
-      this.http.post<TokenResponse>('/api/v1/auth/otp/verify', { phone, code, fullName: fullName || undefined }),
-    );
-    this.store(tokens);
-    return tokens.user;
+  requestCode(phone: string, purpose: CodePurpose): Promise<OtpSent> {
+    return firstValueFrom(this.http.post<OtpSent>('/api/v1/auth/codes', { phone, purpose }));
+  }
+
+  signIn(phone: string, password: string): Promise<User> {
+    return this.signInWith('/api/v1/auth/sign-in', { phone, password });
+  }
+
+  signUp(phone: string, code: string, fullName: string, password: string): Promise<User> {
+    return this.signInWith('/api/v1/auth/sign-up', { phone, code, fullName, password });
+  }
+
+  /** Also how accounts from before passwords set their first one. Signs out every other device. */
+  resetPassword(phone: string, code: string, password: string): Promise<User> {
+    return this.signInWith('/api/v1/auth/password/reset', { phone, code, password });
+  }
+
+  /** {@code idToken} is the credential from "Sign in with Google"; GOOGLE_PHONE_NEEDED the first time. */
+  google(idToken: string): Promise<User> {
+    return this.signInWith('/api/v1/auth/google', { idToken });
+  }
+
+  /** A first Google sign-in, with a LINK_GOOGLE code. {@code fullName} only if Google didn't give a name. */
+  linkGoogle(idToken: string, phone: string, code: string, fullName?: string): Promise<User> {
+    return this.signInWith('/api/v1/auth/google/link', { idToken, phone, code, fullName: fullName || undefined });
+  }
+
+  /** Signs out every other device; this one gets a new session. */
+  async changePassword(currentPassword: string | null, newPassword: string): Promise<void> {
+    this.store(await firstValueFrom(this.http.put<TokenResponse>('/api/v1/me/password', { currentPassword, newPassword })));
   }
 
   /** Swaps the refresh token for a new pair; concurrent callers share one request. */
@@ -76,6 +100,12 @@ export class Session {
   expired(): void {
     this.clear();
     void this.router.navigate(['/login'], { queryParams: { expired: 1 } });
+  }
+
+  private async signInWith(path: string, body: object): Promise<User> {
+    const tokens = await firstValueFrom(this.http.post<TokenResponse>(path, body));
+    this.store(tokens);
+    return tokens.user;
   }
 
   private store(tokens: TokenResponse): void {

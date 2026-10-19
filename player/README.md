@@ -16,8 +16,9 @@ npm install
 npm start            # http://localhost:4300, with /api and /media proxied to localhost:8080
 ```
 
-Browsing venues works signed out. Sign in with any phone number; in development the 6-digit code is printed
-in the API log (`SMS to +977...`). The owner dashboard runs on port 4200, so both can run side by side.
+Browsing venues works signed out. Create an account with any phone number (in development the 6-digit code is
+printed in the API log, `SMS to +977...`), then sign in with it and the password. Existing accounts without a
+password set one with "Forgot password?". The owner dashboard runs on port 4200, so both can run side by side.
 
 ```bash
 npm run build        # production build in dist/player
@@ -28,7 +29,7 @@ npm test             # unit tests (Vitest)
 
 - `src/styles.css`: design tokens, shared with the dashboard. Colour means booking state and is used the same
   way everywhere; use the token classes (`bg-confirmed-bg`, `text-muted`…), never raw colours.
-- `src/app/core`: session (phone + code sign-in, token refresh on 401), the API client (`api.ts`, every call
+- `src/app/core`: session (phone + password sign-in, Google, texted codes to sign up or reset; token refresh on 401), the API client (`api.ts`, every call
   the app makes), theme, API types.
 - `src/app/shared`: booking rules in plain words and the cancel-fee preview (`booking-model.ts`, mirroring the
   server), the "I paid" form used for advances and top-ups, venue cards, status chips.

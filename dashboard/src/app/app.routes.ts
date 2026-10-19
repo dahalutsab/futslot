@@ -47,6 +47,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/messages/messages').then((m) => m.Messages),
       },
       {
+        path: 'account',
+        title: 'Your account · FutSlot',
+        loadComponent: () => import('./features/account/account').then((m) => m.Account),
+      },
+      {
         path: 'venue/profile',
         title: 'Profile & hours · FutSlot',
         loadComponent: () => import('./features/venue/venue-profile').then((m) => m.VenueProfile),
