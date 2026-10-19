@@ -378,6 +378,10 @@ export class Api {
     return this.get<MyTournamentEntry[]>('/api/v1/me/tournament-entries');
   }
 
+  entryPayments(registrationId: string): Promise<Payment[]> {
+    return this.get<Payment[]>(`/api/v1/tournament-entries/${registrationId}/payments`);
+  }
+
   payEntry(registrationId: string, claim: PaymentClaim): Promise<Payment> {
     return this.post<Payment>(`/api/v1/tournament-entries/${registrationId}/payments`, claim);
   }

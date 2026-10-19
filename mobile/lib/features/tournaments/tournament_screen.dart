@@ -60,6 +60,9 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
   /// Entries of the player's teams in this tournament, whatever their state.
   var _mine = <TournamentEntry>[];
 
+  /// Fee payments reported for those entries, by entry id.
+  var _payments = <String, List<Payment>>{};
+
   /// Teams the player leads that could enter.
   var _teams = <Team>[];
 
@@ -129,12 +132,30 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
 
   Future<void> _loadMine(String tournamentId) async {
     final entries = await _api.myEntries();
+    final mine = [
+      for (final e in entries)
+        if (e.tournament.id == tournamentId && e.entry.status != EntryStatus.withdrawn) e.entry,
+    ];
+    final due = mine.where((entry) => entry.status == EntryStatus.pendingPayment).toList();
+    final payments = await Future.wait(due.map((entry) => _api.entryPayments(entry.id)));
     if (mounted) {
-      setState(() => _mine = [
-            for (final e in entries)
-              if (e.tournament.id == tournamentId && e.entry.status != EntryStatus.withdrawn) e.entry,
-          ]);
+      setState(() {
+        _mine = mine;
+        _payments = {for (final (i, entry) in due.indexed) entry.id: payments[i]};
+      });
     }
+  }
+
+  /// An entry fee payment the venue hasn't checked yet.
+  bool _checking(TournamentEntry entry) =>
+      _payments[entry.id]?.any((p) => p.status == TransactionStatus.pending) ?? false;
+
+  /// Why the venue turned down the last payment, when it did.
+  String? _turnedDown(TournamentEntry entry) {
+    final last = _payments[entry.id]?.lastOrNull;
+    return last?.status == TransactionStatus.failed
+        ? last?.failureReason ?? "The venue couldn't find this payment."
+        : null;
   }
 
   void _startEntry() {
@@ -351,6 +372,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
   Widget _entryCard(BuildContext context, TournamentDetail t, TournamentEntry entry) {
     final c = context.fs;
     final confirmed = entry.status == EntryStatus.confirmed;
+    final checking = _checking(entry);
     final open = t.status == TournamentStatus.registrationOpen || t.status == TournamentStatus.registrationClosed;
     return FsCard(
       padding: const EdgeInsets.all(20),
@@ -368,7 +390,10 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
                   children: [
                     Text(entry.team.name, style: const TextStyle(fontWeight: FontWeight.w600)),
                     Text(
-                      [entry.status.label, if (entry.groupName case final group?) 'Group $group'].join(' · '),
+                      [
+                        checking ? 'Payment being checked' : entry.status.label,
+                        if (entry.groupName case final group?) 'Group $group',
+                      ].join(' · '),
                       style: TextStyle(fontSize: 14, color: confirmed ? c.confirmed.fg : c.muted),
                     ),
                   ],
@@ -397,7 +422,34 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
             ].join(', ')}',
             style: TextStyle(fontSize: 14, color: c.muted),
           ),
-          if (entry.status == EntryStatus.pendingPayment && t.entryFee > 0) ...[
+          if (entry.status == EntryStatus.pendingPayment && checking) ...[
+            const SizedBox(height: 16),
+            FsCard(
+              color: c.verify.bg,
+              borderColor: c.verify.line,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(LucideIcons.wallet, size: 18, color: c.verify.fg),
+                      const SizedBox(width: 8),
+                      Text('Payment sent', style: TextStyle(fontWeight: FontWeight.w600, color: c.verify.fg)),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "${t.venue.name} is checking it, and we'll let you know when your place is confirmed.",
+                    style: TextStyle(color: c.verify.fg),
+                  ),
+                ],
+              ),
+            ),
+          ] else if (entry.status == EntryStatus.pendingPayment && t.entryFee > 0) ...[
+            if (_turnedDown(entry) case final reason?) ...[
+              const SizedBox(height: 16),
+              Notice("Your last payment wasn't accepted: $reason"),
+            ],
             const SizedBox(height: 16),
             Text('Pay ${rupees(t.entryFee)} to ${t.venue.name}', style: const TextStyle(fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),

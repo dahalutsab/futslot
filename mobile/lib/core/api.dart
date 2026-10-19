@@ -432,6 +432,9 @@ class Api {
   Future<List<MyTournamentEntry>> myEntries() =>
       _get('/api/v1/me/tournament-entries', (json) => _listOf(json, MyTournamentEntry.fromJson));
 
+  Future<List<Payment>> entryPayments(String registrationId) =>
+      _get('/api/v1/tournament-entries/$registrationId/payments', (json) => _listOf(json, Payment.fromJson));
+
   Future<void> payEntry(String registrationId, PaymentClaim claim) =>
       _post('/api/v1/tournament-entries/$registrationId/payments', claim.toJson(), (_) {});
 

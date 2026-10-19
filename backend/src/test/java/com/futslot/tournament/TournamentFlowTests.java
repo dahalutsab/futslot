@@ -78,6 +78,11 @@ class TournamentFlowTests {
 		send(tigers.captain(), post("/api/v1/tournament-entries/" + tigersEntry + "/payments"),
 				"{\"method\":\"ESEWA\",\"transactionId\":\"ES-%s\",\"amount\":1000}".formatted(UUID.randomUUID()))
 			.andExpect(status().isCreated()).andExpect(jsonPath("$.purpose").value("TOURNAMENT_ENTRY"));
+		send(tigers.captain(), get("/api/v1/tournament-entries/" + tigersEntry + "/payments"), null)
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[0].status").value("PENDING"));
+		send(lions.captain(), get("/api/v1/tournament-entries/" + tigersEntry + "/payments"), null)
+			.andExpect(status().isNotFound());
 		String paymentId = JsonPath.read(send(owner, get("/api/v1/owner/venues/" + venue.id() + "/payments/pending"), null)
 			.andExpect(jsonPath("$[0].customerName").value("Tigers"))
 			.andReturn().getResponse().getContentAsString(), "$[0].id");
