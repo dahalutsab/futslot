@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../core/api_types.dart';
 import '../core/config.dart';
 import '../core/theme.dart';
+import '../l10n/l10n.dart';
 import 'format.dart';
 
 /// A venue in a list: photo, where it is, rating and the lowest price.
@@ -75,14 +76,14 @@ class VenueCard extends StatelessWidget {
                       style: TextStyle(fontSize: 14, color: c.muted),
                       children: [
                         if (v.fromPrice != null) ...[
-                          const TextSpan(text: 'From '),
+                          TextSpan(text: l.fromPrice),
                           TextSpan(
                             text: rupees(v.fromPrice),
                             style: TextStyle(fontWeight: FontWeight.w600, color: c.text, fontFeatures: tabular),
                           ),
                           const TextSpan(text: ' · '),
                         ],
-                        TextSpan(text: '${v.courtCount} ${v.courtCount == 1 ? 'court' : 'courts'}'),
+                        TextSpan(text: l.courts(v.courtCount)),
                       ],
                     ),
                   ),
@@ -124,7 +125,7 @@ class _Rating extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.fs;
     return Semantics(
-      label: '${rating.toStringAsFixed(1)} out of 5 from $count ${count == 1 ? 'review' : 'reviews'}',
+      label: l.ratingFrom(digits(rating.toStringAsFixed(1)), l.reviews(count)),
       excludeSemantics: true,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -132,10 +133,10 @@ class _Rating extends StatelessWidget {
           Icon(Icons.star_rounded, size: 16, color: c.held.line),
           const SizedBox(width: 2),
           Text(
-            rating.toStringAsFixed(1),
+            digits(rating.toStringAsFixed(1)),
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, fontFeatures: tabular),
           ),
-          Text(' ($count)', style: TextStyle(fontSize: 14, color: c.subtle)),
+          Text(' (${digits(count)})', style: TextStyle(fontSize: 14, color: c.subtle)),
         ],
       ),
     );

@@ -1,4 +1,5 @@
 import '../../core/api_types.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 
 class DayGroup {
@@ -35,10 +36,10 @@ List<DayGroup> byDay(List<ChatMessage> messages, String timeZone, DateTime now) 
 
 String _dayName(String day, String todayKey) {
   if (day == todayKey) {
-    return 'Today';
+    return l.today;
   }
   if (day == addDays(todayKey, -1)) {
-    return 'Yesterday';
+    return l.yesterday;
   }
   return dayLabel(day);
 }

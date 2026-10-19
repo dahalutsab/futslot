@@ -7,6 +7,7 @@ import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/session.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/labels.dart';
 import '../../shared/pay_form.dart';
@@ -92,8 +93,8 @@ class _VenuePlansState extends ConsumerState<VenuePlans> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Semantics(header: true, child: Text('Memberships', style: text.titleLarge)),
-          Text('Play more, pay less. Use it when you book here.', style: TextStyle(color: c.muted)),
+          Semantics(header: true, child: Text(l.memberships, style: text.titleLarge)),
+          Text(l.membershipsPitch, style: TextStyle(color: c.muted)),
           const SizedBox(height: 12),
           for (final plan in _plans)
             Padding(
@@ -124,7 +125,7 @@ class _VenuePlansState extends ConsumerState<VenuePlans> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          plan.price > 0 ? rupees(plan.price) : 'Free',
+                          plan.price > 0 ? rupees(plan.price) : l.free,
                           style: const TextStyle(fontWeight: FontWeight.w600, fontFeatures: tabular),
                         ),
                       ],
@@ -137,7 +138,7 @@ class _VenuePlansState extends ConsumerState<VenuePlans> {
                     if (_buying == plan.id)
                       ..._buyForm(context, plan)
                     else
-                      OutlinedButton(onPressed: () => _start(plan), child: const Text('Buy')),
+                      OutlinedButton(onPressed: () => _start(plan), child: Text(l.buy)),
                   ],
                 ),
               ),
@@ -156,12 +157,12 @@ class _VenuePlansState extends ConsumerState<VenuePlans> {
           instructions: widget.venue.paymentInstructions,
           busy: _busy,
           error: _error,
-          label: "I've paid",
+          label: l.iPaid,
           onPaid: (claim) => _buy(plan, claim),
         ),
         const SizedBox(height: 8),
         Text(
-          '${widget.venue.name} checks your payment, then your membership starts.',
+          l.membershipChecks(widget.venue.name),
           style: TextStyle(fontSize: 14, color: c.subtle),
         ),
       ] else ...[
@@ -170,14 +171,14 @@ class _VenuePlansState extends ConsumerState<VenuePlans> {
           alignment: Alignment.centerLeft,
           child: FilledButton(
             onPressed: _busy ? null : () => _buy(plan, null),
-            child: BusyLabel(busy: _busy, label: 'Get it', busyLabel: 'Getting it…'),
+            child: BusyLabel(busy: _busy, label: l.getIt, busyLabel: l.gettingIt),
           ),
         ),
       ],
       TextButton(
         onPressed: () => setState(() => _buying = null),
         style: TextButton.styleFrom(foregroundColor: c.muted, padding: EdgeInsets.zero),
-        child: const Text('Not now'),
+        child: Text(l.notNow),
       ),
     ];
   }

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:futslot/core/api_types.dart';
+import 'package:futslot/l10n/l10n.dart';
 import 'package:futslot/shared/labels.dart';
 
 // The web app's labels.spec.ts cases, and the enum names the API uses.
@@ -41,7 +42,8 @@ void main() {
   });
 
   test('counts in words', () {
-    expect(count(1, 'player'), '1 player');
-    expect(count(3, 'player'), '3 players');
+    expect(l.players(1), '1 player');
+    expect(l.players(3), '3 players');
+    expect(l.players(1200), '1,200 players');
   });
 }

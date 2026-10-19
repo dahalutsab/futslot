@@ -10,6 +10,7 @@ import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/badges.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/booking_model.dart';
 import '../../shared/format.dart';
 import '../../shared/status_chip.dart';
@@ -196,7 +197,7 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> with WidgetsBinding
       return;
     }
     if (body.isEmpty) {
-      setState(() => _sendError = 'Type a message first.');
+      setState(() => _sendError = l.typeMessageFirst);
       return;
     }
     setState(() {
@@ -243,7 +244,7 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> with WidgetsBinding
             TextButton(
               onPressed: () => context.push('/venues/$slug'),
               style: TextButton.styleFrom(foregroundColor: c.muted),
-              child: const Text('Venue', style: TextStyle(fontSize: 14)),
+              child: Text(l.venue, style: const TextStyle(fontSize: 14)),
             ),
         ],
         shape: Border(bottom: BorderSide(color: c.border)),
@@ -270,8 +271,7 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> with WidgetsBinding
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Text(
-            'Ask $_title about courts, prices or ${widget.bookingId != null ? 'this booking' : 'a booking'}. '
-            "They reply here, and we'll let you know.",
+            (widget.bookingId != null ? l.askVenueBooking : l.askVenue)(_title),
             textAlign: TextAlign.center,
             style: TextStyle(color: c.muted),
           ),
@@ -287,7 +287,7 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> with WidgetsBinding
             padding: const EdgeInsets.only(bottom: 16),
             child: OutlinedButton(
               onPressed: _loadingEarlier ? null : _earlier,
-              child: Text(_loadingEarlier ? 'Loading…' : 'Show earlier messages', style: const TextStyle(fontSize: 14)),
+              child: Text(_loadingEarlier ? l.loadingMore : l.showEarlier, style: const TextStyle(fontSize: 14)),
             ),
           ),
         ),
@@ -341,7 +341,7 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> with WidgetsBinding
                       }
                     },
                     decoration: InputDecoration(
-                      hintText: 'Message $_title',
+                      hintText: l.messageTo(_title),
                       counterText: '',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: c.border)),
                       enabledBorder:
@@ -359,7 +359,7 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> with WidgetsBinding
                       minimumSize: const Size.square(46),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Icon(LucideIcons.sendHorizontal, size: 20, semanticLabel: 'Send'),
+                    child: Icon(LucideIcons.sendHorizontal, size: 20, semanticLabel: l.send),
                   ),
                 ),
               ],
@@ -473,7 +473,7 @@ class _Bubble extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
                   child: Text(
-                    '${clockAt(message.createdAt, _zone)}${seen ? ' · Seen' : ''}',
+                    '${clockAt(message.createdAt, _zone)}${seen ? l.seen : ''}',
                     style: TextStyle(fontSize: 12, color: c.subtle, fontFeatures: tabular),
                   ),
                 ),

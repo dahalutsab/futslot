@@ -6,6 +6,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/booking_model.dart';
 import '../../shared/format.dart';
 import '../../shared/notification_bell.dart';
@@ -89,13 +90,13 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
     final bookings = _bookings;
     final upcoming = _scope == _Scope.upcoming;
     return Scaffold(
-      appBar: AppBar(title: const Text('Your bookings'), actions: const [NotificationBell()]),
+      appBar: AppBar(title: Text(l.yourBookings), actions: const [NotificationBell()]),
       body: ScreenBody(
         maxWidth: 768,
         onRefresh: () => _load(0),
         children: [
           Segmented(
-            options: const [(_Scope.upcoming, 'Upcoming'), (_Scope.past, 'Past')],
+            options: [(_Scope.upcoming, l.upcoming), (_Scope.past, l.past)],
             value: _scope,
             onChanged: _show,
           ),
@@ -106,8 +107,8 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
             for (var i = 0; i < 3; i++) const Padding(padding: EdgeInsets.only(bottom: 12), child: Skeleton())
           else if (bookings.isEmpty)
             EmptyPanel(
-              title: upcoming ? 'No games coming up' : 'Nothing here yet',
-              body: upcoming ? 'Find a free court and book it in a minute.' : 'Games you play or cancel show up here.',
+              title: upcoming ? l.noGamesComingUp : l.nothingHereYet,
+              body: upcoming ? l.findCourtPitch : l.pastGamesShowHere,
               action: upcoming ? FilledButton(onPressed: () => context.go('/'), child: const Text('Find a court')) : null,
             )
           else ...[
@@ -120,7 +121,7 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
               Center(
                 child: OutlinedButton(
                   onPressed: _loading ? null : () => _load(_page + 1),
-                  child: Text(_loading ? 'Loading…' : 'Show more'),
+                  child: Text(_loading ? l.loadingMore : l.showMore),
                 ),
               ),
           ],
@@ -171,10 +172,15 @@ class _BookingRow extends StatelessWidget {
                   children: [
                     Text(b.venue.name, style: const TextStyle(fontWeight: FontWeight.w500)),
                     Semantics(
-                      label: '${dayLabel(b.startsAt.substring(0, 10))}, ${localClock(b.startsAt)} to ${localClock(b.endsAt)}, ${b.court.name}',
+                      label: l.bookingSummaryLabel(
+                        dayLabel(b.startsAt.substring(0, 10)),
+                        localClock(b.startsAt),
+                        localClock(b.endsAt),
+                        b.court.name,
+                      ),
                       excludeSemantics: true,
                       child: Text(
-                        '${localClock(b.startsAt)} – ${localClock(b.endsAt)} · ${b.court.name}',
+                        '${l.timeRange(localClock(b.startsAt), localClock(b.endsAt))} · ${b.court.name}',
                         style: TextStyle(fontSize: 14, color: c.muted, fontFeatures: tabular),
                       ),
                     ),

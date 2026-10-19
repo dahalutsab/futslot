@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../core/api_types.dart';
 import '../core/theme.dart';
+import '../l10n/l10n.dart';
 import 'labels.dart';
 
 /// "Midfielder · Intermediate · Right foot · Kathmandu · 12 games".
 String playerDetails(PlayerCard p) => [
       ?p.position?.label,
       ?p.skillLevel?.label,
-      if (p.preferredFoot case final foot?) '${foot.label} foot',
+      if (p.preferredFoot case final foot?) l.footSide(foot.label),
       ?p.city,
-      count(p.gamesPlayed, 'game'),
+      l.games(p.gamesPlayed),
     ].join(' · ');
 
 /// A player's name and what they play, for game requests.

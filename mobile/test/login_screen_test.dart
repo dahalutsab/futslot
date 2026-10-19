@@ -7,6 +7,7 @@ import 'package:futslot/core/session.dart';
 import 'package:futslot/core/theme.dart';
 import 'package:futslot/features/login/login_screen.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fakes.dart';
 
@@ -18,7 +19,10 @@ Map<String, Object?> _problem(int status, String code) => {'status': status, 'de
 Future<List<RequestOptions>> _pump(WidgetTester tester, (int, Object?) Function(RequestOptions request) answer,
     {String? googleToken}) async {
   final adapter = FakeAdapter(answer);
+  SharedPreferences.setMockInitialValues({});
+  final preferences = await SharedPreferences.getInstance();
   final container = ProviderContainer(overrides: [
+    preferencesProvider.overrideWithValue(preferences),
     sessionStoreProvider.overrideWithValue(MemoryStore()),
     authHttpProvider.overrideWithValue(Dio(BaseOptions(baseUrl: 'http://api.test'))..httpClientAdapter = adapter),
     googleIdTokenProvider.overrideWithValue((clientId) async => googleToken),

@@ -9,6 +9,7 @@ import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/session.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/labels.dart';
 import '../../shared/widgets.dart';
 import 'teams_screen.dart';
@@ -96,7 +97,7 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
   Future<void> _invite() {
     final digits = _phone.text.replaceAll(RegExp(r'\D'), '');
     if (digits.length < 10) {
-      setState(() => _error = 'Enter their 10-digit mobile number.');
+      setState(() => _error = l.enterTheirMobile);
       return Future.value();
     }
     return _act((team) async {
@@ -125,7 +126,7 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
   Widget build(BuildContext context) {
     final team = _team;
     return Scaffold(
-      appBar: AppBar(title: Text(team?.name ?? 'Team')),
+      appBar: AppBar(title: Text(team?.name ?? l.team)),
       body: switch ((team, _error)) {
         (null, final String error) => ScreenBody(children: [ErrorPanel(message: error, onRetry: _load)]),
         (final Team t, _) => ScreenBody(onRefresh: _load, children: _body(context, t)),
@@ -149,7 +150,7 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
               children: [
                 Text(t.name, style: Theme.of(context).textTheme.headlineSmall),
                 Text(
-                  [?t.city, ?t.skillLevel?.label, count(t.memberCount, 'player')].join(' · '),
+                  [?t.city, ?t.skillLevel?.label, l.players(t.memberCount)].join(' · '),
                   style: TextStyle(color: c.muted),
                 ),
               ],
@@ -164,19 +165,19 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
           borderColor: c.held.line,
           child: Row(
             children: [
-              Expanded(child: Text("You're invited to join ${t.name}.")),
-              FilledButton(onPressed: _busy ? null : () => _answer(true), child: const Text('Join')),
+              Expanded(child: Text(l.invitedToJoin(t.name))),
+              FilledButton(onPressed: _busy ? null : () => _answer(true), child: Text(l.join)),
               TextButton(
                 onPressed: _busy ? null : () => _answer(false),
                 style: TextButton.styleFrom(foregroundColor: c.muted),
-                child: const Text('Decline'),
+                child: Text(l.decline),
               ),
             ],
           ),
         ),
       ],
       const SizedBox(height: 24),
-      const SectionTitle('Squad'),
+      SectionTitle(l.squad),
       FsCard(
         padding: EdgeInsets.zero,
         child: Column(
@@ -188,11 +189,11 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
                 title: Text.rich(
                   TextSpan(
                     text: m.name,
-                    children: [if (m.userId == me) TextSpan(text: ' (you)', style: TextStyle(color: c.muted))],
+                    children: [if (m.userId == me) TextSpan(text: l.you, style: TextStyle(color: c.muted))],
                   ),
                 ),
                 subtitle: Text(
-                  m.status == MemberStatus.invited ? 'Invited' : m.role.label,
+                  m.status == MemberStatus.invited ? l.invited : m.role.label,
                   style: TextStyle(fontSize: 14, color: c.muted),
                 ),
                 trailing: _memberMenu(t, m, me: me, captain: captain),
@@ -208,9 +209,9 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Invite a player', style: Theme.of(context).textTheme.titleMedium),
+              Text(l.inviteAPlayer, style: Theme.of(context).textTheme.titleMedium),
               Text(
-                "By the phone number they use FutSlot with. They're told and can join.",
+                l.inviteHelp,
                 style: TextStyle(fontSize: 14, color: c.muted),
               ),
               const SizedBox(height: 12),
@@ -227,7 +228,7 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  FilledButton(onPressed: _busy ? null : _invite, child: const Text('Invite')),
+                  FilledButton(onPressed: _busy ? null : _invite, child: Text(l.invite)),
                 ],
               ),
             ],
@@ -241,13 +242,13 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
           child: TextButton(
             onPressed: _busy ? null : _leave,
             style: TextButton.styleFrom(foregroundColor: c.danger),
-            child: Text('Leave ${t.name}'),
+            child: Text(l.leaveTeam(t.name)),
           ),
         ),
       ],
       if (captain && t.memberCount > 1) ...[
         const SizedBox(height: 24),
-        Text('To leave, make someone else captain first.', style: TextStyle(fontSize: 14, color: c.subtle)),
+        Text(l.leaveNeedsNewCaptain, style: TextStyle(fontSize: 14, color: c.subtle)),
       ],
     ];
   }
@@ -260,7 +261,7 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
       return null;
     }
     return PopupMenuButton<VoidCallback>(
-      tooltip: 'Change ${m.name}',
+      tooltip: l.changeMember(m.name),
       icon: Icon(LucideIcons.ellipsis, color: context.fs.muted),
       enabled: !_busy,
       onSelected: (action) => action(),
@@ -270,12 +271,12 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
             if (role != m.role)
               PopupMenuItem(
                 value: () => _act((team) => _set(_api.changeRole(team.id, m.userId, role))),
-                child: Text(role == TeamRole.captain ? 'Make captain' : 'Make ${role.label.toLowerCase()}'),
+                child: Text(l.makeRole(role.label.toLowerCase())),
               ),
         if (remove)
           PopupMenuItem(
             value: () => _act((team) => _set(_api.removeMember(team.id, m.userId))),
-            child: Text(m.status == MemberStatus.invited ? 'Cancel invite' : 'Remove'),
+            child: Text(m.status == MemberStatus.invited ? l.cancelInvite : l.remove),
           ),
       ],
     );

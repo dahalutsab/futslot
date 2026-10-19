@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/l10n.dart';
 import 'api_types.dart';
 import 'config.dart';
 import 'session.dart';
@@ -52,7 +53,9 @@ final apiHttpProvider = Provider<Dio>((ref) {
     connectTimeout: const Duration(seconds: 15),
     receiveTimeout: const Duration(seconds: 30),
   ));
-  dio.interceptors.add(AuthInterceptor(dio, () => ref.read(sessionProvider.notifier)));
+  dio.interceptors
+    ..add(languageInterceptor)
+    ..add(AuthInterceptor(dio, () => ref.read(sessionProvider.notifier)));
   return dio;
 });
 

@@ -5,18 +5,19 @@ library;
 import 'dart:math';
 
 import '../core/api_types.dart';
+import '../l10n/l10n.dart';
 import 'format.dart';
 
 /// The week as people in Nepal count it, Sunday first.
-const week = [
-  (day: Weekday.sunday, label: 'Sunday'),
-  (day: Weekday.monday, label: 'Monday'),
-  (day: Weekday.tuesday, label: 'Tuesday'),
-  (day: Weekday.wednesday, label: 'Wednesday'),
-  (day: Weekday.thursday, label: 'Thursday'),
-  (day: Weekday.friday, label: 'Friday'),
-  (day: Weekday.saturday, label: 'Saturday'),
-];
+List<({Weekday day, String label})> get week => [
+      (day: Weekday.sunday, label: l.sunday),
+      (day: Weekday.monday, label: l.monday),
+      (day: Weekday.tuesday, label: l.tuesday),
+      (day: Weekday.wednesday, label: l.wednesday),
+      (day: Weekday.thursday, label: l.thursday),
+      (day: Weekday.friday, label: l.friday),
+      (day: Weekday.saturday, label: l.saturday),
+    ];
 
 /// Mirrors the server: the fee of the closest tier the notice falls inside, 0 at 24 hours or more.
 double feePercent(List<CancellationTier> tiers, Duration notice) {
@@ -67,42 +68,40 @@ CancelOutcome cancelOutcome(Booking booking, VenuePolicy policy, DateTime now) {
   );
 }
 
-/// "10" or "12.5", for percentages the venue set.
-String percent(double value) => value == value.roundToDouble() ? value.toInt().toString() : value.toString();
+/// "10" or "12.5", for percentages the venue set ("१०" in Nepali).
+String percent(double value) => digits(value == value.roundToDouble() ? value.toInt() : value);
 
 /// The venue's booking rules, said to the player.
 List<String> policyLines(VenuePolicy policy) {
   final lines = <String>[
     policy.advancePercent == 0
-        ? 'Book now and pay at the venue.'
-        : 'Pay ${percent(policy.advancePercent)}% up front to confirm. We hold the slot for '
-            '${policy.bookingHoldMinutes} minutes while you pay.',
+        ? l.policyPayAtVenue
+        : l.policyAdvance(percent(policy.advancePercent), policy.bookingHoldMinutes),
   ];
   final tiers = _byHoursBefore(policy.cancellationTiers);
   if (tiers.isEmpty) {
-    lines.add('Cancel any time before the game for free.');
+    lines.add(l.policyFreeCancelAnyTime);
   } else {
-    final fees = [for (final tier in tiers) '${percent(tier.feePercent)}% within ${tier.withinHours} ${_hours(tier.withinHours)}'];
-    final listed = fees.length == 1 ? fees.first : '${fees.sublist(0, fees.length - 1).join(', ')} and ${fees.last}';
-    lines.add('Cancel ${tiers.first.withinHours} ${_hours(tiers.first.withinHours)} or more before the game for free.');
-    lines.add('Cancelling later costs a share of the booking price: $listed. ${policy.depositRequired
-        ? 'What you paid covers it first; your FutSlot deposit covers the rest.'
-        : "It's never more than you've paid."}');
+    final fees = [for (final tier in tiers) l.feeWithin(percent(tier.feePercent), l.hours(tier.withinHours))];
+    lines.add(l.policyFreeBefore(l.hours(tiers.first.withinHours)));
+    lines.add(l.policyLateFee(listOf(fees), policy.depositRequired ? l.policyFeeDeposit : l.policyFeeCapped));
   }
   if (policy.depositRequired) {
     final top = tiers.fold(0.0, (most, tier) => max(most, tier.feePercent));
-    lines.add('You need a ${rupees(depositAmount)} FutSlot booking deposit to book here.'
-        '${top > 0 ? ' Not showing up costs ${percent(top)}% of the booking price.' : ''}');
+    lines.add([l.policyDeposit(rupees(depositAmount)), if (top > 0) l.policyNoShow(percent(top))].join(' '));
   }
   final strikeLimit = policy.strikeLimit;
   final strikeAdvance = policy.strikeAdvancePercent;
   if (strikeLimit != null && strikeAdvance != null && strikeAdvance > policy.advancePercent) {
-    final strikes = strikeLimit == 1 ? 'a late cancellation or no-show' : '$strikeLimit late cancellations or no-shows';
-    lines.add('After $strikes here in $strikeWindowDays days, you pay ${percent(strikeAdvance)}% up front.');
+    lines.add(l.policyStrikes(strikeLimit, digits(strikeWindowDays), percent(strikeAdvance)));
   }
-  lines.add('If the venue cancels, you get everything back.');
+  lines.add(l.policyVenueCancels);
   return lines;
 }
+
+/// "a", "a and b", "a, b and c".
+String listOf(List<String> items) =>
+    items.length == 1 ? items.first : l.listAnd(items.sublist(0, items.length - 1).join(', '), items.last);
 
 enum ChipState { confirmed, held, verify, completed, noshow, cancelled, expired }
 
@@ -126,7 +125,7 @@ String hoursLabel(DayHours? hours) {
   final open = hours?.openTime;
   final close = hours?.closeTime;
   if (hours == null || hours.closed || open == null || close == null) {
-    return 'Closed';
+    return l.closed;
   }
   return '${timeLabel(open)} – ${timeLabel(close)}';
 }
@@ -139,5 +138,3 @@ String timeLabel(String time) {
 
 List<CancellationTier> _byHoursBefore(List<CancellationTier> tiers) =>
     [...tiers]..sort((a, b) => b.withinHours.compareTo(a.withinHours));
-
-String _hours(int count) => count == 1 ? 'hour' : 'hours';

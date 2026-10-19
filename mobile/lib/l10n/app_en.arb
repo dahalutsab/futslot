@@ -1,0 +1,1607 @@
+{
+  "@@locale": "en",
+  "justNow": "just now",
+  "minutesAgo": "{minutes} min ago",
+  "@minutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "hoursAgo": "{hours} h ago",
+  "@hoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "methodCash": "Cash",
+  "methodBankTransfer": "Bank transfer",
+  "players": "{count, plural, =1{1 player} other{{count} players}}",
+  "@players": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "games": "{count, plural, =1{1 game} other{{count} games}}",
+  "@games": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "hours": "{count, plural, =1{1 hour} other{{count} hours}}",
+  "@hours": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "days": "{count, plural, =1{1 day} other{{count} days}}",
+  "@days": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "listAnd": "{first} and {last}",
+  "@listAnd": {
+    "description": "The last two items of a list: \"10% within 12 hours and 50% within 2 hours\"",
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "skillBeginner": "Beginner",
+  "skillIntermediate": "Intermediate",
+  "skillAdvanced": "Advanced",
+  "skillPro": "Pro",
+  "positionGoalkeeper": "Goalkeeper",
+  "positionDefender": "Defender",
+  "positionMidfielder": "Midfielder",
+  "positionForward": "Forward",
+  "positionAny": "Anywhere",
+  "footLeft": "Left",
+  "footRight": "Right",
+  "footBoth": "Both",
+  "roleCaptain": "Captain",
+  "roleViceCaptain": "Vice-captain",
+  "roleMember": "Player",
+  "formatKnockout": "Knockout",
+  "formatLeague": "League",
+  "formatGroupKnockout": "Groups, then knockout",
+  "tournamentDraft": "Draft",
+  "tournamentOpen": "Taking teams",
+  "tournamentClosed": "Entries closed",
+  "tournamentInProgress": "Under way",
+  "tournamentCompleted": "Finished",
+  "tournamentCancelled": "Cancelled",
+  "stageGroup": "Group stage",
+  "stageLeague": "League",
+  "stageRoundOf32": "Round of 32",
+  "stageRoundOf16": "Round of 16",
+  "stageQuarterFinal": "Quarter-finals",
+  "stageSemiFinal": "Semi-finals",
+  "stageThirdPlace": "Third place",
+  "stageFinal": "Final",
+  "entryPendingPayment": "Pay the entry fee",
+  "entryConfirmed": "Confirmed",
+  "entryWaitlisted": "On the waitlist",
+  "entryWithdrawn": "Withdrawn",
+  "entryRejected": "Not accepted",
+  "ruleEqual": "Split equally",
+  "ruleLosersPayAll": "Losers pay all",
+  "ruleLosersPayPercent": "Losers pay more",
+  "ruleLosersPayCourt": "Losers pay the court",
+  "ruleEqualDetail": "Everyone pays the same, whoever wins.",
+  "ruleLosersPayAllDetail": "Baazi: the losing side pays everything.",
+  "ruleLosersPayPercentDetail": "Baazi: the losing side pays a share you choose, the winners the rest.",
+  "ruleLosersPayCourtDetail": "Baazi: losers pay for the court, winners for the extras.",
+  "resultDraw": "Draw",
+  "sideWon": "{side} won",
+  "@sideWon": {
+    "placeholders": {
+      "side": {
+        "type": "String"
+      }
+    }
+  },
+  "planDiscount": "{percent}% off every game",
+  "@planDiscount": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "planFor": "{terms}, for {days}",
+  "@planFor": {
+    "placeholders": {
+      "terms": {
+        "type": "String"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "sunday": "Sunday",
+  "monday": "Monday",
+  "tuesday": "Tuesday",
+  "wednesday": "Wednesday",
+  "thursday": "Thursday",
+  "friday": "Friday",
+  "saturday": "Saturday",
+  "closed": "Closed",
+  "policyPayAtVenue": "Book now and pay at the venue.",
+  "policyFreeCancelAnyTime": "Cancel any time before the game for free.",
+  "policyFeeDeposit": "What you paid covers it first; your FutSlot deposit covers the rest.",
+  "policyFeeCapped": "It's never more than you've paid.",
+  "policyVenueCancels": "If the venue cancels, you get everything back.",
+  "chipConfirmed": "Confirmed",
+  "chipHeld": "Waiting for payment",
+  "chipVerify": "Payment being checked",
+  "chipCompleted": "Played",
+  "chipNoShow": "No-show",
+  "chipCancelled": "Cancelled",
+  "chipExpired": "Not paid in time",
+  "policyAdvance": "Pay {percent}% up front to confirm. We hold the slot for {minutes} minutes while you pay.",
+  "@policyAdvance": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "feeWithin": "{percent}% within {hours}",
+  "@feeWithin": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "policyFreeBefore": "Cancel {hours} or more before the game for free.",
+  "@policyFreeBefore": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "policyLateFee": "Cancelling later costs a share of the booking price: {fees}. {cover}",
+  "@policyLateFee": {
+    "placeholders": {
+      "fees": {
+        "type": "String"
+      },
+      "cover": {
+        "type": "String"
+      }
+    }
+  },
+  "policyDeposit": "You need a {amount} FutSlot booking deposit to book here.",
+  "@policyDeposit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "policyNoShow": "Not showing up costs {percent}% of the booking price.",
+  "@policyNoShow": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "policyStrikes": "{count, plural, =1{After a late cancellation or no-show here in {days} days, you pay {percent}% up front.} other{After {count} late cancellations or no-shows here in {days} days, you pay {percent}% up front.}}",
+  "@policyStrikes": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "days": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "sendForChecking": "Send for checking",
+  "enterTransactionId": "Enter the transaction ID from your receipt.",
+  "paidWith": "Paid with",
+  "amountYouSent": "Amount you sent",
+  "transactionId": "Transaction ID",
+  "fromYourReceipt": "From your payment receipt",
+  "sending": "Sending…",
+  "loading": "Loading",
+  "tryAgain": "Try again",
+  "optional": " (optional)",
+  "ratingPoor": "Poor",
+  "ratingNotGreat": "Not great",
+  "ratingOkay": "Okay",
+  "ratingGood": "Good",
+  "ratingGreat": "Great",
+  "postReview": "Post review",
+  "pickStars": "Pick how many stars.",
+  "whatWasItLike": "What was it like?",
+  "reviewHint": "The turf, the lights, the staff…",
+  "saving": "Saving…",
+  "notifications": "Notifications",
+  "offline": "Can't reach FutSlot. Check your connection and try again.",
+  "somethingWentWrong": "Something went wrong. Please try again.",
+  "tabExplore": "Explore",
+  "tabBookings": "Bookings",
+  "tabPlay": "Play",
+  "tabMessages": "Messages",
+  "tabMe": "Me",
+  "playGames": "Games",
+  "playTournaments": "Tournaments",
+  "playTeams": "Teams",
+  "fromPrice": "From ",
+  "enterAmountBetween": "Enter between {min} and {max}.",
+  "@enterAmountBetween": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "sendAtLeastTo": "Send at least {amount} to",
+  "@sendAtLeastTo": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "sendAmountTo": "Send {amount} to",
+  "@sendAmountTo": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "starsOutOfFive": "{stars} out of 5",
+  "@starsOutOfFive": {
+    "placeholders": {
+      "stars": {
+        "type": "String"
+      }
+    }
+  },
+  "starsOutOfFiveWord": "{stars} out of 5: {word}",
+  "@starsOutOfFiveWord": {
+    "placeholders": {
+      "stars": {
+        "type": "String"
+      },
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsUnread": "Notifications, {count} unread",
+  "@notificationsUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "messagesUnread": "Messages, {count} unread",
+  "@messagesUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "courts": "{count, plural, =1{1 court} other{{count} courts}}",
+  "@courts": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "ratingFrom": "{rating} out of 5 from {reviews}",
+  "@ratingFrom": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      },
+      "reviews": {
+        "type": "String"
+      }
+    }
+  },
+  "reviews": "{count, plural, =1{1 review} other{{count} reviews}}",
+  "@reviews": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "footSide": "{side} foot",
+  "@footSide": {
+    "placeholders": {
+      "side": {
+        "type": "String"
+      }
+    }
+  },
+  "enterMobile": "Enter your 10-digit mobile number, like 98XXXXXXXX.",
+  "enterPassword": "Enter your password.",
+  "passwordNotSet": "Your account doesn't have a password yet. We'll text you a code to set one.",
+  "codeSentMoment": "We sent you a code a moment ago. Enter it below.",
+  "accountExists": "This number already has an account. Sign in, or reset your password if you forgot it.",
+  "noAccountYet": "No account uses this number yet. Create one below.",
+  "enterCode": "Enter the 6-digit code we sent.",
+  "enterName": "Enter your name.",
+  "googleFailed": "Google sign-in didn't work. Use your number and password instead.",
+  "signInTitle": "Sign in to FutSlot",
+  "signInSubtitle": "Use your mobile number and password.",
+  "signUpTitle": "Create your account",
+  "signUpSubtitle": "We'll text a code to check the number is yours.",
+  "resetTitle": "Reset your password",
+  "resetSubtitle": "We'll text a code to your number, then you choose a new password.",
+  "googleTitle": "One more step",
+  "googleSubtitle": "Add your mobile number. Venues and teammates find you by it, so we'll text a code to check it's yours.",
+  "backToVenues": "Back to venues",
+  "signedOutAgain": "You were signed out. Please sign in again.",
+  "backToSignIn": "Back to sign in",
+  "hidePassword": "Hide password",
+  "showPassword": "Show password",
+  "mobileNumber": "Mobile number",
+  "password": "Password",
+  "newPassword": "New password",
+  "forgotPassword": "Forgot password?",
+  "signIn": "Sign in",
+  "signingIn": "Signing in…",
+  "or": "or",
+  "continueWithGoogle": "Continue with Google",
+  "newToFutSlot": "New to FutSlot?",
+  "createAnAccount": "Create an account",
+  "sendCode": "Send code",
+  "sixDigitCode": "6-digit code",
+  "change": "Change",
+  "yourName": "Your name",
+  "venuesSeeName": "Venues see this name on your bookings.",
+  "createAccount": "Create account",
+  "savePasswordSignIn": "Save password and sign in",
+  "continueAction": "Continue",
+  "checking": "Checking…",
+  "resendCode": "Resend code",
+  "passwordTooShort": "Use at least {count} characters for your password.",
+  "@passwordTooShort": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "passwordHelp": "At least {count} characters. Not your phone number, or something as easy to guess.",
+  "@passwordHelp": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "sentTo": "Sent to {phone} · ",
+  "@sentTo": {
+    "description": "The phone number stays in Latin digits",
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "resendIn": "Resend code in {seconds}s",
+  "@resendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "meDeposit": "Booking deposit",
+  "meDepositDetail": "Top up or take it back",
+  "meProfile": "Player profile",
+  "meProfileDetail": "Your position and level, for games and teams",
+  "meMemberships": "Memberships",
+  "meMembershipsDetail": "Game packs and passes",
+  "meDues": "What you owe",
+  "meDuesDetail": "Your share of games friends booked",
+  "meFavourites": "Saved venues",
+  "meFavouritesDetail": "Venues you like, to book again",
+  "meReviews": "Reviews",
+  "meReviewsDetail": "Rate the venues you played at",
+  "meWaitlist": "Waitlist",
+  "meWaitlistDetail": "Booked slots you want if they free up",
+  "mePassword": "Password",
+  "mePasswordDetail": "Change it, and sign out other devices",
+  "saved": "Saved.",
+  "yourDetails": "Your details",
+  "name": "Name",
+  "venuesSeeThis": "Venues see this on your bookings.",
+  "email": "Email",
+  "save": "Save",
+  "appearance": "Appearance",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeAuto": "Auto",
+  "signOut": "Sign out",
+  "language": "Language",
+  "languageHelp": "Notifications and texts come in it too.",
+  "useAtLeast8": "Use at least 8 characters.",
+  "enterCurrentPassword": "Enter your current password.",
+  "passwordSaved": "Password saved. Other devices are signed out.",
+  "hidePasswords": "Hide passwords",
+  "showPasswords": "Show passwords",
+  "setAPassword": "Set a password",
+  "googleOnlyNote": "You sign in with Google. A password lets you sign in with your number too.",
+  "currentPassword": "Current password",
+  "passwordStayHere": "At least 8 characters. You stay signed in here; other devices are signed out.",
+  "changePassword": "Change password",
+  "setPassword": "Set password",
+  "exploreTitle": "Book a futsal court",
+  "exploreSubtitle": "Free slots and prices at venues near you. Pay the advance with eSewa or Khalti.",
+  "venueSearchHint": "Venue name or area",
+  "clear": "Clear",
+  "allCities": "All cities",
+  "featured": "Featured",
+  "allVenues": "All venues",
+  "noVenuesFound": "No venues found",
+  "noVenuesFoundBody": "Try another name or area, or all cities.",
+  "loadingMore": "Loading…",
+  "showMoreVenues": "Show more venues",
+  "waitBody": "Wait for it, and we'll tell you if it frees up. Whoever books it first then gets it.",
+  "waitForIt": "Wait for it",
+  "saved_": "Saved",
+  "saveVenue": "Save",
+  "message": "Message",
+  "bookASlot": "Book a slot",
+  "bookingRules": "Booking rules",
+  "amenities": "Amenities",
+  "reviewsTitle": "Reviews",
+  "noReviewsYet": "No reviews yet. Players can review after they play here.",
+  "noCourtsYet": "No courts are open for booking yet.",
+  "closedThisDay": "Closed this day.",
+  "noMoreGamesToday": "No more games today.",
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "fullyBooked": "Fully booked",
+  "waiting": "Waiting",
+  "booked": "Booked",
+  "openingHours": "Opening hours",
+  "memberships": "Memberships",
+  "membershipsPitch": "Play more, pay less. Use it when you book here.",
+  "free": "Free",
+  "buy": "Buy",
+  "iPaid": "I've paid",
+  "getIt": "Get it",
+  "gettingIt": "Getting it…",
+  "notNow": "Not now",
+  "venuesFound": "{count, plural, =1{1 venue} other{{count} venues}}",
+  "@venuesFound": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "slotBookedOn": "{time} on {court} is booked",
+  "@slotBookedOn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "court": {
+        "type": "String"
+      }
+    }
+  },
+  "weWillTellYou": "We'll tell you if {time} frees up.",
+  "@weWillTellYou": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "freeSlots": "{count} free",
+  "@freeSlots": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "slotWaiting": "{time}, booked. You're waiting for it",
+  "@slotWaiting": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "slotWaitQuestion": "{time} is booked. Wait for it?",
+  "@slotWaitQuestion": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "slotClosed": "{time}, closed",
+  "@slotClosed": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "slotBook": "{time}, {price}. Book",
+  "@slotBook": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "playedOn": "Played {date}",
+  "@playedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "venueReplied": "{venue} replied",
+  "@venueReplied": {
+    "placeholders": {
+      "venue": {
+        "type": "String"
+      }
+    }
+  },
+  "membershipChecks": "{venue} checks your payment, then your membership starts.",
+  "@membershipChecks": {
+    "placeholders": {
+      "venue": {
+        "type": "String"
+      }
+    }
+  },
+  "bookThisSlot": "Book this slot",
+  "slotUnavailable": "This slot can't be booked",
+  "seeOtherSlots": "See other free slots",
+  "addDepositFirst": "Add your booking deposit first",
+  "thisVenue": "This venue",
+  "extras": "Extras",
+  "extrasPaidAtVenue": "Paid at the venue with your booking.",
+  "useMembership": "Use a membership",
+  "dontUseOne": "Don't use one",
+  "discountCode": "Discount code",
+  "remove": "Remove",
+  "codeHint": "e.g. DASHAIN20",
+  "apply": "Apply",
+  "noteForVenue": "Note for the venue",
+  "noteHint": "e.g. We're 10 players, need bibs",
+  "workingOutPrice": "Working out the price",
+  "court": "Court",
+  "discount": "Discount",
+  "total": "Total",
+  "payNowToConfirm": "Pay now to confirm",
+  "atTheVenue": "At the venue",
+  "pay": "Pay",
+  "strikeAdvanceNote": "You pay more up front here because of your recent late cancellations or no-shows at this venue.",
+  "book": "Book",
+  "booking_": "Booking…",
+  "depositExplain": "{venue} asks players to keep {amount} with FutSlot. It isn't spent on your games: it only pays the venue's fee if you cancel late or don't show up, and you can take it back when you have no games booked.",
+  "@depositExplain": {
+    "placeholders": {
+      "venue": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "addAmount": "Add {amount}",
+  "@addAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "gamesLeft": "{count} left",
+  "@gamesLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "bookAndPay": "Book and pay {amount}",
+  "@bookAndPay": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "holdWhilePay": "We hold the slot for {minutes} minutes while you pay the venue.",
+  "@holdWhilePay": {
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "priceEach": "{price} each",
+  "@priceEach": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "oneLess": "One less {item}",
+  "@oneLess": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "oneMore": "One more {item}",
+  "@oneMore": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "yourBookings": "Your bookings",
+  "upcoming": "Upcoming",
+  "past": "Past",
+  "noGamesComingUp": "No games coming up",
+  "nothingHereYet": "Nothing here yet",
+  "findCourtPitch": "Find a free court and book it in a minute.",
+  "pastGamesShowHere": "Games you play or cancel show up here.",
+  "showMore": "Show more",
+  "booking": "Booking",
+  "bookedSeeYou": "Booked. See you on the court!",
+  "bookedPayBelow": "Booked. Pay the advance below to confirm it.",
+  "messageTheVenue": "Message the venue",
+  "splitTheCost": "Split the cost",
+  "splitTheCostDetail": "Share it equally, or baazi: the losers pay",
+  "yourNote": "Your note",
+  "cancelled": "Cancelled",
+  "cancelledRefund": "Anything you paid comes back to you.",
+  "yourReview": "Your review",
+  "edit": "Edit",
+  "delete": "Delete",
+  "editYourReview": "Edit your review",
+  "reviewShownAs": "Other players see it with your first name and last initial.",
+  "cancel": "Cancel",
+  "paymentSent": "Payment sent",
+  "payDirectly": "Pay the venue directly, then tell us the transaction ID. The venue checks it and confirms your booking.",
+  "timeToPayRanOut": "The time to pay has run out",
+  "slotMayBeGone": "The slot may have gone to someone else. Book again if it's still free.",
+  "seeFreeSlots": "See free slots",
+  "payment": "Payment",
+  "paid": "Paid",
+  "beingChecked": " · being checked",
+  "started": " · started",
+  "notReceived": " · not received",
+  "paymentCancelled": " · cancelled",
+  "refunded": " · refunded",
+  "partlyRefunded": " · partly refunded",
+  "cancelBooking": "Cancel booking",
+  "cancelThisBooking": "Cancel this booking?",
+  "why": "Why?",
+  "cancelling": "Cancelling…",
+  "keepIt": "Keep it",
+  "freeToCancel": "It's free to cancel now.",
+  "bookingRef": "Booking {reference}",
+  "@bookingRef": {
+    "placeholders": {
+      "reference": {
+        "type": "String"
+      }
+    }
+  },
+  "timeRange": "{start} – {end}",
+  "@timeRange": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "bookingSummaryLabel": "{day}, {start} to {end}, {court}",
+  "@bookingSummaryLabel": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      },
+      "court": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelledLate": "Cancelled late, so the venue kept its {percent}% fee.",
+  "@cancelledLate": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelledLateDeposit": "Cancelled late, so the venue kept its {percent}% fee, with any part your advance didn't cover taken from your deposit.",
+  "@cancelledLateDeposit": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "howWasVenue": "How was {venue}?",
+  "@howWasVenue": {
+    "placeholders": {
+      "venue": {
+        "type": "String"
+      }
+    }
+  },
+  "venueChecking": "{venue} is checking it. Your slot is held meanwhile, and we'll let you know when it's confirmed.",
+  "@venueChecking": {
+    "placeholders": {
+      "venue": {
+        "type": "String"
+      }
+    }
+  },
+  "payToConfirm": "Pay {amount} to confirm",
+  "@payToConfirm": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "heldFor": "{count, plural, =1{Held for 1 more minute, until {time}.} other{Held for {count} more minutes, until {time}.}}",
+  "@heldFor": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "lineItem": "{quantity} × {name}",
+  "@lineItem": {
+    "placeholders": {
+      "quantity": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "refundBy": "Refund by {method} · {state}",
+  "@refundBy": {
+    "placeholders": {
+      "method": {
+        "type": "String"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "refundSent": "sent",
+  "refundOnItsWay": "on its way",
+  "youGetBack": "You get {amount} back.",
+  "@youGetBack": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelCosts": "Cancelling now costs {percent}% of the price ({fee}).",
+  "@cancelCosts": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "fee": {
+        "type": "String"
+      }
+    }
+  },
+  "venueKeeps": "The venue keeps {amount} of what you paid.",
+  "@venueKeeps": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "venueKeepsRefund": "The venue keeps {amount} of what you paid and you get {refund} back.",
+  "@venueKeepsRefund": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "refund": {
+        "type": "String"
+      }
+    }
+  },
+  "fromDeposit": "Up to {amount} more comes out of your FutSlot deposit.",
+  "@fromDeposit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bankAccount": "Bank account",
+  "enterSendTo": "Enter the number or account to send it to.",
+  "toppedUp": "Topped up",
+  "takenBack": "Taken back",
+  "keptAfterAll": "Kept after all",
+  "bookingDeposit": "Booking deposit",
+  "inYourDeposit": "In your deposit",
+  "deposit": "Deposit",
+  "depositFull": "Full: you can book any venue.",
+  "backToBooking": "Back to your booking",
+  "keepDeposit": "Keep my deposit instead",
+  "topUpSent": "Top-up sent",
+  "topUpChecking": "FutSlot is checking it, usually within a few hours. You can book once it's in.",
+  "payFutSlotDirectly": "Pay FutSlot directly, then tell us the transaction ID.",
+  "history": "History",
+  "takeDepositBack": "Take your deposit back",
+  "takeItBack": "Take it back",
+  "sendItToMy": "Send it to my",
+  "bankNameAccount": "Bank name and account number",
+  "number": "Number",
+  "asking": "Asking…",
+  "askForItBack": "Ask for it back",
+  "back": "Back",
+  "membershipsIntro": "Game packs and passes you bought at venues. They're used when you book there.",
+  "noMembershipsYet": "No memberships yet",
+  "noMembershipsBody": "Venues that sell game packs or passes list them on their page.",
+  "active": "Active",
+  "expired": "Expired",
+  "savedVenues": "Saved venues",
+  "noSavedVenues": "No saved venues",
+  "noSavedVenuesBody": "Tap the heart on a venue you like to find it here.",
+  "howWasYourGame": "How was your game?",
+  "reviewWindow": "You can review a game for 30 days after playing it.",
+  "review": "Review",
+  "yourReviews": "Your reviews",
+  "noReviewsWritten": "You haven't reviewed a venue yet.",
+  "reviewHidden": "Hidden by FutSlot while it checks it",
+  "reviewRemoved": "Removed by FutSlot",
+  "waitlist": "Waitlist",
+  "waitlistIntro": "Slots you want that someone else booked. If one frees up we tell you, and whoever books it first gets it.",
+  "notWaiting": "You're not waiting for any slot",
+  "notWaitingBody": "On a venue's page, tap a booked slot to wait for it.",
+  "itFreedUp": "It freed up. Book it before someone else does.",
+  "stopWaiting": "Stop waiting",
+  "markAllRead": "Mark all read",
+  "nothingYet": "Nothing yet",
+  "notificationsEmpty": "Booking confirmations, reminders and replies from venues show up here.",
+  "showOlder": "Show older",
+  "unread": "Unread",
+  "feeToVenue": "Fee to {venue} · {reference}",
+  "@feeToVenue": {
+    "placeholders": {
+      "venue": {
+        "type": "String"
+      },
+      "reference": {
+        "type": "String"
+      }
+    }
+  },
+  "depositIntro": "Some venues only take bookings from players who keep {amount} with FutSlot. It isn't spent on your games: it only pays a venue's fee if you cancel late or don't show up. You can take it back whenever you have no games booked there.",
+  "@depositIntro": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "ofAmount": " of {amount}",
+  "@ofAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "comingBack": "{amount} is coming back to you",
+  "@comingBack": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "withdrawalWhen": "FutSlot sends it to your {method} {sendTo} on {date}. Until then you can't book venues that need the deposit.",
+  "@withdrawalWhen": {
+    "placeholders": {
+      "method": {
+        "type": "String"
+      },
+      "sendTo": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "withdrawExplain": "FutSlot sends all of {amount} to you 3 days after you ask, once no game you've booked at a venue that needs it is still to be played.",
+  "@withdrawExplain": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "until": "Until {date}",
+  "@until": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "ended": "Ended {date}",
+  "@ended": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "messages": "Messages",
+  "findAVenue": "Find a venue",
+  "noMessagesYet": "No messages yet",
+  "noMessagesBody": "Ask a venue about courts, a booking or anything else: tap Message on its page or on your booking.",
+  "typeMessageFirst": "Type a message first.",
+  "venue": "Venue",
+  "showEarlier": "Show earlier messages",
+  "send": "Send",
+  "seen": " · Seen",
+  "yesterday": "Yesterday",
+  "nobodyMatches": "Nobody matches \"{text}\".",
+  "@nobodyMatches": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "unreadCount": "{count} unread",
+  "@unreadCount": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "askVenueBooking": "Ask {venue} about courts, prices or this booking. They reply here, and we'll let you know.",
+  "@askVenueBooking": {
+    "placeholders": {
+      "venue": {
+        "type": "String"
+      }
+    }
+  },
+  "askVenue": "Ask {venue} about courts, prices or a booking. They reply here, and we'll let you know.",
+  "@askVenue": {
+    "placeholders": {
+      "venue": {
+        "type": "String"
+      }
+    }
+  },
+  "messageTo": "Message {venue}",
+  "@messageTo": {
+    "placeholders": {
+      "venue": {
+        "type": "String"
+      }
+    }
+  },
+  "giveNameOrPhone": "Give their name, or the phone number they use FutSlot with.",
+  "changeSplit": "Change how the cost is shared.",
+  "startSplitIntro": "Share what this game costs with the players: equally, or baazi-style.",
+  "whoPays": "Who pays",
+  "losingSidePays": "The losing side pays",
+  "percentOfEverything": "% of everything",
+  "oneSide": "One side",
+  "otherSide": "The other side",
+  "teamA": "Team A",
+  "teamB": "Team B",
+  "youPlayFor": "You play for",
+  "extrasRs": "Extras (Rs)",
+  "forWhat": "For",
+  "extrasHint": "Water, drinks…",
+  "startSplitting": "Start splitting",
+  "played": "Played",
+  "undo": "Undo",
+  "playedTheGame": "Played the game?",
+  "whoWon": "Who won?",
+  "worksOutShares": "This works out everyone's share and tells the players with the app.",
+  "workOutShares": "Work out shares",
+  "addAPlayer": "Add a player",
+  "addPlayerHelp": "By the phone number they use FutSlot with, so they see their share, or just a name.",
+  "phone": "Phone",
+  "add": "Add",
+  "eachPaysRoughly": "Each player pays, roughly",
+  "ifResult": "If",
+  "you": " (you)",
+  "bookedBy": " (booked)",
+  "whatYouOwe": "What you owe",
+  "duesIntro": "Your share of games other players booked. Pay them, and they tick you off.",
+  "allSquare": "You're all square",
+  "allSquareBody": "When someone adds you to a game they booked and splits the cost, your share shows up here.",
+  "inAll": " in all",
+  "extrasFor": "Extras · {note}",
+  "@extrasFor": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "collectedSoFar": "{collected} collected · {outstanding} still to come",
+  "@collectedSoFar": {
+    "placeholders": {
+      "collected": {
+        "type": "String"
+      },
+      "outstanding": {
+        "type": "String"
+      }
+    }
+  },
+  "shareOnceResult": "Your share is worked out once {name} records the result.",
+  "@shareOnceResult": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharePaid": "Paid. {name} has your {amount}.",
+  "@sharePaid": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "youOwe": "You owe {name} {amount}",
+  "@youOwe": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "payThemOn": "Pay them on eSewa or Khalti: {phone}. They tick you off once it's in.",
+  "@payThemOn": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "paidName": "Paid: {name}",
+  "@paidName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "markPaidName": "Mark paid: {name}",
+  "@markPaidName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moveToOtherSide": "Move {name} to the other side",
+  "@moveToOtherSide": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeName": "Remove {name}",
+  "@removeName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "payTo": "Pay to {phone}",
+  "@payTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "full": "Full",
+  "postOpen": "Open",
+  "postCalledOff": "Called off",
+  "postOver": "Over",
+  "playersWanted": "Players wanted",
+  "opponentWanted": "Opponent wanted",
+  "placeToBeAgreed": "Place to be agreed",
+  "games_": "Games",
+  "gamesIntro": "Short of players, or looking for a team to play? Post it, or join one.",
+  "postAGame": "Post a game",
+  "openGames": "Open games",
+  "yours": "Yours",
+  "all": "All",
+  "anyDay": "Any day",
+  "noPostedGames": "You haven't posted or joined a game",
+  "noOpenGames": "No open games",
+  "noGamesBody": "Post one, and players nearby can ask to join.",
+  "yourPost": "Your post",
+  "youAskedToJoin": "You asked to join",
+  "youreIn": "You're in",
+  "notThisTime": "Not this time",
+  "youWithdrew": "You withdrew",
+  "game": "Game",
+  "noLongerTakingPlayers": "This game is no longer taking players.",
+  "askingToJoin": "Asking to join",
+  "noOneYet": "No one yet. You're told when someone asks.",
+  "forTeamBefore": "For ",
+  "forTeamAfter": "",
+  "accept": "Accept",
+  "decline": "Decline",
+  "accepted": "Accepted",
+  "declined": "Declined",
+  "withdrew": "Withdrew",
+  "callGameOff": "Call the game off",
+  "youreInExclaim": "You're in!",
+  "withdraw": "Withdraw",
+  "playThemWithTeam": "Play them with your team",
+  "askToJoin": "Ask to join",
+  "needCaptainToTakeOn": "You need to captain a team to take this on.",
+  "yourTeam": "Your team",
+  "joinMessageHint": "e.g. Can play in goal",
+  "askingEllipsis": "Asking…",
+  "theySeeProfile": "They see your player profile.",
+  "editIt": "Edit it",
+  "sayWhereWhen": "Say where (a venue or a city) and when, or pick one of your bookings.",
+  "whatDoYouNeed": "What do you need?",
+  "needPlayersOption": "Players",
+  "needPlayersDetail": "We're short for a game",
+  "needOpponentOption": "An opponent",
+  "needOpponentDetail": "Our team wants a match",
+  "needCaptainForOpponent": "You need to captain a team to find an opponent.",
+  "whereAndWhen": "Where and when",
+  "notBookedYet": "Not booked yet",
+  "notDecidedCity": "Not decided: just a city",
+  "city": "City",
+  "cityHint": "Kathmandu",
+  "when": "When",
+  "pickDayTime": "Pick a day and time",
+  "playersNeeded": "Players needed",
+  "eachPays": "Each pays",
+  "level": "Level",
+  "note": "Note",
+  "postNoteHint": "e.g. Friendly game, need a keeper",
+  "postIt": "Post it",
+  "posting": "Posting…",
+  "teamWantsGame": "{team} want a game",
+  "@teamWantsGame": {
+    "placeholders": {
+      "team": {
+        "type": "String"
+      }
+    }
+  },
+  "playersNeededCount": "{count, plural, =1{1 player needed} other{{count} players needed}}",
+  "@playersNeededCount": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "yourPostAsking": "Your post · {count} asking to join",
+  "@yourPostAsking": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "seeVenue": "See {venue}",
+  "@seeVenue": {
+    "placeholders": {
+      "venue": {
+        "type": "String"
+      }
+    }
+  },
+  "callOrMessage": "Call or message {name} on {phone}.",
+  "@callOrMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "pickedSomeoneElse": "{name} picked someone else this time.",
+  "@pickedSomeoneElse": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "askedToJoinDecides": "You asked to join. {name} decides, and you're told.",
+  "@askedToJoinDecides": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "giveTeamName": "Give the team a name.",
+  "teams": "Teams",
+  "invitations": "Invitations",
+  "join": "Join",
+  "yourTeams": "Your teams",
+  "newTeam": "New team",
+  "createTeam": "Create team",
+  "creating": "Creating…",
+  "youllBeCaptain": "You'll be the captain, and can invite players by phone.",
+  "notInTeam": "You're not in a team yet. Start one, or ask a captain to invite you.",
+  "findATeam": "Find a team",
+  "teamName": "Team name",
+  "search": "Search",
+  "noPublicTeams": "No public teams found.",
+  "enterTheirMobile": "Enter their 10-digit mobile number.",
+  "team": "Team",
+  "squad": "Squad",
+  "invited": "Invited",
+  "inviteAPlayer": "Invite a player",
+  "inviteHelp": "By the phone number they use FutSlot with. They're told and can join.",
+  "invite": "Invite",
+  "leaveNeedsNewCaptain": "To leave, make someone else captain first.",
+  "cancelInvite": "Cancel invite",
+  "profileIntro": "Shown to captains and players when you ask to join a game or a team.",
+  "position": "Position",
+  "strongerFoot": "Stronger foot",
+  "aboutYou": "About you",
+  "aboutYouHint": "e.g. Quick on the wing, play most Friday evenings",
+  "profilePublic": "Let other players see my profile",
+  "invitedToJoin": "You're invited to join {team}.",
+  "@invitedToJoin": {
+    "placeholders": {
+      "team": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveTeam": "Leave {team}",
+  "@leaveTeam": {
+    "placeholders": {
+      "team": {
+        "type": "String"
+      }
+    }
+  },
+  "changeMember": "Change {name}",
+  "@changeMember": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "makeRole": "Make {role}",
+  "@makeRole": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "gamesPlayedOnFutSlot": "{games} played on FutSlot",
+  "@gamesPlayedOnFutSlot": {
+    "placeholders": {
+      "games": {
+        "type": "String"
+      }
+    }
+  },
+  "tournaments": "Tournaments",
+  "comingUp": "Coming up",
+  "finished": "Finished",
+  "yourTeamsTab": "Your teams",
+  "noTournamentsComingUp": "No tournaments coming up",
+  "noFinishedTournaments": "No finished tournaments yet",
+  "checkBackSoon": "Check back soon.",
+  "finishedTournamentsShow": "Finished tournaments and their winners show here.",
+  "teamsNotEntered": "Your teams haven't entered a tournament yet",
+  "teamsNotEnteredBody": "A team's captain or vice-captain enters it from the tournament's page.",
+  "freeToEnter": "Free to enter",
+  "vs": "vs",
+  "venueCouldntFindPayment": "The venue couldn't find this payment.",
+  "tournament": "Tournament",
+  "format": "Format",
+  "entry": "Entry",
+  "teamsFact": "Teams",
+  "squads": "Squads",
+  "prizes": "Prizes",
+  "rules": "Rules",
+  "table": "Table",
+  "fixtures": "Fixtures",
+  "teamsIn": "Teams in",
+  "venueChecksPlace": "The venue checks it and confirms your place.",
+  "enterATeam": "Enter a team",
+  "enterYourTeam": "Enter your team",
+  "onlyCaptainCanEnter": "Only a team's captain or vice-captain can enter it.",
+  "onlyActiveMembers": "Only active team members can play. Invite more from the team's page.",
+  "enter": "Enter",
+  "entering": "Entering…",
+  "shirtNo": "No.",
+  "colTeam": "Team",
+  "colPlayed": "P",
+  "colWon": "W",
+  "colDrawn": "D",
+  "colLost": "L",
+  "colGoalDiff": "GD",
+  "colPoints": "Pts",
+  "toBeDecided": "To be decided",
+  "walkover": "Walkover",
+  "penalties": " ({home}–{away} pens)",
+  "@penalties": {
+    "placeholders": {
+      "home": {
+        "type": "String"
+      },
+      "away": {
+        "type": "String"
+      }
+    }
+  },
+  "perTeam": "{amount} a team",
+  "@perTeam": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "teamsOfMax": "{count}/{max} teams",
+  "@teamsOfMax": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "groupName": "Group {group}",
+  "@groupName": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "championWon": "{team} won",
+  "@championWon": {
+    "placeholders": {
+      "team": {
+        "type": "String"
+      }
+    }
+  },
+  "teamsOf": "{count} of {max}",
+  "@teamsOf": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "squadSize": "{min}–{max} players",
+  "@squadSize": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "venueCheckingPlace": "{venue} is checking it, and we'll let you know when your place is confirmed.",
+  "@venueCheckingPlace": {
+    "placeholders": {
+      "venue": {
+        "type": "String"
+      }
+    }
+  },
+  "lastPaymentRejected": "Your last payment wasn't accepted: {reason}",
+  "@lastPaymentRejected": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "payAmountTo": "Pay {amount} to {venue}",
+  "@payAmountTo": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "venue": {
+        "type": "String"
+      }
+    }
+  },
+  "entriesClose": "Entries close {date}.",
+  "@entriesClose": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "squadCount": "Squad ({count} of {min}–{max})",
+  "@squadCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "enterThenPay": "Enter, then pay {amount}",
+  "@enterThenPay": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "shirtNumberFor": "Shirt number for {name}",
+  "@shirtNumberFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pickAtLeastPlayers": "Pick at least {count} players.",
+  "@pickAtLeastPlayers": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "amenityParking": "Parking",
+  "amenityChangingRoom": "Changing room",
+  "amenityShower": "Shower",
+  "amenityDrinkingWater": "Drinking water",
+  "amenityCafe": "Cafe / canteen",
+  "amenityFloodlights": "Floodlights",
+  "amenityWifi": "Wi-Fi",
+  "amenityFirstAid": "First aid",
+  "amenityEquipmentRental": "Equipment rental",
+  "amenitySpectatorSeating": "Spectator seating"
+}

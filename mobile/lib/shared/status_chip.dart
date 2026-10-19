@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/theme.dart';
+import '../l10n/l10n.dart';
 import 'booking_model.dart';
 
 /// A state's colour, always with its icon and words (colour alone isn't enough).
@@ -11,13 +12,13 @@ class StatusChip extends StatelessWidget {
   final ChipState state;
 
   static String label(ChipState state) => switch (state) {
-        ChipState.confirmed => 'Confirmed',
-        ChipState.held => 'Waiting for payment',
-        ChipState.verify => 'Payment being checked',
-        ChipState.completed => 'Played',
-        ChipState.noshow => 'No-show',
-        ChipState.cancelled => 'Cancelled',
-        ChipState.expired => 'Not paid in time',
+        ChipState.confirmed => l.chipConfirmed,
+        ChipState.held => l.chipHeld,
+        ChipState.verify => l.chipVerify,
+        ChipState.completed => l.chipCompleted,
+        ChipState.noshow => l.chipNoShow,
+        ChipState.cancelled => l.chipCancelled,
+        ChipState.expired => l.chipExpired,
       };
 
   static IconData icon(ChipState state) => switch (state) {

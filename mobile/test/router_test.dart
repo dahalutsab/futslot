@@ -6,6 +6,7 @@ import 'package:futslot/app.dart';
 import 'package:futslot/core/api.dart';
 import 'package:futslot/core/session.dart';
 import 'package:futslot/core/theme.dart';
+import 'package:futslot/l10n/l10n.dart';
 import 'package:futslot/router.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,8 +25,8 @@ const _emptyPage = {'content': <Object>[], 'page': 0, 'size': 20, 'totalElements
       _ => (200, <Object>[]),
     };
 
-Future<ProviderContainer> _app(WidgetTester tester, {StoredSession? signedIn}) async {
-  SharedPreferences.setMockInitialValues({});
+Future<ProviderContainer> _app(WidgetTester tester, {StoredSession? signedIn, String? language}) async {
+  SharedPreferences.setMockInitialValues({'futslot.language': ?language});
   final preferences = await SharedPreferences.getInstance();
   final container = ProviderContainer(overrides: [
     preferencesProvider.overrideWithValue(preferences),
@@ -125,5 +126,19 @@ void main() {
     expect(safeNext('//evil.example'), isNull);
     expect(safeNext('https://evil.example'), isNull);
     expect(safeNext(null), isNull);
+  });
+
+  testWidgets('the whole app switches language at once', (tester) async {
+    final container = await _app(tester, language: 'ne');
+    expect(find.text('फुटसल कोर्ट बुक गर्नुहोस्'), findsOneWidget);
+    expect(find.text('बुकिङ'), findsOneWidget);
+
+    await tester.tap(find.text('English'));
+    await _settle(tester);
+    expect(find.text('Book a futsal court'), findsOneWidget);
+    expect(find.text('Bookings'), findsOneWidget);
+    expect(container.read(preferencesProvider).getString('futslot.language'), 'en');
+    useLanguage(AppLanguage.en);
+    await _close(tester, container);
   });
 }

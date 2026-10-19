@@ -6,6 +6,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/widgets.dart';
 
@@ -64,12 +65,12 @@ class _WaitlistScreenState extends ConsumerState<WaitlistScreen> {
     final c = context.fs;
     final entries = _entries;
     return Scaffold(
-      appBar: AppBar(title: const Text('Waitlist')),
+      appBar: AppBar(title: Text(l.waitlist)),
       body: ScreenBody(
         onRefresh: _load,
         children: [
           Text(
-            'Slots you want that someone else booked. If one frees up we tell you, and whoever books it first gets it.',
+            l.waitlistIntro,
             style: TextStyle(color: c.muted),
           ),
           if (_error case final error?) ...[const SizedBox(height: 16), Notice(error)],
@@ -77,9 +78,9 @@ class _WaitlistScreenState extends ConsumerState<WaitlistScreen> {
           if (entries == null)
             if (_error == null) const Skeleton(height: 128) else const SizedBox.shrink()
           else if (entries.isEmpty)
-            const EmptyPanel(
-              title: "You're not waiting for any slot",
-              body: "On a venue's page, tap a booked slot to wait for it.",
+            EmptyPanel(
+              title: l.notWaiting,
+              body: l.notWaitingBody,
             )
           else
             for (final entry in entries)
@@ -100,14 +101,15 @@ class _WaitlistScreenState extends ConsumerState<WaitlistScreen> {
                             children: [
                               Text(entry.venueName, style: const TextStyle(fontWeight: FontWeight.w500)),
                               Text(
-                                '${dayLabel(entry.startsAt.substring(0, 10))} · ${localClock(entry.startsAt)} – '
-                                '${localClock(entry.endsAt)} · ${entry.courtName}',
+                                '${dayLabel(entry.startsAt.substring(0, 10))} · '
+                                '${l.timeRange(localClock(entry.startsAt), localClock(entry.endsAt))} · '
+                                '${entry.courtName}',
                                 style: TextStyle(fontSize: 14, color: c.muted, fontFeatures: tabular),
                               ),
                               if (entry.status == WaitlistStatus.notified) ...[
                                 const SizedBox(height: 8),
                                 Text(
-                                  'It freed up. Book it before someone else does.',
+                                  l.itFreedUp,
                                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: c.confirmed.fg),
                                 ),
                               ],
@@ -118,7 +120,7 @@ class _WaitlistScreenState extends ConsumerState<WaitlistScreen> {
                       TextButton(
                         onPressed: () => _leave(entry),
                         style: TextButton.styleFrom(foregroundColor: c.muted),
-                        child: const Text('Stop waiting', style: TextStyle(fontSize: 14)),
+                        child: Text(l.stopWaiting, style: const TextStyle(fontSize: 14)),
                       ),
                     ],
                   ),

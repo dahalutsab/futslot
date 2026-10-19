@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/badges.dart';
 import '../core/theme.dart';
+import '../l10n/l10n.dart';
 
 /// The bottom bar: Explore, Bookings, Play, Messages, Me. Each tab keeps its own back stack.
 class Shell extends ConsumerWidget {
@@ -24,9 +25,9 @@ class Shell extends ConsumerWidget {
           // Tapping the open tab again goes back to its first screen
           onDestinationSelected: (index) => shell.goBranch(index, initialLocation: index == shell.currentIndex),
           destinations: [
-            const NavigationDestination(icon: Icon(LucideIcons.compass), label: 'Explore'),
-            const NavigationDestination(icon: Icon(LucideIcons.calendarDays), label: 'Bookings'),
-            const NavigationDestination(icon: Icon(LucideIcons.trophy), label: 'Play'),
+            NavigationDestination(icon: const Icon(LucideIcons.compass), label: l.tabExplore),
+            NavigationDestination(icon: const Icon(LucideIcons.calendarDays), label: l.tabBookings),
+            NavigationDestination(icon: const Icon(LucideIcons.trophy), label: l.tabPlay),
             NavigationDestination(
               // The tooltip says the count, so the badge isn't read out as well
               icon: ExcludeSemantics(
@@ -34,14 +35,14 @@ class Shell extends ConsumerWidget {
                   isLabelVisible: unread > 0,
                   backgroundColor: context.fs.ink,
                   textColor: context.fs.inkFg,
-                  label: Text('$unread', style: const TextStyle(fontFeatures: tabular)),
+                  label: Text(digits(unread), style: const TextStyle(fontFeatures: tabular)),
                   child: const Icon(LucideIcons.messageSquare),
                 ),
               ),
-              label: 'Messages',
-              tooltip: unread > 0 ? 'Messages, $unread unread' : 'Messages',
+              label: l.tabMessages,
+              tooltip: unread > 0 ? l.messagesUnread(unread) : l.tabMessages,
             ),
-            const NavigationDestination(icon: Icon(LucideIcons.userRound), label: 'Me'),
+            NavigationDestination(icon: const Icon(LucideIcons.userRound), label: l.tabMe),
           ],
         ),
       ),

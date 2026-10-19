@@ -8,6 +8,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/labels.dart';
 import '../../shared/widgets.dart';
@@ -131,7 +132,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     final city = _city.text.trim();
     final when = _when;
     if (bookingId == null && (when == null || (venueId == null && city.isEmpty))) {
-      setState(() => _error = 'Say where (a venue or a city) and when, or pick one of your bookings.');
+      setState(() => _error = l.sayWhereWhen);
       return;
     }
     final needPlayers = _type == MatchPostType.needPlayers;
@@ -174,10 +175,10 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     final text = Theme.of(context).textTheme;
     final when = _when;
     return Scaffold(
-      appBar: AppBar(title: const Text('Post a game')),
+      appBar: AppBar(title: Text(l.postAGame)),
       body: ScreenBody(
         children: [
-          Text('What do you need?', style: text.titleMedium),
+          Text(l.whatDoYouNeed, style: text.titleMedium),
           const SizedBox(height: 8),
           // Side by side at the same height, like the web's grid
           IntrinsicHeight(
@@ -185,8 +186,8 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 for (final (i, (type, label, detail)) in [
-                  (MatchPostType.needPlayers, 'Players', "We're short for a game"),
-                  (MatchPostType.findOpponent, 'An opponent', 'Our team wants a match'),
+                  (MatchPostType.needPlayers, l.needPlayersOption, l.needPlayersDetail),
+                  (MatchPostType.findOpponent, l.needOpponentOption, l.needOpponentDetail),
                 ].indexed) ...[
                   if (i > 0) const SizedBox(width: 8),
                   Expanded(
@@ -216,7 +217,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        'You need to captain a team to find an opponent.',
+                        l.needCaptainForOpponent,
                         style: TextStyle(color: c.held.fg),
                       ),
                     ),
@@ -225,7 +226,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                 ),
               )
             else ...[
-              const FieldLabel('Your team'),
+              FieldLabel(l.yourTeam),
               DropdownButtonFormField<String>(
                 initialValue: _teamId,
                 items: [for (final team in _teams) DropdownMenuItem(value: team.id, child: Text(team.name))],
@@ -234,7 +235,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             ],
           ],
           const SizedBox(height: 20),
-          Text('Where and when', style: text.titleMedium),
+          Text(l.whereAndWhen, style: text.titleMedium),
           const SizedBox(height: 8),
           if (_bookings.isNotEmpty) ...[
             for (final b in _bookings)
@@ -255,17 +256,17 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             ChoiceTile(
               selected: _bookingId == null,
               onTap: () => setState(() => _bookingId = null),
-              child: const Text('Not booked yet', style: TextStyle(fontWeight: FontWeight.w500)),
+              child: Text(l.notBookedYet, style: const TextStyle(fontWeight: FontWeight.w500)),
             ),
           ],
           if (_bookingId == null) ...[
             const SizedBox(height: 4),
-            const FieldLabel('Venue', optional: true),
+            FieldLabel(l.venue, optional: true),
             DropdownButtonFormField<String?>(
               initialValue: _venueId,
               isExpanded: true,
               items: [
-                const DropdownMenuItem(value: null, child: Text('Not decided: just a city')),
+                DropdownMenuItem(value: null, child: Text(l.notDecidedCity)),
                 for (final v in _venues)
                   DropdownMenuItem(value: v.id, child: Text('${v.name}, ${v.city}', overflow: TextOverflow.ellipsis)),
               ],
@@ -273,23 +274,23 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             ),
             if (_venueId == null) ...[
               const SizedBox(height: 12),
-              const FieldLabel('City'),
+              FieldLabel(l.city),
               TextField(
                 controller: _city,
                 maxLength: 60,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(hintText: 'Kathmandu', counterText: ''),
+                decoration: InputDecoration(hintText: l.cityHint, counterText: ''),
               ),
             ],
             const SizedBox(height: 12),
-            const FieldLabel('When'),
+            FieldLabel(l.when),
             OutlinedButton.icon(
               onPressed: _pickWhen,
               style: OutlinedButton.styleFrom(alignment: Alignment.centerLeft, minimumSize: const Size.fromHeight(48)),
               icon: const Icon(LucideIcons.calendarDays, size: 18),
               label: Text(
                 when == null
-                    ? 'Pick a day and time'
+                    ? l.pickDayTime
                     : '${dayLabel(_startsAt(when).substring(0, 10))} · ${clock(when.hour * 60 + when.minute)}',
                 style: const TextStyle(fontFeatures: tabular),
               ),
@@ -304,7 +305,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const FieldLabel('Players needed'),
+                      FieldLabel(l.playersNeeded),
                       TextField(
                         controller: _needed,
                         keyboardType: TextInputType.number,
@@ -319,13 +320,13 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const FieldLabel('Each pays', optional: true),
+                      FieldLabel(l.eachPays, optional: true),
                       TextField(
                         controller: _cost,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
                         style: const TextStyle(fontFeatures: tabular),
-                        decoration: const InputDecoration(prefixText: 'Rs '),
+                        decoration: InputDecoration(prefixText: inNepali ? 'रु ' : 'Rs '),
                       ),
                     ],
                   ),
@@ -335,27 +336,27 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
           ],
           const SizedBox(height: 20),
           PillChoices(
-            label: 'Level',
+            label: l.level,
             optional: true,
             options: [for (final s in SkillLevel.values) (s, s.label)],
             value: _skill,
             onChanged: (s) => setState(() => _skill = s),
           ),
-          const FieldLabel('Note', optional: true),
+          FieldLabel(l.note, optional: true),
           TextField(
             controller: _note,
             maxLength: 500,
             minLines: 2,
             maxLines: 4,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(hintText: 'e.g. Friendly game, need a keeper', counterText: ''),
+            decoration: InputDecoration(hintText: l.postNoteHint, counterText: ''),
           ),
           if (_error case final error?) ...[const SizedBox(height: 16), Notice(error)],
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _busy || !_canPost ? null : _post,
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-            child: BusyLabel(busy: _busy, label: 'Post it', busyLabel: 'Posting…'),
+            child: BusyLabel(busy: _busy, label: l.postIt, busyLabel: l.posting),
           ),
         ],
       ),

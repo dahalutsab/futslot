@@ -6,6 +6,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/review_form.dart';
 import '../../shared/widgets.dart';
@@ -61,14 +62,14 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
     final text = Theme.of(context).textTheme;
     final mine = _mine;
     return Scaffold(
-      appBar: AppBar(title: const Text('Reviews')),
+      appBar: AppBar(title: Text(l.reviewsTitle)),
       body: ScreenBody(
         onRefresh: _load,
         children: [
           if (_error case final error?) ...[Notice(error), const SizedBox(height: 16)],
           if (_toReview.isNotEmpty) ...[
-            Text('How was your game?', style: text.titleMedium),
-            Text('You can review a game for 30 days after playing it.', style: TextStyle(fontSize: 14, color: c.muted)),
+            Text(l.howWasYourGame, style: text.titleMedium),
+            Text(l.reviewWindow, style: TextStyle(fontSize: 14, color: c.muted)),
             const SizedBox(height: 12),
             for (final booking in _toReview)
               Padding(
@@ -95,7 +96,7 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
                               ],
                             ),
                           ),
-                          const Text('Review', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                          Text(l.review, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
@@ -104,12 +105,12 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
               ),
             const SizedBox(height: 24),
           ],
-          Text('Your reviews', style: text.titleMedium),
+          Text(l.yourReviews, style: text.titleMedium),
           const SizedBox(height: 8),
           if (mine == null)
             if (_error == null) const Skeleton(height: 128) else const SizedBox.shrink()
           else if (mine.isEmpty)
-            Text("You haven't reviewed a venue yet.", style: TextStyle(color: c.muted))
+            Text(l.noReviewsWritten, style: TextStyle(color: c.muted))
           else
             for (final review in mine)
               Padding(
@@ -128,7 +129,7 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
                       if (review.status != ReviewStatus.published) ...[
                         const SizedBox(height: 8),
                         Text(
-                          review.status == ReviewStatus.hidden ? 'Hidden by FutSlot while it checks it' : 'Removed by FutSlot',
+                          review.status == ReviewStatus.hidden ? l.reviewHidden : l.reviewRemoved,
                           style: TextStyle(fontSize: 14, color: c.noshow.fg),
                         ),
                       ],
@@ -141,7 +142,7 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('${review.venueName} replied',
+                              Text(l.venueReplied(review.venueName),
                                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                               Text(reply, style: TextStyle(fontSize: 14, color: c.muted)),
                             ],
@@ -151,12 +152,12 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Text('Played ${dayLabel(review.playedOn)}', style: TextStyle(fontSize: 14, color: c.subtle)),
+                          Text(l.playedOn(dayLabel(review.playedOn)), style: TextStyle(fontSize: 14, color: c.subtle)),
                           if (review.bookingId case final bookingId? when review.status != ReviewStatus.removed) ...[
                             const SizedBox(width: 8),
                             TextButton(
                               onPressed: () => _openBooking(bookingId),
-                              child: const Text('Edit', style: TextStyle(fontSize: 14)),
+                              child: Text(l.edit, style: const TextStyle(fontSize: 14)),
                             ),
                           ],
                         ],

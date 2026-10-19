@@ -9,6 +9,7 @@ import '../../core/api_types.dart';
 import '../../core/config.dart';
 import '../../core/session.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/labels.dart';
 import '../../shared/notification_bell.dart';
@@ -91,7 +92,7 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
   Widget build(BuildContext context) {
     final signedIn = ref.watch(sessionProvider) != null;
     return Scaffold(
-      appBar: AppBar(title: const Text('Tournaments'), actions: const [NotificationBell()]),
+      appBar: AppBar(title: Text(l.tournaments), actions: const [NotificationBell()]),
       body: ScreenBody(
         maxWidth: 768,
         onRefresh: _load,
@@ -99,9 +100,9 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
           if (signedIn) ...[const PlayNav(current: '/tournaments'), const SizedBox(height: 16)],
           Segmented(
             options: [
-              (_Tab.upcoming, 'Coming up'),
-              (_Tab.past, 'Finished'),
-              if (signedIn) (_Tab.mine, 'Your teams'),
+              (_Tab.upcoming, l.comingUp),
+              (_Tab.past, l.finished),
+              if (signedIn) (_Tab.mine, l.yourTeamsTab),
             ],
             value: _tab,
             onChanged: _show,
@@ -114,8 +115,8 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
           else if (_list case final list?)
             if (list.isEmpty)
               EmptyPanel(
-                title: _tab == _Tab.upcoming ? 'No tournaments coming up' : 'No finished tournaments yet',
-                body: _tab == _Tab.upcoming ? 'Check back soon.' : 'Finished tournaments and their winners show here.',
+                title: _tab == _Tab.upcoming ? l.noTournamentsComingUp : l.noFinishedTournaments,
+                body: _tab == _Tab.upcoming ? l.checkBackSoon : l.finishedTournamentsShow,
               )
             else
               for (final t in list)
@@ -137,12 +138,7 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
       return const [Skeleton(height: 96)];
     }
     if (entries.isEmpty) {
-      return const [
-        EmptyPanel(
-          title: "Your teams haven't entered a tournament yet",
-          body: "A team's captain or vice-captain enters it from the tournament's page.",
-        ),
-      ];
+      return [EmptyPanel(title: l.teamsNotEntered, body: l.teamsNotEnteredBody)];
     }
     return [
       for (final e in entries)
@@ -233,8 +229,8 @@ class _TournamentCard extends StatelessWidget {
                   ),
                   Text(
                     [
-                      t.entryFee > 0 ? '${rupees(t.entryFee)} a team' : 'Free to enter',
-                      '${t.teamsIn}/${t.maxTeams} teams',
+                      t.entryFee > 0 ? l.perTeam(rupees(t.entryFee)) : l.freeToEnter,
+                      l.teamsOfMax(digits(t.teamsIn), digits(t.maxTeams)),
                     ].join(' · '),
                     style: TextStyle(fontSize: 14, color: c.muted, fontFeatures: tabular),
                   ),

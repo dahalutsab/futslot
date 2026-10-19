@@ -6,6 +6,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/player_card.dart';
 import '../../shared/widgets.dart';
@@ -105,7 +106,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
   Widget build(BuildContext context) {
     final post = _post;
     return Scaffold(
-      appBar: AppBar(title: const Text('Game')),
+      appBar: AppBar(title: Text(l.game)),
       body: switch ((post, _error)) {
         (null, final String error) => ScreenBody(children: [ErrorPanel(message: error, onRetry: _load)]),
         (final MatchPost p, _) => ScreenBody(onRefresh: _load, children: _body(context, p)),
@@ -129,7 +130,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               TextButton(
                 onPressed: () => context.push('/venues/${venue.slug}'),
                 style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                child: Text('See ${venue.name}', style: const TextStyle(fontSize: 14)),
+                child: Text(l.seeVenue(venue.name), style: const TextStyle(fontSize: 14)),
               ),
             ],
           ],
@@ -144,7 +145,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       else if (p.status == MatchPostStatus.open)
         _ask(context, p)
       else
-        Text('This game is no longer taking players.', style: TextStyle(color: c.muted)),
+        Text(l.noLongerTakingPlayers, style: TextStyle(color: c.muted)),
     ];
   }
 
@@ -152,8 +153,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
   List<Widget> _requests(BuildContext context, MatchPost p) {
     final c = context.fs;
     return [
-      const SectionTitle('Asking to join'),
-      if (p.requests.isEmpty) Text("No one yet. You're told when someone asks.", style: TextStyle(color: c.muted)),
+      SectionTitle(l.askingToJoin),
+      if (p.requests.isEmpty) Text(l.noOneYet, style: TextStyle(color: c.muted)),
       for (final r in p.requests)
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
@@ -168,8 +169,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     onTap: () => context.push('/teams/${team.slug}'),
                     child: Text.rich(
                       TextSpan(
-                        text: 'For ',
-                        children: [TextSpan(text: team.name, style: const TextStyle(fontWeight: FontWeight.w500))],
+                        text: l.forTeamBefore,
+                        children: [
+                          TextSpan(text: team.name, style: const TextStyle(fontWeight: FontWeight.w500)),
+                          TextSpan(text: l.forTeamAfter),
+                        ],
                       ),
                       style: const TextStyle(fontSize: 14),
                     ),
@@ -190,13 +194,13 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     children: [
                       FilledButton(
                         onPressed: _busy ? null : () => _act((post) => _api.answerRequest(post.id, r.id, true)),
-                        child: const Text('Accept'),
+                        child: Text(l.accept),
                       ),
                       const SizedBox(width: 8),
                       TextButton(
                         onPressed: _busy ? null : () => _act((post) => _api.answerRequest(post.id, r.id, false)),
                         style: TextButton.styleFrom(foregroundColor: c.muted),
-                        child: const Text('Decline'),
+                        child: Text(l.decline),
                       ),
                     ],
                   )
@@ -204,10 +208,10 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   Text(
                     [
                       switch (r.status) {
-                        JoinRequestStatus.accepted => 'Accepted',
-                        JoinRequestStatus.declined => 'Declined',
-                        JoinRequestStatus.withdrawn => 'Withdrew',
-                        JoinRequestStatus.pending => 'Waiting',
+                        JoinRequestStatus.accepted => l.accepted,
+                        JoinRequestStatus.declined => l.declined,
+                        JoinRequestStatus.withdrawn => l.withdrew,
+                        JoinRequestStatus.pending => l.waiting,
                       },
                       if (r.phone case final number?) phone(number),
                     ].join(' · '),
@@ -228,7 +232,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
           child: TextButton(
             onPressed: _busy ? null : () => _act((post) => _api.cancelMatchPost(post.id)),
             style: TextButton.styleFrom(foregroundColor: c.danger),
-            child: const Text('Call the game off'),
+            child: Text(l.callGameOff),
           ),
         ),
       ],
@@ -247,25 +251,25 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         JoinRequestStatus.accepted => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("You're in!", style: TextStyle(fontWeight: FontWeight.w600, color: c.confirmed.fg)),
+              Text(l.youreInExclaim, style: TextStyle(fontWeight: FontWeight.w600, color: c.confirmed.fg)),
               if (p.contactPhone case final number?) ...[
                 const SizedBox(height: 4),
                 Text(
-                  'Call or message ${p.postedByName} on ${phone(number)}.',
+                  l.callOrMessage(p.postedByName, phone(number)),
                   style: TextStyle(color: c.confirmed.fg, fontFeatures: tabular),
                 ),
               ],
             ],
           ),
-        JoinRequestStatus.declined => Text('${p.postedByName} picked someone else this time.'),
+        JoinRequestStatus.declined => Text(l.pickedSomeoneElse(p.postedByName)),
         _ => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("You asked to join. ${p.postedByName} decides, and you're told."),
+              Text(l.askedToJoinDecides(p.postedByName)),
               const SizedBox(height: 12),
               OutlinedButton(
                 onPressed: _busy ? null : () => _act((post) => _api.withdrawRequest(post.id)),
-                child: const Text('Withdraw'),
+                child: Text(l.withdraw),
               ),
             ],
           ),
@@ -282,17 +286,17 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(opponent ? 'Play them with your team' : 'Ask to join', style: Theme.of(context).textTheme.titleMedium),
+          Text(opponent ? l.playThemWithTeam : l.askToJoin, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           if (opponent && _teams.isEmpty) ...[
-            Text('You need to captain a team to take this on.', style: TextStyle(color: c.muted)),
+            Text(l.needCaptainToTakeOn, style: TextStyle(color: c.muted)),
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton(onPressed: () => context.go('/teams'), child: const Text('Start a team')),
             ),
           ] else ...[
             if (opponent) ...[
-              const FieldLabel('Your team'),
+              FieldLabel(l.yourTeam),
               DropdownButtonFormField<String>(
                 initialValue: _teamId,
                 items: [for (final team in _teams) DropdownMenuItem(value: team.id, child: Text(team.name))],
@@ -300,12 +304,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               ),
               const SizedBox(height: 12),
             ],
-            const FieldLabel('Message', optional: true),
+            FieldLabel(l.message, optional: true),
             TextField(
               controller: _message,
               maxLength: 300,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(hintText: 'e.g. Can play in goal', counterText: ''),
+              decoration: InputDecoration(hintText: l.joinMessageHint, counterText: ''),
             ),
             const SizedBox(height: 12),
             Align(
@@ -318,14 +322,14 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           message: _message.text.trim().isEmpty ? null : _message.text.trim(),
                           teamId: opponent ? _teamId : null,
                         )),
-                child: BusyLabel(busy: _busy, label: 'Ask to join', busyLabel: 'Asking…'),
+                child: BusyLabel(busy: _busy, label: l.askToJoin, busyLabel: l.askingEllipsis),
               ),
             ),
             const SizedBox(height: 4),
             Row(
               children: [
-                Text('They see your player profile.', style: TextStyle(fontSize: 14, color: c.subtle)),
-                TextButton(onPressed: () => context.push('/me/profile'), child: const Text('Edit it')),
+                Text(l.theySeeProfile, style: TextStyle(fontSize: 14, color: c.subtle)),
+                TextButton(onPressed: () => context.push('/me/profile'), child: Text(l.editIt)),
               ],
             ),
           ],

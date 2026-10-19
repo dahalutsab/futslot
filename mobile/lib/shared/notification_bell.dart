@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../core/badges.dart';
 import '../core/session.dart';
 import '../core/theme.dart';
+import '../l10n/l10n.dart';
 
 /// The bell in the top bar of each tab, with how many notifications are unread. Hidden when signed out.
 class NotificationBell extends ConsumerWidget {
@@ -19,7 +20,7 @@ class NotificationBell extends ConsumerWidget {
     final unread = ref.watch(badgesProvider).notifications;
     final c = context.fs;
     return IconButton(
-      tooltip: unread > 0 ? 'Notifications, $unread unread' : 'Notifications',
+      tooltip: unread > 0 ? l.notificationsUnread(unread) : l.notifications,
       onPressed: () => context.push('/notifications'),
       // The tooltip says the count; the badge would read it again as "9+"
       icon: ExcludeSemantics(
@@ -27,7 +28,7 @@ class NotificationBell extends ConsumerWidget {
           isLabelVisible: unread > 0,
           backgroundColor: c.danger,
           textColor: Colors.white,
-          label: Text(unread > 9 ? '9+' : '$unread', style: const TextStyle(fontFeatures: tabular)),
+          label: Text(digits(unread > 9 ? '9+' : '$unread'), style: const TextStyle(fontFeatures: tabular)),
           child: Icon(LucideIcons.bell, size: 22, color: c.muted),
         ),
       ),
