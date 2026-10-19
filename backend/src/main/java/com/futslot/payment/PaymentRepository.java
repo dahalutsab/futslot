@@ -27,6 +27,8 @@ interface PaymentRepository extends JpaRepository<Payment, UUID> {
 
 	List<Payment> findByBookingIdOrderByCreatedAt(UUID bookingId);
 
+	List<Payment> findByEntryIdOrderByCreatedAt(UUID registrationId);
+
 	List<Payment> findByBookingIdAndStatusIn(UUID bookingId, Collection<TransactionStatus> statuses);
 
 	Optional<Payment> findByIdAndVenueId(UUID id, UUID venueId);

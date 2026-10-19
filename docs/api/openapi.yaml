@@ -1114,6 +1114,26 @@ paths:
               schema:
                 $ref: "#/components/schemas/Detail"
   /api/v1/tournament-entries/{registrationId}/payments:
+    get:
+      tags:
+      - payment-controller
+      operationId: entryPayments
+      parameters:
+      - name: registrationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentResponse"
     post:
       tags:
       - payment-controller

@@ -321,6 +321,13 @@ class PaymentService {
 		return summary(this.bookings.forPlayer(userId, bookingId));
 	}
 
+	/** Payments reported for an entry fee, so the team sees one being checked or turned down. */
+	@Transactional(readOnly = true)
+	List<PaymentResponse> forEntry(UUID userId, UUID registrationId) {
+		Registration entry = this.tournaments.entryForPlayer(userId, registrationId);
+		return this.payments.findByEntryIdOrderByCreatedAt(entry.getId()).stream().map(PaymentResponse::from).toList();
+	}
+
 	@Transactional(readOnly = true)
 	BookingPaymentsResponse forVenue(UUID userId, UUID venueId, UUID bookingId) {
 		return summary(this.bookings.forVenue(userId, venueId, bookingId));

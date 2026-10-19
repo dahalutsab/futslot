@@ -53,6 +53,11 @@ class PaymentController {
 		return this.paymentService.buyMembership(CurrentUser.id(jwt), request);
 	}
 
+	@GetMapping("/tournament-entries/{registrationId}/payments")
+	List<PaymentResponse> entryPayments(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID registrationId) {
+		return this.paymentService.forEntry(CurrentUser.id(jwt), registrationId);
+	}
+
 	/** Pay a tournament entry fee to the venue, then report it here. */
 	@PostMapping("/tournament-entries/{registrationId}/payments")
 	@ResponseStatus(HttpStatus.CREATED)

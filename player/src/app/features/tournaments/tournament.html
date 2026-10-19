@@ -47,15 +47,23 @@
         <div class="flex items-start gap-3">
           <div class="min-w-0 flex-1">
             <p class="font-semibold">{{ entry.team.name }}</p>
-            <p class="text-sm" [class]="entry.status === 'CONFIRMED' ? 'text-confirmed-fg' : 'text-muted'">{{ entryStatus[entry.status] }}{{ entry.groupName ? ' · Group ' + entry.groupName : '' }}</p>
+            <p class="text-sm" [class]="entry.status === 'CONFIRMED' ? 'text-confirmed-fg' : 'text-muted'">{{ checking(entry) ? 'Payment being checked' : entryStatus[entry.status] }}{{ entry.groupName ? ' · Group ' + entry.groupName : '' }}</p>
           </div>
           @if (entry.status !== 'REJECTED' && (t.status === 'REGISTRATION_OPEN' || t.status === 'REGISTRATION_CLOSED')) {
             <button type="button" (click)="withdraw(entry)" [disabled]="busy()" class="h-11 rounded-lg px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-danger">Withdraw</button>
           }
         </div>
         <p class="mt-2 text-sm text-muted">Squad: {{ entry.squad.map(squadName).join(', ') }}</p>
-        @if (entry.status === 'PENDING_PAYMENT' && t.entryFee > 0) {
+        @if (entry.status === 'PENDING_PAYMENT' && checking(entry)) {
+          <div class="mt-4 rounded-lg border border-verify-line bg-verify-bg p-4">
+            <p class="flex items-center gap-2 font-semibold text-verify-fg"><lucide-icon [img]="icons.Wallet" [size]="18" /> Payment sent</p>
+            <p class="mt-1 text-verify-fg">{{ t.venue.name }} is checking it, and we'll let you know when your place is confirmed.</p>
+          </div>
+        } @else if (entry.status === 'PENDING_PAYMENT' && t.entryFee > 0) {
           <div class="mt-4">
+            @if (turnedDown(entry); as reason) {
+              <p class="mb-3 rounded-lg bg-danger-bg px-3 py-2 text-sm text-danger" role="status">Your last payment wasn't accepted: {{ reason }}</p>
+            }
             <p class="mb-2 font-medium">Pay {{ fmt.rupees(t.entryFee) }} to {{ t.venue.name }}</p>
             <fs-pay-form [id]="'entry-' + entry.id" [amount]="t.entryFee" [instructions]="paymentInstructions()" [busy]="busy()" [error]="error()"
               label="I've paid" (paidWith)="pay(entry, $event)" />

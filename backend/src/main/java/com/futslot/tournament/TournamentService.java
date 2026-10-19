@@ -284,6 +284,14 @@ public class TournamentService {
 		return registration;
 	}
 
+	/** An entry of a team {@code userId} plays for, to show them how paying its fee is going. */
+	@Transactional(readOnly = true)
+	public Registration entryForPlayer(UUID userId, UUID registrationId) {
+		return this.registrations.findById(registrationId)
+			.filter(found -> this.teams.squad(found.getTeam().getId()).contains(userId))
+			.orElseThrow(TournamentService::registrationNotFound);
+	}
+
 	/** An entry at the venue waiting for its fee, for staff recording it. */
 	@Transactional(readOnly = true)
 	public Registration entryAtVenue(UUID venueId, UUID registrationId) {

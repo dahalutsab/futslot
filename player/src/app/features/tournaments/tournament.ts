@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, Trophy } from 'lucide-angular';
+import { LucideAngularModule, Trophy, Wallet } from 'lucide-angular';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
-import { PaymentClaim, Stage, Team, TournamentDetail, TournamentEntry, TournamentMatch } from '../../core/api.types';
+import { Payment, PaymentClaim, Stage, Team, TournamentDetail, TournamentEntry, TournamentMatch } from '../../core/api.types';
 import { Session } from '../../core/session';
 import { dayLabel, localClock, rupees } from '../../shared/format';
 import { ENTRY_STATUS, FORMAT, STAGE, TOURNAMENT_STATUS } from '../../shared/labels';
@@ -31,7 +31,7 @@ export class TournamentPage {
 
   readonly slug = input.required<string>();
 
-  protected readonly icons = { Trophy };
+  protected readonly icons = { Trophy, Wallet };
 
   protected readonly fmt = { dayLabel, localClock, rupees };
 
@@ -52,6 +52,9 @@ export class TournamentPage {
 
   /** Entries of the player's teams in this tournament, whatever their state. */
   protected readonly mine = signal<TournamentEntry[]>([]);
+
+  /** Fee payments reported for those entries, by entry id. */
+  protected readonly payments = signal<Record<string, Payment[]>>({});
 
   /** Teams the player leads that could enter. */
   protected readonly teams = signal<Team[]>([]);
@@ -161,6 +164,17 @@ export class TournamentPage {
     });
   }
 
+  /** An entry fee payment the venue hasn't checked yet. */
+  protected checking(entry: TournamentEntry): boolean {
+    return this.payments()[entry.id]?.some((p) => p.status === 'PENDING') ?? false;
+  }
+
+  /** Why the venue turned down the last payment, when it did. */
+  protected turnedDown(entry: TournamentEntry): string | null {
+    const last = this.payments()[entry.id]?.at(-1);
+    return last?.status === 'FAILED' ? last.failureReason ?? "The venue couldn't find this payment." : null;
+  }
+
   protected score(match: TournamentMatch): string {
     if (match.homeScore === null || match.awayScore === null) {
       return match.scheduledAt ? localClock(match.scheduledAt) : 'vs';
@@ -201,6 +215,10 @@ export class TournamentPage {
 
   private async loadMine(tournamentId: string): Promise<void> {
     const entries = await this.api.myEntries();
-    this.mine.set(entries.filter((e) => e.tournament.id === tournamentId && e.entry.status !== 'WITHDRAWN').map((e) => e.entry));
+    const mine = entries.filter((e) => e.tournament.id === tournamentId && e.entry.status !== 'WITHDRAWN').map((e) => e.entry);
+    const due = mine.filter((entry) => entry.status === 'PENDING_PAYMENT');
+    const payments = await Promise.all(due.map((entry) => this.api.entryPayments(entry.id)));
+    this.payments.set(Object.fromEntries(due.map((entry, i) => [entry.id, payments[i]])));
+    this.mine.set(mine);
   }
 }
