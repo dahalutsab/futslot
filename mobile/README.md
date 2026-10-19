@@ -20,7 +20,10 @@ Without `API_URL` the app uses `http://10.0.2.2:8080` on the Android emulator (t
 `http://localhost:8080` elsewhere. A phone on your Wi-Fi needs `--dart-define=API_URL=http://<computer's IP>:8080`.
 Plain http only works in debug builds on Android; release builds need https.
 
-Sign in with any phone number; in development the 6-digit code is printed in the API log (`SMS to +977...`).
+Create an account with any phone number (in development the 6-digit code is printed in the API log,
+`SMS to +977...`), then sign in with it and the password. "Continue with Google" shows when the API has a Google
+web client id; on Android it also needs an Android OAuth client for the app id and signing key in the same Google
+Cloud project.
 
 ```bash
 flutter test         # unit and widget tests
@@ -31,7 +34,8 @@ flutter build apk    # release APK in build/app/outputs/flutter-apk
 ## How it's put together
 
 - `lib/core`: the API client (`api.dart`, every call the app makes, with the token refresh on 401), API types,
-  the session (phone + code sign-in, tokens kept in the keychain / keystore), theme tokens.
+  the session (phone + password sign-in, Google, texted codes to sign up or reset; tokens kept in the keychain /
+  keystore), theme tokens.
 - `lib/shared`: booking rules in plain words and the cancel-fee preview (`booking_model.dart`, the same rules
   and test cases as the web app's `booking-model.ts`), formatting, the "I paid" form, venue cards, status chips.
 - `lib/features`: one folder per screen.

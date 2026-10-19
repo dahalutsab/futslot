@@ -30,6 +30,8 @@ class User {
     required this.phone,
     required this.email,
     required this.preferredLanguage,
+    this.passwordSet = true,
+    this.googleLinked = false,
   });
 
   final String id;
@@ -38,12 +40,19 @@ class User {
   final String? email;
   final String preferredLanguage;
 
+  /// False for accounts made before passwords, or with Google, until one is set. A session saved before the API
+  /// said counts as having one.
+  final bool passwordSet;
+  final bool googleLinked;
+
   factory User.fromJson(Json json) => User(
         id: json['id'] as String,
         fullName: json['fullName'] as String,
         phone: json['phone'] as String,
         email: json['email'] as String?,
         preferredLanguage: json['preferredLanguage'] as String? ?? 'en',
+        passwordSet: json['passwordSet'] as bool? ?? true,
+        googleLinked: json['googleLinked'] as bool? ?? false,
       );
 
   Json toJson() => {
@@ -52,6 +61,8 @@ class User {
         'phone': phone,
         'email': email,
         'preferredLanguage': preferredLanguage,
+        'passwordSet': passwordSet,
+        'googleLinked': googleLinked,
       };
 }
 
@@ -67,6 +78,18 @@ class TokenResponse {
         refreshToken: json['refreshToken'] as String,
         user: User.fromJson(json['user'] as Json),
       );
+}
+
+/// Why a code is texted: proving the number for a new account or a Google link, or resetting a password.
+enum CodePurpose { signUp, resetPassword, linkGoogle }
+
+/// What sign-in offers: Google needs its web client id, and is off when that's null.
+class AuthOptions {
+  const AuthOptions({required this.googleWebClientId});
+
+  final String? googleWebClientId;
+
+  factory AuthOptions.fromJson(Json json) => AuthOptions(googleWebClientId: json['googleWebClientId'] as String?);
 }
 
 class OtpSent {

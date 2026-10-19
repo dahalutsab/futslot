@@ -32,11 +32,31 @@ Run the API in Docker instead: `docker compose --profile full up --build`
 
 ### Logging in locally
 
-Auth is passwordless: `POST /api/v1/auth/otp/request` with a phone number, then
-`POST /api/v1/auth/otp/verify` with the 6-digit code (plus `fullName` the first time).
-In development no SMS is sent; the code is printed in the API log (`SMS to +977...`).
-Use the returned `accessToken` as `Authorization: Bearer <token>` (valid 15 minutes) and
-`POST /api/v1/auth/refresh` with the `refreshToken` to get a new pair.
+People sign in with their phone number and a password (`POST /api/v1/auth/sign-in`). A texted 6-digit code
+proves the number only when it matters, so FutSlot sends about two texts per person, ever:
+
+- **Signing up:** `POST /api/v1/auth/codes` with `{"phone", "purpose": "SIGN_UP"}`, then
+  `POST /api/v1/auth/sign-up` with the phone, `code`, `fullName` and `password`.
+- **Forgot password:** the same with `RESET_PASSWORD`, then `POST /api/v1/auth/password/reset`. This also sets
+  the first password for accounts made before passwords (signing in to one says `PASSWORD_NOT_SET`) and for
+  staff a venue added by number. It signs out every other device.
+- **Changing it:** `PUT /api/v1/me/password` with `currentPassword` and `newPassword`; also signs out other devices.
+
+Passwords need 8+ characters and can't be a very common one or the phone number. Five wrong passwords in a row lock
+the account for 15 minutes (`futslot.security.password.*`); resetting the password lifts the lock.
+
+**Continue with Google** is on when `GOOGLE_WEB_CLIENT_ID` is set (add `GOOGLE_IOS_CLIENT_ID` for iPhones); the
+apps learn the client id from `GET /api/v1/auth/options`. Send Google's ID token to `POST /api/v1/auth/google`.
+The first time it answers `GOOGLE_PHONE_NEEDED`: venues and teammates find people by phone, so the player proves
+their number with a `LINK_GOOGLE` code and `POST /api/v1/auth/google/link`. If the number already has an account,
+Google is linked to it rather than making a second one.
+
+Venue websites sign in with the password too, and still offer a texted code for someone new (it makes their
+account) or without a password.
+
+In development no SMS is sent; the code is printed in the API log (`SMS to +977...`). Every successful sign-in
+returns an `accessToken` to use as `Authorization: Bearer <token>` (valid 15 minutes); `POST /api/v1/auth/refresh`
+with the `refreshToken` gets a new pair.
 
 Set `JWT_SECRET` and `OTP_SECRET` (32+ random bytes each) in every deployed environment.
 

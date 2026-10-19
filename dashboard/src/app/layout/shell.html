@@ -81,10 +81,10 @@
           }
         </div>
         <div class="flex items-center gap-2 px-1">
-          <div class="min-w-0 flex-1">
+          <a routerLink="/account" class="-mx-1 min-w-0 flex-1 rounded-md px-1 py-0.5 hover:bg-surface-2" aria-label="Your account">
             <p class="truncate font-medium">{{ session.user()?.fullName }}</p>
             <p class="tabular truncate text-xs text-subtle">{{ session.user()?.phone }}</p>
-          </div>
+          </a>
           <button type="button" (click)="session.signOut()" aria-label="Sign out"
             class="grid size-11 place-items-center rounded-md text-muted hover:bg-surface-2 hover:text-text">
             <lucide-icon [img]="icons.LogOut" [size]="18" />
@@ -169,8 +169,10 @@
               [class.text-text]="theme.choice() === option.value">{{ option.label }}</button>
           }
         </div>
+        <a routerLink="/account" (click)="moreOpen.set(false)"
+          class="mt-3 flex h-11 w-full items-center justify-center rounded-lg font-medium hover:bg-surface-2">Your account</a>
         <button type="button" (click)="session.signOut()"
-          class="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-lg text-danger hover:bg-danger-bg">
+          class="flex h-11 w-full items-center justify-center gap-2 rounded-lg text-danger hover:bg-danger-bg">
           <lucide-icon [img]="icons.LogOut" [size]="18" /> Sign out
         </button>
       </div>

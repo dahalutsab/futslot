@@ -1,17 +1,27 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ArrowRight, LoaderCircle, LucideAngularModule, ShieldCheck } from 'lucide-angular';
+import { ArrowRight, Eye, EyeOff, LoaderCircle, LucideAngularModule, ShieldCheck } from 'lucide-angular';
 
 import { problemOf } from '../../core/api-error';
+import { CodePurpose } from '../../core/api.types';
 import { Session } from '../../core/session';
+import { GoogleButton } from '../../shared/google-button';
 
-type Step = 'phone' | 'code';
+/**
+ * signIn: phone and password. The others text a code first: signUp makes an account, reset sets a new password (or
+ * the first one, for an account from before passwords), google proves the number on a first Google sign-in.
+ */
+type Mode = 'signIn' | 'signUp' | 'reset' | 'google';
 
-/** Sign in with a phone number and the 6-digit code sent to it. New numbers are asked for a name. */
+const PURPOSE: Record<Exclude<Mode, 'signIn'>, CodePurpose> = { signUp: 'SIGN_UP', reset: 'RESET_PASSWORD', google: 'LINK_GOOGLE' };
+
+const MIN_PASSWORD = 8;
+
+/** Sign in with a phone number and password, or with Google; create an account; or reset a forgotten password. */
 @Component({
   selector: 'fs-login',
-  imports: [FormsModule, LucideAngularModule, RouterLink],
+  imports: [FormsModule, LucideAngularModule, RouterLink, GoogleButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.html',
 })
@@ -22,16 +32,26 @@ export class Login implements OnDestroy {
 
   private readonly route = inject(ActivatedRoute);
 
-  protected readonly icons = { ArrowRight, LoaderCircle, ShieldCheck };
+  protected readonly icons = { ArrowRight, Eye, EyeOff, LoaderCircle, ShieldCheck };
 
-  protected readonly step = signal<Step>('phone');
+  protected readonly minPassword = MIN_PASSWORD;
+
+  protected readonly mode = signal<Mode>('signIn');
+
+  /** For the modes that text a code: whether it's been sent. */
+  protected readonly codeSent = signal(false);
 
   protected readonly phone = signal('');
+
+  protected readonly password = signal('');
+
+  protected readonly showPassword = signal(false);
 
   protected readonly code = signal('');
 
   protected readonly fullName = signal('');
 
+  /** Google's sign-in needs a name typed in only when Google didn't give one. */
   protected readonly needsName = signal(false);
 
   protected readonly busy = signal(false);
@@ -42,18 +62,72 @@ export class Login implements OnDestroy {
 
   protected readonly resendIn = signal(0);
 
+  protected readonly googleClientId = signal<string | null>(null);
+
   protected readonly expired = this.route.snapshot.queryParamMap.has('expired');
 
   protected readonly phoneValid = computed(() => /^\d{10}$/.test(this.digits(this.phone())));
 
-  protected readonly codeValid = computed(() => /^\d{6}$/.test(this.code()) && (!this.needsName() || this.fullName().trim().length >= 2));
+  protected readonly title = computed(() => ({
+    signIn: 'Sign in to FutSlot',
+    signUp: 'Create your account',
+    reset: 'Reset your password',
+    google: 'One more step',
+  })[this.mode()]);
+
+  protected readonly subtitle = computed(() => ({
+    signIn: 'Use your mobile number and password.',
+    signUp: "We'll text a code to check the number is yours.",
+    reset: "We'll text a code to your number, then you choose a new password.",
+    google: "Add your mobile number. Venues and teammates find you by it, so we'll text a code to check it's yours.",
+  })[this.mode()]);
+
+  /** The ID token from Google, kept while the player proves their number. */
+  private googleToken: string | null = null;
 
   private timer: ReturnType<typeof setInterval> | null = null;
 
+  constructor() {
+    this.session.options().then((options) => this.googleClientId.set(options.googleWebClientId), () => undefined);
+  }
+
+  switchTo(mode: Mode, notice: string | null = null): void {
+    this.mode.set(mode);
+    this.codeSent.set(false);
+    this.code.set('');
+    this.password.set('');
+    this.needsName.set(false);
+    this.error.set(null);
+    this.notice.set(notice);
+    queueMicrotask(() => document.getElementById(this.phoneValid() && mode === 'signIn' ? 'password' : 'phone')?.focus());
+  }
+
   // Buttons stay enabled and check on submit: a disabled submit button makes the browser ignore Enter, which
   // fast typing or autofill can hit before the button re-enables.
-  async sendCode(): Promise<void> {
+  async signIn(): Promise<void> {
     if (this.busy()) {
+      return;
+    }
+    if (!this.phoneValid()) {
+      this.error.set('Enter your 10-digit mobile number, like 98XXXXXXXX.');
+      return;
+    }
+    if (!this.password()) {
+      this.error.set('Enter your password.');
+      return;
+    }
+    await this.run(() => this.session.signIn(this.digits(this.phone()), this.password()), (code) => {
+      if (code === 'PASSWORD_NOT_SET') {
+        this.switchTo('reset', "Your account doesn't have a password yet. We'll text you a code to set one.");
+        return true;
+      }
+      return false;
+    });
+  }
+
+  async sendCode(): Promise<void> {
+    const mode = this.mode();
+    if (this.busy() || mode === 'signIn') {
       return;
     }
     if (!this.phoneValid()) {
@@ -63,19 +137,21 @@ export class Login implements OnDestroy {
     this.busy.set(true);
     this.error.set(null);
     try {
-      const sent = await this.session.requestCode(this.digits(this.phone()));
-      this.step.set('code');
-      this.startCountdown(sent.resendAfterSeconds);
-      queueMicrotask(() => document.getElementById('code')?.focus());
+      const sent = await this.session.requestCode(this.digits(this.phone()), PURPOSE[mode]);
+      this.showCodeStep(sent.resendAfterSeconds);
     }
     catch (error) {
       const problem = problemOf(error);
       if (problem.code === 'OTP_COOLDOWN') {
         // A code went out under a minute ago (a double tap, or a reload): let them use it
-        this.step.set('code');
         this.notice.set('We sent you a code a moment ago. Enter it below.');
-        this.startCountdown(60);
-        queueMicrotask(() => document.getElementById('code')?.focus());
+        this.showCodeStep(60);
+      }
+      else if (problem.code === 'ACCOUNT_EXISTS') {
+        this.switchTo('signIn', 'This number already has an account. Sign in, or reset your password if you forgot it.');
+      }
+      else if (problem.code === 'ACCOUNT_NOT_FOUND') {
+        this.switchTo('signUp', 'No account uses this number yet. Create one below.');
       }
       else {
         this.error.set(problem.message);
@@ -86,43 +162,56 @@ export class Login implements OnDestroy {
     }
   }
 
-  async verify(): Promise<void> {
+  /** The code step: create the account, set the new password, or link Google. */
+  async finish(): Promise<void> {
+    const mode = this.mode();
+    if (this.busy() || mode === 'signIn') {
+      return;
+    }
+    const problem = this.check(mode);
+    if (problem) {
+      this.error.set(problem);
+      return;
+    }
+    const phone = this.digits(this.phone());
+    const name = this.fullName().trim();
+    await this.run(() => {
+      switch (mode) {
+        case 'signUp':
+          return this.session.signUp(phone, this.code(), name, this.password());
+        case 'reset':
+          return this.session.resetPassword(phone, this.code(), this.password());
+        case 'google':
+          return this.session.linkGoogle(this.googleToken!, phone, this.code(), name);
+      }
+    }, (code) => {
+      if (code === 'FULL_NAME_REQUIRED') {
+        this.needsName.set(true);
+        queueMicrotask(() => document.getElementById('full-name')?.focus());
+        return true;
+      }
+      return false;
+    });
+  }
+
+  async google(idToken: string): Promise<void> {
     if (this.busy()) {
       return;
     }
-    if (!this.codeValid()) {
-      this.error.set(this.needsName() && this.fullName().trim().length < 2 ? 'Enter your name.'
-        : 'Enter the 6-digit code we sent.');
-      return;
-    }
-    this.busy.set(true);
-    this.error.set(null);
-    try {
-      await this.session.verify(this.digits(this.phone()), this.code(), this.fullName().trim());
-      const next = this.route.snapshot.queryParamMap.get('next');
-      await this.router.navigateByUrl(next && next.startsWith('/') && !next.startsWith('//') ? next : '/');
-    }
-    catch (error) {
-      const problem = problemOf(error);
-      if (problem.code === 'FULL_NAME_REQUIRED') {
-        this.needsName.set(true);
-        this.error.set(null);
-        queueMicrotask(() => document.getElementById('full-name')?.focus());
+    this.googleToken = idToken;
+    await this.run(() => this.session.google(idToken), (code) => {
+      if (code === 'GOOGLE_PHONE_NEEDED') {
+        this.switchTo('google');
+        return true;
       }
-      else {
-        this.error.set(problem.message);
-      }
-    }
-    finally {
-      this.busy.set(false);
-    }
+      return false;
+    });
   }
 
   changeNumber(): void {
-    this.notice.set(null);
-    this.step.set('phone');
+    this.codeSent.set(false);
     this.code.set('');
-    this.needsName.set(false);
+    this.notice.set(null);
     this.error.set(null);
   }
 
@@ -130,6 +219,45 @@ export class Login implements OnDestroy {
     if (this.timer) {
       clearInterval(this.timer);
     }
+  }
+
+  private check(mode: Exclude<Mode, 'signIn'>): string | null {
+    if (!/^\d{6}$/.test(this.code())) {
+      return 'Enter the 6-digit code we sent.';
+    }
+    if ((mode === 'signUp' || this.needsName()) && this.fullName().trim().length < 2) {
+      return 'Enter your name.';
+    }
+    if (mode !== 'google' && [...this.password()].length < MIN_PASSWORD) {
+      return `Use at least ${MIN_PASSWORD} characters for your password.`;
+    }
+    return null;
+  }
+
+  /** Signs in with {@code action}, then goes where the player was headed. {@code handled} deals with known codes. */
+  private async run(action: () => Promise<unknown>, handled: (code: string | null) => boolean): Promise<void> {
+    this.busy.set(true);
+    this.error.set(null);
+    try {
+      await action();
+      const next = this.route.snapshot.queryParamMap.get('next');
+      await this.router.navigateByUrl(next && next.startsWith('/') && !next.startsWith('//') ? next : '/');
+    }
+    catch (error) {
+      const problem = problemOf(error);
+      if (!handled(problem.code)) {
+        this.error.set(problem.message);
+      }
+    }
+    finally {
+      this.busy.set(false);
+    }
+  }
+
+  private showCodeStep(resendAfter: number): void {
+    this.codeSent.set(true);
+    this.startCountdown(resendAfter);
+    queueMicrotask(() => document.getElementById('code')?.focus());
   }
 
   private startCountdown(seconds: number): void {

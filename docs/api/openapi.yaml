@@ -324,6 +324,49 @@ paths:
       responses:
         "204":
           description: No Content
+  /api/v1/owner/venues/{venueId}/site:
+    get:
+      tags:
+      - site-controller
+      operationId: get_2
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+    put:
+      tags:
+      - site-controller
+      operationId: save
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
   /api/v1/owner/venues/{venueId}/reviews/{reviewId}/reply:
     put:
       tags:
@@ -773,7 +816,7 @@ paths:
     put:
       tags:
       - player-controller
-      operationId: save
+      operationId: save_1
       requestBody:
         content:
           application/json:
@@ -787,6 +830,24 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PlayerCard"
+  /api/v1/me/password:
+    put:
+      tags:
+      - password-controller
+      operationId: change
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
   /api/v1/me/favourites/{venueId}:
     put:
       tags:
@@ -820,7 +881,7 @@ paths:
     get:
       tags:
       - split-controller
-      operationId: get_2
+      operationId: get_3
       parameters:
       - name: bookingId
         in: path
@@ -1695,6 +1756,44 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/StaffResponse"
+  /api/v1/owner/venues/{venueId}/site/unpublish:
+    post:
+      tags:
+      - site-controller
+      operationId: unpublish
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+  /api/v1/owner/venues/{venueId}/site/publish:
+    post:
+      tags:
+      - site-controller
+      operationId: publish
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
   /api/v1/owner/venues/{venueId}/refunds/{refundId}/complete:
     post:
       tags:
@@ -2761,6 +2860,61 @@ paths:
       responses:
         "204":
           description: No Content
+  /api/v1/me/deposit/withdrawals:
+    post:
+      tags:
+      - deposit-controller
+      operationId: withdraw_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Withdraw"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+  /api/v1/me/deposit/withdrawals/{withdrawalId}/cancel:
+    post:
+      tags:
+      - deposit-controller
+      operationId: cancelWithdrawal
+      parameters:
+      - name: withdrawalId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+  /api/v1/me/deposit/top-ups:
+    post:
+      tags:
+      - deposit-controller
+      operationId: topUp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopUp"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
   /api/v1/me/conversations/{conversationId}/read:
     post:
       tags:
@@ -2982,7 +3136,7 @@ paths:
     post:
       tags:
       - matchmaking-controller
-      operationId: withdraw_1
+      operationId: withdraw_2
       parameters:
       - name: postId
         in: path
@@ -3324,6 +3478,44 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/QuoteResponse"
+  /api/v1/auth/sign-up:
+    post:
+      tags:
+      - auth-controller
+      operationId: signUp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignUpRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+      security: []
+  /api/v1/auth/sign-in:
+    post:
+      tags:
+      - auth-controller
+      operationId: signIn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignInRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+      security: []
   /api/v1/auth/refresh:
     post:
       tags:
@@ -3343,16 +3535,16 @@ paths:
               schema:
                 $ref: "#/components/schemas/TokenResponse"
       security: []
-  /api/v1/auth/otp/verify:
+  /api/v1/auth/password/reset:
     post:
       tags:
       - auth-controller
-      operationId: verifyOtp
+      operationId: resetPassword
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OtpVerifyRequest"
+              $ref: "#/components/schemas/ResetPasswordRequest"
         required: true
       responses:
         "200":
@@ -3361,25 +3553,6 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/TokenResponse"
-      security: []
-  /api/v1/auth/otp/request:
-    post:
-      tags:
-      - auth-controller
-      operationId: requestOtp
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/OtpRequest"
-        required: true
-      responses:
-        "202":
-          description: Accepted
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/OtpSentResponse"
       security: []
   /api/v1/auth/logout:
     post:
@@ -3395,6 +3568,63 @@ paths:
       responses:
         "204":
           description: No Content
+      security: []
+  /api/v1/auth/google:
+    post:
+      tags:
+      - auth-controller
+      operationId: google
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoogleSignInRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+      security: []
+  /api/v1/auth/google/link:
+    post:
+      tags:
+      - auth-controller
+      operationId: linkGoogle
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoogleLinkRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+      security: []
+  /api/v1/auth/codes:
+    post:
+      tags:
+      - auth-controller
+      operationId: requestCode
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CodeRequest"
+        required: true
+      responses:
+        "202":
+          description: Accepted
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OtpSentResponse"
       security: []
   /api/v1/admin/venues/{venueId}/suspend:
     post:
@@ -3540,6 +3770,31 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ReviewResponse"
+  /api/v1/admin/payouts/{payoutId}/paid:
+    post:
+      tags:
+      - deposit-admin-controller
+      operationId: payoutPaid
+      parameters:
+      - name: payoutId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarkPayoutPaid"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Payout"
   /api/v1/admin/payments/{paymentId}/reject:
     post:
       tags:
@@ -3634,11 +3889,36 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PaymentResponse"
+  /api/v1/admin/deposit-withdrawals/{withdrawalId}/paid:
+    post:
+      tags:
+      - deposit-admin-controller
+      operationId: withdrawalPaid
+      parameters:
+      - name: withdrawalId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarkWithdrawalPaid"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
   /api/v1/owner/venues/{venueId}/customers/{customerId}:
     get:
       tags:
       - customer-controller
-      operationId: get_3
+      operationId: get_4
       parameters:
       - name: venueId
         in: path
@@ -3718,11 +3998,47 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/UserResponse"
+  /sites/{subdomain}/sitemap.xml:
+    get:
+      tags:
+      - site-page-controller
+      operationId: sitemap
+      parameters:
+      - name: subdomain
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/xml:
+              schema:
+                type: string
+  /sites/{subdomain}/robots.txt:
+    get:
+      tags:
+      - site-page-controller
+      operationId: robots
+      parameters:
+      - name: subdomain
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
   /media/**:
     get:
       tags:
       - media-controller
-      operationId: get_4
+      operationId: get_5
       responses:
         "200":
           description: OK
@@ -3777,7 +4093,7 @@ paths:
     get:
       tags:
       - public-venue-controller
-      operationId: get_5
+      operationId: get_6
       parameters:
       - name: slug
         in: path
@@ -3955,7 +4271,7 @@ paths:
     get:
       tags:
       - tournament-controller
-      operationId: get_6
+      operationId: get_7
       parameters:
       - name: slug
         in: path
@@ -3974,7 +4290,7 @@ paths:
     get:
       tags:
       - team-controller
-      operationId: get_7
+      operationId: get_8
       parameters:
       - name: slug
         in: path
@@ -4022,6 +4338,30 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PlayerCard"
+  /api/v1/owner/venues/{venueId}/site/subdomain-check:
+    get:
+      tags:
+      - site-controller
+      operationId: check
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: subdomain
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubdomainCheck"
   /api/v1/owner/venues/{venueId}/reviews:
     get:
       tags:
@@ -4272,7 +4612,7 @@ paths:
     get:
       tags:
       - recurring-booking-controller
-      operationId: get_8
+      operationId: get_9
       parameters:
       - name: venueId
         in: path
@@ -4377,6 +4717,25 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/FeaturedQuote"
+  /api/v1/owner/venues/{venueId}/deposit-fees:
+    get:
+      tags:
+      - deposit-controller
+      operationId: venueFees
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VenueFees"
   /api/v1/owner/venues/{venueId}/customers:
     get:
       tags:
@@ -4780,6 +5139,18 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/VenueSummaryResponse"
+  /api/v1/me/deposit:
+    get:
+      tags:
+      - deposit-controller
+      operationId: deposit
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Deposit"
   /api/v1/me/conversations:
     get:
       tags:
@@ -4798,7 +5169,7 @@ paths:
     get:
       tags:
       - matchmaking-controller
-      operationId: get_9
+      operationId: get_10
       parameters:
       - name: postId
         in: path
@@ -4863,6 +5234,19 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/BookingResponse"
+  /api/v1/auth/options:
+    get:
+      tags:
+      - auth-controller
+      operationId: options
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthOptions"
+      security: []
   /api/v1/amenities:
     get:
       tags:
@@ -4924,7 +5308,7 @@ paths:
     get:
       tags:
       - admin-venue-controller
-      operationId: get_10
+      operationId: get_11
       parameters:
       - name: venueId
         in: path
@@ -5004,6 +5388,20 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PlatformReport"
+  /api/v1/admin/payouts:
+    get:
+      tags:
+      - deposit-admin-controller
+      operationId: payouts
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payout"
   /api/v1/admin/payments/pending:
     get:
       tags:
@@ -5075,6 +5473,31 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Featured"
+  /api/v1/admin/deposit-withdrawals:
+    get:
+      tags:
+      - deposit-admin-controller
+      operationId: withdrawals
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          default: REQUESTED
+          enum:
+          - REQUESTED
+          - PAID
+          - CANCELLED
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Withdrawal"
   /api/v1/admin/audit-log:
     get:
       tags:
@@ -5351,6 +5774,19 @@ components:
           type: string
         icon:
           type: string
+    CancellationTier:
+      type: object
+      properties:
+        withinHours:
+          type: integer
+          format: int32
+          maximum: 24
+          minimum: 1
+        feePercent:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
     CourtResponse:
       type: object
       properties:
@@ -5504,19 +5940,10 @@ components:
           format: int32
           maximum: 100
           minimum: 1
-    CancellationTier:
-      type: object
-      properties:
-        withinHours:
-          type: integer
-          format: int32
-          maximum: 24
-          minimum: 1
-        feePercent:
-          type: integer
-          format: int32
-          maximum: 100
-          minimum: 1
+        depositRequired:
+          type: boolean
+      required:
+      - cancellationTiers
     VenueResponse:
       type: object
       properties:
@@ -5965,6 +6392,8 @@ components:
         venueId:
           type: string
           format: uuid
+        venueName:
+          type: string
         planCode:
           type: string
         planName:
@@ -5995,6 +6424,8 @@ components:
         paidAt:
           type: string
           format: date-time
+        paymentPending:
+          type: boolean
     Plan:
       type: object
       properties:
@@ -6130,6 +6561,64 @@ components:
         createdAt:
           type: string
           format: date-time
+    SiteRequest:
+      type: object
+      properties:
+        template:
+          type: string
+          enum:
+          - TURF
+          - FLOODLIGHT
+        subdomain:
+          type: string
+          maxLength: 40
+          minLength: 0
+        customDomain:
+          type: string
+          maxLength: 253
+          minLength: 0
+        accentColor:
+          type: string
+          maxLength: 7
+          minLength: 0
+        headline:
+          type: string
+          maxLength: 120
+          minLength: 0
+      required:
+      - subdomain
+      - template
+    SiteSettings:
+      type: object
+      properties:
+        venueId:
+          type: string
+          format: uuid
+        saved:
+          type: boolean
+        template:
+          type: string
+          enum:
+          - TURF
+          - FLOODLIGHT
+        subdomain:
+          type: string
+        customDomain:
+          type: string
+        accentColor:
+          type: string
+        headline:
+          type: string
+        published:
+          type: boolean
+        url:
+          type: string
+        previewPath:
+          type: string
+        live:
+          type: boolean
+        dnsTarget:
+          type: string
     Reply:
       type: object
       properties:
@@ -6489,6 +6978,7 @@ components:
           type: string
           enum:
           - APP
+          - WEBSITE
           - WALK_IN
           - PHONE
           - RECURRING
@@ -6552,6 +7042,8 @@ components:
         cancellationFeePercent:
           type: integer
           format: int32
+        depositBacked:
+          type: boolean
         createdAt:
           type: string
           format: date-time
@@ -6687,6 +7179,68 @@ components:
         gamesPlayed:
           type: integer
           format: int64
+        isPublic:
+          type: boolean
+    ChangePasswordRequest:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+          maxLength: 200
+          minLength: 0
+        newPassword:
+          type: string
+          maxLength: 200
+          minLength: 0
+      required:
+      - newPassword
+    TokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+        expiresInSeconds:
+          type: integer
+          format: int64
+        refreshToken:
+          type: string
+        user:
+          $ref: "#/components/schemas/UserResponse"
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        avatarUrl:
+          type: string
+        preferredLanguage:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+            enum:
+            - PLAYER
+            - OWNER
+            - STAFF
+            - ADMIN
+          uniqueItems: true
+        passwordSet:
+          type: boolean
+        googleLinked:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
     Rules:
       type: object
       properties:
@@ -7059,6 +7613,7 @@ components:
           - MEMBERSHIP
           - SUBSCRIPTION
           - FEATURED_LISTING
+          - DEPOSIT
         bookingId:
           type: string
           format: uuid
@@ -7517,6 +8072,8 @@ components:
           - CANCELLED
         paymentInstructions:
           type: string
+        paymentPending:
+          type: boolean
     CourtBlockRequest:
       type: object
       properties:
@@ -7590,6 +8147,7 @@ components:
           type: string
           enum:
           - APP
+          - WEBSITE
           - WALK_IN
           - PHONE
           - RECURRING
@@ -7719,6 +8277,10 @@ components:
           - FEATURED_CONFIRMED
           - WAITLIST_SLOT_FREE
           - CHAT_MESSAGE
+          - DEPOSIT_TOPPED_UP
+          - DEPOSIT_FEE_TAKEN
+          - DEPOSIT_RETURNED
+          - DEPOSIT_PAYOUT_SENT
         title:
           type: string
         body:
@@ -7773,6 +8335,91 @@ components:
       required:
       - platform
       - token
+    Withdraw:
+      type: object
+      properties:
+        method:
+          type: string
+          enum:
+          - CASH
+          - ESEWA
+          - KHALTI
+          - FONEPAY
+          - BANK_TRANSFER
+          - CARD
+          - MEMBERSHIP_CREDIT
+        sendTo:
+          type: string
+          maxLength: 200
+          minLength: 0
+      required:
+      - method
+      - sendTo
+    Withdrawal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        method:
+          type: string
+          enum:
+          - CASH
+          - ESEWA
+          - KHALTI
+          - FONEPAY
+          - BANK_TRANSFER
+          - CARD
+          - MEMBERSHIP_CREDIT
+        sendTo:
+          type: string
+        status:
+          type: string
+          enum:
+          - REQUESTED
+          - PAID
+          - CANCELLED
+        dueAt:
+          type: string
+          format: date-time
+        reference:
+          type: string
+        paidAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        playerName:
+          type: string
+        playerPhone:
+          type: string
+    TopUp:
+      type: object
+      properties:
+        method:
+          type: string
+          enum:
+          - CASH
+          - ESEWA
+          - KHALTI
+          - FONEPAY
+          - BANK_TRANSFER
+          - CARD
+          - MEMBERSHIP_CREDIT
+        transactionId:
+          type: string
+          maxLength: 100
+          minLength: 0
+        amount:
+          type: number
+          minimum: 1
+      required:
+      - amount
+      - method
+      - transactionId
     MatchPostRequest:
       type: object
       properties:
@@ -7986,63 +8633,16 @@ components:
           type: number
         strikeAdvance:
           type: boolean
+        depositRequired:
+          type: boolean
+        depositToAdd:
+          type: number
         membershipId:
           type: string
           format: uuid
         discountCode:
           type: string
-    RefreshRequest:
-      type: object
-      properties:
-        refreshToken:
-          type: string
-          minLength: 1
-      required:
-      - refreshToken
-    TokenResponse:
-      type: object
-      properties:
-        accessToken:
-          type: string
-        tokenType:
-          type: string
-        expiresInSeconds:
-          type: integer
-          format: int64
-        refreshToken:
-          type: string
-        user:
-          $ref: "#/components/schemas/UserResponse"
-    UserResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        fullName:
-          type: string
-        phone:
-          type: string
-        email:
-          type: string
-        avatarUrl:
-          type: string
-        preferredLanguage:
-          type: string
-        roles:
-          type: array
-          items:
-            type: string
-            enum:
-            - PLAYER
-            - OWNER
-            - STAFF
-            - ADMIN
-          uniqueItems: true
-        createdAt:
-          type: string
-          format: date-time
-    OtpVerifyRequest:
+    SignUpRequest:
       type: object
       properties:
         phone:
@@ -8056,17 +8656,98 @@ components:
           type: string
           maxLength: 100
           minLength: 2
+        password:
+          type: string
+          maxLength: 200
+          minLength: 0
       required:
       - code
+      - fullName
+      - password
       - phone
-    OtpRequest:
+    SignInRequest:
       type: object
       properties:
         phone:
           type: string
           minLength: 1
+        password:
+          type: string
+          maxLength: 200
+          minLength: 0
+      required:
+      - password
+      - phone
+    RefreshRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          minLength: 1
+      required:
+      - refreshToken
+    ResetPasswordRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          minLength: 1
+          pattern: "\\d{6}"
+        password:
+          type: string
+          maxLength: 200
+          minLength: 0
+      required:
+      - code
+      - password
+      - phone
+    GoogleSignInRequest:
+      type: object
+      properties:
+        idToken:
+          type: string
+          minLength: 1
+      required:
+      - idToken
+    GoogleLinkRequest:
+      type: object
+      properties:
+        idToken:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          minLength: 1
+          pattern: "\\d{6}"
+        fullName:
+          type: string
+          maxLength: 100
+          minLength: 2
+      required:
+      - code
+      - idToken
+      - phone
+    CodeRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+          minLength: 1
+        purpose:
+          type: string
+          enum:
+          - SIGN_UP
+          - RESET_PASSWORD
+          - LINK_GOOGLE
       required:
       - phone
+      - purpose
     OtpSentResponse:
       type: object
       properties:
@@ -8096,6 +8777,78 @@ components:
           - REMOVED
       required:
       - status
+    MarkPayoutPaid:
+      type: object
+      properties:
+        method:
+          type: string
+          enum:
+          - CASH
+          - ESEWA
+          - KHALTI
+          - FONEPAY
+          - BANK_TRANSFER
+          - CARD
+          - MEMBERSHIP_CREDIT
+        reference:
+          type: string
+          maxLength: 100
+          minLength: 0
+      required:
+      - method
+      - reference
+    Payout:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        venueId:
+          type: string
+          format: uuid
+        venueName:
+          type: string
+        periodStart:
+          type: string
+          format: date
+        periodEnd:
+          type: string
+          format: date
+        amount:
+          type: number
+        status:
+          type: string
+          enum:
+          - PENDING
+          - PROCESSING
+          - PAID
+          - FAILED
+        method:
+          type: string
+          enum:
+          - CASH
+          - ESEWA
+          - KHALTI
+          - FONEPAY
+          - BANK_TRANSFER
+          - CARD
+          - MEMBERSHIP_CREDIT
+        reference:
+          type: string
+        paidAt:
+          type: string
+          format: date-time
+        paymentInstructions:
+          type: string
+    MarkWithdrawalPaid:
+      type: object
+      properties:
+        reference:
+          type: string
+          maxLength: 100
+          minLength: 0
+      required:
+      - reference
     CustomerUpdateRequest:
       type: object
       properties:
@@ -8437,6 +9190,13 @@ components:
             - VIEW_REPORTS
             - MANAGE_STAFF
           uniqueItems: true
+    SubdomainCheck:
+      type: object
+      properties:
+        available:
+          type: boolean
+        problem:
+          type: string
     TopCustomerRow:
       type: object
       properties:
@@ -8638,6 +9398,42 @@ components:
           type: number
         available:
           type: boolean
+    Fee:
+      type: object
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        bookingReference:
+          type: string
+        customerName:
+          type: string
+        playedOn:
+          type: string
+          format: date
+        noShow:
+          type: boolean
+        feePercent:
+          type: integer
+          format: int32
+        amount:
+          type: number
+        chargedAt:
+          type: string
+          format: date-time
+    VenueFees:
+      type: object
+      properties:
+        unpaid:
+          type: number
+        fees:
+          type: array
+          items:
+            $ref: "#/components/schemas/Fee"
+        payouts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Payout"
     CustomerSummaryResponse:
       type: object
       properties:
@@ -8847,6 +9643,30 @@ components:
         totalPages:
           type: integer
           format: int32
+    Deposit:
+      type: object
+      properties:
+        required:
+          type: number
+        balance:
+          type: number
+        toAdd:
+          type: number
+        topUpBeingChecked:
+          type: boolean
+        paymentInstructions:
+          type: string
+        withdrawal:
+          $ref: "#/components/schemas/Withdrawal"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/Entry"
+    AuthOptions:
+      type: object
+      properties:
+        googleWebClientId:
+          type: string
     PlatformReport:
       type: object
       properties:

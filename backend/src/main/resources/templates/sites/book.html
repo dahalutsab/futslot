@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" th:href="${book.site.fonts}">
   <link rel="stylesheet" th:href="@{'/site-assets/' + ${book.site.template} + '.css'(v=1)}">
-  <link rel="stylesheet" th:href="@{/site-assets/book.css(v=4)}">
+  <link rel="stylesheet" th:href="@{/site-assets/book.css(v=5)}">
   <!-- Validated #rrggbb values, so safe to write as they are -->
   <style th:inline="css">:root { --accent: [(${book.site.accent})]; --accent-ink: [(${book.site.accentInk})]; --accent-text: [(${book.site.accentText})]; }</style>
 </head>
@@ -47,19 +47,25 @@
     <p th:if="${book.error}" class="book-alert" role="alert" th:text="${book.error}">Error</p>
     <p th:if="${book.notice}" class="book-notice" role="status" th:text="${book.notice}">Notice</p>
 
-    <!-- Sign in: phone, then code -->
+    <!-- Sign in: phone and password, or a texted code for someone new or without a password -->
     <section th:if="${book.step == 'phone'}" class="book-card">
       <h2>Your phone number</h2>
-      <p class="book-muted">We'll text you a code. Same account as the FutSlot app.</p>
-      <form method="post" th:action="${book.site.base + '/book/code'}" class="book-form">
+      <p class="book-muted">Sign in with your FutSlot number and password, the same as the app.</p>
+      <form method="post" th:action="${book.site.base + '/book/password'}" class="book-form">
         <input type="hidden" name="court" th:value="${book.slot.courtId}">
         <input type="hidden" name="start" th:value="${book.slot.start}">
-        <label for="phone" class="sr-only">Mobile number</label>
+        <label for="phone">Mobile number</label>
         <div class="book-phone"><span>+977</span>
           <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98XXXXXXXX"
             required pattern="[0-9 ]{10,12}" th:value="${book.phone}" autofocus>
         </div>
-        <button type="submit" class="btn btn-accent book-submit">Text me a code</button>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit" class="btn btn-accent book-submit">Sign in</button>
+        <p class="book-again">
+          <span class="book-muted">New here, or no password?</span>
+          <button type="submit" class="book-link" th:formaction="${book.site.base + '/book/code'}" formnovalidate>Text me a code</button>
+        </p>
       </form>
     </section>
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { BadgeCheck, ChevronRight, Coins, Heart, Hourglass, LogOut, LucideAngularModule, LucideIconData, Monitor, Moon, Shirt, Star, Sun, Wallet } from 'lucide-angular';
@@ -68,6 +68,35 @@ interface Link {
         </form>
       </section>
 
+      <section class="mt-6 rounded-xl border border-border bg-surface p-5" aria-labelledby="password-title">
+        <h2 id="password-title" class="font-semibold">{{ hasPassword() ? 'Password' : 'Set a password' }}</h2>
+        @if (!hasPassword()) {
+          <p class="mt-1 text-sm text-muted">You sign in with Google. A password lets you sign in with your number too.</p>
+        }
+        <form class="mt-3 space-y-3" (ngSubmit)="changePassword()">
+          <input type="text" name="username" autocomplete="username" [value]="session.user()?.phone ?? ''" class="hidden" aria-hidden="true" tabindex="-1" />
+          @if (hasPassword()) {
+            <div>
+              <label for="current-password" class="mb-1.5 block font-medium">Current password</label>
+              <input id="current-password" name="currentPassword" type="password" autocomplete="current-password"
+                class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" [ngModel]="currentPassword()" (ngModelChange)="currentPassword.set($event)" />
+            </div>
+          }
+          <div>
+            <label for="new-password" class="mb-1.5 block font-medium">New password</label>
+            <input id="new-password" name="newPassword" type="password" autocomplete="new-password" aria-describedby="new-password-help"
+              class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" [ngModel]="newPassword()" (ngModelChange)="newPassword.set($event)" />
+            <p id="new-password-help" class="mt-1 text-sm text-subtle">At least 8 characters. You stay signed in here; other devices are signed out.</p>
+          </div>
+          @if (passwordMessage(); as m) {
+            <p [class]="m.ok ? 'text-confirmed-fg' : 'text-danger'" role="status">{{ m.text }}</p>
+          }
+          <button type="submit" [disabled]="changing()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">
+            {{ changing() ? 'Saving…' : hasPassword() ? 'Change password' : 'Set password' }}
+          </button>
+        </form>
+      </section>
+
       <section class="mt-6 rounded-xl border border-border bg-surface p-5" aria-labelledby="theme-title">
         <h2 id="theme-title" class="font-semibold">Appearance</h2>
         <div class="mt-3 flex rounded-lg bg-surface-2 p-1" role="radiogroup" aria-labelledby="theme-title">
@@ -129,6 +158,17 @@ export class Me {
 
   protected readonly message = signal<{ ok: boolean; text: string } | null>(null);
 
+  /** Sessions saved before accounts said whether they have a password count as having one. */
+  protected readonly hasPassword = computed(() => this.session.user()?.passwordSet !== false);
+
+  protected readonly currentPassword = signal('');
+
+  protected readonly newPassword = signal('');
+
+  protected readonly changing = signal(false);
+
+  protected readonly passwordMessage = signal<{ ok: boolean; text: string } | null>(null);
+
   protected async save(): Promise<void> {
     const fullName = this.fullName().trim();
     if (fullName.length < 2) {
@@ -147,6 +187,31 @@ export class Me {
     }
     finally {
       this.saving.set(false);
+    }
+  }
+
+  protected async changePassword(): Promise<void> {
+    if ([...this.newPassword()].length < 8) {
+      this.passwordMessage.set({ ok: false, text: 'Use at least 8 characters.' });
+      return;
+    }
+    if (this.hasPassword() && !this.currentPassword()) {
+      this.passwordMessage.set({ ok: false, text: 'Enter your current password.' });
+      return;
+    }
+    this.changing.set(true);
+    this.passwordMessage.set(null);
+    try {
+      await this.session.changePassword(this.hasPassword() ? this.currentPassword() : null, this.newPassword());
+      this.currentPassword.set('');
+      this.newPassword.set('');
+      this.passwordMessage.set({ ok: true, text: 'Password saved. Other devices are signed out.' });
+    }
+    catch (error) {
+      this.passwordMessage.set({ ok: false, text: problemOf(error).message });
+    }
+    finally {
+      this.changing.set(false);
     }
   }
 }

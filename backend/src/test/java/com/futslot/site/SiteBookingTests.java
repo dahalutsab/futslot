@@ -156,6 +156,35 @@ class SiteBookingTests {
 	}
 
 	@Test
+	void playersWithAPasswordSignInWithItOnAVenuesSite() throws Exception {
+		TestUser owner = this.users.signUp("Password Site Owner");
+		TestVenue venue = this.venues.active(owner, "Password Site Futsal");
+		ownerSends(owner, put("/api/v1/owner/venues/" + venue.id() + "/site"), "{\"template\":\"TURF\",\"subdomain\":\"passwordsite\"}");
+		ownerSends(owner, post("/api/v1/owner/venues/" + venue.id() + "/site/publish"), null);
+		String phone = TestUsers.nextLocalPhone();
+		this.users.logIn(phone, "Password Player");
+		String availability = this.mvc.perform(get("/api/v1/venues/" + venue.slug() + "/availability").param("date", TOMORROW.toString()))
+			.andReturn().getResponse().getContentAsString();
+		String start = JsonPath.<List<String>>read(availability, "$.courts[0].slots[?(@.status == 'AVAILABLE')].startsAt").getFirst();
+		String court = venue.courtId().toString();
+		String book = "/sites/passwordsite/book";
+
+		this.mvc.perform(get(book).param("court", court).param("start", start))
+			.andExpect(content().string(containsString("name=\"password\"")))
+			.andExpect(content().string(containsString("Text me a code")));
+		this.mvc.perform(post(book + "/password").param("court", court).param("start", start).param("phone", phone)
+				.param("password", "not-the-password"))
+			.andExpect(content().string(containsString("role=\"alert\"")))
+			.andExpect(content().string(containsString("Wrong phone number or password")));
+		Cookie player = this.mvc.perform(post(book + "/password").param("court", court).param("start", start)
+				.param("phone", phone).param("password", TestUsers.PASSWORD))
+			.andExpect(redirectedUrlPattern(book + "?court=*"))
+			.andReturn().getResponse().getCookie(SiteSession.COOKIE);
+		this.mvc.perform(get(book).param("court", court).param("start", start).cookie(player))
+			.andExpect(content().string(containsString("Book this slot?")));
+	}
+
+	@Test
 	void playersTopUpAndTakeBackTheirDepositOnAVenuesSite() throws Exception {
 		TestUser owner = this.users.signUp("Deposit Site Owner");
 		TestVenue venue = this.venues.active(owner, "Deposit Site Futsal");
@@ -168,7 +197,9 @@ class SiteBookingTests {
 		this.siteSession.signIn(account.id(), new MockHttpServletRequest(), signedIn);
 		Cookie player = signedIn.getCookie(SiteSession.COOKIE);
 
-		String availability = this.mvc.perform(get("/api/v1/venues/" + venue.slug() + "/availability").param("date", TOMORROW.toString()))
+		// The day after tomorrow, so cancelling below is never inside the venue's 12-hour fee window
+		String availability = this.mvc.perform(get("/api/v1/venues/" + venue.slug() + "/availability")
+				.param("date", TOMORROW.plusDays(1).toString()))
 			.andReturn().getResponse().getContentAsString();
 		String start = JsonPath.<List<String>>read(availability, "$.courts[0].slots[?(@.status == 'AVAILABLE')].startsAt").getFirst();
 		String court = venue.courtId().toString();

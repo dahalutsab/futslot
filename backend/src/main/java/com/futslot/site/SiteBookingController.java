@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.futslot.auth.CodeSignIn;
+import com.futslot.auth.PageSignIn;
 import com.futslot.booking.BookingResponse;
 import com.futslot.booking.BookingService;
 import com.futslot.booking.BookingSource;
@@ -74,7 +74,7 @@ class SiteBookingController {
 
 	private final BookingService bookings;
 
-	private final CodeSignIn signIn;
+	private final PageSignIn signIn;
 
 	private final PlayerPayments payments;
 
@@ -88,7 +88,7 @@ class SiteBookingController {
 	private final Clock clock;
 
 	SiteBookingController(VenueSiteRepository sites, SitePageService pages, VenueService venues,
-			AvailabilityService availability, BookingService bookings, CodeSignIn signIn, PlayerPayments payments,
+			AvailabilityService availability, BookingService bookings, PageSignIn signIn, PlayerPayments payments,
 			SiteSession session, DepositService deposits,
 			@Value("${futslot.subscriptions.payment-instructions:Contact FutSlot for payment details}") String futslotPaymentInstructions,
 			Clock clock) {
@@ -112,6 +112,22 @@ class SiteBookingController {
 		Optional<UUID> player = this.session.player(request);
 		return render(model, context, player.isPresent() ? "confirm" : "phone", court, start, null, false, null, null,
 				player.orElse(null));
+	}
+
+	@PostMapping("/sites/{subdomain}/book/password")
+	String password(@PathVariable String subdomain, @RequestParam String court, @RequestParam String start,
+			@RequestParam String phone, @RequestParam String password, HttpServletRequest request,
+			HttpServletResponse response, Model model) {
+		Context context = context(subdomain, request);
+		try {
+			this.session.signIn(this.signIn.withPassword(phone, password), request, response);
+			return "redirect:" + context.base() + "/book?court=" + encode(court) + "&start=" + encode(start);
+		}
+		catch (ApiException ex) {
+			String error = "PASSWORD_NOT_SET".equals(ex.getCode())
+					? "Your account doesn't have a password yet. Text yourself a code instead." : ex.getMessage();
+			return render(model, context, "phone", court, start, phone, false, error, null, null);
+		}
 	}
 
 	@PostMapping("/sites/{subdomain}/book/code")

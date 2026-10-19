@@ -18,6 +18,9 @@ export interface User {
   avatarUrl: string | null;
   preferredLanguage: string;
   roles: Role[];
+  /** False for accounts made before passwords, or with Google, until one is set. */
+  passwordSet: boolean;
+  googleLinked: boolean;
   createdAt: string;
 }
 
@@ -27,6 +30,14 @@ export interface TokenResponse {
   expiresInSeconds: number;
   refreshToken: string;
   user: User;
+}
+
+/** Why a code is texted: proving the number for a new account or a Google link, or resetting a password. */
+export type CodePurpose = 'SIGN_UP' | 'RESET_PASSWORD' | 'LINK_GOOGLE';
+
+/** What sign-in offers: Google needs its web client id, and is off when that's null. */
+export interface AuthOptions {
+  googleWebClientId: string | null;
 }
 
 export interface OtpSent {

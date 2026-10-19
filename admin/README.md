@@ -15,7 +15,8 @@ npm start            # http://localhost:4400, with /api proxied to localhost:808
 ```
 
 Only accounts with the ADMIN role get in; there's no sign-up. Promote a user in the database (see the root
-README), then sign in with their number. In development the 6-digit code is printed in the API log.
+README), then sign in with their number and password. An admin without a password yet sets one with "Forgot
+password?"; in development the 6-digit code is printed in the API log.
 
 ```bash
 npm run build        # production build in dist/admin
@@ -24,7 +25,7 @@ npm test             # unit tests (Vitest)
 
 ## How it's put together
 
-- `src/app/core`: session (phone + code sign-in, admins only), the API client (`api.ts`), the queue of work
+- `src/app/core`: session (phone + password sign-in, admins only), the API client (`api.ts`), the queue of work
   waiting on admins (`queue.ts`, the counts in the navigation), theme, API types.
 - `src/app/shared`: labels for statuses and payments, the reason/reference form used by queue actions.
 - `src/app/layout`: the shell (sidebar on wide screens, a row of sections on phones).
