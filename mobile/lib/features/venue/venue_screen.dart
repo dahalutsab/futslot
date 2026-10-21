@@ -305,7 +305,7 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
         const SizedBox(height: 32),
         Text(l.bookASlot, style: text.titleLarge),
         const SizedBox(height: 12),
-        _DayStrip(days: _days, selected: _day, onPick: _pickDay),
+        DayStrip(days: _days, selected: _day, onPick: _pickDay),
         const SizedBox(height: 4),
         ..._slots(context),
         const SizedBox(height: 32),
@@ -474,67 +474,6 @@ class _PhotosState extends State<_Photos> {
               ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _DayStrip extends StatelessWidget {
-  const _DayStrip({required this.days, required this.selected, required this.onPick});
-
-  final List<String> days;
-  final String? selected;
-  final ValueChanged<String> onPick;
-
-  String _name(String day, int index) =>
-      index == 0 ? l.today : index == 1 ? l.tomorrow : weekdayShort(day);
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.fs;
-    return SizedBox(
-      height: 64,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: days.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final day = days[index];
-          final on = day == selected;
-          return Semantics(
-            selected: on,
-            button: true,
-            child: Material(
-              color: on ? c.ink : c.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(color: on ? c.ink : c.border),
-              ),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: () => onPick(day),
-                child: Container(
-                  constraints: const BoxConstraints(minWidth: 64),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _name(day, index),
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: on ? c.inkFg : c.muted),
-                      ),
-                      Text(
-                        shortDate(day),
-                        style: TextStyle(fontSize: 12, color: on ? c.inkFg : c.muted, fontFeatures: tabular),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
       ),
     );
   }

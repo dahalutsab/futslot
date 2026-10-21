@@ -6,9 +6,16 @@ import { Session } from './session';
 
 const PUBLIC = ['/api/v1/auth/'];
 
-/** Adds the access token to API calls, and on a 401 refreshes it once and retries. */
-export const authInterceptor: HttpInterceptorFn = (request, next) => {
-  if (!request.url.startsWith('/api/') || PUBLIC.some((path) => request.url.startsWith(path))) {
+/**
+ * Asks the API for English, and adds the access token to API calls, and on a 401 refreshes it once and retries.
+ * This app is in English, so its errors and the codes it texts should be too, whatever the browser's language.
+ */
+export const authInterceptor: HttpInterceptorFn = (original, next) => {
+  if (!original.url.startsWith('/api/')) {
+    return next(original);
+  }
+  const request = original.clone({ setHeaders: { 'Accept-Language': 'en' } });
+  if (PUBLIC.some((path) => request.url.startsWith(path))) {
     return next(request);
   }
   const session = inject(Session);

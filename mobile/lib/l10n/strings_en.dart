@@ -1972,7 +1972,7 @@ class SEn extends S {
   String get when => 'When';
 
   @override
-  String get pickDayTime => 'Pick a day and time';
+  String get pickTime => 'Pick a time';
 
   @override
   String get playersNeeded => 'Players needed';

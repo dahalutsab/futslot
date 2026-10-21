@@ -558,6 +558,7 @@ export const en = {
   notDecidedCity: 'Not decided: just a city',
   cityHint: 'Kathmandu',
   when: 'When',
+  time: 'Time',
   playersNeeded: 'Players needed',
   eachPays: 'Each pays',
   note: 'Note',

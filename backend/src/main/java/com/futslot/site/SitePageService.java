@@ -24,6 +24,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.futslot.common.TextFormat;
+import com.futslot.common.Wording;
 import com.futslot.membership.MembershipPlanResponse;
 import com.futslot.membership.MembershipService;
 import com.futslot.membership.MembershipType;
@@ -88,7 +90,7 @@ class SitePageService {
 	 * @param switchHref this page in the other language
 	 */
 	SitePage build(String slug, SiteTemplate template, String accent, String headline, String requestedDate,
-			String canonical, String linkPrefix, boolean noindex, SiteText text, String switchHref) {
+			String canonical, String linkPrefix, boolean noindex, Wording text, String switchHref) {
 		return build(slug, template, accent, headline, requestedDate, canonical, linkPrefix, noindex, text, switchHref, null,
 				null);
 	}
@@ -99,9 +101,9 @@ class SitePageService {
 	 * @param mine link to the signed-in player's bookings, or null
 	 */
 	SitePage build(String slug, SiteTemplate template, String accent, String headline, String requestedDate,
-			String canonical, String linkPrefix, boolean noindex, SiteText text, String switchHref, String bookingBase,
+			String canonical, String linkPrefix, boolean noindex, Wording text, String switchHref, String bookingBase,
 			String mine) {
-		SiteFormat format = text.format();
+		TextFormat format = text.format();
 		VenueResponse venue = this.venues.getActiveBySlug(slug);
 		ZoneId zone = ZoneId.of(venue.timezone());
 		LocalDate today = LocalDate.now(this.clock.withZone(zone));
@@ -177,7 +179,7 @@ class SitePageService {
 	}
 
 	/** When the venue closes if it's open at {@code now}; null if it's closed. Late hours count to the day before. */
-	private static String openUntil(List<DayHours> hours, DayOfWeek today, LocalTime now, SiteFormat format) {
+	private static String openUntil(List<DayHours> hours, DayOfWeek today, LocalTime now, TextFormat format) {
 		DayHours todays = find(hours, today);
 		if (todays != null) {
 			boolean overnight = !todays.closeTime().isAfter(todays.openTime());
@@ -193,7 +195,7 @@ class SitePageService {
 	}
 
 	/** "Opens at 6 AM" later today, "Opens tomorrow at 6 AM", or "Closed today". */
-	private static String opensNext(List<DayHours> hours, DayOfWeek today, LocalTime now, SiteText text) {
+	private static String opensNext(List<DayHours> hours, DayOfWeek today, LocalTime now, Wording text) {
 		DayHours todays = find(hours, today);
 		if (todays != null && now.isBefore(todays.openTime())) {
 			return text.get("open.at", text.format().clock(todays.openTime()));
@@ -212,8 +214,8 @@ class SitePageService {
 	}
 
 	private SitePage.Slots slots(String slug, VenueResponse venue, Contact contact, LocalDate date, LocalDate today,
-			String linkPrefix, String bookingBase, String mine, SiteText text) {
-		SiteFormat format = text.format();
+			String linkPrefix, String bookingBase, String mine, Wording text) {
+		TextFormat format = text.format();
 		AvailabilityResponse open = this.availability.forPlayers(slug, date);
 		List<SitePage.CourtSlots> courts = new ArrayList<>();
 		List<Map.Entry<java.time.OffsetDateTime, SitePage.BoardRow>> board = new ArrayList<>();
@@ -250,7 +252,7 @@ class SitePageService {
 		return new SitePage.Slots(dayLabel, relative, days, courts, rows, free, count, bookingBase != null, mine);
 	}
 
-	private static SitePage.Pricing pricing(List<CourtResponse> courts, SiteText text) {
+	private static SitePage.Pricing pricing(List<CourtResponse> courts, Wording text) {
 		BigDecimal lowest = null;
 		List<SitePage.Court> list = new ArrayList<>();
 		for (CourtResponse court : courts) {
@@ -279,7 +281,7 @@ class SitePageService {
 	 * Prices as the venue thinks of them. A late-night price is stored as two rules split at midnight
 	 * (10 PM – 12 AM and 12 AM – 1 AM, same day, label and price); they read as one: 10 PM – 1 AM.
 	 */
-	private static List<SitePage.Price> joinAcrossMidnight(List<PricingRuleResponse> rules, SiteText text) {
+	private static List<SitePage.Price> joinAcrossMidnight(List<PricingRuleResponse> rules, Wording text) {
 		// Pair each "to midnight" rule with its "from midnight" continuation first, so either order works
 		Map<PricingRuleResponse, PricingRuleResponse> continuations = new LinkedHashMap<>();
 		for (PricingRuleResponse rule : rules) {
@@ -306,7 +308,7 @@ class SitePageService {
 		return prices;
 	}
 
-	private static List<SitePage.HoursRow> hours(List<DayHours> hours, DayOfWeek today, SiteText text) {
+	private static List<SitePage.HoursRow> hours(List<DayHours> hours, DayOfWeek today, Wording text) {
 		return WEEK.stream().map(day -> {
 			DayHours saved = hours.stream().filter(h -> h.day() == day).findFirst().orElse(null);
 			String open = (saved == null || Boolean.TRUE.equals(saved.closed()) || saved.openTime() == null) ? text.get("hours.closed")
@@ -315,7 +317,7 @@ class SitePageService {
 		}).toList();
 	}
 
-	private List<SitePage.Review> reviews(String slug, SiteText text) {
+	private List<SitePage.Review> reviews(String slug, Wording text) {
 		List<ReviewResponse> latest = this.reviews.published(slug, PageRequest.of(0, 6, Sort.by(Sort.Order.desc("createdAt"))))
 			.content();
 		return latest.stream()
@@ -324,12 +326,12 @@ class SitePageService {
 			.toList();
 	}
 
-	private List<SitePage.Plan> plans(String slug, SiteText text) {
+	private List<SitePage.Plan> plans(String slug, Wording text) {
 		return this.memberships.plansOnSale(slug).stream().map(plan -> plan(plan, text)).toList();
 	}
 
-	private static SitePage.Plan plan(MembershipPlanResponse plan, SiteText text) {
-		SiteFormat format = text.format();
+	private static SitePage.Plan plan(MembershipPlanResponse plan, Wording text) {
+		TextFormat format = text.format();
 		String valid = text.get("plan.valid", format.number(plan.validityDays()));
 		String summary = (plan.type() == MembershipType.GAME_PACK) ? text.get("plan.games", format.number(plan.gamesIncluded()), valid)
 				: (plan.gamesIncluded() != null)
@@ -338,12 +340,12 @@ class SitePageService {
 		return new SitePage.Plan(plan.name(), summary, format.rupees(plan.price()), plan.description());
 	}
 
-	private List<SitePage.Tournament> tournaments(VenueResponse venue, SiteText text) {
+	private List<SitePage.Tournament> tournaments(VenueResponse venue, Wording text) {
 		return this.tournaments.upcomingAtVenue(venue.id()).stream().map(t -> tournament(t, text)).toList();
 	}
 
-	private static SitePage.Tournament tournament(TournamentViews.Summary t, SiteText text) {
-		SiteFormat format = text.format();
+	private static SitePage.Tournament tournament(TournamentViews.Summary t, Wording text) {
+		TextFormat format = text.format();
 		String dates = t.startsOn().equals(t.endsOn()) ? format.day(t.startsOn())
 				: format.day(t.startsOn()) + " – " + format.day(t.endsOn());
 		String entry = (t.entryFee() == null || t.entryFee().signum() == 0) ? text.get("tournament.free")
@@ -354,7 +356,7 @@ class SitePageService {
 	}
 
 	private SitePage.Seo seo(VenueResponse venue, SitePage.Venue about, SitePage.Pricing pricing, SitePage.Rating rating,
-			Contact contact, String canonical, String cover, boolean noindex, SiteText text) {
+			Contact contact, String canonical, String cover, boolean noindex, Wording text) {
 		String title = text.get("seo.title", venue.name(), about.place());
 		List<String> sentences = new ArrayList<>();
 		String courts = text.get((about.courtCount() == 1) ? "seo.courts.one" : "seo.courts.many", about.courts());
@@ -373,7 +375,7 @@ class SitePageService {
 
 	/** schema.org data search engines use for opening hours, location, prices and rating. */
 	private String jsonLd(VenueResponse venue, SitePage.Pricing pricing, SitePage.Rating rating, Contact contact,
-			String canonical, String image, SiteText text) {
+			String canonical, String image, Wording text) {
 		Map<String, Object> data = new LinkedHashMap<>();
 		data.put("@context", "https://schema.org");
 		data.put("@type", "SportsActivityLocation");
@@ -403,7 +405,7 @@ class SitePageService {
 			.filter(h -> !Boolean.TRUE.equals(h.closed()) && h.openTime() != null)
 			.sorted(Comparator.comparing(h -> WEEK.indexOf(h.day())))
 			.map(h -> Map.<String, Object>of("@type", "OpeningHoursSpecification", "dayOfWeek",
-					"https://schema.org/" + SiteFormat.ENGLISH.weekday(h.day()), "opens", hhmm(h.openTime()), "closes", hhmm(h.closeTime())))
+					"https://schema.org/" + TextFormat.ENGLISH.weekday(h.day()), "opens", hhmm(h.openTime()), "closes", hhmm(h.closeTime())))
 			.toList();
 		if (!opening.isEmpty()) {
 			data.put("openingHoursSpecification", opening);

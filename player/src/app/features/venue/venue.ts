@@ -10,7 +10,8 @@ import { Availability, CourtSlots, RatingSummary, Review, Slot, VenueDetail } fr
 import { digits, l } from '../../i18n/i18n';
 import { hoursLabel, policyLines, week } from '../../shared/booking-model';
 import { VenuePlans } from './plans';
-import { addDays, ago, dayLabel, localClock, phone, rupees, shortDate, today, weekdayShort } from '../../shared/format';
+import { addDays, ago, dayLabel, localClock, phone, rupees, shortDate, today } from '../../shared/format';
+import { DayStrip } from '../../shared/day-strip';
 import { amenityLabel } from '../../shared/labels';
 
 function slotKey(courtId: string, startsAt: string): string {
@@ -23,7 +24,7 @@ const DAYS_SHOWN = 14;
 /** One venue: photos and details, free slots by day and court, the booking rules, and reviews. */
 @Component({
   selector: 'fs-venue',
-  imports: [RouterLink, LucideAngularModule, VenuePlans],
+  imports: [RouterLink, LucideAngularModule, VenuePlans, DayStrip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './venue.html',
 })
@@ -122,10 +123,6 @@ export class VenuePage {
 
   protected pickDay(day: string): void {
     void this.router.navigate([], { queryParams: { date: day }, replaceUrl: true });
-  }
-
-  protected dayName(day: string, index: number): string {
-    return index === 0 ? l().today : index === 1 ? l().tomorrow : weekdayShort(day);
   }
 
   /** Slots that haven't started: past ones only clutter today's list. */

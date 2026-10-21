@@ -33,6 +33,8 @@ import com.futslot.booking.BookingStatus;
 import com.futslot.booking.PlayerBookingRequest;
 import com.futslot.booking.QuoteResponse;
 import com.futslot.common.ApiException;
+import com.futslot.common.TextFormat;
+import com.futslot.common.Wording;
 import com.futslot.deposit.DepositService;
 import com.futslot.deposit.DepositViews;
 import com.futslot.payment.PaymentMethod;
@@ -83,13 +85,16 @@ class SiteBookingController {
 	/** Where players send deposit top-ups: FutSlot's own wallet or account. */
 	private final String futslotPaymentInstructions;
 
+	/** The same in Nepali, or empty. */
+	private final String futslotPaymentInstructionsNepali;
+
 	private final Clock clock;
 
 	SiteBookingController(VenueSiteRepository sites, SitePageService pages, VenueService venues,
 			AvailabilityService availability, BookingService bookings, PageSignIn signIn, PlayerPayments payments,
 			SiteSession session, DepositService deposits, SiteLanguage language,
 			@Value("${futslot.subscriptions.payment-instructions:Contact FutSlot for payment details}") String futslotPaymentInstructions,
-			Clock clock) {
+			@Value("${futslot.subscriptions.payment-instructions-ne:}") String futslotPaymentInstructionsNepali, Clock clock) {
 		this.sites = sites;
 		this.pages = pages;
 		this.venues = venues;
@@ -101,6 +106,7 @@ class SiteBookingController {
 		this.deposits = deposits;
 		this.language = language;
 		this.futslotPaymentInstructions = futslotPaymentInstructions;
+		this.futslotPaymentInstructionsNepali = futslotPaymentInstructionsNepali;
 		this.clock = clock;
 	}
 
@@ -123,7 +129,7 @@ class SiteBookingController {
 			return "redirect:" + context.base() + "/book?court=" + encode(court) + "&start=" + encode(start);
 		}
 		catch (ApiException ex) {
-			String error = "PASSWORD_NOT_SET".equals(ex.getCode()) ? context.text().get("book.passwordNotSet") : ex.getMessage();
+			String error = "PASSWORD_NOT_SET".equals(ex.getCode()) ? context.text().get("book.passwordNotSet") : context.text().error(ex);
 			return render(model, context, "phone", court, start, phone, false, error, null, null);
 		}
 	}
@@ -140,7 +146,7 @@ class SiteBookingController {
 			if ("OTP_COOLDOWN".equals(ex.getCode())) {
 				return render(model, context, "code", court, start, phone, false, null, context.text().get("book.codeSentMoment"), null);
 			}
-			return render(model, context, "phone", court, start, phone, false, ex.getMessage(), null, null);
+			return render(model, context, "phone", court, start, phone, false, context.text().error(ex), null, null);
 		}
 	}
 
@@ -158,7 +164,7 @@ class SiteBookingController {
 			boolean needsName = "FULL_NAME_REQUIRED".equals(ex.getCode());
 			return needsName
 					? render(model, context, "code", court, start, phone, true, null, context.text().get("book.welcome"), null)
-					: render(model, context, "code", court, start, phone, false, ex.getMessage(), null, null);
+					: render(model, context, "code", court, start, phone, false, context.text().error(ex), null, null);
 		}
 	}
 
@@ -181,7 +187,7 @@ class SiteBookingController {
 			return "redirect:" + context.base() + "/bookings/" + booking.id();
 		}
 		catch (ApiException ex) {
-			return render(model, context, "confirm", court, start, null, false, ex.getMessage(), null, player.get());
+			return render(model, context, "confirm", court, start, null, false, context.text().error(ex), null, player.get());
 		}
 	}
 
@@ -231,7 +237,7 @@ class SiteBookingController {
 			return "redirect:" + context.base() + "/bookings/" + bookingId + "?sent=1";
 		}
 		catch (ApiException | IllegalArgumentException ex) {
-			String message = (ex instanceof ApiException api) ? api.getMessage() : context.text().get("book.chooseHowPaid");
+			String message = (ex instanceof ApiException api) ? context.text().error(api) : context.text().get("book.chooseHowPaid");
 			model.addAttribute("book", new BookPage(context.site(), "booking", null, null, false, message, null, true,
 					view(booking, context, this.payments.awaitingCheck(bookingId)), List.of()));
 			return "sites/book";
@@ -268,7 +274,7 @@ class SiteBookingController {
 			return "redirect:" + context.base() + "/deposit?sent=1" + back;
 		}
 		catch (ApiException | IllegalArgumentException ex) {
-			String message = (ex instanceof ApiException api) ? api.getMessage() : context.text().get("book.chooseHowPaid");
+			String message = (ex instanceof ApiException api) ? context.text().error(api) : context.text().get("book.chooseHowPaid");
 			return renderDeposit(model, context, player, court, start, message, null);
 		}
 	}
@@ -290,7 +296,7 @@ class SiteBookingController {
 			return "redirect:" + context.base() + "/deposit";
 		}
 		catch (ApiException | IllegalArgumentException ex) {
-			String message = (ex instanceof ApiException api) ? api.getMessage() : context.text().get("book.chooseWhereToSend");
+			String message = (ex instanceof ApiException api) ? context.text().error(api) : context.text().get("book.chooseWhereToSend");
 			return renderDeposit(model, context, player, null, null, message, null);
 		}
 	}
@@ -308,13 +314,13 @@ class SiteBookingController {
 			return "redirect:" + context.base() + "/deposit";
 		}
 		catch (ApiException ex) {
-			return renderDeposit(model, context, player, null, null, ex.getMessage(), null);
+			return renderDeposit(model, context, player, null, null, context.text().error(ex), null);
 		}
 	}
 
 	private String renderDeposit(Model model, Context context, UUID player, String court, String start, String error,
 			String notice) {
-		SiteFormat format = context.text().format();
+		TextFormat format = context.text().format();
 		List<BookPage.Method> sendMethods = sendMethods(context.text());
 		DepositViews.Deposit mine = this.deposits.forPlayer(player);
 		BigDecimal toAdd = mine.toAdd();
@@ -324,7 +330,9 @@ class SiteBookingController {
 				format.day(open.dueAt().atZone(ZoneId.of(context.venue().timezone())).toLocalDate())) : null;
 		BookPage.Deposit deposit = new BookPage.Deposit(format.rupees(DepositService.AMOUNT),
 				format.rupees(mine.balance()), (toAdd.signum() > 0) ? format.rupees(toAdd) : null,
-				toAdd.toPlainString(), this.payments.depositTopUpBeingChecked(player), this.futslotPaymentInstructions,
+				toAdd.toPlainString(), this.payments.depositTopUpBeingChecked(player),
+				(context.text().nepali() && StringUtils.hasText(this.futslotPaymentInstructionsNepali))
+						? this.futslotPaymentInstructionsNepali : this.futslotPaymentInstructions,
 				methods(context.text()), withdrawal, open == null && mine.balance().signum() > 0, sendMethods,
 				StringUtils.hasText(court) ? court : null, StringUtils.hasText(start) ? start : null);
 		model.addAttribute("book", new BookPage(context.site(), "deposit", null, null, false, error, notice, true, null,
@@ -351,7 +359,7 @@ class SiteBookingController {
 	/** The slot as the player will pay for it: with their membership or price, once we know who they are. */
 	private BookPage.Slot slot(Found found, Context context, String court, String start, UUID player) {
 		VenueResponse venue = context.venue();
-		SiteFormat format = context.text().format();
+		TextFormat format = context.text().format();
 		BigDecimal total = found.slot().price();
 		BigDecimal advance = total.multiply(BigDecimal.valueOf(venue.policy().advancePercent()))
 			.divide(BigDecimal.valueOf(100), 0, RoundingMode.CEILING);
@@ -427,8 +435,8 @@ class SiteBookingController {
 
 	private BookPage.Booking view(BookingResponse booking, Context context, boolean checking) {
 		VenueResponse venue = context.venue();
-		SiteText text = context.text();
-		SiteFormat format = text.format();
+		Wording text = context.text();
+		TextFormat format = text.format();
 		ZoneId zone = ZoneId.of(venue.timezone());
 		LocalDate day = booking.startsAt().atZoneSameInstant(zone).toLocalDate();
 		String time = format.clock(booking.startsAt().toLocalTime()) + " – " + format.clock(booking.endsAt().toLocalTime());
@@ -462,7 +470,7 @@ class SiteBookingController {
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		String slug = this.pages.slugOf(site.getVenueId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		VenueResponse venue = this.venues.getActiveBySlug(slug);
-		SiteText text = this.language.of(request);
+		Wording text = this.language.of(request);
 		String base = SiteLanguage.base(request, site.getSubdomain(), text.nepali());
 		String color = (site.getAccentColor() != null) ? site.getAccentColor() : SitePageService.defaultAccent(site.getTemplate());
 		boolean dark = site.getTemplate() == SiteTemplate.FLOODLIGHT;
@@ -474,13 +482,13 @@ class SiteBookingController {
 		return new Context(view, venue, slug, base, text);
 	}
 
-	private static List<BookPage.Method> methods(SiteText text) {
+	private static List<BookPage.Method> methods(Wording text) {
 		return List.of(new BookPage.Method("ESEWA", "eSewa"), new BookPage.Method("KHALTI", "Khalti"),
 				new BookPage.Method("FONEPAY", "Fonepay"), new BookPage.Method("BANK_TRANSFER", text.get("method.bankTransfer")));
 	}
 
 	/** Where FutSlot can send a deposit back. */
-	private static List<BookPage.Method> sendMethods(SiteText text) {
+	private static List<BookPage.Method> sendMethods(Wording text) {
 		return List.of(new BookPage.Method("ESEWA", "eSewa"), new BookPage.Method("KHALTI", "Khalti"),
 				new BookPage.Method("BANK_TRANSFER", text.get("method.bankAccount")));
 	}
@@ -493,7 +501,7 @@ class SiteBookingController {
 		return URLEncoder.encode(value, StandardCharsets.UTF_8);
 	}
 
-	private record Context(BookPage.Site site, VenueResponse venue, String slug, String base, SiteText text) {
+	private record Context(BookPage.Site site, VenueResponse venue, String slug, String base, Wording text) {
 	}
 
 	private record Found(UUID courtId, String courtName, Slot slot) {

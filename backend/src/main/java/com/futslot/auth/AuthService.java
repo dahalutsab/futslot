@@ -6,12 +6,14 @@ import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.futslot.common.ApiException;
+import com.futslot.common.Languages;
 import com.futslot.common.PhoneNumbers;
 import com.futslot.config.SecurityProperties;
 import com.futslot.user.AccountCreated;
@@ -197,7 +199,10 @@ class AuthService {
 			// The code stays valid so the app can ask for a name and resubmit it
 			throw new ApiException(HttpStatus.BAD_REQUEST, "FULL_NAME_REQUIRED", "Enter your name to create an account");
 		}
-		User user = this.users.save(new User(phone, fullName.strip()));
+		User user = new User(phone, fullName.strip());
+		// In the language they signed up in, so texts and notifications follow it from the start
+		user.setPreferredLanguage(Languages.isNepali(LocaleContextHolder.getLocale()) ? "ne" : "en");
+		user = this.users.save(user);
 		this.events.publishEvent(new AccountCreated(user.getId(), user.getPhone()));
 		return user;
 	}
@@ -216,7 +221,7 @@ class AuthService {
 		Duration lockout = this.properties.lockout();
 		return new ApiException(HttpStatus.TOO_MANY_REQUESTS, "SIGN_IN_LOCKED",
 				"Too many wrong passwords. Try again in %d minutes, or reset your password"
-					.formatted(lockout.toMinutes()));
+					.formatted(lockout.toMinutes()), lockout.toMinutes());
 	}
 
 	private static ApiException accountExists() {

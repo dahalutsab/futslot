@@ -21,9 +21,16 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
+	private final Words words;
+
+	GlobalExceptionHandler(Words words) {
+		this.words = words;
+	}
+
+	/** {@code detail} is in the request's language (Accept-Language), so apps can show it as it is. */
 	@ExceptionHandler(ApiException.class)
 	ProblemDetail handleApiException(ApiException ex) {
-		ProblemDetail problem = ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage());
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(ex.getStatus(), this.words.forRequest().error(ex));
 		problem.setProperty("code", ex.getCode());
 		return problem;
 	}
@@ -36,7 +43,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			errors.putIfAbsent(error.getField(), error.getDefaultMessage());
 		}
 		ProblemDetail problem = ex.getBody();
-		problem.setDetail("Request validation failed");
+		problem.setDetail(this.words.forRequest().orElse("error.VALIDATION_FAILED", "Request validation failed"));
 		problem.setProperty("code", "VALIDATION_FAILED");
 		problem.setProperty("errors", errors);
 		return handleExceptionInternal(ex, problem, headers, status, request);

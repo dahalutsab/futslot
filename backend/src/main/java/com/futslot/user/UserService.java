@@ -23,6 +23,12 @@ public class UserService {
 			.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "User not found"));
 	}
 
+	/** The language the user reads FutSlot in: "en" or "ne"; English for someone who's gone. */
+	@Transactional(readOnly = true)
+	public String language(UUID id) {
+		return this.users.findById(id).map(User::getPreferredLanguage).orElse("en");
+	}
+
 	@Transactional
 	public void grantRole(UUID id, Role role) {
 		get(id).getRoles().add(role);

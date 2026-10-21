@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
 import '../l10n/l10n.dart';
+import 'format.dart';
 
 /// A bordered surface, the app's basic block. [color] tints it for a state (held, being checked...).
 class FsCard extends StatelessWidget {
@@ -417,6 +418,69 @@ class PillChoices<T> extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The next few days to choose between, side by side: "Today", "Tomorrow", then weekday and date ("बिहि", "२३
+/// आश्विन" in Nepali). [days] are YYYY-MM-DD, the first of them today.
+class DayStrip extends StatelessWidget {
+  const DayStrip({super.key, required this.days, required this.selected, required this.onPick});
+
+  final List<String> days;
+  final String? selected;
+  final ValueChanged<String> onPick;
+
+  String _name(String day, int index) =>
+      index == 0 ? l.today : index == 1 ? l.tomorrow : weekdayShort(day);
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.fs;
+    return SizedBox(
+      height: 64,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: days.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final day = days[index];
+          final on = day == selected;
+          return Semantics(
+            selected: on,
+            button: true,
+            child: Material(
+              color: on ? c.ink : c.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: BorderSide(color: on ? c.ink : c.border),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () => onPick(day),
+                child: Container(
+                  constraints: const BoxConstraints(minWidth: 64),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _name(day, index),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: on ? c.inkFg : c.muted),
+                      ),
+                      Text(
+                        shortDate(day),
+                        style: TextStyle(fontSize: 12, color: on ? c.inkFg : c.muted, fontFeatures: tabular),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

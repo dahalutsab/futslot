@@ -3,10 +3,11 @@ package com.futslot.site;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
 import com.futslot.common.Languages;
+import com.futslot.common.Wording;
+import com.futslot.common.Words;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,21 +25,21 @@ class SiteLanguage {
 
 	private static final Pattern NEPALI_PAGE = Pattern.compile("/sites/[^/]+" + NEPALI + "(/.*)?");
 
-	private final MessageSource messages;
+	private final Words words;
 
-	SiteLanguage(MessageSource messages) {
-		this.messages = messages;
+	SiteLanguage(Words words) {
+		this.words = words;
 	}
 
 	/** The language of the page being asked for, from its address. */
-	SiteText of(HttpServletRequest request) {
+	Wording of(HttpServletRequest request) {
 		return of(nepali(request) ? Languages.NEPALI : Languages.ENGLISH, request);
 	}
 
 	/** {@code locale} for this page: its wording, and Thymeleaf's for the templates' #{...} messages. */
-	SiteText of(Locale locale, HttpServletRequest request) {
+	Wording of(Locale locale, HttpServletRequest request) {
 		request.setAttribute(Languages.CHOSEN, locale);
-		return new SiteText(this.messages, locale);
+		return this.words.in(locale);
 	}
 
 	/**

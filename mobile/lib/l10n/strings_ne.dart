@@ -1916,7 +1916,7 @@ class SNe extends S {
   String get when => 'कहिले';
 
   @override
-  String get pickDayTime => 'दिन र समय छान्नुहोस्';
+  String get pickTime => 'समय छान्नुहोस्';
 
   @override
   String get playersNeeded => 'चाहिने खेलाडी';

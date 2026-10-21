@@ -16,6 +16,9 @@ import '../../shared/widgets.dart';
 /// Nepal's offset, for a time picked without one.
 const _nepalOffset = '+05:45';
 
+/// How far ahead a game can be posted: the API takes up to 30 days from now.
+const _daysAhead = 30;
+
 /// Posting a game: short of players for one of your bookings, or your team looking for an opponent. Where and when
 /// come from the booking, or when nothing's booked yet, from a venue (or just a city) and a time.
 class NewMatchScreen extends ConsumerStatefulWidget {
@@ -43,8 +46,10 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
 
   final _city = TextEditingController();
 
-  /// When, picked as a Nepal date and time.
-  DateTime? _when;
+  /// When: a day in Nepal (YYYY-MM-DD) and a time on it.
+  String? _day;
+
+  TimeOfDay? _time;
 
   final _needed = TextEditingController(text: '2');
 
@@ -98,30 +103,23 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     super.dispose();
   }
 
-  Future<void> _pickWhen() async {
-    final now = DateTime.now();
-    final day = await showDatePicker(
-      context: context,
-      initialDate: _when ?? now,
-      firstDate: DateTime(now.year, now.month, now.day),
-      lastDate: now.add(const Duration(days: 60)),
-    );
-    if (day == null || !mounted) {
-      return;
-    }
-    final time = await showTimePicker(
-      context: context,
-      initialTime: _when != null ? TimeOfDay.fromDateTime(_when!) : const TimeOfDay(hour: 18, minute: 0),
-    );
+  /// Today and the days after it that a game can be posted for, in Nepal.
+  List<String> get _days {
+    final first = today('Asia/Kathmandu');
+    return [for (var i = 0; i < _daysAhead; i++) addDays(first, i)];
+  }
+
+  Future<void> _pickTime() async {
+    final time = await showTimePicker(context: context, initialTime: _time ?? const TimeOfDay(hour: 18, minute: 0));
     if (time != null && mounted) {
-      setState(() => _when = DateTime(day.year, day.month, day.day, time.hour, time.minute));
+      setState(() => _time = time);
     }
   }
 
   /// "2026-10-20T18:00:00+05:45".
-  static String _startsAt(DateTime when) {
+  static String _startsAt(String day, TimeOfDay time) {
     String two(int n) => n.toString().padLeft(2, '0');
-    return '${when.year}-${two(when.month)}-${two(when.day)}T${two(when.hour)}:${two(when.minute)}:00$_nepalOffset';
+    return '${day}T${two(time.hour)}:${two(time.minute)}:00$_nepalOffset';
   }
 
   bool get _canPost => _type == MatchPostType.needPlayers || _teams.isNotEmpty;
@@ -130,8 +128,9 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     final bookingId = _bookingId;
     final venueId = bookingId == null ? _venueId : null;
     final city = _city.text.trim();
-    final when = _when;
-    if (bookingId == null && (when == null || (venueId == null && city.isEmpty))) {
+    final day = _day;
+    final time = _time;
+    if (bookingId == null && (day == null || time == null || (venueId == null && city.isEmpty))) {
       setState(() => _error = l.sayWhereWhen);
       return;
     }
@@ -149,7 +148,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
         bookingId: bookingId,
         venueId: venueId,
         city: bookingId == null && venueId == null ? city : null,
-        startsAt: bookingId == null ? _startsAt(when!) : null,
+        startsAt: bookingId == null ? _startsAt(day!, time!) : null,
         playersNeeded: needPlayers ? int.tryParse(_needed.text) ?? 1 : null,
         costPerPlayer: needPlayers && cost != null && cost > 0 ? cost : null,
         skillLevel: _skill,
@@ -173,7 +172,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
   Widget build(BuildContext context) {
     final c = context.fs;
     final text = Theme.of(context).textTheme;
-    final when = _when;
+    final time = _time;
     return Scaffold(
       appBar: AppBar(title: Text(l.postAGame)),
       body: ScreenBody(
@@ -284,14 +283,15 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             ],
             const SizedBox(height: 12),
             FieldLabel(l.when),
+            // Days in the app's own calendar (Bikram Sambat in Nepali), rather than a Gregorian date picker
+            DayStrip(days: _days, selected: _day, onPick: (day) => setState(() => _day = day)),
+            const SizedBox(height: 8),
             OutlinedButton.icon(
-              onPressed: _pickWhen,
+              onPressed: _pickTime,
               style: OutlinedButton.styleFrom(alignment: Alignment.centerLeft, minimumSize: const Size.fromHeight(48)),
-              icon: const Icon(LucideIcons.calendarDays, size: 18),
+              icon: const Icon(LucideIcons.clock, size: 18),
               label: Text(
-                when == null
-                    ? l.pickDayTime
-                    : '${dayLabel(_startsAt(when).substring(0, 10))} · ${clock(when.hour * 60 + when.minute)}',
+                time == null ? l.pickTime : clock(time.hour * 60 + time.minute),
                 style: const TextStyle(fontFeatures: tabular),
               ),
             ),

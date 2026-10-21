@@ -110,17 +110,20 @@ public class TeamService {
 			.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "PLAYER_NOT_FOUND",
 					"Nobody has signed up with that number yet. Ask them to join FutSlot first"));
 		if (this.members.countByTeamIdAndStatusIn(teamId, SQUAD_AND_INVITED) >= MAX_SQUAD) {
-			throw new ApiException(HttpStatus.CONFLICT, "TEAM_FULL", "A team can have at most " + MAX_SQUAD + " players");
+			throw new ApiException(HttpStatus.CONFLICT, "TEAM_FULL", "A team can have at most " + MAX_SQUAD + " players", MAX_SQUAD)
+				.variant("max");
 		}
 		TeamMember member = this.members.findByTeamIdAndUserId(teamId, invitee.getId()).orElse(null);
 		if (member == null) {
 			this.members.save(TeamMember.invited(teamId, invitee));
 		}
 		else if (member.getStatus() == MemberStatus.ACTIVE) {
-			throw new ApiException(HttpStatus.CONFLICT, "ALREADY_MEMBER", invitee.getFullName() + " is already in the team");
+			throw new ApiException(HttpStatus.CONFLICT, "ALREADY_MEMBER", invitee.getFullName() + " is already in the team",
+					invitee.getFullName());
 		}
 		else if (member.getStatus() == MemberStatus.INVITED) {
-			throw new ApiException(HttpStatus.CONFLICT, "ALREADY_INVITED", invitee.getFullName() + " is already invited");
+			throw new ApiException(HttpStatus.CONFLICT, "ALREADY_INVITED", invitee.getFullName() + " is already invited",
+					invitee.getFullName());
 		}
 		else {
 			member.reinvite();
@@ -168,7 +171,7 @@ public class TeamService {
 			.orElseThrow(TeamService::memberNotFound);
 		if (member.getRole() == TeamRole.CAPTAIN
 				|| (member.getRole() == TeamRole.VICE_CAPTAIN && actor.getRole() != TeamRole.CAPTAIN)) {
-			throw forbidden("Only the captain can remove a vice-captain, and the captain can't be removed");
+			throw forbidden("Only the captain can remove a vice-captain, and the captain can't be removed").variant("remove");
 		}
 		if (member.getStatus() == MemberStatus.INVITED) {
 			this.members.delete(member);
@@ -187,7 +190,7 @@ public class TeamService {
 			.filter(TeamMember::isActive)
 			.orElseThrow(TeamService::teamNotFound);
 		if (actor.getRole() != TeamRole.CAPTAIN) {
-			throw forbidden("Only the captain can change roles");
+			throw forbidden("Only the captain can change roles").variant("roles");
 		}
 		TeamMember member = this.members.findByTeamIdAndUserId(teamId, memberId)
 			.filter(TeamMember::isActive)

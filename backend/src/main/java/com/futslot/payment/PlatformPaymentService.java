@@ -140,7 +140,7 @@ class PlatformPaymentService {
 				(payment.getPurpose() == PaymentPurpose.DEPOSIT) ? "your booking deposit"
 						: (payment.getInvoice() != null) ? "your " + payment.getInvoice().getInvoiceNumber() + " invoice"
 								: "your featured listing",
-				reason.strip()));
+				reason.strip(), payment.getPurpose() == PaymentPurpose.DEPOSIT));
 		return response(payment);
 	}
 

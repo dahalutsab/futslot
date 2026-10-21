@@ -1,9 +1,12 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:futslot/core/api_types.dart';
+import 'package:futslot/core/theme.dart';
 import 'package:futslot/l10n/l10n.dart';
 import 'package:futslot/shared/booking_model.dart';
 import 'package:futslot/shared/format.dart';
 import 'package:futslot/shared/labels.dart';
+import 'package:futslot/shared/widgets.dart';
 
 void main() {
   setUp(() => useLanguage(AppLanguage.ne));
@@ -35,6 +38,23 @@ void main() {
     expect(shortDate('2026-10-19'), '२ कार्तिक');
     expect(fullDate('2027-01-01'), '१७ पौष २०८३');
     expect(weekdayShort('2026-10-24'), 'शनि');
+  });
+
+  testWidgets('the days to pick from are Bikram Sambat too', (tester) async {
+    String? picked;
+    await tester.pumpWidget(MaterialApp(
+      theme: buildTheme(Brightness.light),
+      home: Scaffold(
+        body: DayStrip(days: const ['2026-10-19', '2026-10-20', '2026-10-21'], selected: null, onPick: (day) => picked = day),
+      ),
+    ));
+
+    expect(find.text('आज'), findsOneWidget);
+    expect(find.text('भोलि'), findsOneWidget);
+    expect(find.text('बुध'), findsOneWidget);
+    expect(find.text('४ कार्तिक'), findsOneWidget);
+    await tester.tap(find.text('बुध'));
+    expect(picked, '2026-10-21');
   });
 
   test('phone numbers stay in Latin digits, to copy and type', () {

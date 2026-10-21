@@ -1274,7 +1274,7 @@
   "city": "City",
   "cityHint": "Kathmandu",
   "when": "When",
-  "pickDayTime": "Pick a day and time",
+  "pickTime": "Pick a time",
   "playersNeeded": "Players needed",
   "eachPays": "Each pays",
   "level": "Level",

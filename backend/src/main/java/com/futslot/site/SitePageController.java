@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.futslot.common.Languages;
+import com.futslot.common.Wording;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -56,7 +57,7 @@ class SitePageController {
 		VenueSite site = published(subdomain);
 		String slug = this.pages.slugOf(site.getVenueId())
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-		SiteText text = this.language.of(request);
+		Wording text = this.language.of(request);
 		// On the venue's own address the booking pages are at /book; at /sites/{subdomain} they're beneath it
 		String base = SiteLanguage.base(request, site.getSubdomain(), text.nepali());
 		String other = SiteLanguage.home(SiteLanguage.base(request, site.getSubdomain(), !text.nepali()))
@@ -80,7 +81,7 @@ class SitePageController {
 			HttpServletRequest request) {
 		SiteTemplate chosen = parseTemplate(template);
 		String color = (accent != null && accent.matches("#?[0-9a-fA-F]{6}")) ? "#" + accent.replace("#", "").toLowerCase(Locale.ROOT) : null;
-		SiteText text = this.language.of(Languages.of(lang), request);
+		Wording text = this.language.of(Languages.of(lang), request);
 		String view = "?template=" + chosen.name() + (color != null ? "&accent=" + color.substring(1) : "");
 		String prefix = view + (text.nepali() ? "&lang=ne" : "") + "&";
 		model.addAttribute("page", this.pages.build(slug, chosen, color, headline, date, this.properties.urlFor(slug), prefix, true,

@@ -82,7 +82,8 @@ public class DiscountCodeService {
 		}
 		if (code.getMinBookingAmount() != null && price.compareTo(code.getMinBookingAmount()) < 0) {
 			throw invalid("DISCOUNT_MIN_AMOUNT",
-					"That code needs a booking of at least Rs " + code.getMinBookingAmount().toPlainString());
+					"That code needs a booking of at least Rs " + code.getMinBookingAmount().toPlainString())
+				.with(code.getMinBookingAmount());
 		}
 		if (code.getUsageLimit() != null && code.getUsedCount() >= code.getUsageLimit()) {
 			throw invalid("DISCOUNT_USED_UP", "That code has been fully used");

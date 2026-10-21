@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.futslot.common.CurrentUser;
+import com.futslot.common.Words;
 import com.futslot.payment.PaymentResponse;
 import com.futslot.payment.PlayerPayments;
 
@@ -34,19 +36,29 @@ class DepositController {
 	/** Where players send top-ups: FutSlot's own wallet or account, as for venues paying their invoices. */
 	private final String paymentInstructions;
 
-	DepositController(DepositService deposits, PayoutService payouts, PlayerPayments payments,
-			@Value("${futslot.subscriptions.payment-instructions:Contact FutSlot for payment details}") String paymentInstructions) {
+	/** The same in Nepali, or empty. */
+	private final String paymentInstructionsNepali;
+
+	private final Words words;
+
+	DepositController(DepositService deposits, PayoutService payouts, PlayerPayments payments, Words words,
+			@Value("${futslot.subscriptions.payment-instructions:Contact FutSlot for payment details}") String paymentInstructions,
+			@Value("${futslot.subscriptions.payment-instructions-ne:}") String paymentInstructionsNepali) {
 		this.deposits = deposits;
 		this.payouts = payouts;
 		this.payments = payments;
+		this.words = words;
 		this.paymentInstructions = paymentInstructions;
+		this.paymentInstructionsNepali = paymentInstructionsNepali;
 	}
 
 	@GetMapping("/me/deposit")
 	DepositViews.Deposit deposit(@AuthenticationPrincipal Jwt jwt) {
 		UUID userId = CurrentUser.id(jwt);
 		return this.deposits.forPlayer(userId)
-			.withTopUp(this.payments.depositTopUpBeingChecked(userId), this.paymentInstructions);
+			.withTopUp(this.payments.depositTopUpBeingChecked(userId),
+					(this.words.forRequest().nepali() && StringUtils.hasText(this.paymentInstructionsNepali))
+							? this.paymentInstructionsNepali : this.paymentInstructions);
 	}
 
 	@PostMapping("/me/deposit/top-ups")

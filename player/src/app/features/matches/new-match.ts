@@ -6,12 +6,16 @@ import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { Booking, MatchPostRequest, MatchPostType, SkillLevel, Team, VenueSummary } from '../../core/api.types';
 import { l } from '../../i18n/i18n';
-import { dayLabel, localClock } from '../../shared/format';
+import { DayStrip } from '../../shared/day-strip';
+import { addDays, dayLabel, localClock, today } from '../../shared/format';
 import { skillLabels } from '../../shared/labels';
 import { PlayNav } from '../../shared/play-nav';
 
 /** Nepal's offset, for a time picked without one. */
 const NEPAL_OFFSET = '+05:45';
+
+/** How many days ahead a game can be posted. */
+const DAYS_AHEAD = 30;
 
 /**
  * Posting a game: short of players for one of your bookings, or your team looking for an opponent. Where and
@@ -19,7 +23,7 @@ const NEPAL_OFFSET = '+05:45';
  */
 @Component({
   selector: 'fs-new-match',
-  imports: [FormsModule, RouterLink, PlayNav],
+  imports: [FormsModule, RouterLink, PlayNav, DayStrip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-xl px-4 py-6 lg:py-10">
@@ -82,6 +86,11 @@ const NEPAL_OFFSET = '+05:45';
               </select>
             </div>
             <div class="mt-3 grid gap-3 sm:grid-cols-2">
+              <!-- Days in the app's own calendar (Bikram Sambat in Nepali), rather than the browser's date picker -->
+              <div class="min-w-0 sm:col-span-2">
+                <p class="mb-1.5 font-medium">{{ l().when }}</p>
+                <fs-day-strip [days]="days" [selected]="day()" (picked)="day.set($event)" />
+              </div>
               @if (!venueId()) {
                 <div>
                   <label for="city" class="mb-1.5 block font-medium">{{ l().city }}</label>
@@ -90,9 +99,9 @@ const NEPAL_OFFSET = '+05:45';
                 </div>
               }
               <div>
-                <label for="when" class="mb-1.5 block font-medium">{{ l().when }}</label>
-                <input id="when" name="when" type="datetime-local" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
-                  [ngModel]="when()" (ngModelChange)="when.set($event)" />
+                <label for="time" class="mb-1.5 block font-medium">{{ l().time }}</label>
+                <input id="time" name="time" type="time" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+                  [ngModel]="time()" (ngModelChange)="time.set($event)" />
               </div>
             </div>
           }
@@ -169,7 +178,13 @@ export class NewMatch {
 
   protected readonly venueId = signal<string | null>(null);
 
-  protected readonly when = signal('');
+  /** Today and the days after it a game can be posted for, in Nepal: the API takes up to 30 days ahead. */
+  protected readonly days = Array.from({ length: DAYS_AHEAD }, (_, i) => addDays(today('Asia/Kathmandu'), i));
+
+  protected readonly day = signal<string | null>(null);
+
+  /** "18:00". */
+  protected readonly time = signal('');
 
   protected readonly needed = signal(2);
 
@@ -200,7 +215,7 @@ export class NewMatch {
   protected async post(): Promise<void> {
     const bookingId = this.bookingId();
     const venueId = bookingId ? null : this.venueId();
-    if (!bookingId && (!this.when() || (!venueId && !this.city().trim()))) {
+    if (!bookingId && (!this.day() || !this.time() || (!venueId && !this.city().trim()))) {
       this.error.set(l().sayWhereWhen);
       return;
     }
@@ -210,7 +225,7 @@ export class NewMatch {
       bookingId: bookingId ?? undefined,
       venueId: venueId ?? undefined,
       city: bookingId || venueId ? undefined : this.city().trim(),
-      startsAt: bookingId ? undefined : `${this.when()}:00${NEPAL_OFFSET}`,
+      startsAt: bookingId ? undefined : `${this.day()}T${this.time()}:00${NEPAL_OFFSET}`,
       playersNeeded: this.type() === 'NEED_PLAYERS' ? this.needed() : undefined,
       costPerPlayer: this.type() === 'NEED_PLAYERS' && this.cost() ? this.cost()! : undefined,
       skillLevel: this.skill() ?? undefined,

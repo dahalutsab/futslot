@@ -3288,11 +3288,11 @@ abstract class S {
   /// **'When'**
   String get when;
 
-  /// No description provided for @pickDayTime.
+  /// No description provided for @pickTime.
   ///
   /// In en, this message translates to:
-  /// **'Pick a day and time'**
-  String get pickDayTime;
+  /// **'Pick a time'**
+  String get pickTime;
 
   /// No description provided for @playersNeeded.
   ///

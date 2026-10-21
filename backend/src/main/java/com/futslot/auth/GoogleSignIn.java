@@ -79,7 +79,7 @@ class GoogleSignIn {
 		AuthService.requireActive(user);
 		if (user.getGoogleSubject() != null && !user.getGoogleSubject().equals(identity.subject())) {
 			throw new ApiException(HttpStatus.CONFLICT, "GOOGLE_ALREADY_LINKED",
-					"This number is linked to a different Google account");
+					"This number is linked to a different Google account").variant("number");
 		}
 		user.linkGoogle(identity.subject());
 		if (user.getEmail() == null && identity.email() != null && !this.users.existsByEmailIgnoreCase(identity.email())) {

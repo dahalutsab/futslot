@@ -558,6 +558,7 @@ export const ne: Strings = {
   notDecidedCity: 'तय भएको छैन: शहर मात्र',
   cityHint: 'काठमाडौं',
   when: 'कहिले',
+  time: 'समय',
   playersNeeded: 'चाहिने खेलाडी',
   eachPays: 'प्रत्येकले तिर्ने',
   note: 'नोट',

@@ -42,17 +42,17 @@ class PasswordPolicy {
 	/** {@code phone} is the E.164 number the password is for. */
 	void check(String password, String phone) {
 		if (password.codePointCount(0, password.length()) < MIN_LENGTH) {
-			throw weak("Use at least " + MIN_LENGTH + " characters");
+			throw weak("Use at least " + MIN_LENGTH + " characters").variant("short").with(MIN_LENGTH);
 		}
 		if (password.getBytes(StandardCharsets.UTF_8).length > MAX_BYTES) {
-			throw weak("Use a shorter password");
+			throw weak("Use a shorter password").variant("long");
 		}
 		if (password.codePoints().distinct().count() == 1 || this.common.contains(password.toLowerCase(Locale.ROOT))) {
-			throw weak("That password is too easy to guess");
+			throw weak("That password is too easy to guess").variant("common");
 		}
 		String digits = password.replaceAll("\\D", "");
 		if (digits.length() >= MIN_LENGTH && phone.endsWith(digits)) {
-			throw weak("Don't use your phone number as your password");
+			throw weak("Don't use your phone number as your password").variant("phone");
 		}
 	}
 

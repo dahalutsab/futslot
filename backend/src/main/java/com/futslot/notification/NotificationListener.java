@@ -3,6 +3,7 @@ package com.futslot.notification;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -13,6 +14,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import com.futslot.billing.BillingEvent;
 import com.futslot.booking.BookingEvent;
 import com.futslot.chat.ChatMessageSent;
+import com.futslot.common.Wording;
+import com.futslot.common.Words;
 import com.futslot.deposit.DepositEvent;
 import com.futslot.deposit.DepositService;
 import com.futslot.booking.BookingStatus;
@@ -28,6 +31,7 @@ import com.futslot.split.SplitEvent;
 import com.futslot.team.TeamEvent;
 import com.futslot.team.TeamService;
 import com.futslot.tournament.TournamentEvent;
+import com.futslot.user.UserService;
 import com.futslot.venue.StaffAdded;
 import com.futslot.venue.VenueAccess;
 import com.futslot.venue.VenueModerated;
@@ -36,7 +40,8 @@ import com.futslot.waitlist.SlotFreed;
 
 /**
  * Turns domain events into notifications once the change has committed. Runs in its own transaction
- * because the originating one is already finished at that point.
+ * because the originating one is already finished at that point. Players are told in their own language
+ * (i18n/notices*.properties); venue owners, staff and admins in English, like the dashboard.
  */
 @Component
 class NotificationListener {
@@ -47,10 +52,17 @@ class NotificationListener {
 
 	private final TeamService teams;
 
-	NotificationListener(NotificationService notifications, VenueAccess access, TeamService teams) {
+	private final UserService users;
+
+	private final Words words;
+
+	NotificationListener(NotificationService notifications, VenueAccess access, TeamService teams, UserService users,
+			Words words) {
 		this.notifications = notifications;
 		this.access = access;
 		this.teams = teams;
+		this.users = users;
+		this.words = words;
 	}
 
 	@TransactionalEventListener
@@ -61,11 +73,10 @@ class NotificationListener {
 		switch (event.type()) {
 			case CREATED -> created(event, slot, data);
 			case CANCELLED -> cancelled(event, slot, data);
-			case RESCHEDULED -> toPlayer(event, NotificationType.BOOKING_RESCHEDULED, "Your booking was moved",
-					event.venueName() + " moved your booking to " + slot + ".", data);
-			case EXPIRED -> toPlayer(event, NotificationType.BOOKING_EXPIRED, "Booking hold expired",
-					"Payment wasn't completed in time, so your hold on " + event.venueName() + ", " + slot
-							+ " was released.", data);
+			case RESCHEDULED -> toPlayer(event, NotificationType.BOOKING_RESCHEDULED, data,
+					w -> notice(w, "booking.moved", event.venueName(), slot(event, w)));
+			case EXPIRED -> toPlayer(event, NotificationType.BOOKING_EXPIRED, data,
+					w -> notice(w, "booking.expired", event.venueName(), slot(event, w)));
 		}
 	}
 
@@ -92,21 +103,24 @@ class NotificationListener {
 		Map<String, String> data = Map.of("recurringBookingId", event.seriesId().toString(), "venueId",
 				event.venueId().toString());
 		String skipped = event.skippedDates().stream().map(Messages::day).collect(Collectors.joining(", "));
+		boolean toPlayer = event.playerUserId() != null && !event.playerUserId().equals(event.actorUserId());
 		switch (event.type()) {
 			case CREATED -> {
-				if (event.playerUserId() != null && !event.playerUserId().equals(event.actorUserId())) {
-					this.notifications.send(event.playerUserId(), NotificationType.RECURRING_BOOKING_CREATED,
-							"Weekly booking at " + event.venueName(),
-							weekly + " on " + event.courtName() + ", from " + Messages.date(event.startsOn()) + "."
-									+ (skipped.isEmpty() ? "" : " Not available: " + skipped + "."),
-							data);
+				if (toPlayer) {
+					tell(event.playerUserId(), NotificationType.RECURRING_BOOKING_CREATED, data, w -> {
+						String days = skippedDays(event, w);
+						return new Notice(w.get("recurring.created.title", event.venueName()), days.isEmpty()
+								? w.get("recurring.created.body", weekly(event, w), event.courtName(), Messages.date(event.startsOn(), w))
+								: w.get("recurring.created.bodySkipped", weekly(event, w), event.courtName(),
+										Messages.date(event.startsOn(), w), days));
+					});
 				}
 			}
 			case CANCELLED -> {
-				if (event.playerUserId() != null && !event.playerUserId().equals(event.actorUserId())) {
-					this.notifications.send(event.playerUserId(), NotificationType.RECURRING_BOOKING_CANCELLED,
-							event.venueName() + " ended your weekly booking", weekly + " on " + event.courtName() + ".",
-							data);
+				if (toPlayer) {
+					tell(event.playerUserId(), NotificationType.RECURRING_BOOKING_CANCELLED, data,
+							w -> new Notice(w.get("recurring.cancelled.title", event.venueName()),
+									w.get("recurring.cancelled.body", weekly(event, w), event.courtName())));
 				}
 			}
 			case SKIPPED -> {
@@ -116,8 +130,9 @@ class NotificationListener {
 					.forEach(userId -> this.notifications.send(userId, NotificationType.RECURRING_BOOKING_SKIPPED,
 							"Weekly slot for " + event.customerName() + " not booked", body, data));
 				if (event.playerUserId() != null) {
-					this.notifications.send(event.playerUserId(), NotificationType.RECURRING_BOOKING_SKIPPED,
-							"Weekly slot at " + event.venueName() + " not booked", body, data);
+					tell(event.playerUserId(), NotificationType.RECURRING_BOOKING_SKIPPED, data,
+							w -> new Notice(w.get("recurring.skipped.title", event.venueName()),
+									w.get("recurring.skipped.body", event.courtName(), skippedDays(event, w), weekly(event, w))));
 				}
 			}
 		}
@@ -128,6 +143,7 @@ class NotificationListener {
 	void on(PaymentEvent event) {
 		String slot = Messages.when(event.startsAt());
 		String amount = Messages.rupees(event.amount());
+		UUID player = event.playerUserId();
 		Map<String, String> data = Map.of("bookingId", event.bookingId().toString(), "venueId", event.venueId().toString());
 		switch (event.type()) {
 			case SUBMITTED -> this.access.usersWith(event.venueId(), VenuePermission.MANAGE_BOOKINGS)
@@ -136,27 +152,28 @@ class NotificationListener {
 								+ ". Check your wallet, then approve or reject.",
 						data));
 			case RECEIVED -> {
-				if (event.playerUserId() != null && !event.playerUserId().equals(event.actorUserId())) {
-					String confirmed = (event.bookingStatus() == BookingStatus.CONFIRMED) ? " Your booking is confirmed." : "";
-					this.notifications.send(event.playerUserId(), NotificationType.PAYMENT_RECEIVED, "Payment received",
-							event.venueName() + " received " + amount + " for " + slot + "." + confirmed, data);
+				if (player != null && !player.equals(event.actorUserId())) {
+					String body = (event.bookingStatus() == BookingStatus.CONFIRMED) ? "payment.received.bodyConfirmed"
+							: "payment.received.body";
+					tell(player, NotificationType.PAYMENT_RECEIVED, data, w -> new Notice(w.get("payment.received.title"),
+							w.get(body, event.venueName(), Messages.rupees(event.amount(), w), Messages.when(event.startsAt(), w))));
 				}
 			}
 			case REJECTED -> {
-				if (event.playerUserId() != null) {
-					String deadline = (event.holdExpiresAt() != null) ? " Pay by "
-							+ Messages.time(event.holdExpiresAt().atZone(event.startsAt().getOffset()).toOffsetDateTime())
-							+ " to keep the slot." : "";
-					this.notifications.send(event.playerUserId(), NotificationType.PAYMENT_REJECTED, "Payment not found",
-							event.venueName() + " couldn't find your " + amount + " payment: " + event.reason() + "."
-									+ deadline,
-							data);
+				if (player != null) {
+					tell(player, NotificationType.PAYMENT_REJECTED, data, w -> {
+						String paid = Messages.rupees(event.amount(), w);
+						return new Notice(w.get("payment.rejected.title"), (event.holdExpiresAt() != null)
+								? w.get("payment.rejected.bodyDeadline", event.venueName(), paid, event.reason(),
+										Messages.time(event.holdExpiresAt().atZone(event.startsAt().getOffset()).toOffsetDateTime(), w))
+								: w.get("payment.rejected.body", event.venueName(), paid, event.reason()));
+					});
 				}
 			}
 			case REFUND_DUE -> {
-				if (event.playerUserId() != null) {
-					this.notifications.send(event.playerUserId(), NotificationType.REFUND_DUE, "Refund on the way",
-							event.venueName() + " will refund " + amount + " for " + slot + ".", data);
+				if (player != null) {
+					tell(player, NotificationType.REFUND_DUE, data, w -> notice(w, "refund.due", event.venueName(),
+							Messages.rupees(event.amount(), w), Messages.when(event.startsAt(), w)));
 				}
 				this.access.usersWith(event.venueId(), VenuePermission.MANAGE_BOOKINGS)
 					.forEach(userId -> this.notifications.send(userId, NotificationType.REFUND_TO_PAY, "Refund to pay",
@@ -164,9 +181,9 @@ class NotificationListener {
 							data));
 			}
 			case REFUNDED -> {
-				if (event.playerUserId() != null) {
-					this.notifications.send(event.playerUserId(), NotificationType.REFUND_SENT, "Refund sent",
-							event.venueName() + " refunded " + amount + " for " + slot + ".", data);
+				if (player != null) {
+					tell(player, NotificationType.REFUND_SENT, data, w -> notice(w, "refund.sent", event.venueName(),
+							Messages.rupees(event.amount(), w), Messages.when(event.startsAt(), w)));
 				}
 			}
 		}
@@ -186,18 +203,15 @@ class NotificationListener {
 						data));
 			case RECEIVED -> {
 				if (event.playerUserId() != null && !event.playerUserId().equals(event.actorUserId())) {
-					this.notifications.send(event.playerUserId(), NotificationType.MEMBERSHIP_ACTIVATED,
-							"Membership active", event.planName() + " at " + event.venueName() + " is valid until "
-									+ Messages.date(event.expiresOn()) + ".",
-							data);
+					tell(event.playerUserId(), NotificationType.MEMBERSHIP_ACTIVATED, data, w -> notice(w,
+							"membership.active", event.planName(), event.venueName(), Messages.date(event.expiresOn(), w)));
 				}
 			}
 			case REJECTED -> {
 				if (event.playerUserId() != null) {
-					this.notifications.send(event.playerUserId(), NotificationType.PAYMENT_REJECTED, "Payment not found",
-							event.venueName() + " couldn't find your " + amount + " payment for " + event.planName()
-									+ ": " + event.reason() + ".",
-							data);
+					tell(event.playerUserId(), NotificationType.PAYMENT_REJECTED, data,
+							w -> new Notice(w.get("payment.rejected.title"), w.get("membership.rejected.body", event.venueName(),
+									Messages.rupees(event.amount(), w), event.planName(), event.reason())));
 				}
 			}
 			default -> {
@@ -218,8 +232,8 @@ class NotificationListener {
 							event.authorName() + " rated " + event.venueName() + " " + event.rating() + "/5" + comment,
 							data));
 			}
-			case REPLIED -> this.notifications.send(event.authorUserId(), NotificationType.REVIEW_REPLY,
-					event.venueName() + " replied to your review", "Tap to read their reply.", data);
+			case REPLIED -> tell(event.authorUserId(), NotificationType.REVIEW_REPLY, data,
+					w -> new Notice(w.get("review.replied.title", event.venueName()), w.get("review.replied.body")));
 		}
 	}
 
@@ -228,17 +242,17 @@ class NotificationListener {
 	void on(TeamEvent event) {
 		Map<String, String> data = Map.of("teamId", event.teamId().toString(), "teamSlug", event.teamSlug());
 		switch (event.type()) {
-			case INVITED -> this.notifications.send(event.userId(), NotificationType.TEAM_INVITE,
-					"Join " + event.teamName() + "?", event.actorName() + " invited you to the team.", data);
+			case INVITED -> tell(event.userId(), NotificationType.TEAM_INVITE, data,
+					w -> new Notice(w.get("team.invited.title", event.teamName()), w.get("team.invited.body", event.actorName())));
 			case JOINED -> this.teams.squad(event.teamId())
 				.stream()
 				.filter(userId -> !userId.equals(event.userId()))
-				.forEach(userId -> this.notifications.send(userId, NotificationType.TEAM_MEMBER_JOINED,
-						event.userName() + " joined " + event.teamName(), "Say hello to your new teammate.", data));
-			case REMOVED -> this.notifications.send(event.userId(), NotificationType.TEAM_MEMBER_REMOVED,
-					"Removed from " + event.teamName(), event.actorName() + " removed you from the team.", data);
-			case CAPTAIN_CHANGED -> this.notifications.send(event.userId(), NotificationType.TEAM_CAPTAIN_CHANGED,
-					"You're captain of " + event.teamName(), event.actorName() + " handed you the captaincy.", data);
+				.forEach(userId -> tell(userId, NotificationType.TEAM_MEMBER_JOINED, data,
+						w -> new Notice(w.get("team.joined.title", event.userName(), event.teamName()), w.get("team.joined.body"))));
+			case REMOVED -> tell(event.userId(), NotificationType.TEAM_MEMBER_REMOVED, data,
+					w -> new Notice(w.get("team.removed.title", event.teamName()), w.get("team.removed.body", event.actorName())));
+			case CAPTAIN_CHANGED -> tell(event.userId(), NotificationType.TEAM_CAPTAIN_CHANGED, data,
+					w -> new Notice(w.get("team.captain.title", event.teamName()), w.get("team.captain.body", event.actorName())));
 		}
 	}
 
@@ -246,21 +260,18 @@ class NotificationListener {
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	void on(MatchEvent event) {
 		Map<String, String> data = Map.of("matchPostId", event.postId().toString());
-		String match = event.place() + ", " + Messages.when(event.startsAt());
-		String what = (event.postType() == MatchPostType.FIND_OPPONENT) ? "your match" : "your game";
+		String opened = (event.postType() == MatchPostType.FIND_OPPONENT) ? "match.withdrew.match" : "match.withdrew.game";
 		for (UUID recipient : event.recipients()) {
-			switch (event.type()) {
-				case REQUESTED -> this.notifications.send(recipient, NotificationType.MATCH_REQUEST,
-						event.actorName() + " wants to join", match + ". Accept or decline in the app.", data);
-				case ACCEPTED -> this.notifications.send(recipient, NotificationType.MATCH_REQUEST_ACCEPTED,
-						"You're in!", event.actorName() + " accepted you for " + match + ".", data);
-				case DECLINED -> this.notifications.send(recipient, NotificationType.MATCH_REQUEST_DECLINED,
-						"Not this time", "Your request for " + match + " wasn't accepted.", data);
-				case WITHDRAWN -> this.notifications.send(recipient, NotificationType.MATCH_PLAYER_WITHDREW,
-						event.actorName() + " dropped out", "A place opened up in " + what + " at " + match + ".", data);
-				case CANCELLED -> this.notifications.send(recipient, NotificationType.MATCH_POST_CANCELLED,
-						"Match called off", event.actorName() + " cancelled " + match + ".", data);
-			}
+			tell(recipient, matchType(event), data, w -> {
+				String match = w.get("match.place", event.place(), Messages.when(event.startsAt(), w));
+				return switch (event.type()) {
+					case REQUESTED -> new Notice(w.get("match.requested.title", event.actorName()), w.get("match.requested.body", match));
+					case ACCEPTED -> new Notice(w.get("match.accepted.title"), w.get("match.accepted.body", event.actorName(), match));
+					case DECLINED -> new Notice(w.get("match.declined.title"), w.get("match.declined.body", match));
+					case WITHDRAWN -> new Notice(w.get("match.withdrew.title", event.actorName()), w.get(opened, match));
+					case CANCELLED -> new Notice(w.get("match.cancelled.title"), w.get("match.cancelled.body", event.actorName(), match));
+				};
+			});
 		}
 	}
 
@@ -268,19 +279,16 @@ class NotificationListener {
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	void on(SplitEvent event) {
 		Map<String, String> data = Map.of("bookingId", event.bookingId().toString());
-		String game = event.venueName() + ", " + Messages.when(event.startsAt());
-		switch (event.type()) {
-			case ADDED -> this.notifications.send(event.recipientUserId(), NotificationType.SPLIT_ADDED,
-					event.bookerName() + " added you to a game", game + ". You're on " + event.sideName() + ".", data);
-			case RESULT -> {
-				String outcome = event.draw() ? "It's a draw" : event.winnerName() + " won";
-				String owes = (event.share().signum() > 0)
-						? "Your share is " + Messages.rupees(event.share()) + ", pay " + event.bookerName() + "."
-						: "You pay nothing.";
-				this.notifications.send(event.recipientUserId(), NotificationType.SPLIT_RESULT, outcome,
-						game + ". " + owes, data);
+		NotificationType type = (event.type() == SplitEvent.Type.ADDED) ? NotificationType.SPLIT_ADDED : NotificationType.SPLIT_RESULT;
+		tell(event.recipientUserId(), type, data, w -> {
+			String game = w.get("split.game", event.venueName(), Messages.when(event.startsAt(), w));
+			if (event.type() == SplitEvent.Type.ADDED) {
+				return new Notice(w.get("split.added.title", event.bookerName()), w.get("split.added.body", game, event.sideName()));
 			}
-		}
+			String outcome = event.draw() ? w.get("split.draw") : w.get("split.won", event.winnerName());
+			return new Notice(outcome, (event.share().signum() > 0)
+					? w.get("split.share", game, Messages.rupees(event.share(), w), event.bookerName()) : w.get("split.free", game));
+		});
 	}
 
 	@TransactionalEventListener
@@ -291,21 +299,20 @@ class NotificationListener {
 		String name = event.tournamentName();
 		for (UUID recipient : event.recipients()) {
 			switch (event.type()) {
+				// To the venue's staff
 				case REGISTERED -> this.notifications.send(recipient, NotificationType.TOURNAMENT_REGISTRATION,
 						event.teamName() + " signed up", "New entry for " + name + ".", data);
-				case ENTRY_CONFIRMED -> this.notifications.send(recipient, NotificationType.TOURNAMENT_ENTRY_CONFIRMED,
-						event.teamName() + " is in " + name, "Your place is confirmed. Fixtures come once registration closes.",
-						data);
-				case PROMOTED -> this.notifications.send(recipient, NotificationType.TOURNAMENT_PLACE_OFFERED,
-						"A place opened up in " + name,
-						event.teamName() + " is off the waitlist. Pay any entry fee to confirm.", data);
-				case FIXTURES_DRAWN -> this.notifications.send(recipient, NotificationType.TOURNAMENT_FIXTURES,
-						"Fixtures are out", "See who you play in " + name + ".", data);
-				case MATCH_SCHEDULED -> this.notifications.send(recipient, NotificationType.TOURNAMENT_MATCH_SCHEDULED,
-						event.teamName() + " vs " + event.opponentName(),
-						name + ": " + event.courtName() + ", " + Messages.when(event.at()) + ".", data);
-				case CANCELLED -> this.notifications.send(recipient, NotificationType.TOURNAMENT_CANCELLED,
-						name + " is cancelled", event.venueName() + " called off the tournament.", data);
+				case ENTRY_CONFIRMED -> tell(recipient, NotificationType.TOURNAMENT_ENTRY_CONFIRMED, data,
+						w -> new Notice(w.get("tournament.confirmed.title", event.teamName(), name), w.get("tournament.confirmed.body")));
+				case PROMOTED -> tell(recipient, NotificationType.TOURNAMENT_PLACE_OFFERED, data,
+						w -> new Notice(w.get("tournament.promoted.title", name), w.get("tournament.promoted.body", event.teamName())));
+				case FIXTURES_DRAWN -> tell(recipient, NotificationType.TOURNAMENT_FIXTURES, data,
+						w -> new Notice(w.get("tournament.fixtures.title"), w.get("tournament.fixtures.body", name)));
+				case MATCH_SCHEDULED -> tell(recipient, NotificationType.TOURNAMENT_MATCH_SCHEDULED, data,
+						w -> new Notice(w.get("tournament.match.title", event.teamName(), event.opponentName()),
+								w.get("tournament.match.body", name, event.courtName(), Messages.when(event.at(), w))));
+				case CANCELLED -> tell(recipient, NotificationType.TOURNAMENT_CANCELLED, data,
+						w -> notice(w, "tournament.cancelled", name, event.venueName()));
 			}
 		}
 	}
@@ -321,10 +328,9 @@ class NotificationListener {
 						event.teamName() + " paid the " + amount + " entry for " + event.tournamentName() + " by "
 								+ event.method() + ". Check your wallet, then approve or reject.",
 						data));
-			case REJECTED -> this.notifications.send(event.registeredBy(), NotificationType.PAYMENT_REJECTED,
-					"Payment not found", "The venue couldn't find your " + amount + " entry fee for "
-							+ event.tournamentName() + ": " + event.reason() + ".",
-					data);
+			case REJECTED -> tell(event.registeredBy(), NotificationType.PAYMENT_REJECTED, data,
+					w -> new Notice(w.get("payment.rejected.title"), w.get("entry.rejected.body", Messages.rupees(event.amount(), w),
+							event.tournamentName(), event.reason())));
 			default -> {
 			}
 		}
@@ -360,6 +366,11 @@ class NotificationListener {
 	@TransactionalEventListener
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	void on(PlatformPaymentRejected event) {
+		if (event.deposit()) {
+			tell(event.payerUserId(), NotificationType.PAYMENT_REJECTED, Map.of(), w -> new Notice(w.get("payment.rejected.title"),
+					w.get("deposit.rejected.body", Messages.rupees(event.amount(), w), event.reason())));
+			return;
+		}
 		this.notifications.send(event.payerUserId(), NotificationType.PAYMENT_REJECTED, "Payment not found",
 				"FutSlot couldn't find your " + Messages.rupees(event.amount()) + " payment for " + event.what() + ": "
 						+ event.reason() + ".",
@@ -370,20 +381,20 @@ class NotificationListener {
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	void on(DepositEvent event) {
 		switch (event.type()) {
-			case TOPPED_UP -> this.notifications.send(event.userId(), NotificationType.DEPOSIT_TOPPED_UP,
-					"Deposit topped up", "FutSlot found your " + Messages.rupees(event.amount())
-							+ ". Your booking deposit is now " + Messages.rupees(event.balance()) + ".",
-					Map.of());
-			case FEE_TAKEN -> this.notifications.send(event.userId(), NotificationType.DEPOSIT_FEE_TAKEN,
-					Messages.rupees(event.amount()) + " taken from your deposit",
-					event.venueName() + " was paid " + Messages.rupees(event.amount()) + " from your deposit for "
-							+ event.detail() + ". Top it back up to " + Messages.rupees(DepositService.AMOUNT)
-							+ " to book venues that need it.",
-					Map.of());
-			case WITHDRAWAL_PAID -> this.notifications.send(event.userId(), NotificationType.DEPOSIT_RETURNED,
-					"Deposit sent back",
-					"FutSlot sent your " + Messages.rupees(event.amount()) + " deposit to " + event.detail() + ".",
-					Map.of());
+			case TOPPED_UP -> tell(event.userId(), NotificationType.DEPOSIT_TOPPED_UP, Map.of(),
+					w -> new Notice(w.get("deposit.toppedUp.title"), w.get("deposit.toppedUp.body",
+							Messages.rupees(event.amount(), w), Messages.rupees(event.balance(), w))));
+			case FEE_TAKEN -> tell(event.userId(), NotificationType.DEPOSIT_FEE_TAKEN, Map.of(), w -> {
+				String taken = Messages.rupees(event.amount(), w);
+				String why = (event.feePercent() != null)
+						? w.get("deposit.fee.late", event.reference(), w.format().number(event.feePercent()))
+						: w.get("deposit.fee.noShow", event.reference());
+				return new Notice(w.get("deposit.fee.title", taken),
+						w.get("deposit.fee.body", event.venueName(), taken, why, Messages.rupees(DepositService.AMOUNT, w)));
+			});
+			case WITHDRAWAL_PAID -> tell(event.userId(), NotificationType.DEPOSIT_RETURNED, Map.of(),
+					w -> new Notice(w.get("deposit.returned.title"),
+							w.get("deposit.returned.body", Messages.rupees(event.amount(), w), event.detail())));
 			case PAYOUT_SENT -> this.notifications.send(event.userId(), NotificationType.DEPOSIT_PAYOUT_SENT,
 					"Deposit fees paid", "FutSlot sent " + event.venueName() + " " + Messages.rupees(event.amount())
 							+ " for " + event.detail() + ".",
@@ -397,10 +408,8 @@ class NotificationListener {
 		Map<String, String> data = Map.of("venueId", event.venueId().toString(), "venueSlug", event.venueSlug(),
 				"courtId", event.courtId().toString(), "startsAt", event.startsAt().toString());
 		for (UUID recipient : event.recipients()) {
-			this.notifications.send(recipient, NotificationType.WAITLIST_SLOT_FREE, "A slot you wanted is free",
-					event.venueName() + ", " + event.courtName() + ", " + Messages.when(event.startsAt())
-							+ ". Book it before someone else does.",
-					data);
+			tell(recipient, NotificationType.WAITLIST_SLOT_FREE, data, w -> new Notice(w.get("waitlist.free.title"),
+					w.get("waitlist.free.body", event.venueName(), event.courtName(), Messages.when(event.startsAt(), w))));
 		}
 	}
 
@@ -427,21 +436,21 @@ class NotificationListener {
 	private void created(BookingEvent event, String slot, Map<String, String> data) {
 		if (event.source().byPlayer()) {
 			if (event.status() == BookingStatus.PENDING_PAYMENT) {
-				String deadline = Messages.time(event.holdExpiresAt().atZone(event.startsAt().getOffset()).toOffsetDateTime());
-				toPlayer(event, NotificationType.BOOKING_PAYMENT_DUE, "Complete your payment",
-						"Pay " + Messages.rupees(event.advanceRequired()) + " by " + deadline + " to confirm "
-								+ event.venueName() + ", " + slot + ".", data);
+				toPlayer(event, NotificationType.BOOKING_PAYMENT_DUE, data, w -> notice(w, "booking.paymentDue",
+						Messages.rupees(event.advanceRequired(), w),
+						Messages.time(event.holdExpiresAt().atZone(event.startsAt().getOffset()).toOffsetDateTime(), w),
+						event.venueName(), slot(event, w)));
 			}
 			else {
-				toPlayer(event, NotificationType.BOOKING_CONFIRMED, "Booking confirmed",
-						event.venueName() + ", " + slot + ". Ref " + event.reference() + ".", data);
+				toPlayer(event, NotificationType.BOOKING_CONFIRMED, data,
+						w -> notice(w, "booking.confirmed", event.venueName(), slot(event, w), event.reference()));
 			}
 			toVenue(event, NotificationType.NEW_BOOKING, "New booking", event.customerName() + " booked " + slot + ".",
 					data);
 		}
 		else {
-			toPlayer(event, NotificationType.BOOKING_CREATED_BY_VENUE, event.venueName() + " booked a slot for you",
-					slot + ". Ref " + event.reference() + ".", data);
+			toPlayer(event, NotificationType.BOOKING_CREATED_BY_VENUE, data, w -> new Notice(
+					w.get("booking.byVenue.title", event.venueName()), w.get("booking.byVenue.body", slot(event, w), event.reference())));
 		}
 	}
 
@@ -452,15 +461,55 @@ class NotificationListener {
 					event.customerName() + " cancelled " + slot + "." + reason, data);
 		}
 		else {
-			toPlayer(event, NotificationType.BOOKING_CANCELLED, event.venueName() + " cancelled your booking",
-					slot + "." + reason, data);
+			boolean given = event.reason() != null && !event.reason().isBlank();
+			toPlayer(event, NotificationType.BOOKING_CANCELLED, data, w -> new Notice(
+					w.get("booking.cancelled.title", event.venueName()), given
+							? w.get("booking.cancelled.bodyWithReason", slot(event, w), event.reason())
+							: w.get("booking.cancelled.body", slot(event, w))));
 		}
 	}
 
-	private void toPlayer(BookingEvent event, NotificationType type, String title, String body, Map<String, String> data) {
+	private void toPlayer(BookingEvent event, NotificationType type, Map<String, String> data, Function<Wording, Notice> notice) {
 		if (event.playerUserId() != null) {
-			this.notifications.send(event.playerUserId(), type, title, body, data);
+			tell(event.playerUserId(), type, data, notice);
 		}
+	}
+
+	/** Sends a player a notification worded in their language. */
+	private void tell(UUID userId, NotificationType type, Map<String, String> data, Function<Wording, Notice> notice) {
+		Notice worded = notice.apply(this.words.in(this.users.language(userId)));
+		this.notifications.send(userId, type, worded.title(), worded.body(), data);
+	}
+
+	/** The {@code key}.title and {@code key}.body messages, both given the same values. */
+	private static Notice notice(Wording words, String key, Object... values) {
+		return new Notice(words.get(key + ".title", values), words.get(key + ".body", values));
+	}
+
+	/** "Court A, Fri 9 Oct, 18:00". */
+	private static String slot(BookingEvent event, Wording words) {
+		return words.get("booking.slot", event.courtName(), Messages.when(event.startsAt(), words));
+	}
+
+	private static String weekly(RecurringBookingEvent event, Wording words) {
+		return Messages.weekly(event.dayOfWeek(), event.startTime(), event.endTime(), words);
+	}
+
+	private static String skippedDays(RecurringBookingEvent event, Wording words) {
+		return event.skippedDates().stream().map(day -> Messages.day(day, words)).collect(Collectors.joining(", "));
+	}
+
+	private static NotificationType matchType(MatchEvent event) {
+		return switch (event.type()) {
+			case REQUESTED -> NotificationType.MATCH_REQUEST;
+			case ACCEPTED -> NotificationType.MATCH_REQUEST_ACCEPTED;
+			case DECLINED -> NotificationType.MATCH_REQUEST_DECLINED;
+			case WITHDRAWN -> NotificationType.MATCH_PLAYER_WITHDREW;
+			case CANCELLED -> NotificationType.MATCH_POST_CANCELLED;
+		};
+	}
+
+	private record Notice(String title, String body) {
 	}
 
 	/** The owner and staff who handle bookings, except whoever made the change. */

@@ -36,10 +36,10 @@ class BookingSplit {
 	private String extrasNote;
 
 	@Column(name = "side_a_name", nullable = false)
-	private String sideAName = "Team A";
+	private String sideAName;
 
 	@Column(name = "side_b_name", nullable = false)
-	private String sideBName = "Team B";
+	private String sideBName;
 
 	@Enumerated(EnumType.STRING)
 	private MatchResult result;
@@ -56,8 +56,10 @@ class BookingSplit {
 	protected BookingSplit() {
 	}
 
-	BookingSplit(UUID bookingId) {
+	BookingSplit(UUID bookingId, String sideAName, String sideBName) {
 		this.bookingId = bookingId;
+		this.sideAName = sideAName;
+		this.sideBName = sideBName;
 	}
 
 	void apply(SplitRequests.Rules request) {

@@ -19,6 +19,10 @@ public class RecordingSmsSender implements SmsSender {
 		this.lastMessageByPhone.put(phone, message);
 	}
 
+	public String lastMessageTo(String phone) {
+		return this.lastMessageByPhone.get(phone);
+	}
+
 	public String lastCodeFor(String phone) {
 		Matcher matcher = CODE.matcher(this.lastMessageByPhone.get(phone));
 		if (!matcher.find()) {

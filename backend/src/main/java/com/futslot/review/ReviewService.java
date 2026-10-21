@@ -79,7 +79,7 @@ public class ReviewService {
 		}
 		if (booking.getEndsAt().plus(REVIEW_WINDOW).isBefore(this.clock.instant())) {
 			throw new ApiException(HttpStatus.CONFLICT, "REVIEW_WINDOW_CLOSED",
-					"Reviews can be left up to " + REVIEW_WINDOW.toDays() + " days after playing");
+					"Reviews can be left up to " + REVIEW_WINDOW.toDays() + " days after playing", REVIEW_WINDOW.toDays());
 		}
 		UUID venueId = booking.getVenue().getId();
 		this.reviews.lockVenue(venueId);
