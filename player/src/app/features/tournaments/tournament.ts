@@ -7,8 +7,9 @@ import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { Payment, PaymentClaim, Stage, Team, TournamentDetail, TournamentEntry, TournamentMatch } from '../../core/api.types';
 import { Session } from '../../core/session';
+import { digits, l } from '../../i18n/i18n';
 import { dayLabel, localClock, rupees } from '../../shared/format';
-import { ENTRY_STATUS, FORMAT, STAGE, TOURNAMENT_STATUS } from '../../shared/labels';
+import { entryStatusLabels, formatLabels, stageLabels, tournamentStatusLabels } from '../../shared/labels';
 import { PayForm } from '../../shared/pay-form';
 import { PlayNav } from '../../shared/play-nav';
 
@@ -23,6 +24,8 @@ import { PlayNav } from '../../shared/play-nav';
   templateUrl: './tournament.html',
 })
 export class TournamentPage {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   private readonly router = inject(Router);
@@ -35,15 +38,15 @@ export class TournamentPage {
 
   protected readonly fmt = { dayLabel, localClock, rupees };
 
-  protected readonly squadName = (p: TournamentEntry['squad'][number]) => (p.jerseyNumber !== null ? `${p.name} (${p.jerseyNumber})` : p.name);
+  protected readonly squadName = (p: TournamentEntry['squad'][number]) => (p.jerseyNumber !== null ? `${p.name} (${digits(p.jerseyNumber)})` : p.name);
 
-  protected readonly status = TOURNAMENT_STATUS;
+  protected readonly digits = digits;
 
-  protected readonly format = FORMAT;
+  protected readonly status = tournamentStatusLabels;
 
-  protected readonly stage = STAGE;
+  protected readonly format = formatLabels;
 
-  protected readonly entryStatus = ENTRY_STATUS;
+  protected readonly entryStatus = entryStatusLabels;
 
   protected readonly tournament = signal<TournamentDetail | null>(null);
 
@@ -86,7 +89,7 @@ export class TournamentPage {
     }
     return [...groups.entries()].map(([key, matches]) => ({
       key,
-      label: STAGE[matches[0].stage as Stage] + (matches[0].groupName ? ` · Group ${matches[0].groupName}` : ''),
+      label: stageLabels()[matches[0].stage as Stage] + (matches[0].groupName ? ` · ${l().groupName(matches[0].groupName)}` : ''),
       matches,
     }));
   });
@@ -135,7 +138,7 @@ export class TournamentPage {
       return;
     }
     if (this.picked() < t.teamSize) {
-      this.error.set(`Pick at least ${t.teamSize} players.`);
+      this.error.set(l().pickAtLeastPlayers(t.teamSize));
       return;
     }
     const squad = Object.entries(this.squad()).map(([userId, number]) => ({ userId, jerseyNumber: number === '' ? undefined : +number }));
@@ -172,15 +175,15 @@ export class TournamentPage {
   /** Why the venue turned down the last payment, when it did. */
   protected turnedDown(entry: TournamentEntry): string | null {
     const last = this.payments()[entry.id]?.at(-1);
-    return last?.status === 'FAILED' ? last.failureReason ?? "The venue couldn't find this payment." : null;
+    return last?.status === 'FAILED' ? last.failureReason ?? l().venueCouldntFindPayment : null;
   }
 
   protected score(match: TournamentMatch): string {
     if (match.homeScore === null || match.awayScore === null) {
-      return match.scheduledAt ? localClock(match.scheduledAt) : 'vs';
+      return match.scheduledAt ? localClock(match.scheduledAt) : l().vs;
     }
-    const penalties = match.homePenalties !== null ? ` (${match.homePenalties}–${match.awayPenalties} pens)` : '';
-    return `${match.homeScore}–${match.awayScore}${penalties}`;
+    const penalties = match.homePenalties !== null ? l().penalties(match.homePenalties, match.awayPenalties ?? 0) : '';
+    return `${digits(match.homeScore)}–${digits(match.awayScore)}${penalties}`;
   }
 
   private async act(action: () => Promise<void>): Promise<void> {

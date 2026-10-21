@@ -6,8 +6,9 @@ import { ArrowLeftRight, Check, LucideAngularModule, Trash2 } from 'lucide-angul
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { MatchResult, Side, Split, SplitPlayer, SplitRule, SplitRules } from '../../core/api.types';
+import { digits, l } from '../../i18n/i18n';
 import { dayLabel, localClock, phone, rupees } from '../../shared/format';
-import { resultLabel, SPLIT_RULE } from '../../shared/labels';
+import { resultLabel, splitRules } from '../../shared/labels';
 
 /**
  * Sharing a booking's cost among the players: equally, or baazi-style where the losers pay more. The booker
@@ -21,6 +22,8 @@ import { resultLabel, SPLIT_RULE } from '../../shared/labels';
   templateUrl: './split.html',
 })
 export class SplitPage {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   readonly id = input.required<string>();
@@ -29,9 +32,11 @@ export class SplitPage {
 
   protected readonly fmt = { rupees, dayLabel, localClock, phone };
 
-  protected readonly rules = Object.entries(SPLIT_RULE).map(([value, text]) => ({ value: value as SplitRule, ...text }));
+  protected readonly rules = computed(() => Object.entries(splitRules()).map(([value, text]) => ({ value: value as SplitRule, ...text })));
 
-  protected readonly ruleText = SPLIT_RULE;
+  protected readonly ruleText = splitRules;
+
+  protected readonly digits = digits;
 
   protected readonly resultLabel = resultLabel;
 
@@ -128,7 +133,7 @@ export class SplitPage {
     const name = this.newName().trim();
     const phoneNumber = this.newPhone().replace(/\D/g, '');
     if (!name && !phoneNumber) {
-      this.actionError.set('Give their name, or the phone number they use FutSlot with.');
+      this.actionError.set(l().giveNameOrPhone);
       return Promise.resolve();
     }
     return this.act(async () => {

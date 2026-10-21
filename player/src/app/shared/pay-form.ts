@@ -4,6 +4,7 @@ import { LoaderCircle, LucideAngularModule } from 'lucide-angular';
 
 import { PaymentClaim, PaymentMethod } from '../core/api.types';
 import { methodLabel, rupees } from './format';
+import { l } from '../i18n/i18n';
 
 /** The methods a player can report having paid with (cash is taken at the counter, not reported). */
 export const CLAIMABLE: PaymentMethod[] = ['ESEWA', 'KHALTI', 'FONEPAY', 'BANK_TRANSFER'];
@@ -20,13 +21,13 @@ export const CLAIMABLE: PaymentMethod[] = ['ESEWA', 'KHALTI', 'FONEPAY', 'BANK_T
     @if (instructions()) {
       <div class="rounded-lg bg-surface-2 px-3 py-2">
         @let least = minimum();
-        <p class="text-sm text-muted">Send {{ least !== null ? 'at least ' + rupees(least) : rupees(amount()) }} to</p>
+        <p class="text-sm text-muted">{{ least !== null ? l().sendAtLeastTo(rupees(least)) : l().sendAmountTo(rupees(amount())) }}</p>
         <p class="mt-0.5 whitespace-pre-line font-medium">{{ instructions() }}</p>
       </div>
     }
     <form class="mt-3 space-y-3" (ngSubmit)="submit()">
       <fieldset>
-        <legend class="mb-1.5 font-medium">Paid with</legend>
+        <legend class="mb-1.5 font-medium">{{ l().paidWith }}</legend>
         <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
           @for (m of methods(); track m) {
             <label class="flex h-11 cursor-pointer items-center justify-center rounded-lg border text-sm font-medium has-[:checked]:border-ink has-[:checked]:bg-surface-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
@@ -39,15 +40,15 @@ export const CLAIMABLE: PaymentMethod[] = ['ESEWA', 'KHALTI', 'FONEPAY', 'BANK_T
       </fieldset>
       @if (minimum() !== null) {
         <div>
-          <label [for]="id() + '-amount'" class="mb-1.5 block font-medium">Amount you sent</label>
+          <label [for]="id() + '-amount'" class="mb-1.5 block font-medium">{{ l().amountYouSent }}</label>
           <input [id]="id() + '-amount'" name="amount" type="number" inputmode="decimal" [min]="minimum()" [max]="amount()"
             class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
             [ngModel]="paid()" (ngModelChange)="paid.set(+$event)" required />
         </div>
       }
       <div>
-        <label [for]="id() + '-txn'" class="mb-1.5 block font-medium">Transaction ID</label>
-        <input [id]="id() + '-txn'" name="transactionId" type="text" maxlength="100" autocomplete="off" placeholder="From your payment receipt"
+        <label [for]="id() + '-txn'" class="mb-1.5 block font-medium">{{ l().transactionId }}</label>
+        <input [id]="id() + '-txn'" name="transactionId" type="text" maxlength="100" autocomplete="off" [placeholder]="l().fromYourReceipt"
           class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
           [ngModel]="transactionId()" (ngModelChange)="transactionId.set($event)" required />
       </div>
@@ -57,15 +58,17 @@ export const CLAIMABLE: PaymentMethod[] = ['ESEWA', 'KHALTI', 'FONEPAY', 'BANK_T
       <button type="submit" [disabled]="busy()"
         class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
         @if (busy()) {
-          <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> Sending…
+          <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> {{ l().sending }}
         } @else {
-          {{ label() }}
+          {{ label() ?? l().sendForChecking }}
         }
       </button>
     </form>
   `,
 })
 export class PayForm {
+  protected readonly l = l;
+
   /** Keeps field ids unique when two forms share a page. */
   readonly id = input('pay');
 
@@ -78,7 +81,8 @@ export class PayForm {
 
   readonly methods = input<PaymentMethod[]>(CLAIMABLE);
 
-  readonly label = input('Send for checking');
+  /** The button's words; "Send for checking" if not given. */
+  readonly label = input<string | null>(null);
 
   readonly busy = input(false);
 
@@ -114,11 +118,11 @@ export class PayForm {
     const transactionId = this.transactionId().trim();
     const minimum = this.minimum();
     if (transactionId.length < 4) {
-      this.local.set('Enter the transaction ID from your receipt.');
+      this.local.set(l().enterTransactionId);
       return;
     }
     if (minimum !== null && (!(this.paid() >= minimum) || this.paid() > this.amount())) {
-      this.local.set(`Enter between ${rupees(minimum)} and ${rupees(this.amount())}.`);
+      this.local.set(l().enterBetween(rupees(minimum), rupees(this.amount())));
       return;
     }
     this.local.set(null);

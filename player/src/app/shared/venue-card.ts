@@ -4,6 +4,7 @@ import { LucideAngularModule, MapPin, Star } from 'lucide-angular';
 
 import { VenueSummary } from '../core/api.types';
 import { rupees } from './format';
+import { digits, l } from '../i18n/i18n';
 
 /** A venue in a list: photo, where it is, rating and the lowest price. */
 @Component({
@@ -24,9 +25,9 @@ import { rupees } from './format';
         <div class="flex items-start gap-3">
           <h3 class="min-w-0 flex-1 font-semibold leading-snug group-hover:underline">{{ v.name }}</h3>
           @if (v.reviewCount > 0) {
-            <span class="tabular flex shrink-0 items-center gap-1 text-sm font-medium" [attr.aria-label]="v.averageRating + ' out of 5 from ' + v.reviewCount + ' reviews'">
-              <lucide-icon [img]="icons.Star" [size]="14" class="fill-current text-held-line" />{{ v.averageRating.toFixed(1) }}
-              <span class="font-normal text-subtle">({{ v.reviewCount }})</span>
+            <span class="tabular flex shrink-0 items-center gap-1 text-sm font-medium" [attr.aria-label]="l().ratingFrom(v.averageRating, l().reviews(v.reviewCount))">
+              <lucide-icon [img]="icons.Star" [size]="14" class="fill-current text-held-line" />{{ digits(v.averageRating.toFixed(1)) }}
+              <span class="font-normal text-subtle">({{ digits(v.reviewCount) }})</span>
             </span>
           }
         </div>
@@ -35,19 +36,23 @@ import { rupees } from './format';
         </p>
         <p class="mt-3 text-sm">
           @if (v.fromPrice !== null) {
-            <span class="text-muted">From </span><span class="tabular font-semibold">{{ rupees(v.fromPrice) }}</span>
+            <span class="text-muted">{{ l().fromPrice }}</span><span class="tabular font-semibold">{{ rupees(v.fromPrice) }}</span>
             <span class="text-muted"> · </span>
           }
-          <span class="text-muted">{{ v.courtCount }} {{ v.courtCount === 1 ? 'court' : 'courts' }}</span>
+          <span class="text-muted">{{ l().courts(v.courtCount) }}</span>
         </p>
       </div>
     </a>
   `,
 })
 export class VenueCard {
+  protected readonly l = l;
+
   readonly venue = input.required<VenueSummary>();
 
   protected readonly icons = { MapPin, Star };
 
   protected readonly rupees = rupees;
+
+  protected readonly digits = digits;
 }

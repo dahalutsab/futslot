@@ -35,6 +35,22 @@ npm test             # unit tests (Vitest)
   server), the "I paid" form used for advances and top-ups, venue cards, status chips.
 - `src/app/layout`: the shell (top bar, and a bottom bar on phones).
 - `src/app/features`: one folder per screen, lazy-loaded.
+- `src/app/i18n`: English and Nepali (see below).
+
+## English and Nepali
+
+Every word the app shows is in `src/app/i18n/en.ts`, with its Nepali under the same key in `ne.ts`; TypeScript
+fails the build if a key is missing from either. Wording with a number or a name in it is a small function, so
+each language puts it where it reads naturally. Most keys and their Nepali match the mobile app's
+(`mobile/lib/l10n/app_*.arb`). Templates read the current words from `l()` (`{{ l().bookThisSlot }}`), a
+signal, so the screen redraws as soon as the player switches, from Me or from the top bar before signing in.
+
+In Nepali, numbers use Devanagari digits with lakh grouping (रु १,२०,०००), times say the part of the day
+(बेलुका ६ बजे), and dates are Bikram Sambat (सोम, २ कार्तिक, through `nepali-date-converter`), all in
+`src/app/shared/format.ts`. Phone numbers and transaction ids stay in Latin digits, to copy and type. The app
+starts in the browser's language, remembers the player's choice, keeps the account's `preferredLanguage` in step
+so notifications match, and sends `Accept-Language` so the API can answer in it. Venue and court names and other
+things people type stay as written; the date and time picker for posting a game is the browser's own.
 
 In production, serve the built app and the API from the same domain (e.g. `/` for the app and `/api` for
 the API behind one reverse proxy), so no CORS setup is needed.

@@ -5,6 +5,7 @@ import { LucideAngularModule, Plus } from 'lucide-angular';
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { MatchPost, MatchPostType } from '../../core/api.types';
+import { l } from '../../i18n/i18n';
 import { addDays, dayLabel, today } from '../../shared/format';
 import { PlayNav } from '../../shared/play-nav';
 import { MatchSummary } from './match-summary';
@@ -22,33 +23,33 @@ const NEPAL = 'Asia/Kathmandu';
     <div class="mx-auto max-w-3xl px-4 py-6 lg:py-10">
       <fs-play-nav />
       <div class="mt-6 flex items-center gap-3">
-        <h1 class="flex-1 text-2xl font-semibold tracking-tight">Games</h1>
+        <h1 class="flex-1 text-2xl font-semibold tracking-tight">{{ l().playGames }}</h1>
         <a routerLink="/matches/new" class="flex h-11 items-center gap-1.5 rounded-lg bg-ink px-4 font-medium text-ink-fg">
-          <lucide-icon [img]="icons.Plus" [size]="18" /> Post a game
+          <lucide-icon [img]="icons.Plus" [size]="18" /> {{ l().postAGame }}
         </a>
       </div>
-      <p class="mt-1 text-muted">Short of players, or looking for a team to play? Post it, or join one.</p>
+      <p class="mt-1 text-muted">{{ l().gamesIntro }}</p>
 
-      <div class="mt-4 flex gap-1 rounded-lg bg-surface-2 p-1" role="tablist" aria-label="Games">
+      <div class="mt-4 flex gap-1 rounded-lg bg-surface-2 p-1" role="tablist" [attr.aria-label]="l().playGames">
         <button type="button" role="tab" [attr.aria-selected]="tab() === 'open'" (click)="show('open')" class="h-10 flex-1 rounded-md font-medium text-muted"
-          [class.bg-surface]="tab() === 'open'" [class.text-text]="tab() === 'open'">Open games</button>
+          [class.bg-surface]="tab() === 'open'" [class.text-text]="tab() === 'open'">{{ l().openGames }}</button>
         <button type="button" role="tab" [attr.aria-selected]="tab() === 'mine'" (click)="show('mine')" class="h-10 flex-1 rounded-md font-medium text-muted"
-          [class.bg-surface]="tab() === 'mine'" [class.text-text]="tab() === 'mine'">Yours</button>
+          [class.bg-surface]="tab() === 'mine'" [class.text-text]="tab() === 'mine'">{{ l().yours }}</button>
       </div>
 
       @if (tab() === 'open') {
-        <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Kind of game">
-          @for (t of types; track t.label) {
+        <div class="mt-3 flex flex-wrap gap-2" role="group" [attr.aria-label]="l().kindOfGame">
+          @for (t of types(); track t.label) {
             <button type="button" (click)="type.set(t.value)" [attr.aria-pressed]="type() === t.value" class="h-9 rounded-full border px-4 text-sm font-medium"
               [class]="type() === t.value ? 'border-ink bg-ink text-ink-fg' : 'border-border bg-surface text-muted'">{{ t.label }}</button>
           }
         </div>
-        <div class="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]" role="group" aria-label="Day">
+        <div class="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]" role="group" [attr.aria-label]="l().day">
           <button type="button" (click)="day.set(null)" [attr.aria-pressed]="day() === null" class="h-9 shrink-0 rounded-full border px-4 text-sm font-medium"
-            [class]="day() === null ? 'border-ink bg-ink text-ink-fg' : 'border-border bg-surface text-muted'">Any day</button>
+            [class]="day() === null ? 'border-ink bg-ink text-ink-fg' : 'border-border bg-surface text-muted'">{{ l().anyDay }}</button>
           @for (d of days; track d; let i = $index) {
             <button type="button" (click)="day.set(d)" [attr.aria-pressed]="day() === d" class="h-9 shrink-0 rounded-full border px-4 text-sm font-medium"
-              [class]="day() === d ? 'border-ink bg-ink text-ink-fg' : 'border-border bg-surface text-muted'">{{ i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : dayLabel(d) }}</button>
+              [class]="day() === d ? 'border-ink bg-ink text-ink-fg' : 'border-border bg-surface text-muted'">{{ i === 0 ? l().today : i === 1 ? l().tomorrow : dayLabel(d) }}</button>
           }
         </div>
       }
@@ -58,8 +59,8 @@ const NEPAL = 'Asia/Kathmandu';
       } @else if (posts(); as list) {
         @if (list.length === 0) {
           <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
-            <p class="font-medium">{{ tab() === 'open' ? 'No open games' : "You haven't posted or joined a game" }}</p>
-            <p class="mt-1 text-muted">Post one, and players nearby can ask to join.</p>
+            <p class="font-medium">{{ tab() === 'open' ? l().noOpenGames : l().noPostedGames }}</p>
+            <p class="mt-1 text-muted">{{ l().noGamesBody }}</p>
           </div>
         } @else {
           <ul class="mt-4 space-y-3">
@@ -68,10 +69,10 @@ const NEPAL = 'Asia/Kathmandu';
                 <a [routerLink]="['/matches', post.id]" class="block rounded-xl border border-border bg-surface p-4 hover:border-subtle">
                   <fs-match-summary [post]="post" />
                   @if (post.mine) {
-                    <p class="mt-2 text-sm font-medium">Your post{{ pending(post) ? ' · ' + pending(post) + ' asking to join' : '' }}</p>
+                    <p class="mt-2 text-sm font-medium">{{ pending(post) ? l().yourPostAsking(pending(post)) : l().yourPost }}</p>
                   } @else if (post.myRequest) {
                     <p class="mt-2 text-sm font-medium" [class.text-confirmed-fg]="post.myRequest.status === 'ACCEPTED'">
-                      {{ post.myRequest.status === 'PENDING' ? 'You asked to join' : post.myRequest.status === 'ACCEPTED' ? "You're in" : post.myRequest.status === 'DECLINED' ? 'Not this time' : 'You withdrew' }}
+                      {{ post.myRequest.status === 'PENDING' ? l().youAskedToJoin : post.myRequest.status === 'ACCEPTED' ? l().youreIn : post.myRequest.status === 'DECLINED' ? l().notThisTime : l().youWithdrew }}
                     </p>
                   }
                 </a>
@@ -80,7 +81,7 @@ const NEPAL = 'Asia/Kathmandu';
           </ul>
         }
       } @else {
-        <div class="mt-6 space-y-3" aria-label="Loading">
+        <div class="mt-6 space-y-3" [attr.aria-label]="l().loading">
           @for (i of [1, 2]; track i) {
             <div class="h-32 animate-pulse rounded-xl bg-surface"></div>
           }
@@ -90,6 +91,8 @@ const NEPAL = 'Asia/Kathmandu';
   `,
 })
 export class Matches {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   private readonly router = inject(Router);
@@ -98,11 +101,11 @@ export class Matches {
 
   protected readonly dayLabel = dayLabel;
 
-  protected readonly types: { value: MatchPostType | null; label: string }[] = [
-    { value: null, label: 'All' },
-    { value: 'NEED_PLAYERS', label: 'Players wanted' },
-    { value: 'FIND_OPPONENT', label: 'Opponent wanted' },
-  ];
+  protected readonly types = computed<{ value: MatchPostType | null; label: string }[]>(() => [
+    { value: null, label: l().all },
+    { value: 'NEED_PLAYERS', label: l().playersWanted },
+    { value: 'FIND_OPPONENT', label: l().opponentWanted },
+  ]);
 
   protected readonly days = Array.from({ length: 7 }, (_, i) => addDays(today(NEPAL), i));
 

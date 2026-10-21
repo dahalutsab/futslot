@@ -6,6 +6,7 @@ import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { AppNotification } from '../../core/api.types';
 import { Badges } from '../../core/badges';
+import { l } from '../../i18n/i18n';
 import { ago } from '../../shared/format';
 import { notificationLink } from '../../shared/notification-link';
 
@@ -17,9 +18,9 @@ import { notificationLink } from '../../shared/notification-link';
   template: `
     <div class="mx-auto max-w-2xl px-4 py-6 lg:py-10">
       <div class="flex items-center gap-3">
-        <h1 class="flex-1 text-2xl font-semibold tracking-tight">Notifications</h1>
+        <h1 class="flex-1 text-2xl font-semibold tracking-tight">{{ l().notifications }}</h1>
         @if (hasUnread()) {
-          <button type="button" (click)="readAll()" class="h-11 rounded-lg px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">Mark all read</button>
+          <button type="button" (click)="readAll()" class="h-11 rounded-lg px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">{{ l().markAllRead }}</button>
         }
       </div>
 
@@ -29,15 +30,15 @@ import { notificationLink } from '../../shared/notification-link';
         @if (list.length === 0) {
           <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
             <lucide-icon [img]="icons.Bell" [size]="28" class="mx-auto text-subtle" />
-            <p class="mt-3 font-medium">Nothing yet</p>
-            <p class="mt-1 text-muted">Booking confirmations, reminders and replies from venues show up here.</p>
+            <p class="mt-3 font-medium">{{ l().nothingYet }}</p>
+            <p class="mt-1 text-muted">{{ l().notificationsEmpty }}</p>
           </div>
         } @else {
           <ul class="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
             @for (n of list; track n.id) {
               <li>
                 <button type="button" (click)="open(n)" class="flex w-full gap-3 px-4 py-3 text-left hover:bg-surface-2">
-                  <span class="mt-2 size-2 shrink-0 rounded-full" [class]="n.read ? 'bg-transparent' : 'bg-ring'" [attr.aria-label]="n.read ? null : 'Unread'"></span>
+                  <span class="mt-2 size-2 shrink-0 rounded-full" [class]="n.read ? 'bg-transparent' : 'bg-ring'" [attr.aria-label]="n.read ? null : l().unread"></span>
                   <span class="min-w-0 flex-1">
                     <span class="flex items-baseline gap-2">
                       <span class="min-w-0 flex-1" [class]="n.read ? 'font-medium' : 'font-semibold'">{{ n.title }}</span>
@@ -51,17 +52,19 @@ import { notificationLink } from '../../shared/notification-link';
           </ul>
           @if (hasMore()) {
             <div class="mt-6 text-center">
-              <button type="button" (click)="load(page() + 1)" class="h-11 rounded-lg border border-border bg-surface px-6 font-medium hover:bg-surface-2">Show older</button>
+              <button type="button" (click)="load(page() + 1)" class="h-11 rounded-lg border border-border bg-surface px-6 font-medium hover:bg-surface-2">{{ l().showOlder }}</button>
             </div>
           }
         }
       } @else {
-        <div class="mt-6 h-48 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-48 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
       }
     </div>
   `,
 })
 export class Notifications {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   private readonly router = inject(Router);

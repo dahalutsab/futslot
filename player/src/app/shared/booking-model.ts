@@ -1,17 +1,20 @@
 import { Booking, CancellationTier, DayHours, DEPOSIT_AMOUNT, STRIKE_WINDOW_DAYS, VenuePolicy, Weekday } from '../core/api.types';
+import { l } from '../i18n/i18n';
 import { ChipState } from './status-chip';
 import { clock, rupees } from './format';
 
 /** The week as people in Nepal count it, Sunday first. */
-export const WEEK: { day: Weekday; label: string; short: string }[] = [
-  { day: 'SUNDAY', label: 'Sunday', short: 'Sun' },
-  { day: 'MONDAY', label: 'Monday', short: 'Mon' },
-  { day: 'TUESDAY', label: 'Tuesday', short: 'Tue' },
-  { day: 'WEDNESDAY', label: 'Wednesday', short: 'Wed' },
-  { day: 'THURSDAY', label: 'Thursday', short: 'Thu' },
-  { day: 'FRIDAY', label: 'Friday', short: 'Fri' },
-  { day: 'SATURDAY', label: 'Saturday', short: 'Sat' },
-];
+export function week(): { day: Weekday; label: string }[] {
+  return [
+    { day: 'SUNDAY', label: l().sunday },
+    { day: 'MONDAY', label: l().monday },
+    { day: 'TUESDAY', label: l().tuesday },
+    { day: 'WEDNESDAY', label: l().wednesday },
+    { day: 'THURSDAY', label: l().thursday },
+    { day: 'FRIDAY', label: l().friday },
+    { day: 'SATURDAY', label: l().saturday },
+  ];
+}
 
 /** Mirrors the server: the fee of the closest tier the notice falls inside, 0 at 24 hours or more. */
 export function feePercent(tiers: CancellationTier[], noticeMs: number): number {
@@ -53,31 +56,29 @@ export function cancelOutcome(booking: Booking, policy: VenuePolicy, now = new D
 /** The venue's booking rules, said to the player. */
 export function policyLines(policy: VenuePolicy): string[] {
   const lines: string[] = [];
-  lines.push(policy.advancePercent === 0
-    ? 'Book now and pay at the venue.'
-    : `Pay ${policy.advancePercent}% up front to confirm. We hold the slot for ${policy.bookingHoldMinutes} minutes while you pay.`);
+  lines.push(policy.advancePercent === 0 ? l().policyPayAtVenue : l().policyAdvance(policy.advancePercent, policy.bookingHoldMinutes));
   const tiers = byHoursBefore(policy.cancellationTiers);
   if (tiers.length === 0) {
-    lines.push('Cancel any time before the game for free.');
+    lines.push(l().policyFreeCancelAnyTime);
   } else {
-    const fees = tiers.map((tier) => `${tier.feePercent}% within ${tier.withinHours} ${hours(tier.withinHours)}`);
-    const listed = fees.length === 1 ? fees[0] : `${fees.slice(0, -1).join(', ')} and ${fees[fees.length - 1]}`;
-    lines.push(`Cancel ${tiers[0].withinHours} ${hours(tiers[0].withinHours)} or more before the game for free.`);
-    lines.push(`Cancelling later costs a share of the booking price: ${listed}. ${policy.depositRequired
-      ? 'What you paid covers it first; your FutSlot deposit covers the rest.'
-      : "It's never more than you've paid."}`);
+    const fees = tiers.map((tier) => l().feeWithin(tier.feePercent, l().hours(tier.withinHours)));
+    lines.push(l().policyFreeBefore(l().hours(tiers[0].withinHours)));
+    lines.push(l().policyLateFee(listOf(fees), policy.depositRequired ? l().policyFeeDeposit : l().policyFeeCapped));
   }
   if (policy.depositRequired) {
     const top = Math.max(0, ...tiers.map((tier) => tier.feePercent));
-    lines.push(`You need a ${rupees(DEPOSIT_AMOUNT)} FutSlot booking deposit to book here.${top > 0
-      ? ` Not showing up costs ${top}% of the booking price.` : ''}`);
+    lines.push([l().policyDeposit(rupees(DEPOSIT_AMOUNT)), ...(top > 0 ? [l().policyNoShow(top)] : [])].join(' '));
   }
   if (policy.strikeLimit !== null && policy.strikeAdvancePercent !== null && policy.strikeAdvancePercent > policy.advancePercent) {
-    const strikes = policy.strikeLimit === 1 ? 'a late cancellation or no-show' : `${policy.strikeLimit} late cancellations or no-shows`;
-    lines.push(`After ${strikes} here in ${STRIKE_WINDOW_DAYS} days, you pay ${policy.strikeAdvancePercent}% up front.`);
+    lines.push(l().policyStrikes(policy.strikeLimit, STRIKE_WINDOW_DAYS, policy.strikeAdvancePercent));
   }
-  lines.push('If the venue cancels, you get everything back.');
+  lines.push(l().policyVenueCancels);
   return lines;
+}
+
+/** "a", "a and b", "a, b and c". */
+export function listOf(items: string[]): string {
+  return items.length === 1 ? items[0] : l().listAnd(items.slice(0, -1).join(', '), items[items.length - 1]);
 }
 
 /** How a booking shows in lists. {@code checking}: a payment for it is waiting to be checked. */
@@ -107,7 +108,7 @@ export function cancellable(booking: Booking, now = new Date()): boolean {
 /** "6 AM – 10 PM", "Closed", for one day's opening hours. */
 export function hoursLabel(hours: DayHours | undefined): string {
   if (!hours || hours.closed || !hours.openTime || !hours.closeTime) {
-    return 'Closed';
+    return l().closed;
   }
   return `${timeLabel(hours.openTime)} – ${timeLabel(hours.closeTime)}`;
 }
@@ -120,8 +121,4 @@ export function timeLabel(time: string): string {
 
 function byHoursBefore(tiers: CancellationTier[]): CancellationTier[] {
   return [...tiers].sort((a, b) => b.withinHours - a.withinHours);
-}
-
-function hours(count: number): string {
-  return count === 1 ? 'hour' : 'hours';
 }

@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+
+import { l } from '../i18n/i18n';
 
 /** Switches between the parts of Play: pickup games, tournaments and teams. */
 @Component({
@@ -7,8 +9,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   imports: [RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <nav class="flex gap-1 rounded-lg bg-surface-2 p-1" aria-label="Play">
-      @for (link of links; track link.path) {
+    <nav class="flex gap-1 rounded-lg bg-surface-2 p-1" [attr.aria-label]="l().tabPlay">
+      @for (link of links(); track link.path) {
         <a [routerLink]="link.path" routerLinkActive="bg-surface text-text" ariaCurrentWhenActive="page"
           class="flex h-10 flex-1 items-center justify-center rounded-md font-medium text-muted">{{ link.label }}</a>
       }
@@ -16,9 +18,11 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   `,
 })
 export class PlayNav {
-  protected readonly links = [
-    { path: '/matches', label: 'Games' },
-    { path: '/tournaments', label: 'Tournaments' },
-    { path: '/teams', label: 'Teams' },
-  ];
+  protected readonly l = l;
+
+  protected readonly links = computed(() => [
+    { path: '/matches', label: l().playGames },
+    { path: '/tournaments', label: l().playTournaments },
+    { path: '/teams', label: l().playTeams },
+  ]);
 }

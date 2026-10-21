@@ -1,5 +1,6 @@
 import { ChatMessage } from '../../core/api.types';
-import { addDays, today } from '../../shared/format';
+import { l } from '../../i18n/i18n';
+import { addDays, dayLabel, today } from '../../shared/format';
 
 export interface DayGroup {
   day: string;
@@ -34,14 +35,12 @@ export function byDay(messages: ChatMessage[], timeZone: string, now = new Date(
 
 function dayName(day: string, todayKey: string): string {
   if (day === todayKey) {
-    return 'Today';
+    return l().today;
   }
   if (day === addDays(todayKey, -1)) {
-    return 'Yesterday';
+    return l().yesterday;
   }
-  const [y, m, d] = day.split('-').map(Number);
-  return new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
-    .format(new Date(Date.UTC(y, m - 1, d)));
+  return dayLabel(day);
 }
 
 /** Whether two neighbouring messages read as one burst: same side and sender, within five minutes. */

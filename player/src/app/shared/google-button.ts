@@ -1,4 +1,6 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, input, output, viewChild } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, effect, ElementRef, input, output, signal, untracked, viewChild } from '@angular/core';
+
+import { currentLanguage } from '../i18n/i18n';
 
 /** The bits of Google Identity Services this uses. */
 interface GoogleId {
@@ -46,20 +48,36 @@ export class GoogleButton {
 
   private readonly host = viewChild.required<ElementRef<HTMLElement>>('host');
 
+  private readonly google = signal<GoogleId | null>(null);
+
   constructor() {
     afterNextRender(() => {
       loadGoogle().then((google) => {
-        const host = this.host().nativeElement;
         google.initialize({ client_id: this.clientId(), callback: (response) => this.credential.emit(response.credential) });
-        google.renderButton(host, {
-          type: 'standard',
-          theme: document.documentElement.classList.contains('dark') ? 'filled_black' : 'outline',
-          size: 'large',
-          text: 'continue_with',
-          shape: 'rectangular',
-          width: Math.min(host.clientWidth || 384, 400),
-        });
+        this.google.set(google);
       }, () => undefined);
+    });
+    // Drawn again in the other language when the player switches
+    effect(() => {
+      const google = this.google();
+      const locale = currentLanguage();
+      if (google) {
+        untracked(() => this.render(google, locale));
+      }
+    });
+  }
+
+  private render(google: GoogleId, locale: string): void {
+    const host = this.host().nativeElement;
+    host.replaceChildren();
+    google.renderButton(host, {
+      type: 'standard',
+      theme: document.documentElement.classList.contains('dark') ? 'filled_black' : 'outline',
+      size: 'large',
+      text: 'continue_with',
+      shape: 'rectangular',
+      width: Math.min(host.clientWidth || 384, 400),
+      locale,
     });
   }
 }

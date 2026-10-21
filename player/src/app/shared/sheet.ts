@@ -2,6 +2,8 @@ import { A11yModule } from '@angular/cdk/a11y';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { LucideAngularModule, X } from 'lucide-angular';
 
+import { l } from '../i18n/i18n';
+
 /**
  * A panel for one task without leaving the screen: from the right on wide screens, from the bottom on
  * phones. Escape, the close button or tapping outside closes it; focus stays inside while open.
@@ -23,7 +25,7 @@ import { LucideAngularModule, X } from 'lucide-angular';
             <p class="mt-0.5 text-muted">{{ subtitle() }}</p>
           }
         </div>
-        <button type="button" (click)="closed.emit()" aria-label="Close"
+        <button type="button" (click)="closed.emit()" [attr.aria-label]="l().close"
           class="-mr-2 grid size-11 shrink-0 place-items-center rounded-md text-muted hover:bg-surface-2 hover:text-text">
           <lucide-icon [img]="close" [size]="20" />
         </button>
@@ -36,6 +38,8 @@ import { LucideAngularModule, X } from 'lucide-angular';
   `,
 })
 export class Sheet {
+  protected readonly l = l;
+
   readonly title = input.required<string>();
 
   readonly subtitle = input<string | null>(null);

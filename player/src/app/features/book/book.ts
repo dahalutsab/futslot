@@ -6,6 +6,7 @@ import { LoaderCircle, LucideAngularModule, Minus, Plus, ShieldCheck } from 'luc
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { AddOnItem, BookingRequest, DEPOSIT_AMOUNT, Membership, Quote, VenueDetail } from '../../core/api.types';
+import { digits, l } from '../../i18n/i18n';
 import { policyLines } from '../../shared/booking-model';
 import { dayLabel, localClock, rupees } from '../../shared/format';
 import { planTerms } from '../../shared/labels';
@@ -18,6 +19,8 @@ import { planTerms } from '../../shared/labels';
   templateUrl: './book.html',
 })
 export class Book {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   private readonly router = inject(Router);
@@ -31,6 +34,8 @@ export class Book {
   protected readonly icons = { LoaderCircle, Minus, Plus, ShieldCheck };
 
   protected readonly fmt = { rupees, localClock, dayLabel };
+
+  protected readonly digits = digits;
 
   protected readonly depositAmount = DEPOSIT_AMOUNT;
 

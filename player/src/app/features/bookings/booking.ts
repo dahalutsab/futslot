@@ -6,6 +6,7 @@ import { CircleCheck, Clock, LucideAngularModule, MapPin, MessageSquare, Users, 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { Booking, BookingPayments, PaymentClaim, Review, ReviewWrite, VenueDetail } from '../../core/api.types';
+import { l } from '../../i18n/i18n';
 import { bookingChip, cancellable, cancelOutcome } from '../../shared/booking-model';
 import { clockAt, dayLabel, localClock, methodLabel, rupees } from '../../shared/format';
 import { PayForm } from '../../shared/pay-form';
@@ -20,6 +21,8 @@ import { StatusChip } from '../../shared/status-chip';
   templateUrl: './booking.html',
 })
 export class BookingPage implements OnDestroy {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   private readonly route = inject(ActivatedRoute);
@@ -112,6 +115,26 @@ export class BookingPage implements OnDestroy {
 
   ngOnDestroy(): void {
     clearInterval(this.timer);
+  }
+
+  /** "being checked", "not received" and so on; nothing for a payment that went through. */
+  protected paymentState(status: string): string {
+    switch (status) {
+      case 'SUCCEEDED':
+        return '';
+      case 'PENDING':
+        return l().beingChecked;
+      case 'FAILED':
+        return l().notReceived;
+      case 'REFUNDED':
+        return l().refunded;
+      case 'PARTIALLY_REFUNDED':
+        return l().partlyRefunded;
+      case 'CANCELLED':
+        return l().paymentCancelled;
+      default:
+        return l().paymentStarted;
+    }
   }
 
   protected async pay(claim: PaymentClaim): Promise<void> {
