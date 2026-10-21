@@ -46,6 +46,10 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.POST, "/sites/*/book/*", "/sites/*/bookings/*/pay", "/sites/*/deposit",
 						"/sites/*/deposit/withdraw", "/sites/*/deposit/withdrawals/*/cancel", "/sites/*/sign-out")
 				.permitAll()
+				// The same in Nepali
+				.requestMatchers(HttpMethod.POST, "/sites/*/ne/book/*", "/sites/*/ne/bookings/*/pay", "/sites/*/ne/deposit",
+						"/sites/*/ne/deposit/withdraw", "/sites/*/ne/deposit/withdrawals/*/cancel", "/sites/*/ne/sign-out")
+				.permitAll()
 				// What anyone can browse before signing in
 				.requestMatchers(HttpMethod.GET, "/api/v1/venues", "/api/v1/venues/*", "/api/v1/venues/*/availability",
 						"/api/v1/venues/*/reviews", "/api/v1/venues/*/reviews/summary", "/api/v1/venues/*/membership-plans",

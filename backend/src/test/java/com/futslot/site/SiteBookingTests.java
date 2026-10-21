@@ -131,12 +131,12 @@ class SiteBookingTests {
 
 		// The slot is gone for the next person
 		this.mvc.perform(get(book).param("court", court).param("start", start))
-			.andExpect(content().string(containsString("isn't free any more")));
+			.andExpect(content().string(containsString("free any more")));
 
 		// Bookings are private to the player, and to the site they were made on
-		this.mvc.perform(get(location)).andExpect(redirectedUrl("/sites/bookhere/"));
+		this.mvc.perform(get(location)).andExpect(redirectedUrl("/sites/bookhere"));
 		this.mvc.perform(get(location).cookie(new Cookie(SiteSession.COOKIE, player.getValue().replaceFirst(".$", "x"))))
-			.andExpect(redirectedUrl("/sites/bookhere/"));
+			.andExpect(redirectedUrl("/sites/bookhere"));
 		TestUser rival = this.users.signUp("Other Site Owner");
 		TestVenue other = this.venues.active(rival, "Other Site Futsal");
 		ownerSends(rival, put("/api/v1/owner/venues/" + other.id() + "/site"), "{\"template\":\"FLOODLIGHT\",\"subdomain\":\"othersite\"}");
@@ -151,7 +151,7 @@ class SiteBookingTests {
 			.andExpect(content().string(containsString("Your phone number")));
 
 		this.mvc.perform(post("/sites/bookhere/sign-out").cookie(player))
-			.andExpect(redirectedUrl("/sites/bookhere/"))
+			.andExpect(redirectedUrl("/sites/bookhere"))
 			.andExpect(header().string("Set-Cookie", containsString("Max-Age=0")));
 	}
 
@@ -182,6 +182,58 @@ class SiteBookingTests {
 			.andReturn().getResponse().getCookie(SiteSession.COOKIE);
 		this.mvc.perform(get(book).param("court", court).param("start", start).cookie(player))
 			.andExpect(content().string(containsString("Book this slot?")));
+	}
+
+	@Test
+	void playersBookInNepaliOnAVenuesSite() throws Exception {
+		TestUser owner = this.users.signUp("Nepali Site Owner");
+		TestVenue venue = this.venues.active(owner, "Nepali Site Futsal");
+		ownerSends(owner, put("/api/v1/owner/venues/" + venue.id() + "/policy"),
+				"{\"advancePercent\":30,\"bookingHoldMinutes\":15,\"cancellationTiers\":[{\"withinHours\":24,\"feePercent\":100}],\"maxAdvanceBookingDays\":30}");
+		ownerSends(owner, put("/api/v1/owner/venues/" + venue.id() + "/site"), "{\"template\":\"FLOODLIGHT\",\"subdomain\":\"nepalisite\"}");
+		ownerSends(owner, post("/api/v1/owner/venues/" + venue.id() + "/site/publish"), null);
+		String phone = TestUsers.nextLocalPhone();
+		this.users.logIn(phone, "Nepali Player");
+		String availability = this.mvc.perform(get("/api/v1/venues/" + venue.slug() + "/availability").param("date", TOMORROW.toString()))
+			.andReturn().getResponse().getContentAsString();
+		String start = JsonPath.<List<String>>read(availability, "$.courts[0].slots[?(@.status == 'AVAILABLE')].startsAt").getFirst();
+		String court = venue.courtId().toString();
+
+		// The page in Nepali links to booking in Nepali, and back to itself in English
+		this.mvc.perform(get("/sites/nepalisite/ne").param("date", TOMORROW.toString()))
+			.andExpect(status().isOk())
+			.andExpect(content().string(containsString("<html lang=\"ne\">")))
+			.andExpect(content().string(containsString("भोलि खाली")))
+			.andExpect(content().string(containsString("/sites/nepalisite/ne/book?court=" + court)))
+			.andExpect(content().string(containsString("href=\"/sites/nepalisite?date=" + TOMORROW + "\"")))
+			.andExpect(content().string(containsString(">English</a>")))
+			.andExpect(content().string(not(containsString("Free slots"))));
+		this.mvc.perform(get("/sites/nepalisite").param("date", TOMORROW.toString()))
+			.andExpect(content().string(containsString("<html lang=\"en\">")))
+			.andExpect(content().string(containsString("href=\"/sites/nepalisite/ne?date=" + TOMORROW + "\"")))
+			.andExpect(content().string(containsString(">नेपाली</a>")));
+
+		String book = "/sites/nepalisite/ne/book";
+		this.mvc.perform(get(book).param("court", court).param("start", start))
+			.andExpect(content().string(containsString("तपाईंको फोन नम्बर")))
+			.andExpect(content().string(containsString("action=\"/sites/nepalisite/ne/book/password\"")))
+			.andExpect(content().string(containsString("href=\"/sites/nepalisite/book?court=" + court)));
+		this.mvc.perform(post(book + "/code").param("court", court).param("start", start).param("phone", phone))
+			.andExpect(content().string(containsString("कोड पठाएका छौं")));
+		Cookie player = this.mvc.perform(post(book + "/password").param("court", court).param("start", start)
+				.param("phone", phone).param("password", TestUsers.PASSWORD))
+			.andExpect(redirectedUrlPattern(book + "?court=*"))
+			.andReturn().getResponse().getCookie(SiteSession.COOKIE);
+		this.mvc.perform(get(book).param("court", court).param("start", start).cookie(player))
+			.andExpect(content().string(containsString("यो स्लट बुक गर्ने?")))
+			.andExpect(content().string(containsString("रु ")))
+			.andExpect(content().string(containsString("१५ मिनेट")));
+		String location = this.mvc.perform(post(book + "/confirm").param("court", court).param("start", start).cookie(player))
+			.andExpect(redirectedUrlPattern("/sites/nepalisite/ne/bookings/*"))
+			.andReturn().getResponse().getRedirectedUrl();
+		this.mvc.perform(get(location).cookie(player))
+			.andExpect(content().string(containsString("अग्रिम भुक्तानी पर्खँदै")))
+			.andExpect(content().string(containsString("href=\"" + location.replace("/ne/", "/") + "\"")));
 	}
 
 	@Test
@@ -250,7 +302,7 @@ class SiteBookingTests {
 			.andExpect(content().string(containsString("Take your deposit back")))
 			.andExpect(content().string(not(containsString("coming back to you"))));
 		this.mvc.perform(post(site + "/deposit/withdraw").param("method", "ESEWA").param("sendTo", "9800000009"))
-			.andExpect(redirectedUrl(site + "/"));
+			.andExpect(redirectedUrl(site));
 	}
 
 	@Test
@@ -261,6 +313,7 @@ class SiteBookingTests {
 		ownerSends(owner, post("/api/v1/owner/venues/" + venue.id() + "/site/publish"), null);
 
 		this.mvc.perform(get("http://hostbook.localhost/book").param("court", "x").param("start", "y")).andExpect(forwardedUrl("/sites/hostbook/book"));
+		this.mvc.perform(post("http://hostbook.localhost/book/password")).andExpect(forwardedUrl("/sites/hostbook/book/password"));
 		this.mvc.perform(post("http://hostbook.localhost/book/confirm")).andExpect(forwardedUrl("/sites/hostbook/book/confirm"));
 		this.mvc.perform(post("http://hostbook.localhost/sign-out")).andExpect(forwardedUrl("/sites/hostbook/sign-out"));
 		this.mvc.perform(get("http://hostbook.localhost/bookings")).andExpect(forwardedUrl("/sites/hostbook/bookings"));
@@ -268,6 +321,13 @@ class SiteBookingTests {
 		this.mvc.perform(post("http://hostbook.localhost/deposit/withdraw")).andExpect(forwardedUrl("/sites/hostbook/deposit/withdraw"));
 		String withdrawal = "/deposit/withdrawals/" + UUID.randomUUID() + "/cancel";
 		this.mvc.perform(post("http://hostbook.localhost" + withdrawal)).andExpect(forwardedUrl("/sites/hostbook" + withdrawal));
+		// In Nepali, beneath /ne
+		this.mvc.perform(get("http://hostbook.localhost/ne/")).andExpect(forwardedUrl("/sites/hostbook/ne"));
+		this.mvc.perform(get("http://hostbook.localhost/ne")).andExpect(forwardedUrl("/sites/hostbook/ne"));
+		this.mvc.perform(post("http://hostbook.localhost/ne/book/password")).andExpect(forwardedUrl("/sites/hostbook/ne/book/password"));
+		this.mvc.perform(get("http://hostbook.localhost/ne/bookings")).andExpect(forwardedUrl("/sites/hostbook/ne/bookings"));
+		this.mvc.perform(get("http://hostbook.localhost/ne/robots.txt")).andExpect(status().isNotFound());
+		this.mvc.perform(get("http://hostbook.localhost/nepal")).andExpect(status().isNotFound());
 		this.mvc.perform(post("http://hostbook.localhost/")).andExpect(status().isNotFound());
 		this.mvc.perform(post("http://hostbook.localhost/api/v1/bookings")).andExpect(status().isNotFound());
 	}

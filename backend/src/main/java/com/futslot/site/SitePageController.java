@@ -17,14 +17,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
-import jakarta.servlet.RequestDispatcher;
+import com.futslot.common.Languages;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Venue websites. Live sites are reached at their own address ({@link SiteHostFilter} forwards those requests
  * here); {@code /sites/{subdomain}} serves the same page directly, and {@code /site-preview/{slug}} shows any
- * template before it's published, hidden from search engines.
+ * template before it's published, hidden from search engines. Each page is in English, and in Nepali beneath
+ * {@code /ne} (see {@link SiteLanguage}).
  */
 @Controller
 class SitePageController {
@@ -37,24 +39,31 @@ class SitePageController {
 
 	private final SiteSession session;
 
-	SitePageController(VenueSiteRepository sites, SitePageService pages, SiteProperties properties, SiteSession session) {
+	private final SiteLanguage language;
+
+	SitePageController(VenueSiteRepository sites, SitePageService pages, SiteProperties properties, SiteSession session,
+			SiteLanguage language) {
 		this.sites = sites;
 		this.pages = pages;
 		this.properties = properties;
 		this.session = session;
+		this.language = language;
 	}
 
-	@GetMapping("/sites/{subdomain}")
+	@GetMapping({ "/sites/{subdomain}", "/sites/{subdomain}" + SiteLanguage.NEPALI })
 	String site(@PathVariable String subdomain, @RequestParam(required = false) String date, Model model,
 			HttpServletRequest request, HttpServletResponse response) {
 		VenueSite site = published(subdomain);
 		String slug = this.pages.slugOf(site.getVenueId())
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		SiteText text = this.language.of(request);
 		// On the venue's own address the booking pages are at /book; at /sites/{subdomain} they're beneath it
-		String base = (request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) != null) ? "" : "/sites/" + site.getSubdomain();
+		String base = SiteLanguage.base(request, site.getSubdomain(), text.nepali());
+		String other = SiteLanguage.home(SiteLanguage.base(request, site.getSubdomain(), !text.nepali()))
+				+ ((date != null && date.matches("\\d{4}-\\d{2}-\\d{2}")) ? "?date=" + date : "");
 		String mine = this.session.player(request).isPresent() ? base + "/bookings" : null;
 		model.addAttribute("page", this.pages.build(slug, site.getTemplate(), site.getAccentColor(), site.getHeadline(), date,
-				canonical(site), "?", false, base, mine));
+				canonical(site), "?", false, text, other, base, mine));
 		if (mine != null) {
 			// Personal (it links to their bookings), so not for shared caches
 			response.setHeader("Cache-Control", "private, no-cache");
@@ -67,11 +76,15 @@ class SitePageController {
 	@GetMapping("/site-preview/{slug}")
 	String preview(@PathVariable String slug, @RequestParam(defaultValue = "TURF") String template,
 			@RequestParam(required = false) String accent, @RequestParam(required = false) String headline,
-			@RequestParam(required = false) String date, Model model) {
+			@RequestParam(required = false) String date, @RequestParam(required = false) String lang, Model model,
+			HttpServletRequest request) {
 		SiteTemplate chosen = parseTemplate(template);
 		String color = (accent != null && accent.matches("#?[0-9a-fA-F]{6}")) ? "#" + accent.replace("#", "").toLowerCase(Locale.ROOT) : null;
-		String prefix = "?template=" + chosen.name() + (color != null ? "&accent=" + color.substring(1) : "") + "&";
-		model.addAttribute("page", this.pages.build(slug, chosen, color, headline, date, this.properties.urlFor(slug), prefix, true));
+		SiteText text = this.language.of(Languages.of(lang), request);
+		String view = "?template=" + chosen.name() + (color != null ? "&accent=" + color.substring(1) : "");
+		String prefix = view + (text.nepali() ? "&lang=ne" : "") + "&";
+		model.addAttribute("page", this.pages.build(slug, chosen, color, headline, date, this.properties.urlFor(slug), prefix, true,
+				text, view + (text.nepali() ? "" : "&lang=ne")));
 		return "sites/" + chosen.name().toLowerCase(Locale.ROOT);
 	}
 
@@ -86,12 +99,23 @@ class SitePageController {
 	@ResponseBody
 	String sitemap(@PathVariable String subdomain) {
 		VenueSite site = published(subdomain);
+		String english = canonical(site) + "/";
+		String nepali = canonical(site) + SiteLanguage.NEPALI + "/";
+		String alternates = """
+				    <xhtml:link rel="alternate" hreflang="en" href="%s"/>
+				    <xhtml:link rel="alternate" hreflang="ne" href="%s"/>
+				""".formatted(english, nepali);
+		String url = """
+				  <url>
+				    <loc>%s</loc><lastmod>%s</lastmod><changefreq>daily</changefreq>
+				%s  </url>
+				""";
+		String updated = site.getUpdatedAt().toString().substring(0, 10);
 		return """
 				<?xml version="1.0" encoding="UTF-8"?>
-				<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-				  <url><loc>%s/</loc><lastmod>%s</lastmod><changefreq>daily</changefreq></url>
-				</urlset>
-				""".formatted(canonical(site), site.getUpdatedAt().toString().substring(0, 10));
+				<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+				%s%s</urlset>
+				""".formatted(url.formatted(english, updated, alternates), url.formatted(nepali, updated, alternates));
 	}
 
 	/**

@@ -7,15 +7,39 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
 import java.util.Locale;
+import java.util.Optional;
 
-/** How venue sites write money, times and days: the way people in Nepal say them. */
+import com.futslot.common.Languages;
+import com.futslot.common.Nepali;
+
+/**
+ * How venue sites write money, times and days: the way people in Nepal say them, in English or in Nepali (Devanagari
+ * digits, the part of the day before the hour, Bikram Sambat dates). Words other than those live in the message
+ * bundle (see {@link SiteText}).
+ */
 final class SiteFormat {
 
-	private SiteFormat() {
+	static final SiteFormat ENGLISH = new SiteFormat(false);
+
+	static final SiteFormat NEPALI = new SiteFormat(true);
+
+	private final boolean nepali;
+
+	private SiteFormat(boolean nepali) {
+		this.nepali = nepali;
 	}
 
-	/** "Rs 1,200", "Rs 1,20,000" (lakh grouping); paisa only when there are any. */
-	static String rupees(BigDecimal amount) {
+	static SiteFormat of(Locale locale) {
+		return Languages.isNepali(locale) ? NEPALI : ENGLISH;
+	}
+
+	/** "42", or "४२" in Nepali. */
+	String number(Object value) {
+		return this.nepali ? Nepali.digits(String.valueOf(value)) : String.valueOf(value);
+	}
+
+	/** "Rs 1,200", "Rs 1,20,000" (lakh grouping), "रु १,२००" in Nepali; paisa only when there are any. */
+	String rupees(BigDecimal amount) {
 		BigDecimal value = amount.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros();
 		String plain = value.abs().toPlainString();
 		String whole = plain.contains(".") ? plain.substring(0, plain.indexOf('.')) : plain;
@@ -29,36 +53,55 @@ final class SiteFormat {
 				grouped.append(',');
 			}
 		}
-		return "Rs " + (value.signum() < 0 ? "-" : "") + grouped + fraction;
+		return (this.nepali ? "रु " : "Rs ") + number((value.signum() < 0 ? "-" : "") + grouped + fraction);
 	}
 
-	/** "6 AM", "6:30 PM", "12 AM" for midnight. */
-	static String clock(LocalTime time) {
+	/** "6 AM", "6:30 PM", "12 AM" for midnight; "बिहान ६ बजे", "बेलुका ६:३० बजे" in Nepali, as the player app says them. */
+	String clock(LocalTime time) {
 		int hour = time.getHour() % 12 == 0 ? 12 : time.getHour() % 12;
-		String suffix = time.getHour() < 12 ? "AM" : "PM";
-		return time.getMinute() == 0 ? hour + " " + suffix : "%d:%02d %s".formatted(hour, time.getMinute(), suffix);
+		String text = time.getMinute() == 0 ? String.valueOf(hour) : "%d:%02d".formatted(hour, time.getMinute());
+		if (this.nepali) {
+			int h = time.getHour();
+			String part = (h >= 4 && h < 12) ? "बिहान" : (h >= 12 && h < 16) ? "दिउँसो" : (h >= 16 && h < 20) ? "बेलुका" : "राति";
+			return part + " " + Nepali.digits(text) + " बजे";
+		}
+		return text + (time.getHour() < 12 ? " AM" : " PM");
 	}
 
 	/** "6 AM – 10 PM"; an end at the last minute of the day reads as midnight. */
-	static String span(LocalTime from, LocalTime to) {
+	String span(LocalTime from, LocalTime to) {
 		LocalTime end = (to.getHour() == 23 && to.getMinute() == 59) ? LocalTime.MIDNIGHT : to;
 		return clock(from) + " – " + clock(end);
 	}
 
-	/** "Thu 9 Oct". */
-	static String day(LocalDate date) {
-		return date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH) + " " + date.getDayOfMonth() + " "
-				+ date.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH);
+	/** "Thu 9 Oct"; "बिहि, २३ आश्विन" in Nepali. */
+	String day(LocalDate date) {
+		Optional<Nepali.BsDate> bs = this.nepali ? Nepali.bs(date) : Optional.empty();
+		if (bs.isPresent()) {
+			return Nepali.weekdayShort(date.getDayOfWeek()) + ", " + Nepali.digits(bs.get().day()) + " " + bs.get().monthName();
+		}
+		return number(date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH) + " " + date.getDayOfMonth() + " "
+				+ date.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH));
 	}
 
-	/** "Sunday". */
-	static String weekday(DayOfWeek day) {
-		return day.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+	/** "Thu 9", without the month, for a row of days to choose from; "बिहि २३" in Nepali. */
+	String dayOfWeek(LocalDate date) {
+		Optional<Nepali.BsDate> bs = this.nepali ? Nepali.bs(date) : Optional.empty();
+		if (bs.isPresent()) {
+			return Nepali.weekdayShort(date.getDayOfWeek()) + " " + Nepali.digits(bs.get().day());
+		}
+		return number(date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH) + " " + date.getDayOfMonth());
 	}
 
-	/** "Fridays" for a single day, "Every day" for none. */
-	static String days(DayOfWeek day) {
-		return (day == null) ? "Every day" : weekday(day) + "s";
+	/** "Sunday"; "आइतबार" in Nepali. */
+	String weekday(DayOfWeek day) {
+		return this.nepali ? Nepali.weekday(day) : day.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+	}
+
+	/** The year {@code date} falls in: Bikram Sambat in Nepali. */
+	String year(LocalDate date) {
+		return this.nepali ? Nepali.bs(date).map(bs -> Nepali.digits(bs.year())).orElse(number(date.getYear()))
+				: String.valueOf(date.getYear());
 	}
 
 	/** Black or white, whichever has more contrast on {@code hex} (they're equal at luminance 0.179). */

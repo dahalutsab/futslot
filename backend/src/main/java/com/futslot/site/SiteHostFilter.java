@@ -18,14 +18,14 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * Sends requests for a venue's own address (dhuku.futslot.com, or a custom domain) to its site pages. Runs
  * before security: site pages are public, and anything else on those hosts other than photos and the site's
- * stylesheets doesn't exist there.
+ * stylesheets doesn't exist there. The same pages in Nepali are beneath /ne (see {@link SiteLanguage}).
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 class SiteHostFilter extends OncePerRequestFilter {
 
 	private static final Pattern BOOKING = Pattern.compile(
-			"/book(/code|/verify|/confirm)?|/bookings(/[0-9a-f-]{36}(/pay)?)?|/deposit(/withdraw|/withdrawals/[0-9a-f-]{36}/cancel)?|/sign-out");
+			"/book(/password|/code|/verify|/confirm)?|/bookings(/[0-9a-f-]{36}(/pay)?)?|/deposit(/withdraw|/withdrawals/[0-9a-f-]{36}/cancel)?|/sign-out");
 
 	private final VenueSiteRepository sites;
 
@@ -50,9 +50,14 @@ class SiteHostFilter extends OncePerRequestFilter {
 			return;
 		}
 		String site = "/sites/" + subdomain.get();
+		boolean english = !path.equals(SiteLanguage.NEPALI) && !path.startsWith(SiteLanguage.NEPALI + "/");
+		if (!english) {
+			site += SiteLanguage.NEPALI;
+			path = path.substring(SiteLanguage.NEPALI.length());
+		}
 		boolean reading = "GET".equals(request.getMethod()) || "HEAD".equals(request.getMethod());
 		String target = null;
-		if (reading && (path.isEmpty() || path.equals("/") || path.equals("/robots.txt") || path.equals("/sitemap.xml"))) {
+		if (reading && (path.isEmpty() || path.equals("/") || (english && (path.equals("/robots.txt") || path.equals("/sitemap.xml"))))) {
 			target = site + (path.length() > 1 ? path : "");
 		}
 		// Booking: the slot, signing in and confirming, the booking itself and the player's deposit (pages and their forms)
