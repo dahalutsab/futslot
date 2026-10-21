@@ -258,6 +258,21 @@ commits. Players get a reminder 2 hours before a confirmed booking
 (`futslot.notifications.reminders.*`). Until Firebase is configured, pushes are written to the API log
 (`Push to N device(s): ...`).
 
+### English and Nepali
+
+Everything players see works in English and Nepali: the mobile app, the player web app, venue websites, and
+what the API tells them. In Nepali, numbers use Devanagari digits with lakh grouping, times say the part of the
+day ("बेलुका ६ बजे") and dates are Bikram Sambat; phone numbers, transaction ids and the texted code stay in Latin
+digits. The owner dashboard and admin app stay in English.
+
+- API error `detail`s follow `Accept-Language` (`ne` or English); the `code` is the same either way.
+- Notifications follow the player's `preferredLanguage` (`PATCH /api/v1/me`), which a new account takes from the
+  language it signed up in. Texted codes follow the request. Notifications to venue staff stay in English.
+- Venue sites have a Nepali version beneath `/ne` (`dhuku.futslot.com/ne/`), listed in the sitemap.
+- The server's wording is in `backend/src/main/resources/i18n/`: `sites`, `notices` and `errors`, with a `_ne`
+  file each. Players top up their deposit using `FUTSLOT_PAYMENT_INSTRUCTIONS_NE` when it's set, and the
+  English instructions otherwise.
+
 ### Owner dashboard
 
 The web dashboard for venue owners and staff lives in `dashboard/` (Angular). With the API running:

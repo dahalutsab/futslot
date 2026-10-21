@@ -6,6 +6,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/widgets.dart';
 
@@ -55,12 +56,12 @@ class _DuesScreenState extends ConsumerState<DuesScreen> {
     final c = context.fs;
     final dues = _dues;
     return Scaffold(
-      appBar: AppBar(title: const Text('What you owe')),
+      appBar: AppBar(title: Text(l.whatYouOwe)),
       body: ScreenBody(
         onRefresh: _load,
         children: [
           Text(
-            'Your share of games other players booked. Pay them, and they tick you off.',
+            l.duesIntro,
             style: TextStyle(color: c.muted),
           ),
           const SizedBox(height: 16),
@@ -69,9 +70,9 @@ class _DuesScreenState extends ConsumerState<DuesScreen> {
           else if (dues == null)
             const Skeleton(height: 128)
           else if (dues.isEmpty)
-            const EmptyPanel(
-              title: "You're all square",
-              body: 'When someone adds you to a game they booked and splits the cost, your share shows up here.',
+            EmptyPanel(
+              title: l.allSquare,
+              body: l.allSquareBody,
             )
           else ...[
             Text.rich(
@@ -79,7 +80,7 @@ class _DuesScreenState extends ConsumerState<DuesScreen> {
                 text: rupees(dues.fold<double>(0, (sum, due) => sum + due.amount)),
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600, fontFeatures: tabular),
                 children: [
-                  TextSpan(text: ' in all', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: c.muted)),
+                  TextSpan(text: l.inAll, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: c.muted)),
                 ],
               ),
             ),
@@ -125,7 +126,7 @@ class _DueCard extends StatelessWidget {
                     ),
                     if (due.payTo.phone case final number?) ...[
                       const SizedBox(height: 4),
-                      Text('Pay to ${phone(number)}', style: const TextStyle(fontSize: 14, fontFeatures: tabular)),
+                      Text(l.payTo(phone(number)), style: const TextStyle(fontSize: 14, fontFeatures: tabular)),
                     ],
                   ],
                 ),

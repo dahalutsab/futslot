@@ -7,33 +7,25 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/session.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
+import '../../shared/language_switch.dart';
 import '../../shared/notification_bell.dart';
 import '../../shared/widgets.dart';
 
 /// Everything else the player keeps with FutSlot.
-const _links = [
-  (path: '/me/deposit', label: 'Booking deposit', detail: 'Top up or take it back', icon: LucideIcons.wallet),
-  (
-    path: '/me/profile',
-    label: 'Player profile',
-    detail: 'Your position and level, for games and teams',
-    icon: LucideIcons.shirt,
-  ),
-  (path: '/me/memberships', label: 'Memberships', detail: 'Game packs and passes', icon: LucideIcons.badgeCheck),
-  (path: '/me/splits', label: 'What you owe', detail: 'Your share of games friends booked', icon: LucideIcons.coins),
-  (path: '/me/favourites', label: 'Saved venues', detail: 'Venues you like, to book again', icon: LucideIcons.heart),
-  (path: '/me/reviews', label: 'Reviews', detail: 'Rate the venues you played at', icon: LucideIcons.star),
-  (path: '/me/waitlist', label: 'Waitlist', detail: 'Booked slots you want if they free up', icon: LucideIcons.hourglass),
-  (
-    path: '/me/password',
-    label: 'Password',
-    detail: 'Change it, and sign out other devices',
-    icon: LucideIcons.keyRound,
-  ),
-];
+List<({String path, String label, String detail, IconData icon})> get _links => [
+      (path: '/me/deposit', label: l.meDeposit, detail: l.meDepositDetail, icon: LucideIcons.wallet),
+      (path: '/me/profile', label: l.meProfile, detail: l.meProfileDetail, icon: LucideIcons.shirt),
+      (path: '/me/memberships', label: l.meMemberships, detail: l.meMembershipsDetail, icon: LucideIcons.badgeCheck),
+      (path: '/me/splits', label: l.meDues, detail: l.meDuesDetail, icon: LucideIcons.coins),
+      (path: '/me/favourites', label: l.meFavourites, detail: l.meFavouritesDetail, icon: LucideIcons.heart),
+      (path: '/me/reviews', label: l.meReviews, detail: l.meReviewsDetail, icon: LucideIcons.star),
+      (path: '/me/waitlist', label: l.meWaitlist, detail: l.meWaitlistDetail, icon: LucideIcons.hourglass),
+      (path: '/me/password', label: l.mePassword, detail: l.mePasswordDetail, icon: LucideIcons.keyRound),
+    ];
 
-/// The player's account: their details, the deposit and other things they keep, the theme and signing out.
+/// The player's account: their details, the deposit and other things they keep, language, theme and signing out.
 class MeScreen extends ConsumerStatefulWidget {
   const MeScreen({super.key});
 
@@ -47,8 +39,6 @@ class _MeScreenState extends ConsumerState<MeScreen> {
   late final _fullName = TextEditingController(text: _user?.fullName ?? '');
 
   late final _email = TextEditingController(text: _user?.email ?? '');
-
-  late var _language = _user?.preferredLanguage == 'ne' ? 'ne' : 'en';
 
   var _saving = false;
 
@@ -64,7 +54,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
   Future<void> _save() async {
     final fullName = _fullName.text.trim();
     if (fullName.length < 2) {
-      setState(() => _message = (ok: false, text: 'Enter your name.'));
+      setState(() => _message = (ok: false, text: l.enterName));
       return;
     }
     FocusScope.of(context).unfocus();
@@ -77,11 +67,11 @@ class _MeScreenState extends ConsumerState<MeScreen> {
       final user = await ref.read(apiProvider).updateMe(
             fullName: fullName,
             email: email.isEmpty ? null : email,
-            preferredLanguage: _language,
+            preferredLanguage: ref.read(languageProvider).name,
           );
       ref.read(sessionProvider.notifier).updateUser(user);
       if (mounted) {
-        setState(() => _message = (ok: true, text: 'Saved.'));
+        setState(() => _message = (ok: true, text: l.saved));
       }
     } catch (error) {
       if (mounted) {
@@ -137,9 +127,9 @@ class _MeScreenState extends ConsumerState<MeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Your details', style: text.titleMedium),
+                  Text(l.yourDetails, style: text.titleMedium),
                   const SizedBox(height: 12),
-                  const FieldLabel('Name'),
+                  FieldLabel(l.name),
                   TextField(
                     controller: _fullName,
                     maxLength: 100,
@@ -148,9 +138,9 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                     decoration: const InputDecoration(counterText: ''),
                   ),
                   const SizedBox(height: 4),
-                  Text('Venues see this on your bookings.', style: TextStyle(fontSize: 14, color: c.subtle)),
+                  Text(l.venuesSeeThis, style: TextStyle(fontSize: 14, color: c.subtle)),
                   const SizedBox(height: 12),
-                  const FieldLabel('Email', optional: true),
+                  FieldLabel(l.email, optional: true),
                   TextField(
                     controller: _email,
                     maxLength: 254,
@@ -158,14 +148,6 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                     autocorrect: false,
                     autofillHints: const [AutofillHints.email],
                     decoration: const InputDecoration(counterText: ''),
-                  ),
-                  const SizedBox(height: 12),
-                  const FieldLabel('Texts and notifications in'),
-                  Segmented(
-                    options: const [('en', 'English'), ('ne', 'नेपाली')],
-                    value: _language,
-                    height: 36,
-                    onChanged: (language) => setState(() => _language = language),
                   ),
                   if (_message case final message?) ...[
                     const SizedBox(height: 12),
@@ -177,7 +159,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                     child: FilledButton(
                       onPressed: _saving ? null : _save,
                       style: FilledButton.styleFrom(minimumSize: const Size(96, 44)),
-                      child: Text(_saving ? 'Saving…' : 'Save'),
+                      child: Text(_saving ? l.saving : l.save),
                     ),
                   ),
                 ],
@@ -189,10 +171,20 @@ class _MeScreenState extends ConsumerState<MeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Appearance', style: text.titleMedium),
+                  Text(l.language, style: text.titleMedium),
+                  const SizedBox(height: 12),
+                  const LanguageSwitch(),
+                  const SizedBox(height: 6),
+                  Text(l.languageHelp, style: TextStyle(fontSize: 14, color: c.subtle)),
+                  const SizedBox(height: 24),
+                  Text(l.appearance, style: text.titleMedium),
                   const SizedBox(height: 12),
                   Segmented(
-                    options: const [(ThemeChoice.light, 'Light'), (ThemeChoice.dark, 'Dark'), (ThemeChoice.system, 'Auto')],
+                    options: [
+                      (ThemeChoice.light, l.themeLight),
+                      (ThemeChoice.dark, l.themeDark),
+                      (ThemeChoice.system, l.themeAuto),
+                    ],
                     value: theme,
                     height: 36,
                     onChanged: ref.read(themeChoiceProvider.notifier).set,
@@ -208,7 +200,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
               },
               style: TextButton.styleFrom(foregroundColor: c.danger, minimumSize: const Size.fromHeight(48)),
               icon: const Icon(LucideIcons.logOut, size: 18),
-              label: const Text('Sign out'),
+              label: Text(l.signOut),
             ),
           ],
         ),

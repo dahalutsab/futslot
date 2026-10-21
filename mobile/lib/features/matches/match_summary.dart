@@ -3,23 +3,24 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/labels.dart';
 
 /// "3 players needed", "Full", "Jhamsikhel Kings want a game".
 String matchHeadline(MatchPost p) {
   if (p.type == MatchPostType.findOpponent) {
-    return '${p.team?.name ?? p.postedByName} want a game';
+    return l.teamWantsGame(p.team?.name ?? p.postedByName);
   }
   final left = (p.playersNeeded ?? 0) - p.placesTaken;
-  return left <= 0 ? 'Full' : '${count(left, 'player')} needed';
+  return left <= 0 ? l.full : l.playersNeededCount(left);
 }
 
 String matchStatusLabel(MatchPostStatus status) => switch (status) {
-      MatchPostStatus.open => 'Open',
-      MatchPostStatus.filled => 'Full',
-      MatchPostStatus.cancelled => 'Called off',
-      MatchPostStatus.expired => 'Over',
+      MatchPostStatus.open => l.postOpen,
+      MatchPostStatus.filled => l.full,
+      MatchPostStatus.cancelled => l.postCalledOff,
+      MatchPostStatus.expired => l.postOver,
     };
 
 /// What a game post asks for, where and when: shared by the list and the post's screen.
@@ -42,7 +43,7 @@ class MatchSummary extends StatelessWidget {
           runSpacing: 4,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            _Tag(p.type == MatchPostType.needPlayers ? 'Players wanted' : 'Opponent wanted', colors: kind),
+            _Tag(p.type == MatchPostType.needPlayers ? l.playersWanted : l.opponentWanted, colors: kind),
             if (p.status != MatchPostStatus.open) _Tag(matchStatusLabel(p.status)),
             if (p.skillLevel case final skill?) Text(skill.label, style: TextStyle(fontSize: 12, color: c.muted)),
           ],
@@ -54,11 +55,14 @@ class MatchSummary extends StatelessWidget {
           style: TextStyle(color: c.muted, fontFeatures: tabular),
         ),
         const SizedBox(height: 4),
-        _IconLine(LucideIcons.mapPin, p.venue?.name ?? p.city ?? 'Place to be agreed', style: muted),
+        _IconLine(LucideIcons.mapPin, p.venue?.name ?? p.city ?? l.placeToBeAgreed, style: muted),
         const SizedBox(height: 2),
         _IconLine(
           LucideIcons.users,
-          [p.team?.name ?? p.postedByName, if (p.costPerPlayer case final cost? when cost > 0) '${rupees(cost)} each']
+          [
+            p.team?.name ?? p.postedByName,
+            if (p.costPerPlayer case final cost? when cost > 0) l.priceEach(rupees(cost)),
+          ]
               .join(' · '),
           style: muted.copyWith(fontFeatures: tabular),
         ),

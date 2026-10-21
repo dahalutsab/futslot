@@ -6,7 +6,8 @@ import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { Session } from '../../core/session';
 import { SkillLevel, Team, TeamRole } from '../../core/api.types';
-import { ROLE, SKILL } from '../../shared/labels';
+import { l } from '../../i18n/i18n';
+import { roleLabels, skillLabels } from '../../shared/labels';
 import { PlayNav } from '../../shared/play-nav';
 
 type Member = Team['members'][number];
@@ -22,7 +23,7 @@ type Member = Team['members'][number];
   template: `
     <div class="mx-auto max-w-3xl px-4 py-6 lg:py-10">
       <fs-play-nav />
-      <a routerLink="/teams" class="mt-4 inline-block text-sm text-muted hover:text-text">← Teams</a>
+      <a routerLink="/teams" class="mt-4 inline-block text-sm text-muted hover:text-text">← {{ l().playTeams }}</a>
       @if (error(); as message) {
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>
       }
@@ -37,32 +38,32 @@ type Member = Team['members'][number];
 
         @if (t.myStatus === 'INVITED') {
           <section class="mt-5 flex flex-wrap items-center gap-3 rounded-xl border border-held-line bg-surface p-4">
-            <p class="min-w-0 flex-1">You're invited to join {{ t.name }}.</p>
-            <button type="button" (click)="answer(true)" class="h-11 rounded-lg bg-ink px-4 font-medium text-ink-fg">Join</button>
-            <button type="button" (click)="answer(false)" class="h-11 rounded-lg px-3 font-medium text-muted hover:bg-surface-2">Decline</button>
+            <p class="min-w-0 flex-1">{{ l().invitedToJoin(t.name) }}</p>
+            <button type="button" (click)="answer(true)" class="h-11 rounded-lg bg-ink px-4 font-medium text-ink-fg">{{ l().join }}</button>
+            <button type="button" (click)="answer(false)" class="h-11 rounded-lg px-3 font-medium text-muted hover:bg-surface-2">{{ l().decline }}</button>
           </section>
         }
 
         <section class="mt-6" aria-labelledby="squad-title">
-          <h2 id="squad-title" class="font-semibold">Squad</h2>
+          <h2 id="squad-title" class="font-semibold">{{ l().squad }}</h2>
           <ul class="mt-2 divide-y divide-border rounded-xl border border-border bg-surface">
             @for (m of t.members; track m.userId) {
               <li class="flex flex-wrap items-center gap-2 px-4 py-3">
                 <span class="min-w-0 flex-1">
-                  <span class="block">{{ m.name }}@if (m.userId === me()) {<span class="text-muted"> (you)</span>}</span>
-                  <span class="block text-sm text-muted">{{ m.status === 'INVITED' ? 'Invited' : role[m.role] }}</span>
+                  <span class="block">{{ m.name }}@if (m.userId === me()) {<span class="text-muted"> {{ l().you }}</span>}</span>
+                  <span class="block text-sm text-muted">{{ m.status === 'INVITED' ? l().invited : role()[m.role] }}</span>
                 </span>
                 @if (isCaptain() && m.userId !== me() && m.status === 'ACTIVE') {
-                  <label class="sr-only" [for]="'role-' + m.userId">Role of {{ m.name }}</label>
+                  <label class="sr-only" [for]="'role-' + m.userId">{{ l().roleOf(m.name) }}</label>
                   <select [id]="'role-' + m.userId" (change)="changeRole(m, $any($event.target).value)" class="h-11 rounded-lg border border-border bg-surface px-2 text-sm">
-                    @for (r of roles; track r.value) {
-                      <option [value]="r.value" [selected]="m.role === r.value">{{ r.value === 'CAPTAIN' ? 'Make captain' : r.label }}</option>
+                    @for (r of roles(); track r.value) {
+                      <option [value]="r.value" [selected]="m.role === r.value">{{ r.value === 'CAPTAIN' ? l().makeCaptain : r.label }}</option>
                     }
                   </select>
                 }
                 @if (leads() && m.userId !== me() && m.role !== 'CAPTAIN') {
                   <button type="button" (click)="remove(m)" class="h-11 rounded-lg px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-danger">
-                    {{ m.status === 'INVITED' ? 'Cancel invite' : 'Remove' }}
+                    {{ m.status === 'INVITED' ? l().cancelInvite : l().remove }}
                   </button>
                 }
               </li>
@@ -72,30 +73,32 @@ type Member = Team['members'][number];
 
         @if (leads()) {
           <section class="mt-5 rounded-xl border border-border bg-surface p-4" aria-labelledby="invite-title">
-            <h2 id="invite-title" class="font-semibold">Invite a player</h2>
-            <p class="text-sm text-muted">By the phone number they use FutSlot with. They're told and can join.</p>
+            <h2 id="invite-title" class="font-semibold">{{ l().inviteAPlayer }}</h2>
+            <p class="text-sm text-muted">{{ l().inviteHelp }}</p>
             <form class="mt-3 flex gap-2" (ngSubmit)="invite()">
-              <label for="invite-phone" class="sr-only">Phone</label>
+              <label for="invite-phone" class="sr-only">{{ l().phone }}</label>
               <input id="invite-phone" name="phone" type="tel" inputmode="numeric" placeholder="98XXXXXXXX" class="tabular h-11 min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 text-base"
                 [ngModel]="phone()" (ngModelChange)="phone.set($event)" />
-              <button type="submit" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Invite</button>
+              <button type="submit" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ l().invite }}</button>
             </form>
           </section>
         }
 
         @if (t.myStatus === 'ACTIVE' && !isCaptain()) {
-          <button type="button" (click)="leave()" class="mt-6 h-11 rounded-lg px-4 font-medium text-danger hover:bg-danger-bg">Leave {{ t.name }}</button>
+          <button type="button" (click)="leave()" class="mt-6 h-11 rounded-lg px-4 font-medium text-danger hover:bg-danger-bg">{{ l().leaveTeam(t.name) }}</button>
         }
         @if (isCaptain() && t.memberCount > 1) {
-          <p class="mt-6 text-sm text-subtle">To leave, make someone else captain first.</p>
+          <p class="mt-6 text-sm text-subtle">{{ l().leaveNeedsNewCaptain }}</p>
         }
       } @else if (!error()) {
-        <div class="mt-6 h-48 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-48 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
       }
     </div>
   `,
 })
 export class TeamPage {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   private readonly router = inject(Router);
@@ -104,9 +107,9 @@ export class TeamPage {
 
   readonly slug = input.required<string>();
 
-  protected readonly role = ROLE;
+  protected readonly role = roleLabels;
 
-  protected readonly roles = (Object.keys(ROLE) as TeamRole[]).map((value) => ({ value, label: ROLE[value] }));
+  protected readonly roles = computed(() => Object.entries(roleLabels()).map(([value, label]) => ({ value: value as TeamRole, label })));
 
   protected readonly team = signal<Team | null>(null);
 
@@ -128,7 +131,7 @@ export class TeamPage {
       return '';
     }
     const skill: SkillLevel | null = t.skillLevel;
-    return [t.city, skill ? SKILL[skill] : null, `${t.memberCount} ${t.memberCount === 1 ? 'player' : 'players'}`].filter(Boolean).join(' · ');
+    return [t.city, skill ? skillLabels()[skill] : null, l().players(t.memberCount)].filter(Boolean).join(' · ');
   });
 
   constructor() {
@@ -141,7 +144,7 @@ export class TeamPage {
   protected invite(): Promise<void> {
     const phone = this.phone().replace(/\D/g, '');
     if (phone.length < 10) {
-      this.error.set('Enter their 10-digit mobile number.');
+      this.error.set(l().enterTheirMobile);
       return Promise.resolve();
     }
     return this.act(async (t) => {

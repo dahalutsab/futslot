@@ -7,9 +7,12 @@ import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { Session } from '../../core/session';
 import { Availability, CourtSlots, RatingSummary, Review, Slot, VenueDetail } from '../../core/api.types';
-import { hoursLabel, policyLines, WEEK } from '../../shared/booking-model';
+import { digits, l } from '../../i18n/i18n';
+import { hoursLabel, policyLines, week } from '../../shared/booking-model';
 import { VenuePlans } from './plans';
-import { addDays, ago, dayLabel, localClock, phone, rupees, today } from '../../shared/format';
+import { addDays, ago, dayLabel, localClock, phone, rupees, shortDate, today } from '../../shared/format';
+import { DayStrip } from '../../shared/day-strip';
+import { amenityLabel } from '../../shared/labels';
 
 function slotKey(courtId: string, startsAt: string): string {
   return `${courtId}@${Date.parse(startsAt)}`;
@@ -21,11 +24,13 @@ const DAYS_SHOWN = 14;
 /** One venue: photos and details, free slots by day and court, the booking rules, and reviews. */
 @Component({
   selector: 'fs-venue',
-  imports: [RouterLink, LucideAngularModule, VenuePlans],
+  imports: [RouterLink, LucideAngularModule, VenuePlans, DayStrip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './venue.html',
 })
 export class VenuePage {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   private readonly router = inject(Router);
@@ -41,7 +46,11 @@ export class VenuePage {
 
   protected readonly icons = { Heart, MapPin, MessageSquare, Phone, Star };
 
-  protected readonly fmt = { rupees, localClock, dayLabel, phone, ago };
+  protected readonly fmt = { rupees, localClock, dayLabel, shortDate, phone, ago };
+
+  protected readonly digits = digits;
+
+  protected readonly amenityLabel = amenityLabel;
 
   protected readonly venue = signal<VenueDetail | null>(null);
 
@@ -90,12 +99,12 @@ export class VenuePage {
 
   protected readonly hours = computed(() => {
     const venue = this.venue();
-    return WEEK.map((day) => ({ ...day, hours: hoursLabel(venue?.operatingHours.find((h) => h.day === day.day)) }));
+    return week().map((day) => ({ ...day, hours: hoursLabel(venue?.operatingHours.find((h) => h.day === day.day)) }));
   });
 
   protected readonly todayLabel = computed(() => {
     const venue = this.venue();
-    return venue ? WEEK[new Date(`${today(venue.timezone)}T00:00:00Z`).getUTCDay()].day : null;
+    return venue ? week()[new Date(`${today(venue.timezone)}T00:00:00Z`).getUTCDay()].day : null;
   });
 
   constructor() {
@@ -114,10 +123,6 @@ export class VenuePage {
 
   protected pickDay(day: string): void {
     void this.router.navigate([], { queryParams: { date: day }, replaceUrl: true });
-  }
-
-  protected dayName(day: string, index: number): string {
-    return index === 0 ? 'Today' : index === 1 ? 'Tomorrow' : dayLabel(day).split(' ')[0];
   }
 
   /** Slots that haven't started: past ones only clutter today's list. */
@@ -173,7 +178,7 @@ export class VenuePage {
     try {
       await this.api.joinWaitlist(court.courtId, slot.startsAt);
       this.waiting.update((set) => new Set(set).add(key));
-      this.waitNote.set({ key, ok: true, text: "We'll tell you if it frees up." });
+      this.waitNote.set({ key, ok: true, text: l().weWillTellIfFree });
     }
     catch (error) {
       this.waitNote.set({ key, ok: false, text: problemOf(error).message });
@@ -191,7 +196,7 @@ export class VenuePage {
     try {
       const venue = await this.api.venue(slug);
       this.venue.set(venue);
-      this.title.setTitle(`${venue.name} · FutSlot`);
+      this.title.setTitle(l().venueTitle(venue.name));
       const [rating, reviews] = await Promise.all([this.api.ratingSummary(slug), this.api.reviews(slug)]);
       this.rating.set(rating);
       this.reviews.set(reviews.content);

@@ -7,6 +7,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/booking_model.dart';
 import '../../shared/format.dart';
 import '../../shared/labels.dart';
@@ -205,7 +206,7 @@ class _BookScreenState extends ConsumerState<BookScreen> {
       appBar: AppBar(title: Text(venue?.name ?? '')),
       body: ScreenBody(
         children: [
-          Text('Book this slot', style: text.headlineSmall),
+          Text(l.bookThisSlot, style: text.headlineSmall),
           const SizedBox(height: 4),
           Text(
             '$when${courtName != null ? ' · $courtName' : ''}',
@@ -218,13 +219,13 @@ class _BookScreenState extends ConsumerState<BookScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("This slot can't be booked", style: TextStyle(fontWeight: FontWeight.w500)),
+                  Text(l.slotUnavailable, style: const TextStyle(fontWeight: FontWeight.w500)),
                   const SizedBox(height: 4),
                   Text(problem, style: TextStyle(color: c.muted)),
                   const SizedBox(height: 16),
                   FilledButton(
                     onPressed: () => context.canPop() ? context.pop() : context.go('/venues/${widget.slug}'),
-                    child: const Text('See other free slots'),
+                    child: Text(l.seeOtherSlots),
                   ),
                 ],
               ),
@@ -250,12 +251,10 @@ class _BookScreenState extends ConsumerState<BookScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Add your booking deposit first', style: TextStyle(fontWeight: FontWeight.w600)),
+                Text(l.addDepositFirst, style: const TextStyle(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 4),
                 Text(
-                  "${_venue?.name ?? 'This venue'} asks players to keep ${rupees(depositAmount)} with FutSlot. It isn't "
-                  "spent on your games: it only pays the venue's fee if you cancel late or don't show up, and you can "
-                  'take it back when you have no games booked.',
+                  l.depositExplain(_venue?.name ?? l.thisVenue, rupees(depositAmount)),
                   style: const TextStyle(fontSize: 14),
                 ),
                 const SizedBox(height: 12),
@@ -268,7 +267,7 @@ class _BookScreenState extends ConsumerState<BookScreen> {
                     await context.push(Uri(path: '/me/deposit', queryParameters: {'back': back}).toString());
                     _price();
                   },
-                  child: Text('Add ${rupees(quote.depositToAdd)}'),
+                  child: Text(l.addAmount(rupees(quote.depositToAdd))),
                 ),
               ],
             ),
@@ -281,8 +280,8 @@ class _BookScreenState extends ConsumerState<BookScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Extras', style: text.titleMedium),
-              Text('Paid at the venue with your booking.', style: TextStyle(fontSize: 14, color: c.muted)),
+              Text(l.extras, style: text.titleMedium),
+              Text(l.extrasPaidAtVenue, style: TextStyle(fontSize: 14, color: c.muted)),
               const SizedBox(height: 8),
               for (final (index, item) in _extras.indexed) ...[
                 if (index > 0) const Divider(),
@@ -298,12 +297,12 @@ class _BookScreenState extends ConsumerState<BookScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Use a membership', style: text.titleMedium),
+              Text(l.useMembership, style: text.titleMedium),
               const SizedBox(height: 8),
               ChoiceTile(
                 selected: _membershipId == null,
                 onTap: () => _useMembership(null),
-                child: const Text("Don't use one"),
+                child: Text(l.dontUseOne),
               ),
               for (final membership in _memberships)
                 ChoiceTile(
@@ -319,7 +318,7 @@ class _BookScreenState extends ConsumerState<BookScreen> {
                           gamesIncluded: membership.gamesIncluded,
                           discountPercent: membership.discountPercent,
                         )}'
-                        '${membership.gamesRemaining != null ? ' · ${membership.gamesRemaining} left' : ''}',
+                        '${membership.gamesRemaining != null ? ' · ${l.gamesLeft(membership.gamesRemaining!)}' : ''}',
                         style: TextStyle(fontSize: 14, color: c.muted),
                       ),
                     ],
@@ -335,7 +334,7 @@ class _BookScreenState extends ConsumerState<BookScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Discount code', style: text.titleMedium),
+              Text(l.discountCode, style: text.titleMedium),
               const SizedBox(height: 8),
               if (_appliedCode != null && quote?.discountCode != null)
                 Row(
@@ -351,7 +350,7 @@ class _BookScreenState extends ConsumerState<BookScreen> {
                     const SizedBox(width: 8),
                     Text('−${rupees(quote.discount)}', style: TextStyle(color: c.muted, fontFeatures: tabular)),
                     const Spacer(),
-                    TextButton(onPressed: _removeCode, child: const Text('Remove')),
+                    TextButton(onPressed: _removeCode, child: Text(l.remove)),
                   ],
                 )
               else ...[
@@ -365,11 +364,11 @@ class _BookScreenState extends ConsumerState<BookScreen> {
                         textCapitalization: TextCapitalization.characters,
                         textInputAction: TextInputAction.done,
                         onSubmitted: (_) => _applyCode(),
-                        decoration: const InputDecoration(hintText: 'e.g. DASHAIN20', counterText: ''),
+                        decoration: InputDecoration(hintText: l.codeHint, counterText: ''),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    OutlinedButton(onPressed: _applyCode, child: const Text('Apply')),
+                    OutlinedButton(onPressed: _applyCode, child: Text(l.apply)),
                   ],
                 ),
                 if (_codeError case final error?) ...[const SizedBox(height: 8), Notice(error)],
@@ -383,44 +382,44 @@ class _BookScreenState extends ConsumerState<BookScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const FieldLabel('Note for the venue', optional: true),
+            FieldLabel(l.noteForVenue, optional: true),
             TextField(
               controller: _notes,
               maxLength: 500,
               minLines: 2,
               maxLines: 4,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(hintText: "e.g. We're 10 players, need bibs", counterText: ''),
+              decoration: InputDecoration(hintText: l.noteHint, counterText: ''),
             ),
           ],
         ),
       ),
       const SizedBox(height: 16),
       if (quote == null)
-        const Skeleton(height: 160, label: 'Working out the price')
+        Skeleton(height: 160, label: l.workingOutPrice)
       else ...[
         FsCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AmountRow(label: 'Court', value: rupees(quote.price)),
-              if (quote.addOns > 0) AmountRow(label: 'Extras', value: rupees(quote.addOns)),
+              AmountRow(label: l.court, value: rupees(quote.price)),
+              if (quote.addOns > 0) AmountRow(label: l.extras, value: rupees(quote.addOns)),
               if (quote.discount > 0)
-                AmountRow(label: 'Discount', value: '−${rupees(quote.discount)}', valueColor: c.confirmed.fg),
+                AmountRow(label: l.discount, value: '−${rupees(quote.discount)}', valueColor: c.confirmed.fg),
               const Padding(padding: EdgeInsets.symmetric(vertical: 6), child: Divider()),
-              AmountRow(label: 'Total', value: rupees(quote.total), strong: true),
+              AmountRow(label: l.total, value: rupees(quote.total), strong: true),
               if (quote.advanceRequired > 0) ...[
-                AmountRow(label: 'Pay now to confirm', value: rupees(quote.advanceRequired), strong: true),
-                AmountRow(label: 'At the venue', value: rupees(quote.total - quote.advanceRequired)),
+                AmountRow(label: l.payNowToConfirm, value: rupees(quote.advanceRequired), strong: true),
+                AmountRow(label: l.atTheVenue, value: rupees(quote.total - quote.advanceRequired)),
               ] else
-                const AmountRow(label: 'Pay', value: 'At the venue'),
+                AmountRow(label: l.pay, value: l.atTheVenue),
               if (quote.strikeAdvance) ...[
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(color: c.noshow.bg, borderRadius: BorderRadius.circular(8)),
                   child: Text(
-                    'You pay more up front here because of your recent late cancellations or no-shows at this venue.',
+                    l.strikeAdvanceNote,
                     style: TextStyle(fontSize: 14, color: c.noshow.fg),
                   ),
                 ),
@@ -435,7 +434,7 @@ class _BookScreenState extends ConsumerState<BookScreen> {
             child: Theme(
               data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
               child: ExpansionTile(
-                title: Text('Booking rules', style: text.titleMedium),
+                title: Text(l.bookingRules, style: text.titleMedium),
                 childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 expandedCrossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -456,15 +455,15 @@ class _BookScreenState extends ConsumerState<BookScreen> {
             onPressed: _busy ? null : _confirm,
             child: BusyLabel(
               busy: _busy,
-              label: quote.advanceRequired > 0 ? 'Book and pay ${rupees(quote.advanceRequired)}' : 'Book',
-              busyLabel: 'Booking…',
+              label: quote.advanceRequired > 0 ? l.bookAndPay(rupees(quote.advanceRequired)) : l.book,
+              busyLabel: l.booking_,
               icon: LucideIcons.shieldCheck,
             ),
           ),
           if (quote.advanceRequired > 0 && _venue != null) ...[
             const SizedBox(height: 8),
             Text(
-              'We hold the slot for ${_venue!.policy.bookingHoldMinutes} minutes while you pay the venue.',
+              l.holdWhilePay(_venue!.policy.bookingHoldMinutes),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: c.subtle),
             ),
@@ -494,23 +493,30 @@ class _ExtraRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(item.name),
-                Text('${rupees(item.price)} each', style: TextStyle(fontSize: 14, color: c.muted, fontFeatures: tabular)),
+                Text(
+                  l.priceEach(rupees(item.price)),
+                  style: TextStyle(fontSize: 14, color: c.muted, fontFeatures: tabular),
+                ),
               ],
             ),
           ),
-          _StepButton(icon: LucideIcons.minus, tooltip: 'One less ${item.name}', onTap: quantity > 0 ? () => onChange(-1) : null),
+          _StepButton(
+            icon: LucideIcons.minus,
+            tooltip: l.oneLess(item.name),
+            onTap: quantity > 0 ? () => onChange(-1) : null,
+          ),
           SizedBox(
             width: 32,
             child: Semantics(
               liveRegion: true,
               child: Text(
-                '$quantity',
+                digits(quantity),
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontWeight: FontWeight.w500, fontFeatures: tabular),
               ),
             ),
           ),
-          _StepButton(icon: LucideIcons.plus, tooltip: 'One more ${item.name}', onTap: () => onChange(1)),
+          _StepButton(icon: LucideIcons.plus, tooltip: l.oneMore(item.name), onTap: () => onChange(1)),
         ],
       ),
     );

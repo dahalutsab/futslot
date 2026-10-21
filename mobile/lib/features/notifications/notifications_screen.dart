@@ -7,6 +7,7 @@ import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/badges.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/notification_link.dart';
 import '../../shared/widgets.dart';
@@ -84,13 +85,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     final items = _items;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(l.notifications),
         actions: [
           if (items?.any((n) => !n.read) ?? false)
             TextButton(
               onPressed: _readAll,
               style: TextButton.styleFrom(foregroundColor: c.muted),
-              child: const Text('Mark all read', style: TextStyle(fontSize: 14)),
+              child: Text(l.markAllRead, style: const TextStyle(fontSize: 14)),
             ),
         ],
       ),
@@ -102,9 +103,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           else if (items == null)
             const Skeleton(height: 192)
           else if (items.isEmpty)
-            const EmptyPanel(
-              title: 'Nothing yet',
-              body: 'Booking confirmations, reminders and replies from venues show up here.',
+            EmptyPanel(
+              title: l.nothingYet,
+              body: l.notificationsEmpty,
             )
           else ...[
             FsCard(
@@ -120,7 +121,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             ),
             if (_hasMore) ...[
               const SizedBox(height: 16),
-              Center(child: OutlinedButton(onPressed: () => _load(_page + 1), child: const Text('Show older'))),
+              Center(child: OutlinedButton(onPressed: () => _load(_page + 1), child: Text(l.showOlder))),
             ],
           ],
         ],
@@ -149,7 +150,7 @@ class _NotificationRow extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Semantics(
-                label: n.read ? null : 'Unread',
+                label: n.read ? null : l.unread,
                 child: Container(
                   width: 8,
                   height: 8,

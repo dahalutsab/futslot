@@ -1,12 +1,15 @@
 package com.futslot.site;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
  * A booking page on a venue's website. {@code step} says what the page shows: "phone" and "code" to sign in,
  * "confirm" to book, "gone" when the slot was taken meanwhile, "booking" for a booking already made, "list" for
  * the player's bookings at the venue and "deposit" for topping up their FutSlot booking deposit.
- * {@code base} is what the site's links start with ("" on the venue's own address).
+ * {@code base} is what the site's links start with ("" on the venue's own address), and {@code other} the same in
+ * the other language; {@code lang} is "en" or "ne", and {@code deposit} the booking deposit as written.
  */
 public record BookPage(Site site, String step, Slot slot, String phone, boolean needsName, String error, String notice,
 		boolean signedIn, Booking booking, List<Booking> bookings, Deposit deposit) {
@@ -17,7 +20,30 @@ public record BookPage(Site site, String step, Slot slot, String phone, boolean 
 	}
 
 	public record Site(String name, String template, String fonts, String accent, String accentInk, String accentText,
-			String base) {
+			String base, String lang, String other, String deposit) {
+
+		/** The site's front page. */
+		public String home() {
+			return SiteLanguage.home(this.base);
+		}
+
+	}
+
+	/** This page in the other language; after a form, the page the form was on. */
+	public String switchHref() {
+		String other = this.site.other();
+		return switch (this.step) {
+			case "booking" -> other + "/bookings/" + this.booking.id();
+			case "list" -> other + "/bookings";
+			case "deposit" -> other + "/deposit" + ((this.deposit.court() != null && this.deposit.start() != null)
+					? "?court=" + encode(this.deposit.court()) + "&start=" + encode(this.deposit.start()) : "");
+			default -> (this.slot != null) ? other + "/book?court=" + encode(this.slot.courtId()) + "&start=" + encode(this.slot.start())
+					: SiteLanguage.home(other);
+		};
+	}
+
+	private static String encode(String value) {
+		return URLEncoder.encode(value, StandardCharsets.UTF_8);
 	}
 
 	/**

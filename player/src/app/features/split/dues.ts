@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { OwedShare } from '../../core/api.types';
+import { l } from '../../i18n/i18n';
 import { dayLabel, localClock, phone, rupees } from '../../shared/format';
 
 /** What the player owes friends who booked games they played in. */
@@ -13,18 +14,18 @@ import { dayLabel, localClock, phone, rupees } from '../../shared/format';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-2xl px-4 py-6 lg:py-10">
-      <h1 class="text-2xl font-semibold tracking-tight">What you owe</h1>
-      <p class="mt-1 text-muted">Your share of games other players booked. Pay them, and they tick you off.</p>
+      <h1 class="text-2xl font-semibold tracking-tight">{{ l().meDues }}</h1>
+      <p class="mt-1 text-muted">{{ l().duesIntro }}</p>
       @if (error(); as message) {
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>
       } @else if (dues(); as list) {
         @if (list.length === 0) {
           <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
-            <p class="font-medium">You're all square</p>
-            <p class="mt-1 text-muted">When someone adds you to a game they booked and splits the cost, your share shows up here.</p>
+            <p class="font-medium">{{ l().allSquare }}</p>
+            <p class="mt-1 text-muted">{{ l().allSquareBody }}</p>
           </div>
         } @else {
-          <p class="mt-4"><span class="tabular text-2xl font-semibold">{{ fmt.rupees(total()) }}</span> <span class="text-muted">in all</span></p>
+          <p class="mt-4"><span class="tabular text-2xl font-semibold">{{ fmt.rupees(total()) }}</span> <span class="text-muted">{{ l().inAll }}</span></p>
           <ul class="mt-3 space-y-3">
             @for (d of list; track d.bookingId) {
               <li>
@@ -33,7 +34,7 @@ import { dayLabel, localClock, phone, rupees } from '../../shared/format';
                     <p class="font-medium">{{ d.payTo.name }}</p>
                     <p class="tabular text-sm text-muted">{{ d.venueName }} · {{ fmt.dayLabel(d.startsAt.slice(0, 10)) }} · {{ fmt.localClock(d.startsAt) }}</p>
                     @if (d.payTo.phone) {
-                      <p class="tabular mt-1 text-sm">Pay to {{ fmt.phone(d.payTo.phone) }}</p>
+                      <p class="tabular mt-1 text-sm">{{ l().payTo(fmt.phone(d.payTo.phone)) }}</p>
                     }
                   </div>
                   <p class="tabular font-semibold">{{ fmt.rupees(d.amount) }}</p>
@@ -43,12 +44,14 @@ import { dayLabel, localClock, phone, rupees } from '../../shared/format';
           </ul>
         }
       } @else {
-        <div class="mt-6 h-32 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-32 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
       }
     </div>
   `,
 })
 export class Dues {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   protected readonly fmt = { rupees, dayLabel, localClock, phone };

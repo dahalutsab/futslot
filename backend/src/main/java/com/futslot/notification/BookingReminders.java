@@ -17,6 +17,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.futslot.common.Wording;
+import com.futslot.common.Words;
+import com.futslot.user.UserService;
+
 /**
  * Reminds players shortly before their game. Claiming a booking (setting reminder_sent_at) and reading
  * its details happen in one UPDATE ... RETURNING, so even concurrent runs remind each booking once.
@@ -29,14 +33,20 @@ class BookingReminders {
 
 	private final NotificationService notifications;
 
+	private final UserService users;
+
+	private final Words words;
+
 	private final Duration lead;
 
 	private final Clock clock;
 
-	BookingReminders(JdbcClient jdbc, NotificationService notifications,
+	BookingReminders(JdbcClient jdbc, NotificationService notifications, UserService users, Words words,
 			@Value("${futslot.notifications.reminders.lead:2h}") Duration lead, Clock clock) {
 		this.jdbc = jdbc;
 		this.notifications = notifications;
+		this.users = users;
+		this.words = words;
 		this.lead = lead;
 		this.clock = clock;
 	}
@@ -63,9 +73,10 @@ class BookingReminders {
 					rs.getObject("user_id", UUID.class)))
 			.list();
 		for (Due booking : due) {
-			this.notifications.send(booking.userId(), NotificationType.BOOKING_REMINDER, "Your game starts soon",
-					booking.venueName() + ", " + booking.courtName() + " at " + Messages.time(booking.startsAt())
-							+ ". Ref " + booking.reference() + ".",
+			Wording w = this.words.in(this.users.language(booking.userId()));
+			this.notifications.send(booking.userId(), NotificationType.BOOKING_REMINDER, w.get("booking.reminder.title"),
+					w.get("booking.reminder.body", booking.venueName(), booking.courtName(), Messages.time(booking.startsAt(), w),
+							booking.reference()),
 					Map.of("bookingId", booking.id().toString(), "venueId", booking.venueId().toString()));
 		}
 		return due.size();

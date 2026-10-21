@@ -9,6 +9,7 @@ import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/session.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/labels.dart';
 import '../../shared/pay_form.dart';
@@ -24,7 +25,10 @@ List<({String label, List<Fixture> fixtures})> tournamentRounds(List<Fixture> ma
   return [
     for (final fixtures in rounds.values)
       (
-        label: [fixtures.first.stage.label, if (fixtures.first.groupName case final group?) 'Group $group'].join(' · '),
+        label: [
+          fixtures.first.stage.label,
+          if (fixtures.first.groupName case final group?) l.groupName(group),
+        ].join(' · '),
         fixtures: fixtures,
       ),
   ];
@@ -34,10 +38,11 @@ List<({String label, List<Fixture> fixtures})> tournamentRounds(List<Fixture> ma
 String fixtureScore(Fixture match) {
   final (home, away) = (match.homeScore, match.awayScore);
   if (home == null || away == null) {
-    return match.scheduledAt != null ? localClock(match.scheduledAt!) : 'vs';
+    return match.scheduledAt != null ? localClock(match.scheduledAt!) : l.vs;
   }
-  final penalties = match.homePenalties != null ? ' (${match.homePenalties}–${match.awayPenalties} pens)' : '';
-  return '$home–$away$penalties';
+  final penalties =
+      match.homePenalties != null ? l.penalties(digits(match.homePenalties!), digits(match.awayPenalties ?? 0)) : '';
+  return '${digits(home)}–${digits(away)}$penalties';
 }
 
 /// One tournament: what it is, entering a team (captains pick the squad), paying the entry fee to the venue, and
@@ -154,7 +159,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
   String? _turnedDown(TournamentEntry entry) {
     final last = _payments[entry.id]?.lastOrNull;
     return last?.status == TransactionStatus.failed
-        ? last?.failureReason ?? "The venue couldn't find this payment."
+        ? last?.failureReason ?? l.venueCouldntFindPayment
         : null;
   }
 
@@ -213,7 +218,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
       return;
     }
     if (_squad.length < t.teamSize) {
-      setState(() => _error = 'Pick at least ${t.teamSize} players.');
+      setState(() => _error = l.pickAtLeastPlayers(t.teamSize));
       return;
     }
     final squad = {for (final MapEntry(:key, :value) in _squad.entries) key: int.tryParse(value.text)};
@@ -234,7 +239,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
   Widget build(BuildContext context) {
     final t = _tournament;
     return Scaffold(
-      appBar: AppBar(title: const Text('Tournament')),
+      appBar: AppBar(title: Text(l.tournament)),
       body: switch ((t, _error)) {
         (null, final String error) => ScreenBody(children: [ErrorPanel(message: error, onRetry: _load)]),
         (final TournamentDetail t, _) => ScreenBody(maxWidth: 768, onRefresh: _load, children: _body(context, t)),
@@ -276,7 +281,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '${champion.name} won',
+                  l.championWon(champion.name),
                   style: TextStyle(fontWeight: FontWeight.w600, color: c.tournament.fg),
                 ),
               ),
@@ -293,16 +298,16 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
         crossAxisSpacing: 12,
         childAspectRatio: 2.4,
         children: [
-          _Fact('Format', t.format.label),
-          _Fact('Entry', t.entryFee > 0 ? rupees(t.entryFee) : 'Free'),
-          _Fact('Teams', '${t.teamsIn} of ${t.maxTeams}'),
-          _Fact('Squads', '${t.teamSize}–${t.maxSquadSize} players'),
+          _Fact(l.format, t.format.label),
+          _Fact(l.entry, t.entryFee > 0 ? rupees(t.entryFee) : l.free),
+          _Fact(l.teamsFact, l.teamsOf(digits(t.teamsIn), digits(t.maxTeams))),
+          _Fact(l.squads, l.squadSize(digits(t.teamSize), digits(t.maxSquadSize))),
         ],
       ),
       if (t.description case final description?) ...[const SizedBox(height: 16), Text(description)],
       if (t.prizeDetails case final prizes?) ...[
         const SizedBox(height: 16),
-        const SectionTitle('Prizes'),
+        SectionTitle(l.prizes),
         Text(prizes, style: TextStyle(color: c.muted)),
       ],
       if (t.rules case final rules?) ...[
@@ -310,7 +315,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
         FsCard(
           padding: EdgeInsets.zero,
           child: ExpansionTile(
-            title: const Text('Rules', style: TextStyle(fontWeight: FontWeight.w600)),
+            title: Text(l.rules, style: const TextStyle(fontWeight: FontWeight.w600)),
             shape: const Border(),
             collapsedShape: const Border(),
             childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -326,12 +331,12 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
       for (final table in t.tables)
         if (table.rows.isNotEmpty) ...[
           const SizedBox(height: 28),
-          SectionTitle(table.groupName != null ? 'Group ${table.groupName}' : 'Table'),
+          SectionTitle(table.groupName != null ? l.groupName(table.groupName!) : l.table),
           _Table(table: table),
         ],
       if (rounds.isNotEmpty) ...[
         const SizedBox(height: 28),
-        const SectionTitle('Fixtures'),
+        SectionTitle(l.fixtures),
         for (final round in rounds) ...[
           Padding(
             padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -351,7 +356,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
         ],
       ] else if (t.registrations.isNotEmpty) ...[
         const SizedBox(height: 28),
-        const SectionTitle('Teams in'),
+        SectionTitle(l.teamsIn),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -391,8 +396,8 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
                     Text(entry.team.name, style: const TextStyle(fontWeight: FontWeight.w600)),
                     Text(
                       [
-                        checking ? 'Payment being checked' : entry.status.label,
-                        if (entry.groupName case final group?) 'Group $group',
+                        checking ? l.chipVerify : entry.status.label,
+                        if (entry.groupName case final group?) l.groupName(group),
                       ].join(' · '),
                       style: TextStyle(fontSize: 14, color: confirmed ? c.confirmed.fg : c.muted),
                     ),
@@ -411,14 +416,14 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
                             await _loadMine(t.id);
                           }),
                   style: TextButton.styleFrom(foregroundColor: c.muted),
-                  child: const Text('Withdraw'),
+                  child: Text(l.withdraw),
                 ),
             ],
           ),
           const SizedBox(height: 8),
           Text(
             'Squad: ${[
-              for (final p in entry.squad) p.jerseyNumber != null ? '${p.name} (${p.jerseyNumber})' : p.name,
+              for (final p in entry.squad) p.jerseyNumber != null ? '${p.name} (${digits(p.jerseyNumber!)})' : p.name,
             ].join(', ')}',
             style: TextStyle(fontSize: 14, color: c.muted),
           ),
@@ -434,12 +439,12 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
                     children: [
                       Icon(LucideIcons.wallet, size: 18, color: c.verify.fg),
                       const SizedBox(width: 8),
-                      Text('Payment sent', style: TextStyle(fontWeight: FontWeight.w600, color: c.verify.fg)),
+                      Text(l.paymentSent, style: TextStyle(fontWeight: FontWeight.w600, color: c.verify.fg)),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "${t.venue.name} is checking it, and we'll let you know when your place is confirmed.",
+                    l.venueCheckingPlace(t.venue.name),
                     style: TextStyle(color: c.verify.fg),
                   ),
                 ],
@@ -448,23 +453,23 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
           ] else if (entry.status == EntryStatus.pendingPayment && t.entryFee > 0) ...[
             if (_turnedDown(entry) case final reason?) ...[
               const SizedBox(height: 16),
-              Notice("Your last payment wasn't accepted: $reason"),
+              Notice(l.lastPaymentRejected(reason)),
             ],
             const SizedBox(height: 16),
-            Text('Pay ${rupees(t.entryFee)} to ${t.venue.name}', style: const TextStyle(fontWeight: FontWeight.w500)),
+            Text(l.payAmountTo(rupees(t.entryFee), t.venue.name), style: const TextStyle(fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
             PayForm(
               amount: t.entryFee,
               instructions: _paymentInstructions,
               busy: _busy,
-              label: "I've paid",
+              label: l.iPaid,
               onPaid: (claim) => _act(() async {
                 await _api.payEntry(entry.id, claim);
                 await _load();
               }),
             ),
             const SizedBox(height: 8),
-            Text('The venue checks it and confirms your place.', style: TextStyle(fontSize: 14, color: c.subtle)),
+            Text(l.venueChecksPlace, style: TextStyle(fontSize: 14, color: c.subtle)),
           ],
         ],
       ),
@@ -479,11 +484,11 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
         FilledButton(
           onPressed: _startEntry,
           style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-          child: const Text('Enter a team'),
+          child: Text(l.enterATeam),
         ),
         if (t.registrationClosesAt case final closes?) ...[
           const SizedBox(height: 8),
-          Text('Entries close ${dayLabel(closes.substring(0, 10))}.', style: TextStyle(fontSize: 14, color: c.subtle)),
+          Text(l.entriesClose(dayLabel(closes.substring(0, 10))), style: TextStyle(fontSize: 14, color: c.subtle)),
         ],
       ];
     }
@@ -494,16 +499,16 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Enter your team', style: Theme.of(context).textTheme.titleMedium),
+            Text(l.enterYourTeam, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
             if (_teams.isEmpty) ...[
-              Text("Only a team's captain or vice-captain can enter it.", style: TextStyle(color: c.muted)),
+              Text(l.onlyCaptainCanEnter, style: TextStyle(color: c.muted)),
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton(onPressed: () => context.go('/teams'), child: const Text('Start a team')),
               ),
             ] else ...[
-              const FieldLabel('Team'),
+              FieldLabel(l.team),
               DropdownButtonFormField<String>(
                 initialValue: _teamId,
                 items: [for (final team in _teams) DropdownMenuItem(value: team.id, child: Text(team.name))],
@@ -511,7 +516,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
               ),
               if (team != null) ...[
                 const SizedBox(height: 16),
-                FieldLabel('Squad (${_squad.length} of ${t.teamSize}–${t.maxSquadSize})'),
+                FieldLabel(l.squadCount(digits(_squad.length), digits(t.teamSize), digits(t.maxSquadSize))),
                 FsCard(
                   padding: EdgeInsets.zero,
                   child: Column(
@@ -530,7 +535,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "Only active team members can play. Invite more from the team's page.",
+                  l.onlyActiveMembers,
                   style: TextStyle(fontSize: 14, color: c.subtle),
                 ),
               ],
@@ -543,13 +548,13 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
                       onPressed: _busy ? null : () => _enter(t),
                       child: BusyLabel(
                         busy: _busy,
-                        label: t.entryFee > 0 ? 'Enter, then pay ${rupees(t.entryFee)}' : 'Enter',
-                        busyLabel: 'Entering…',
+                        label: t.entryFee > 0 ? l.enterThenPay(rupees(t.entryFee)) : l.enter,
+                        busyLabel: l.entering,
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  TextButton(onPressed: () => setState(() => _entering = false), child: const Text('Cancel')),
+                  TextButton(onPressed: () => setState(() => _entering = false), child: Text(l.cancel)),
                 ],
               ),
             ],
@@ -615,13 +620,13 @@ class _SquadRow extends StatelessWidget {
             SizedBox(
               width: 72,
               child: Semantics(
-                label: 'Shirt number for ${member.name}',
+                label: l.shirtNumberFor(member.name),
                 child: TextField(
                   controller: number,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(2)],
                   style: const TextStyle(fontFeatures: tabular),
-                  decoration: const InputDecoration(hintText: 'No.'),
+                  decoration: InputDecoration(hintText: l.shirtNo),
                 ),
               ),
             ),
@@ -664,7 +669,8 @@ class _Table extends StatelessWidget {
           TableRow(
             decoration: BoxDecoration(border: Border(bottom: BorderSide(color: c.border))),
             children: [
-              for (final (i, head) in ['Team', 'P', 'W', 'D', 'L', 'GD', 'Pts'].indexed)
+              for (final (i, head)
+                  in [l.colTeam, l.colPlayed, l.colWon, l.colDrawn, l.colLost, l.colGoalDiff, l.colPoints].indexed)
                 cell(head, head: true, left: i == 0),
             ],
           ),
@@ -672,12 +678,12 @@ class _Table extends StatelessWidget {
             TableRow(
               children: [
                 cell(row.team.name, strong: true, left: true),
-                cell('${row.played}'),
-                cell('${row.won}'),
-                cell('${row.drawn}'),
-                cell('${row.lost}'),
-                cell('${row.goalDifference > 0 ? '+' : ''}${row.goalDifference}'),
-                cell('${row.points}', strong: true),
+                cell(digits(row.played)),
+                cell(digits(row.won)),
+                cell(digits(row.drawn)),
+                cell(digits(row.lost)),
+                cell(digits('${row.goalDifference > 0 ? '+' : ''}${row.goalDifference}')),
+                cell(digits(row.points), strong: true),
               ],
             ),
         ],
@@ -706,7 +712,7 @@ class _FixtureRow extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              match.home?.name ?? 'To be decided',
+              match.home?.name ?? l.toBeDecided,
               textAlign: TextAlign.right,
               overflow: TextOverflow.ellipsis,
               style: side(match.home),
@@ -722,13 +728,13 @@ class _FixtureRow extends StatelessWidget {
                   if (when != null && match.homeScore == null)
                     Text(dayLabel(when.substring(0, 10)), style: TextStyle(fontSize: 12, color: c.muted)),
                   if (match.status == FixtureStatus.walkover)
-                    Text('Walkover', style: TextStyle(fontSize: 12, color: c.muted)),
+                    Text(l.walkover, style: TextStyle(fontSize: 12, color: c.muted)),
                 ],
               ),
             ),
           ),
           Expanded(
-            child: Text(match.away?.name ?? 'To be decided', overflow: TextOverflow.ellipsis, style: side(match.away)),
+            child: Text(match.away?.name ?? l.toBeDecided, overflow: TextOverflow.ellipsis, style: side(match.away)),
           ),
         ],
       ),

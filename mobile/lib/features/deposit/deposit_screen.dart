@@ -7,16 +7,17 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/pay_form.dart';
 import '../../shared/widgets.dart';
 
 /// Where FutSlot can send a deposit back.
-const _sendMethods = [
-  (PaymentMethod.esewa, 'eSewa'),
-  (PaymentMethod.khalti, 'Khalti'),
-  (PaymentMethod.bankTransfer, 'Bank account'),
-];
+List<(PaymentMethod, String)> get _sendMethods => [
+      (PaymentMethod.esewa, 'eSewa'),
+      (PaymentMethod.khalti, 'Khalti'),
+      (PaymentMethod.bankTransfer, l.bankAccount),
+    ];
 
 /// The player's FutSlot booking deposit: how much is in it, topping it up, taking it back, and every change.
 /// Some venues only take bookings from players whose deposit is full.
@@ -107,7 +108,7 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
     }
     final sendTo = _sendTo.text.trim();
     if (sendTo.length < 5) {
-      setState(() => _withdrawError = 'Enter the number or account to send it to.');
+      setState(() => _withdrawError = l.enterSendTo);
       return;
     }
     setState(() {
@@ -149,10 +150,10 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
   }
 
   static String _entryLabel(DepositEntry entry) => switch (entry.type) {
-        DepositEntryType.topUp => 'Topped up',
-        DepositEntryType.fee => 'Fee to ${entry.venueName} · ${entry.bookingReference}',
-        DepositEntryType.withdrawal => 'Taken back',
-        DepositEntryType.withdrawalCancelled => 'Kept after all',
+        DepositEntryType.topUp => l.toppedUp,
+        DepositEntryType.fee => l.feeToVenue(entry.venueName ?? '', entry.bookingReference ?? ''),
+        DepositEntryType.withdrawal => l.takenBack,
+        DepositEntryType.withdrawalCancelled => l.keptAfterAll,
       };
 
   @override
@@ -160,14 +161,12 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
     final c = context.fs;
     final deposit = _deposit;
     return Scaffold(
-      appBar: AppBar(title: const Text('Booking deposit')),
+      appBar: AppBar(title: Text(l.bookingDeposit)),
       body: ScreenBody(
         onRefresh: _load,
         children: [
           Text(
-            'Some venues only take bookings from players who keep ${rupees(depositAmount)} with FutSlot. It isn\'t spent '
-            "on your games: it only pays a venue's fee if you cancel late or don't show up. You can take it back "
-            'whenever you have no games booked there.',
+            l.depositIntro(rupees(depositAmount)),
             style: TextStyle(color: c.muted),
           ),
           if (_error case final error?) ...[const SizedBox(height: 16), Notice(error)],
@@ -192,7 +191,7 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('In your deposit', style: TextStyle(fontSize: 14, color: c.muted)),
+            Text(l.inYourDeposit, style: TextStyle(fontSize: 14, color: c.muted)),
             const SizedBox(height: 4),
             Text.rich(
               TextSpan(
@@ -200,7 +199,7 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
                 style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w600, fontFeatures: tabular),
                 children: [
                   TextSpan(
-                    text: ' of ${rupees(d.required)}',
+                    text: l.ofAmount(rupees(d.required)),
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: c.muted),
                   ),
                 ],
@@ -214,7 +213,7 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
                 minHeight: 8,
                 backgroundColor: c.surface2,
                 color: c.confirmed.line,
-                semanticsLabel: 'Deposit',
+                semanticsLabel: l.deposit,
               ),
             ),
             if (full) ...[
@@ -223,7 +222,7 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
                 children: [
                   Icon(LucideIcons.shieldCheck, size: 16, color: c.confirmed.fg),
                   const SizedBox(width: 6),
-                  Text('Full: you can book any venue.', style: TextStyle(color: c.confirmed.fg)),
+                  Text(l.depositFull, style: TextStyle(color: c.confirmed.fg)),
                 ],
               ),
               if (widget.back != null) ...[
@@ -231,7 +230,7 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
                 FilledButton(
                   // The booking screen is underneath when the player came from it
                   onPressed: () => context.canPop() ? context.pop() : context.go(widget.back!),
-                  child: const Text('Back to your booking'),
+                  child: Text(l.backToBooking),
                 ),
               ],
             ],
@@ -245,18 +244,20 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${rupees(withdrawal.amount)} is coming back to you', style: text.titleMedium),
+              Text(l.comingBack(rupees(withdrawal.amount)), style: text.titleMedium),
               const SizedBox(height: 4),
               Text(
-                'FutSlot sends it to your ${methodLabel(withdrawal.method)} ${withdrawal.sendTo} on '
-                "${dayLabel(dayOf(withdrawal.dueAt, 'Asia/Kathmandu'))}. Until then you can't book venues that need "
-                'the deposit.',
+                l.withdrawalWhen(
+                  methodLabel(withdrawal.method),
+                  withdrawal.sendTo,
+                  dayLabel(dayOf(withdrawal.dueAt, 'Asia/Kathmandu')),
+                ),
                 style: TextStyle(color: c.muted),
               ),
               const SizedBox(height: 12),
               OutlinedButton(
                 onPressed: _withdrawing ? null : () => _keep(withdrawal),
-                child: const Text('Keep my deposit instead'),
+                child: Text(l.keepDeposit),
               ),
             ],
           ),
@@ -269,10 +270,10 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Top-up sent', style: text.titleMedium?.copyWith(color: c.verify.fg)),
+              Text(l.topUpSent, style: text.titleMedium?.copyWith(color: c.verify.fg)),
               const SizedBox(height: 4),
               Text(
-                "FutSlot is checking it, usually within a few hours. You can book once it's in.",
+                l.topUpChecking,
                 style: TextStyle(color: c.verify.fg),
               ),
             ],
@@ -284,9 +285,9 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Add ${rupees(d.toAdd)}', style: text.titleMedium),
+              Text(l.addAmount(rupees(d.toAdd)), style: text.titleMedium),
               const SizedBox(height: 4),
-              Text('Pay FutSlot directly, then tell us the transaction ID.', style: TextStyle(fontSize: 14, color: c.muted)),
+              Text(l.payFutSlotDirectly, style: TextStyle(fontSize: 14, color: c.muted)),
               const SizedBox(height: 12),
               PayForm(
                 amount: d.toAdd,
@@ -304,7 +305,7 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
       ],
       if (d.history.isNotEmpty) ...[
         const SizedBox(height: 24),
-        Text('History', style: text.titleMedium),
+        Text(l.history, style: text.titleMedium),
         const SizedBox(height: 8),
         FsCard(
           padding: EdgeInsets.zero,
@@ -352,28 +353,27 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Take your deposit back', style: Theme.of(context).textTheme.titleMedium),
+          Text(l.takeDepositBack, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 4),
           Text(
-            "FutSlot sends all of ${rupees(d.balance)} to you 3 days after you ask, once no game you've booked at a "
-            'venue that needs it is still to be played.',
+            l.withdrawExplain(rupees(d.balance)),
             style: TextStyle(fontSize: 14, color: c.muted),
           ),
           const SizedBox(height: 12),
           if (!_withdrawOpen)
             Align(
               alignment: Alignment.centerLeft,
-              child: OutlinedButton(onPressed: () => setState(() => _withdrawOpen = true), child: const Text('Take it back')),
+              child: OutlinedButton(onPressed: () => setState(() => _withdrawOpen = true), child: Text(l.takeItBack)),
             )
           else ...[
-            const FieldLabel('Send it to my'),
+            FieldLabel(l.sendItToMy),
             Segmented(
               options: _sendMethods,
               value: _sendMethod,
               onChanged: (method) => setState(() => _sendMethod = method),
             ),
             const SizedBox(height: 12),
-            FieldLabel(_sendMethod == PaymentMethod.bankTransfer ? 'Bank name and account number' : 'Number'),
+            FieldLabel(_sendMethod == PaymentMethod.bankTransfer ? l.bankNameAccount : l.number),
             TextField(
               controller: _sendTo,
               maxLength: 200,
@@ -390,11 +390,11 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
                   child: FilledButton(
                     onPressed: _withdrawing ? null : _withdraw,
                     style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(44)),
-                    child: Text(_withdrawing ? 'Asking…' : 'Ask for it back'),
+                    child: Text(_withdrawing ? l.asking : l.askForItBack),
                   ),
                 ),
                 const SizedBox(width: 8),
-                TextButton(onPressed: () => setState(() => _withdrawOpen = false), child: const Text('Back')),
+                TextButton(onPressed: () => setState(() => _withdrawOpen = false), child: Text(l.back)),
               ],
             ),
           ],

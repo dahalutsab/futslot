@@ -6,6 +6,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/session.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/widgets.dart';
 
 /// Changing the password, or setting one for a player who signs in with Google. Every other device is signed out.
@@ -36,9 +37,9 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
 
   Future<void> _save(bool hasPassword) async {
     final problem = _next.text.runes.length < 8
-        ? 'Use at least 8 characters.'
+        ? l.useAtLeast8
         : hasPassword && _current.text.isEmpty
-            ? 'Enter your current password.'
+            ? l.enterCurrentPassword
             : null;
     if (problem != null) {
       setState(() => _message = (ok: false, text: problem));
@@ -58,7 +59,7 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
         setState(() {
           _current.clear();
           _next.clear();
-          _message = (ok: true, text: 'Password saved. Other devices are signed out.');
+          _message = (ok: true, text: l.passwordSaved);
         });
       }
     } catch (error) {
@@ -77,25 +78,25 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
     final c = context.fs;
     final hasPassword = ref.watch(sessionProvider)?.user.passwordSet ?? true;
     final toggle = IconButton(
-      tooltip: _show ? 'Hide passwords' : 'Show passwords',
+      tooltip: _show ? l.hidePasswords : l.showPasswords,
       icon: Icon(_show ? LucideIcons.eyeOff : LucideIcons.eye, size: 18),
       onPressed: () => setState(() => _show = !_show),
     );
     return Scaffold(
-      appBar: AppBar(title: Text(hasPassword ? 'Password' : 'Set a password')),
+      appBar: AppBar(title: Text(hasPassword ? l.mePassword : l.setAPassword)),
       body: AutofillGroup(
         child: ScreenBody(
           maxWidth: 480,
           children: [
             if (!hasPassword) ...[
               Text(
-                'You sign in with Google. A password lets you sign in with your number too.',
+                l.googleOnlyNote,
                 style: TextStyle(color: c.muted),
               ),
               const SizedBox(height: 16),
             ],
             if (hasPassword) ...[
-              const FieldLabel('Current password'),
+              FieldLabel(l.currentPassword),
               TextField(
                 controller: _current,
                 obscureText: !_show,
@@ -107,7 +108,7 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
               ),
               const SizedBox(height: 16),
             ],
-            const FieldLabel('New password'),
+            FieldLabel(l.newPassword),
             TextField(
               controller: _next,
               obscureText: !_show,
@@ -120,7 +121,7 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              'At least 8 characters. You stay signed in here; other devices are signed out.',
+              l.passwordStayHere,
               style: TextStyle(fontSize: 14, color: c.subtle),
             ),
             if (_message case final message?) ...[
@@ -134,8 +135,8 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
                 onPressed: _saving ? null : () => _save(hasPassword),
                 child: BusyLabel(
                   busy: _saving,
-                  label: hasPassword ? 'Change password' : 'Set password',
-                  busyLabel: 'Saving…',
+                  label: hasPassword ? l.changePassword : l.setPassword,
+                  busyLabel: l.saving,
                 ),
               ),
             ),

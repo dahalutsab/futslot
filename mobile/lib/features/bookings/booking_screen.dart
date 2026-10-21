@@ -10,6 +10,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/booking_model.dart';
 import '../../shared/format.dart';
 import '../../shared/pay_form.dart';
@@ -274,7 +275,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
   Widget build(BuildContext context) {
     final booking = _booking;
     return Scaffold(
-      appBar: AppBar(title: Text(booking != null ? 'Booking ${booking.reference}' : 'Booking')),
+      appBar: AppBar(title: Text(booking != null ? l.bookingRef(booking.reference) : l.booking)),
       body: switch ((booking, _error)) {
         (_, final String error) => ScreenBody(children: [ErrorPanel(message: error, onRetry: _load)]),
         (final Booking b, _) => ScreenBody(onRefresh: _load, children: _body(context, b)),
@@ -300,8 +301,8 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               Expanded(
                 child: Text(
                   b.status == BookingStatus.confirmed
-                      ? 'Booked. See you on the court!'
-                      : 'Booked. Pay the advance below to confirm it.',
+                      ? l.bookedSeeYou
+                      : l.bookedPayBelow,
                   style: TextStyle(color: c.confirmed.fg),
                 ),
               ),
@@ -318,7 +319,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             StatusChip(bookingChip(b, checking: _checking)),
             const SizedBox(height: 12),
             Text(
-              '${localClock(b.startsAt)} – ${localClock(b.endsAt)}',
+              l.timeRange(localClock(b.startsAt), localClock(b.endsAt)),
               style: text.headlineSmall?.copyWith(fontFeatures: tabular),
             ),
             const SizedBox(height: 4),
@@ -349,7 +350,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             OutlinedButton.icon(
               onPressed: () => _message(b),
               icon: const Icon(LucideIcons.messageSquare, size: 16),
-              label: const Text('Message the venue', style: TextStyle(fontSize: 14)),
+              label: Text(l.messageTheVenue, style: const TextStyle(fontSize: 14)),
             ),
           ],
         ),
@@ -366,9 +367,9 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             contentPadding: const EdgeInsets.symmetric(horizontal: 20),
             onTap: () => context.push('/bookings/${b.id}/split'),
             leading: Icon(LucideIcons.users, color: c.muted),
-            title: const Text('Split the cost', style: TextStyle(fontWeight: FontWeight.w500)),
+            title: Text(l.splitTheCost, style: const TextStyle(fontWeight: FontWeight.w500)),
             subtitle: Text(
-              'Share it equally, or baazi: the losers pay',
+              l.splitTheCostDetail,
               style: TextStyle(fontSize: 14, color: c.muted),
             ),
             trailing: Icon(LucideIcons.chevronRight, size: 18, color: c.subtle),
@@ -382,7 +383,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Your note', style: text.titleMedium),
+              Text(l.yourNote, style: text.titleMedium),
               const SizedBox(height: 4),
               Text(notes, style: TextStyle(color: c.muted)),
             ],
@@ -396,13 +397,12 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Cancelled', style: text.titleMedium),
+              Text(l.cancelled, style: text.titleMedium),
               const SizedBox(height: 4),
               Text(
                 b.cancellationFeePercent > 0
-                    ? "Cancelled late, so the venue kept its ${percent(b.cancellationFeePercent)}% fee"
-                        "${b.depositBacked ? ", with any part your advance didn't cover taken from your deposit" : ''}."
-                    : 'Anything you paid comes back to you.',
+                    ? (b.depositBacked ? l.cancelledLateDeposit : l.cancelledLate)(percent(b.cancellationFeePercent))
+                    : l.cancelledRefund,
                 style: TextStyle(color: c.muted),
               ),
               if (b.cancellationReason case final reason?) ...[
@@ -431,7 +431,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Your review', style: text.titleMedium),
+            Text(l.yourReview, style: text.titleMedium),
             const SizedBox(height: 4),
             Stars(review.rating),
             if (review.comment case final comment?) ...[const SizedBox(height: 4), Text(comment)],
@@ -444,7 +444,10 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${b.venue.name} replied', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                    Text(
+                      l.venueReplied(b.venue.name),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                    ),
                     Text(reply, style: TextStyle(fontSize: 14, color: c.muted)),
                   ],
                 ),
@@ -454,12 +457,12 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             const SizedBox(height: 12),
             Row(
               children: [
-                OutlinedButton(onPressed: () => setState(() => _editingReview = true), child: const Text('Edit')),
+                OutlinedButton(onPressed: () => setState(() => _editingReview = true), child: Text(l.edit)),
                 const SizedBox(width: 8),
                 TextButton(
                   onPressed: _reviewBusy ? null : _deleteReview,
                   style: TextButton.styleFrom(foregroundColor: c.danger),
-                  child: const Text('Delete'),
+                  child: Text(l.delete),
                 ),
               ],
             ),
@@ -472,21 +475,21 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(review != null ? 'Edit your review' : 'How was ${b.venue.name}?', style: text.titleMedium),
+          Text(review != null ? l.editYourReview : l.howWasVenue(b.venue.name), style: text.titleMedium),
           Text(
-            'Other players see it with your first name and last initial.',
+            l.reviewShownAs,
             style: TextStyle(fontSize: 14, color: c.muted),
           ),
           const SizedBox(height: 12),
           ReviewForm(
             rating: review?.rating ?? 0,
             comment: review?.comment,
-            label: review != null ? 'Save' : 'Post review',
+            label: review != null ? l.save : l.postReview,
             busy: _reviewBusy,
             error: _reviewError,
             onSaved: _saveReview,
             extra: review != null
-                ? TextButton(onPressed: () => setState(() => _editingReview = false), child: const Text('Cancel'))
+                ? TextButton(onPressed: () => setState(() => _editingReview = false), child: Text(l.cancel))
                 : null,
           ),
         ],
@@ -509,12 +512,12 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               children: [
                 Icon(LucideIcons.wallet, size: 18, color: c.verify.fg),
                 const SizedBox(width: 8),
-                Text('Payment sent', style: text.titleMedium?.copyWith(color: c.verify.fg)),
+                Text(l.paymentSent, style: text.titleMedium?.copyWith(color: c.verify.fg)),
               ],
             ),
             const SizedBox(height: 4),
             Text(
-              "${b.venue.name} is checking it. Your slot is held meanwhile, and we'll let you know when it's confirmed.",
+              l.venueChecking(b.venue.name),
               style: TextStyle(color: c.verify.fg),
             ),
           ],
@@ -529,7 +532,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Pay ${rupees(b.advanceRequired - b.paidAmount)} to confirm', style: text.titleMedium),
+            Text(l.payToConfirm(rupees(b.advanceRequired - b.paidAmount)), style: text.titleMedium),
             const SizedBox(height: 4),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -538,8 +541,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    'Held for $minutes more ${minutes == 1 ? 'minute' : 'minutes'}, until '
-                    '${clockAt(b.holdExpiresAt!, _venue?.timezone ?? 'Asia/Kathmandu')}.',
+                    l.heldFor(minutes, clockAt(b.holdExpiresAt!, _venue?.timezone ?? 'Asia/Kathmandu')),
                     style: TextStyle(color: c.held.fg),
                   ),
                 ),
@@ -552,12 +554,12 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               instructions: _payments?.paymentInstructions ?? _venue?.paymentInstructions,
               busy: _paying,
               error: _payError,
-              label: "I've paid",
+              label: l.iPaid,
               onPaid: _pay,
             ),
             const SizedBox(height: 12),
             Text(
-              'Pay the venue directly, then tell us the transaction ID. The venue checks it and confirms your booking.',
+              l.payDirectly,
               style: TextStyle(fontSize: 14, color: c.subtle),
             ),
           ],
@@ -570,9 +572,9 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('The time to pay has run out', style: text.titleMedium),
+          Text(l.timeToPayRanOut, style: text.titleMedium),
           const SizedBox(height: 4),
-          Text("The slot may have gone to someone else. Book again if it's still free.", style: TextStyle(color: c.muted)),
+          Text(l.slotMayBeGone, style: TextStyle(color: c.muted)),
           if (b.venue.slug != null) ...[
             const SizedBox(height: 12),
             FilledButton(
@@ -580,7 +582,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 path: '/venues/${b.venue.slug}',
                 queryParameters: {'date': b.startsAt.substring(0, 10)},
               ).toString()),
-              child: const Text('See free slots'),
+              child: Text(l.seeFreeSlots),
             ),
           ],
         ],
@@ -596,30 +598,30 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Payment', style: Theme.of(context).textTheme.titleMedium),
+          Text(l.payment, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
-          AmountRow(label: 'Court', value: rupees(b.priceAmount)),
+          AmountRow(label: l.court, value: rupees(b.priceAmount)),
           for (final line in b.addOns)
-            AmountRow(label: '${line.quantity} × ${line.name}', value: rupees(line.quantity * line.unitPrice)),
+            AmountRow(label: l.lineItem(line.quantity, line.name), value: rupees(line.quantity * line.unitPrice)),
           if (b.discountAmount > 0)
-            AmountRow(label: 'Discount', value: '−${rupees(b.discountAmount)}', valueColor: c.confirmed.fg),
+            AmountRow(label: l.discount, value: '−${rupees(b.discountAmount)}', valueColor: c.confirmed.fg),
           const Padding(padding: EdgeInsets.symmetric(vertical: 6), child: Divider()),
-          AmountRow(label: 'Total', value: rupees(b.totalAmount), strong: true),
-          AmountRow(label: 'Paid', value: rupees(b.paidAmount)),
+          AmountRow(label: l.total, value: rupees(b.totalAmount), strong: true),
+          AmountRow(label: l.paid, value: rupees(b.paidAmount)),
           if (b.status == BookingStatus.confirmed || b.status == BookingStatus.pendingPayment)
-            AmountRow(label: 'At the venue', value: rupees(max(0, b.totalAmount - b.paidAmount))),
+            AmountRow(label: l.atTheVenue, value: rupees(max(0, b.totalAmount - b.paidAmount))),
           if (payments != null && payments.payments.isNotEmpty) ...[
             const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider()),
             for (final payment in payments.payments)
               _MoneyLine(
                 label: '${methodLabel(payment.method)}${switch (payment.status) {
-                  TransactionStatus.pending => ' · being checked',
-                  TransactionStatus.initiated => ' · started',
-                  TransactionStatus.failed => ' · not received',
+                  TransactionStatus.pending => l.beingChecked,
+                  TransactionStatus.initiated => l.started,
+                  TransactionStatus.failed => l.notReceived,
                   TransactionStatus.succeeded => '',
-                  TransactionStatus.cancelled => ' · cancelled',
-                  TransactionStatus.refunded => ' · refunded',
-                  TransactionStatus.partiallyRefunded => ' · partly refunded',
+                  TransactionStatus.cancelled => l.paymentCancelled,
+                  TransactionStatus.refunded => l.refunded,
+                  TransactionStatus.partiallyRefunded => l.partlyRefunded,
                 }}',
                 detail: payment.failureReason,
                 amount: payment.amount,
@@ -629,7 +631,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider()),
             for (final refund in payments.refunds)
               _MoneyLine(
-                label: 'Refund by ${methodLabel(refund.originalMethod)} · ${refund.sent ? 'sent' : 'on its way'}',
+                label: l.refundBy(methodLabel(refund.originalMethod), refund.sent ? l.refundSent : l.refundOnItsWay),
                 amount: refund.amount,
               ),
           ],
@@ -644,7 +646,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
       return TextButton(
         onPressed: () => setState(() => _cancelOpen = true),
         style: TextButton.styleFrom(foregroundColor: c.danger, minimumSize: const Size.fromHeight(48)),
-        child: const Text('Cancel booking'),
+        child: Text(l.cancelBooking),
       );
     }
     final venue = _venue;
@@ -658,13 +660,13 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Cancel this booking?', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(l.cancelThisBooking, style: const TextStyle(fontWeight: FontWeight.w600)),
             if (outcome != null) ...[
               const SizedBox(height: 4),
               Text(_outcomeText(b, outcome)),
             ],
             const SizedBox(height: 12),
-            const FieldLabel('Why?', optional: true),
+            FieldLabel(l.why, optional: true),
             TextField(controller: _reason, maxLength: 500, decoration: const InputDecoration(counterText: '')),
             if (_cancelError case final error?) ...[
               const SizedBox(height: 8),
@@ -682,7 +684,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                       foregroundColor: Theme.of(context).brightness == Brightness.dark ? c.inkFg : Colors.white,
                       minimumSize: const Size.fromHeight(44),
                     ),
-                    child: Text(_cancelling ? 'Cancelling…' : 'Cancel booking'),
+                    child: Text(_cancelling ? l.cancelling : l.cancelBooking),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -693,7 +695,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                     foregroundColor: c.text,
                     minimumSize: const Size(44, 44),
                   ),
-                  child: const Text('Keep it'),
+                  child: Text(l.keepIt),
                 ),
               ],
             ),
@@ -705,13 +707,13 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
 
   static String _outcomeText(Booking b, CancelOutcome o) {
     if (o.feePercent == 0) {
-      return "It's free to cancel now.${b.paidAmount > 0 ? ' You get ${rupees(o.refund)} back.' : ''}";
+      return [l.freeToCancel, if (b.paidAmount > 0) l.youGetBack(rupees(o.refund))].join(' ');
     }
     return [
-      'Cancelling now costs ${percent(o.feePercent)}% of the price (${rupees(o.fee)}).',
+      l.cancelCosts(percent(o.feePercent), rupees(o.fee)),
       if (o.kept > 0)
-        'The venue keeps ${rupees(o.kept)} of what you paid${o.refund > 0 ? ' and you get ${rupees(o.refund)} back' : ''}.',
-      if (o.fromDeposit > 0) 'Up to ${rupees(o.fromDeposit)} more comes out of your FutSlot deposit.',
+        o.refund > 0 ? l.venueKeepsRefund(rupees(o.kept), rupees(o.refund)) : l.venueKeeps(rupees(o.kept)),
+      if (o.fromDeposit > 0) l.fromDeposit(rupees(o.fromDeposit)),
     ].join(' ');
   }
 }

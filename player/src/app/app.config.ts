@@ -4,11 +4,12 @@ import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from 
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth.interceptor';
+import { languageInterceptor } from './i18n/i18n';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, languageInterceptor])),
     provideRouter(routes, withComponentInputBinding(), withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' })),
   ],
 };

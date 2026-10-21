@@ -5,7 +5,10 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
+import '../../core/session.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
+import '../../shared/language_switch.dart';
 import '../../shared/notification_bell.dart';
 import '../../shared/venue_card.dart';
 import '../../shared/widgets.dart';
@@ -126,6 +129,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   Widget build(BuildContext context) {
     final c = context.fs;
     final venues = _venues;
+    // Signed-in players switch language in Me
+    final signedIn = ref.watch(sessionProvider) != null;
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -135,13 +140,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           children: [
             Row(
               children: [
-                Expanded(child: Text('Book a futsal court', style: Theme.of(context).textTheme.headlineSmall)),
+                Expanded(child: Text(l.exploreTitle, style: Theme.of(context).textTheme.headlineSmall)),
+                if (!signedIn) const LanguageToggle(),
                 const NotificationBell(),
               ],
             ),
             const SizedBox(height: 4),
             Text(
-              'Free slots and prices at venues near you. Pay the advance with eSewa or Khalti.',
+              l.exploreSubtitle,
               style: TextStyle(color: c.muted),
             ),
             const SizedBox(height: 20),
@@ -150,12 +156,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               textInputAction: TextInputAction.search,
               onSubmitted: (_) => _search(),
               decoration: InputDecoration(
-                hintText: 'Venue name or area',
+                hintText: l.venueSearchHint,
                 prefixIcon: Icon(LucideIcons.search, size: 18, color: c.subtle),
                 suffixIcon: _query.text.isEmpty && _q == null
                     ? null
                     : IconButton(
-                        tooltip: 'Clear',
+                        tooltip: l.clear,
                         icon: const Icon(LucideIcons.x, size: 18),
                         onPressed: () {
                           _query.clear();
@@ -175,7 +181,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     for (final city in [null, ..._cities])
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: Pill(label: city ?? 'All cities', selected: _city == city, onTap: () => _pickCity(city)),
+                        child: Pill(label: city ?? l.allCities, selected: _city == city, onTap: () => _pickCity(city)),
                       ),
                   ],
                 ),
@@ -183,13 +189,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ],
             if (_featured.isNotEmpty && !_filtered) ...[
               const SizedBox(height: 32),
-              Text('Featured', style: Theme.of(context).textTheme.titleLarge),
+              Text(l.featured, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 12),
               for (final venue in _featured) Padding(padding: const EdgeInsets.only(bottom: 16), child: VenueCard(venue)),
             ],
             const SizedBox(height: 32),
             Text(
-              _filtered ? (_total == 1 ? '1 venue' : '$_total venues') : 'All venues',
+              _filtered ? l.venuesFound(_total) : l.allVenues,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 12),
@@ -198,14 +204,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             else if (venues == null)
               for (var i = 0; i < 3; i++) const Padding(padding: EdgeInsets.only(bottom: 16), child: Skeleton(height: 256))
             else if (venues.isEmpty)
-              const EmptyPanel(title: 'No venues found', body: 'Try another name or area, or all cities.')
+              EmptyPanel(title: l.noVenuesFound, body: l.noVenuesFoundBody)
             else ...[
               for (final venue in venues) Padding(padding: const EdgeInsets.only(bottom: 16), child: VenueCard(venue)),
               if (_hasMore)
                 Center(
                   child: OutlinedButton(
                     onPressed: _loading ? null : () => _load(_page + 1),
-                    child: Text(_loading ? 'Loading…' : 'Show more venues'),
+                    child: Text(_loading ? l.loadingMore : l.showMoreVenues),
                   ),
                 ),
             ],

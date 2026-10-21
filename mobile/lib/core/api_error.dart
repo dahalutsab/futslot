@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 
+import '../l10n/l10n.dart';
+
 /// The API's error code and a sentence to show, for any failed request.
 class Problem {
   const Problem(this.code, this.message);
@@ -8,9 +10,9 @@ class Problem {
   final String message;
 }
 
-const _offline = Problem('OFFLINE', "Can't reach FutSlot. Check your connection and try again.");
+Problem get _offline => Problem('OFFLINE', l.offline);
 
-const _unknown = Problem(null, 'Something went wrong. Please try again.');
+Problem get _unknown => Problem(null, l.somethingWentWrong);
 
 Problem problemOf(Object error) {
   if (error is DioException) {

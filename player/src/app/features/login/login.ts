@@ -6,7 +6,9 @@ import { ArrowRight, Eye, EyeOff, LoaderCircle, LucideAngularModule, ShieldCheck
 import { problemOf } from '../../core/api-error';
 import { CodePurpose } from '../../core/api.types';
 import { Session } from '../../core/session';
+import { l } from '../../i18n/i18n';
 import { GoogleButton } from '../../shared/google-button';
+import { LanguageToggle } from '../../shared/language-toggle';
 
 /**
  * signIn: phone and password. The others text a code first: signUp makes an account, reset sets a new password (or
@@ -21,11 +23,13 @@ const MIN_PASSWORD = 8;
 /** Sign in with a phone number and password, or with Google; create an account; or reset a forgotten password. */
 @Component({
   selector: 'fs-login',
-  imports: [FormsModule, LucideAngularModule, RouterLink, GoogleButton],
+  imports: [FormsModule, LucideAngularModule, RouterLink, GoogleButton, LanguageToggle],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.html',
 })
 export class Login implements OnDestroy {
+  protected readonly l = l;
+
   private readonly session = inject(Session);
 
   private readonly router = inject(Router);
@@ -69,17 +73,17 @@ export class Login implements OnDestroy {
   protected readonly phoneValid = computed(() => /^\d{10}$/.test(this.digits(this.phone())));
 
   protected readonly title = computed(() => ({
-    signIn: 'Sign in to FutSlot',
-    signUp: 'Create your account',
-    reset: 'Reset your password',
-    google: 'One more step',
+    signIn: l().signInTitle,
+    signUp: l().signUpTitle,
+    reset: l().resetTitle,
+    google: l().googleTitle,
   })[this.mode()]);
 
   protected readonly subtitle = computed(() => ({
-    signIn: 'Use your mobile number and password.',
-    signUp: "We'll text a code to check the number is yours.",
-    reset: "We'll text a code to your number, then you choose a new password.",
-    google: "Add your mobile number. Venues and teammates find you by it, so we'll text a code to check it's yours.",
+    signIn: l().signInSubtitle,
+    signUp: l().signUpSubtitle,
+    reset: l().resetSubtitle,
+    google: l().googleSubtitle,
   })[this.mode()]);
 
   /** The ID token from Google, kept while the player proves their number. */
@@ -109,16 +113,16 @@ export class Login implements OnDestroy {
       return;
     }
     if (!this.phoneValid()) {
-      this.error.set('Enter your 10-digit mobile number, like 98XXXXXXXX.');
+      this.error.set(l().enterMobile);
       return;
     }
     if (!this.password()) {
-      this.error.set('Enter your password.');
+      this.error.set(l().enterPassword);
       return;
     }
     await this.run(() => this.session.signIn(this.digits(this.phone()), this.password()), (code) => {
       if (code === 'PASSWORD_NOT_SET') {
-        this.switchTo('reset', "Your account doesn't have a password yet. We'll text you a code to set one.");
+        this.switchTo('reset', l().passwordNotSet);
         return true;
       }
       return false;
@@ -131,7 +135,7 @@ export class Login implements OnDestroy {
       return;
     }
     if (!this.phoneValid()) {
-      this.error.set('Enter your 10-digit mobile number, like 98XXXXXXXX.');
+      this.error.set(l().enterMobile);
       return;
     }
     this.busy.set(true);
@@ -144,14 +148,14 @@ export class Login implements OnDestroy {
       const problem = problemOf(error);
       if (problem.code === 'OTP_COOLDOWN') {
         // A code went out under a minute ago (a double tap, or a reload): let them use it
-        this.notice.set('We sent you a code a moment ago. Enter it below.');
+        this.notice.set(l().codeSentMoment);
         this.showCodeStep(60);
       }
       else if (problem.code === 'ACCOUNT_EXISTS') {
-        this.switchTo('signIn', 'This number already has an account. Sign in, or reset your password if you forgot it.');
+        this.switchTo('signIn', l().accountExists);
       }
       else if (problem.code === 'ACCOUNT_NOT_FOUND') {
-        this.switchTo('signUp', 'No account uses this number yet. Create one below.');
+        this.switchTo('signUp', l().noAccountYet);
       }
       else {
         this.error.set(problem.message);
@@ -223,13 +227,13 @@ export class Login implements OnDestroy {
 
   private check(mode: Exclude<Mode, 'signIn'>): string | null {
     if (!/^\d{6}$/.test(this.code())) {
-      return 'Enter the 6-digit code we sent.';
+      return l().enterCode;
     }
     if ((mode === 'signUp' || this.needsName()) && this.fullName().trim().length < 2) {
-      return 'Enter your name.';
+      return l().enterName;
     }
     if (mode !== 'google' && [...this.password()].length < MIN_PASSWORD) {
-      return `Use at least ${MIN_PASSWORD} characters for your password.`;
+      return l().passwordTooShort(MIN_PASSWORD);
     }
     return null;
   }

@@ -5,6 +5,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/labels.dart';
 import '../../shared/widgets.dart';
 
@@ -81,7 +82,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       );
       _show(card);
       if (mounted) {
-        setState(() => _message = (ok: true, text: 'Saved.'));
+        setState(() => _message = (ok: true, text: l.saved));
       }
     } catch (error) {
       if (mounted) {
@@ -99,11 +100,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final c = context.fs;
     final card = _card;
     return Scaffold(
-      appBar: AppBar(title: const Text('Player profile')),
+      appBar: AppBar(title: Text(l.meProfile)),
       body: ScreenBody(
         children: [
           Text(
-            'Shown to captains and players when you ask to join a game or a team.',
+            l.profileIntro,
             style: TextStyle(color: c.muted),
           ),
           const SizedBox(height: 12),
@@ -111,7 +112,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             if (_message case final message?) Notice(message.text) else const Skeleton(height: 256)
           else ...[
             Text(
-              '${count(card.gamesPlayed, 'game')} played on FutSlot',
+              l.gamesPlayedOnFutSlot(l.games(card.gamesPlayed)),
               style: TextStyle(fontSize: 14, color: c.muted, fontFeatures: tabular),
             ),
             const SizedBox(height: 16),
@@ -121,37 +122,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   PillChoices(
-                    label: 'Position',
+                    label: l.position,
                     options: [for (final p in Position.values) (p, p.label)],
                     value: _position,
                     onChanged: (p) => setState(() => _position = p),
                   ),
                   PillChoices(
-                    label: 'Level',
+                    label: l.level,
                     options: [for (final s in SkillLevel.values) (s, s.label)],
                     value: _skill,
                     onChanged: (s) => setState(() => _skill = s),
                   ),
                   PillChoices(
-                    label: 'Stronger foot',
+                    label: l.strongerFoot,
                     options: [for (final f in PreferredFoot.values) (f, f.label)],
                     value: _foot,
                     onChanged: (f) => setState(() => _foot = f),
                   ),
-                  const FieldLabel('City'),
+                  FieldLabel(l.city),
                   TextField(controller: _city, maxLength: 60, decoration: const InputDecoration(counterText: '')),
                   const SizedBox(height: 16),
-                  const FieldLabel('About you', optional: true),
+                  FieldLabel(l.aboutYou, optional: true),
                   TextField(
                     controller: _bio,
                     maxLength: 500,
                     minLines: 3,
                     maxLines: 5,
                     textCapitalization: TextCapitalization.sentences,
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Quick on the wing, play most Friday evenings',
-                      counterText: '',
-                    ),
+                    decoration: InputDecoration(hintText: l.aboutYouHint, counterText: ''),
                   ),
                   const SizedBox(height: 8),
                   CheckboxListTile(
@@ -159,7 +157,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     onChanged: (on) => setState(() => _isPublic = on ?? true),
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Let other players see my profile'),
+                    title: Text(l.profilePublic),
                   ),
                   if (_message case final message?) ...[
                     const SizedBox(height: 8),
@@ -170,7 +168,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     alignment: Alignment.centerLeft,
                     child: FilledButton(
                       onPressed: _saving ? null : _save,
-                      child: BusyLabel(busy: _saving, label: 'Save', busyLabel: 'Saving…'),
+                      child: BusyLabel(busy: _saving, label: l.save, busyLabel: l.saving),
                     ),
                   ),
                 ],

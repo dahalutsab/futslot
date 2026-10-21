@@ -1,9 +1,6 @@
 <div class="mx-auto max-w-xl px-4 py-6 lg:py-10">
-  <h1 class="text-2xl font-semibold tracking-tight">Booking deposit</h1>
-  <p class="mt-1 text-muted">
-    Some venues only take bookings from players who keep {{ fmt.rupees(depositAmount) }} with FutSlot. It isn't spent on your games:
-    it only pays a venue's fee if you cancel late or don't show up. You can take it back whenever you have no games booked there.
-  </p>
+  <h1 class="text-2xl font-semibold tracking-tight">{{ l().meDeposit }}</h1>
+  <p class="mt-1 text-muted">{{ l().depositIntro(fmt.rupees(depositAmount)) }}</p>
 
   @if (error(); as message) {
     <p class="mt-4 text-danger" role="alert">{{ message }}</p>
@@ -11,40 +8,37 @@
 
   @if (deposit(); as d) {
     <section class="mt-5 rounded-xl border border-border bg-surface p-5">
-      <p class="text-sm text-muted">In your deposit</p>
-      <p class="tabular mt-1 text-3xl font-semibold">{{ fmt.rupees(d.balance) }} <span class="text-base font-normal text-muted">of {{ fmt.rupees(d.required) }}</span></p>
+      <p class="text-sm text-muted">{{ l().inYourDeposit }}</p>
+      <p class="tabular mt-1 text-3xl font-semibold">{{ fmt.rupees(d.balance) }} <span class="text-base font-normal text-muted">{{ l().ofAmount(fmt.rupees(d.required)) }}</span></p>
       <div class="mt-3 h-2 overflow-hidden rounded-full bg-surface-2" role="presentation">
         <div class="h-full rounded-full bg-confirmed-line" [style.width.%]="(d.balance / d.required) * 100"></div>
       </div>
       @if (full()) {
         <p class="mt-3 flex items-center gap-1.5 text-confirmed-fg">
-          <lucide-icon [img]="icons.ShieldCheck" [size]="16" /> Full: you can book any venue.
+          <lucide-icon [img]="icons.ShieldCheck" [size]="16" /> {{ l().depositFull }}
         </p>
         @if (backLink(); as link) {
-          <button type="button" (click)="goBack(link)" class="mt-3 h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg">Back to your booking</button>
+          <button type="button" (click)="goBack(link)" class="mt-3 h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().backToBooking }}</button>
         }
       }
     </section>
 
     @if (d.withdrawal; as w) {
       <section class="mt-4 rounded-xl border border-border bg-surface p-5" aria-labelledby="withdrawal-title">
-        <h2 id="withdrawal-title" class="font-semibold">{{ fmt.rupees(w.amount) }} is coming back to you</h2>
-        <p class="mt-1 text-muted">
-          FutSlot sends it to your {{ fmt.methodLabel(w.method) }} <span class="tabular">{{ w.sendTo }}</span> on {{ fmt.dayLabel(fmt.localDay(w.dueAt)) }}.
-          Until then you can't book venues that need the deposit.
-        </p>
+        <h2 id="withdrawal-title" class="font-semibold">{{ l().comingBack(fmt.rupees(w.amount)) }}</h2>
+        <p class="mt-1 text-muted">{{ l().withdrawalWhen(fmt.methodLabel(w.method), w.sendTo, fmt.dayLabel(fmt.localDay(w.dueAt))) }}</p>
         <button type="button" (click)="keep()" [disabled]="withdrawing()"
-          class="mt-3 h-11 rounded-lg border border-border px-5 font-medium hover:bg-surface-2 disabled:opacity-60">Keep my deposit instead</button>
+          class="mt-3 h-11 rounded-lg border border-border px-5 font-medium hover:bg-surface-2 disabled:opacity-60">{{ l().keepDeposit }}</button>
       </section>
     } @else if (d.topUpBeingChecked) {
       <section class="mt-4 rounded-xl border border-verify-line bg-verify-bg p-5 text-verify-fg">
-        <h2 class="font-semibold">Top-up sent</h2>
-        <p class="mt-1">FutSlot is checking it, usually within a few hours. You can book once it's in.</p>
+        <h2 class="font-semibold">{{ l().topUpSent }}</h2>
+        <p class="mt-1">{{ l().topUpChecking }}</p>
       </section>
     } @else if (d.toAdd > 0) {
       <section class="mt-4 rounded-xl border border-border bg-surface p-5" aria-labelledby="topup-title">
-        <h2 id="topup-title" class="font-semibold">Add {{ fmt.rupees(d.toAdd) }}</h2>
-        <p class="mt-1 text-sm text-muted">Pay FutSlot directly, then tell us the transaction ID.</p>
+        <h2 id="topup-title" class="font-semibold">{{ l().addAmount(fmt.rupees(d.toAdd)) }}</h2>
+        <p class="mt-1 text-sm text-muted">{{ l().payFutSlotDirectly }}</p>
         <div class="mt-3">
           <fs-pay-form id="topup" [amount]="d.toAdd" [instructions]="d.paymentInstructions" [busy]="toppingUp()" [error]="topUpError()"
             (paidWith)="topUp($event)" />
@@ -54,14 +48,14 @@
 
     @if (d.balance > 0 && !d.withdrawal) {
       <section class="mt-4 rounded-xl border border-border bg-surface p-5" aria-labelledby="withdraw-title">
-        <h2 id="withdraw-title" class="font-semibold">Take your deposit back</h2>
-        <p class="mt-1 text-sm text-muted">FutSlot sends all of {{ fmt.rupees(d.balance) }} to you 3 days after you ask, once no game you've booked at a venue that needs it is still to be played.</p>
+        <h2 id="withdraw-title" class="font-semibold">{{ l().takeDepositBack }}</h2>
+        <p class="mt-1 text-sm text-muted">{{ l().withdrawExplain(fmt.rupees(d.balance)) }}</p>
         @if (withdrawOpen()) {
           <form class="mt-3 space-y-3" (ngSubmit)="withdraw()">
             <fieldset>
-              <legend class="mb-1.5 font-medium">Send it to my</legend>
+              <legend class="mb-1.5 font-medium">{{ l().sendItToMy }}</legend>
               <div class="grid grid-cols-3 gap-2">
-                @for (m of sendMethods; track m.value) {
+                @for (m of sendMethods(); track m.value) {
                   <label class="flex h-11 cursor-pointer items-center justify-center rounded-lg border text-sm font-medium has-[:checked]:border-ink has-[:checked]:bg-surface-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
                     [class]="sendMethod() === m.value ? '' : 'border-border text-muted'">
                     <input type="radio" class="sr-only" name="sendMethod" [value]="m.value" [checked]="sendMethod() === m.value" (change)="sendMethod.set(m.value)" />
@@ -71,7 +65,7 @@
               </div>
             </fieldset>
             <div>
-              <label for="send-to" class="mb-1.5 block font-medium">{{ sendMethod() === 'BANK_TRANSFER' ? 'Bank name and account number' : 'Number' }}</label>
+              <label for="send-to" class="mb-1.5 block font-medium">{{ sendMethod() === 'BANK_TRANSFER' ? l().bankNameAccount : l().number }}</label>
               <input id="send-to" name="sendTo" type="text" maxlength="200" autocomplete="off"
                 class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
                 [ngModel]="sendTo()" (ngModelChange)="sendTo.set($event)" required />
@@ -81,20 +75,20 @@
             }
             <div class="flex gap-2">
               <button type="submit" [disabled]="withdrawing()" class="h-11 flex-1 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
-                {{ withdrawing() ? 'Asking…' : 'Ask for it back' }}
+                {{ withdrawing() ? l().asking : l().askForItBack }}
               </button>
-              <button type="button" (click)="withdrawOpen.set(false)" class="h-11 rounded-lg px-4 font-medium">Back</button>
+              <button type="button" (click)="withdrawOpen.set(false)" class="h-11 rounded-lg px-4 font-medium">{{ l().back }}</button>
             </div>
           </form>
         } @else {
-          <button type="button" (click)="withdrawOpen.set(true)" class="mt-3 h-11 rounded-lg border border-border px-5 font-medium hover:bg-surface-2">Take it back</button>
+          <button type="button" (click)="withdrawOpen.set(true)" class="mt-3 h-11 rounded-lg border border-border px-5 font-medium hover:bg-surface-2">{{ l().takeItBack }}</button>
         }
       </section>
     }
 
     @if (d.history.length) {
       <section class="mt-6" aria-labelledby="history-title">
-        <h2 id="history-title" class="font-semibold">History</h2>
+        <h2 id="history-title" class="font-semibold">{{ l().history }}</h2>
         <ul class="mt-2 divide-y divide-border rounded-xl border border-border bg-surface">
           @for (entry of d.history; track entry.id) {
             <li class="flex items-start gap-3 px-4 py-3">
@@ -109,6 +103,6 @@
       </section>
     }
   } @else if (!error()) {
-    <div class="mt-5 h-40 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+    <div class="mt-5 h-40 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
   }
 </div>

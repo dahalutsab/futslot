@@ -52,6 +52,8 @@ p { margin: 0; }
 .brand { font-weight: 800; font-size: 18px; text-decoration: none; margin-right: auto; }
 .nav-links { display: none; gap: 4px; }
 .nav-mine { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
+.lang-switch { font-weight: 600; font-size: 14px; color: var(--muted); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; padding: 0 4px; }
+.lang-switch:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 .nav-links a { text-decoration: none; color: var(--muted); padding: 8px 12px; border-radius: 8px; font-weight: 500; }
 .nav-links a:hover { color: var(--ink); background: var(--tint); }
 

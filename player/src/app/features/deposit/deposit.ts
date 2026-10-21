@@ -6,15 +6,9 @@ import { LoaderCircle, LucideAngularModule, ShieldCheck } from 'lucide-angular';
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { Deposit, DEPOSIT_AMOUNT, DepositEntry, PaymentClaim, PaymentMethod } from '../../core/api.types';
+import { l } from '../../i18n/i18n';
 import { ago, dayLabel, methodLabel, rupees, today } from '../../shared/format';
 import { PayForm } from '../../shared/pay-form';
-
-/** Where FutSlot can send a deposit back. */
-const SEND_METHODS: { value: PaymentMethod; label: string }[] = [
-  { value: 'ESEWA', label: 'eSewa' },
-  { value: 'KHALTI', label: 'Khalti' },
-  { value: 'BANK_TRANSFER', label: 'Bank account' },
-];
 
 /**
  * The player's FutSlot booking deposit: how much is in it, topping it up, taking it back, and every change.
@@ -27,6 +21,8 @@ const SEND_METHODS: { value: PaymentMethod; label: string }[] = [
   templateUrl: './deposit.html',
 })
 export class DepositPage {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   private readonly router = inject(Router);
@@ -40,7 +36,12 @@ export class DepositPage {
 
   protected readonly depositAmount = DEPOSIT_AMOUNT;
 
-  protected readonly sendMethods = SEND_METHODS;
+  /** Where FutSlot can send a deposit back. */
+  protected readonly sendMethods = computed<{ value: PaymentMethod; label: string }[]>(() => [
+    { value: 'ESEWA', label: 'eSewa' },
+    { value: 'KHALTI', label: 'Khalti' },
+    { value: 'BANK_TRANSFER', label: l().bankAccount },
+  ]);
 
   protected readonly deposit = signal<Deposit | null>(null);
 
@@ -78,13 +79,13 @@ export class DepositPage {
   protected entryLabel(entry: DepositEntry): string {
     switch (entry.type) {
       case 'TOP_UP':
-        return 'Topped up';
+        return l().toppedUp;
       case 'FEE':
-        return `Fee to ${entry.venueName} · ${entry.bookingReference}`;
+        return l().feeToVenue(entry.venueName ?? '', entry.bookingReference ?? '');
       case 'WITHDRAWAL':
-        return 'Taken back';
+        return l().takenBack;
       case 'WITHDRAWAL_CANCELLED':
-        return 'Kept after all';
+        return l().keptAfterAll;
     }
   }
 
@@ -112,7 +113,7 @@ export class DepositPage {
     }
     const sendTo = this.sendTo().trim();
     if (sendTo.length < 5) {
-      this.withdrawError.set('Enter the number or account to send it to.');
+      this.withdrawError.set(l().enterSendTo);
       return;
     }
     this.withdrawing.set(true);

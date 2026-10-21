@@ -1,18 +1,24 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<!-- Pieces both templates share: the head (search and sharing details) and small icons. -->
+<!-- Pieces both templates share: the head (search and sharing details), the language link and small icons. -->
 
 <head th:fragment="head(stylesheet, fonts)">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title th:text="${page.seo.title}">Venue</title>
   <meta name="description" th:content="${page.seo.description}">
-  <link rel="canonical" th:href="${page.seo.canonical + '/'}">
+  <link rel="canonical" th:href="${page.seo.canonical}">
+  <th:block th:if="${page.seo.english}">
+    <link rel="alternate" hreflang="en" th:href="${page.seo.english}">
+    <link rel="alternate" hreflang="ne" th:href="${page.seo.nepali}">
+    <link rel="alternate" hreflang="x-default" th:href="${page.seo.english}">
+  </th:block>
   <meta th:if="${page.seo.noindex}" name="robots" content="noindex, nofollow">
   <meta property="og:type" content="website">
   <meta property="og:title" th:content="${page.venue.name}">
   <meta property="og:description" th:content="${page.seo.description}">
-  <meta property="og:url" th:content="${page.seo.canonical + '/'}">
+  <meta property="og:url" th:content="${page.seo.canonical}">
+  <meta property="og:locale" th:content="${page.lang == 'ne' ? 'ne_NP' : 'en_US'}">
   <meta th:if="${page.seo.image}" property="og:image" th:content="${page.seo.image}">
   <meta name="twitter:card" th:content="${page.seo.image != null ? 'summary_large_image' : 'summary'}">
   <meta name="theme-color" th:content="${page.accent}">
@@ -21,7 +27,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" th:href="${fonts}">
   </th:block>
-  <link rel="stylesheet" th:href="@{'/site-assets/' + ${stylesheet} + '.css'(v=1)}">
+  <link rel="stylesheet" th:href="@{'/site-assets/' + ${stylesheet} + '.css'(v=2)}">
   <!-- Validated #rrggbb values, so safe to write as they are -->
   <style th:inline="css">:root { --accent: [(${page.accent})]; --accent-ink: [(${page.accentInk})]; --accent-text: [(${page.accentText})]; }</style>
   <script type="application/ld+json" th:utext="${page.seo.jsonLd}"></script>
@@ -38,6 +44,10 @@
     <path th:case="'arrow'" d="M5 12h14M13 6l6 6-6 6" />
     <g th:case="'trophy'"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.7V17c0 .6-.5 1-1 1.2C7.9 18.8 7 20.2 7 22M14 14.7V17c0 .6.5 1 1 1.2 1.1.5 2 2 2 3.8M18 2H6v7a6 6 0 0 0 12 0z" /></g>
   </svg>
+
+  <!-- The page in the other language, named in that language -->
+  <a th:fragment="language" class="lang-switch" th:href="${page.switchHref}" th:hreflang="${page.lang == 'ne' ? 'en' : 'ne'}"
+    th:lang="${page.lang == 'ne' ? 'en' : 'ne'}" th:title="#{lang.switchTitle}" th:text="#{lang.switch}">नेपाली</a>
 
   <!-- Five stars, filled up to the rating -->
   <span th:fragment="stars(filled, label)" class="stars" role="img" th:attr="aria-label=${label}">

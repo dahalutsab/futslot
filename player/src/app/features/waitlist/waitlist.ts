@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { WaitlistEntry } from '../../core/api.types';
+import { l } from '../../i18n/i18n';
 import { dayLabel, localClock } from '../../shared/format';
 
 /** Booked slots the player is waiting for. When one frees up they're told, and whoever books first gets it. */
@@ -13,16 +14,16 @@ import { dayLabel, localClock } from '../../shared/format';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-2xl px-4 py-6 lg:py-10">
-      <h1 class="text-2xl font-semibold tracking-tight">Waitlist</h1>
-      <p class="mt-1 text-muted">Slots you want that someone else booked. If one frees up we tell you, and whoever books it first gets it.</p>
+      <h1 class="text-2xl font-semibold tracking-tight">{{ l().meWaitlist }}</h1>
+      <p class="mt-1 text-muted">{{ l().waitlistIntro }}</p>
       @if (error(); as message) {
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>
       }
       @if (entries(); as list) {
         @if (list.length === 0) {
           <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
-            <p class="font-medium">You're not waiting for any slot</p>
-            <p class="mt-1 text-muted">On a venue's page, tap a booked slot to wait for it.</p>
+            <p class="font-medium">{{ l().notWaiting }}</p>
+            <p class="mt-1 text-muted">{{ l().notWaitingBody }}</p>
           </div>
         } @else {
           <ul class="mt-4 space-y-3">
@@ -32,21 +33,23 @@ import { dayLabel, localClock } from '../../shared/format';
                   <a [routerLink]="['/venues', entry.venueSlug]" [queryParams]="{ date: entry.startsAt.slice(0, 10) }" class="font-medium hover:underline">{{ entry.venueName }}</a>
                   <p class="tabular text-sm text-muted">{{ fmt.dayLabel(entry.startsAt.slice(0, 10)) }} · {{ fmt.localClock(entry.startsAt) }} – {{ fmt.localClock(entry.endsAt) }} · {{ entry.courtName }}</p>
                   @if (entry.status === 'NOTIFIED') {
-                    <p class="mt-2 text-sm font-medium text-confirmed-fg">It freed up. Book it before someone else does.</p>
+                    <p class="mt-2 text-sm font-medium text-confirmed-fg">{{ l().itFreedUp }}</p>
                   }
                 </div>
-                <button type="button" (click)="leave(entry)" class="h-11 shrink-0 rounded-lg px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">Stop waiting</button>
+                <button type="button" (click)="leave(entry)" class="h-11 shrink-0 rounded-lg px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">{{ l().stopWaiting }}</button>
               </li>
             }
           </ul>
         }
       } @else {
-        <div class="mt-6 h-32 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-32 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
       }
     </div>
   `,
 })
 export class Waitlist {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   protected readonly fmt = { dayLabel, localClock };

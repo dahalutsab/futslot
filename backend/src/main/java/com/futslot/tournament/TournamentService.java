@@ -490,10 +490,12 @@ public class TournamentService {
 		}
 		if (ids.size() < tournament.getTeamSize() || ids.size() > tournament.getMaxSquadSize()) {
 			throw badRequest("INVALID_SQUAD_SIZE",
-					"Name " + tournament.getTeamSize() + " to " + tournament.getMaxSquadSize() + " players");
+					"Name " + tournament.getTeamSize() + " to " + tournament.getMaxSquadSize() + " players")
+				.with(tournament.getTeamSize(), tournament.getMaxSquadSize());
 		}
 		if (!new HashSet<>(this.teams.squad(team.getId())).containsAll(ids)) {
-			throw badRequest("NOT_TEAM_MEMBERS", "Everyone in the squad must be a current member of " + team.getName());
+			throw badRequest("NOT_TEAM_MEMBERS", "Everyone in the squad must be a current member of " + team.getName())
+				.with(team.getName());
 		}
 		List<UUID> taken = this.squads.alreadyInOtherSquads(tournament.getId(),
 				(registrationId != null) ? registrationId : new UUID(0, 0), List.copyOf(ids));

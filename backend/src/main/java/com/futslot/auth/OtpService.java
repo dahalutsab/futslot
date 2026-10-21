@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.futslot.common.ApiException;
 import com.futslot.common.Hashing;
+import com.futslot.common.Wording;
+import com.futslot.common.Words;
 import com.futslot.config.SecurityProperties;
 
 @Service
@@ -23,12 +25,15 @@ class OtpService {
 
 	private final SecurityProperties.Otp properties;
 
+	private final Words words;
+
 	private final Clock clock;
 
-	OtpService(OtpCodeRepository codes, SmsSender smsSender, SecurityProperties properties, Clock clock) {
+	OtpService(OtpCodeRepository codes, SmsSender smsSender, SecurityProperties properties, Words words, Clock clock) {
 		this.codes = codes;
 		this.smsSender = smsSender;
 		this.properties = properties.otp();
+		this.words = words;
 		this.clock = clock;
 	}
 
@@ -47,8 +52,9 @@ class OtpService {
 		}
 		String code = "%06d".formatted(this.random.nextInt(1_000_000));
 		this.codes.save(new OtpCode(phone, hash(phone, code), purpose, now, now.plus(this.properties.ttl())));
-		this.smsSender.send(phone, "Your FutSlot code is %s. It expires in %d minutes."
-			.formatted(code, this.properties.ttl().toMinutes()));
+		// In the language of the screen asking for it; the code itself stays in Latin digits, to be typed
+		Wording w = this.words.forRequest();
+		this.smsSender.send(phone, w.get("sms.code", code, w.format().number(this.properties.ttl().toMinutes())));
 	}
 
 	/**

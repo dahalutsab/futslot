@@ -85,7 +85,7 @@ class MatchmakingService {
 		Instant now = this.clock.instant();
 		if (this.posts.countOpenBy(userId, now) >= MAX_OPEN_POSTS) {
 			throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "TOO_MANY_POSTS",
-					"You can have " + MAX_OPEN_POSTS + " open posts at a time");
+					"You can have " + MAX_OPEN_POSTS + " open posts at a time", MAX_OPEN_POSTS);
 		}
 		Team team = (request.teamId() != null) ? this.teams.led(userId, request.teamId()) : null;
 		if (request.type() == MatchPostType.FIND_OPPONENT && team == null) {
@@ -125,7 +125,8 @@ class MatchmakingService {
 			}
 		}
 		if (!startsAt.isAfter(now) || startsAt.isAfter(now.plus(MAX_AHEAD))) {
-			throw badRequest("INVALID_START", "Matches can be posted up to " + MAX_AHEAD.toDays() + " days ahead");
+			throw badRequest("INVALID_START", "Matches can be posted up to " + MAX_AHEAD.toDays() + " days ahead")
+				.with(MAX_AHEAD.toDays());
 		}
 		User creator = user(userId);
 		MatchPost post = this.posts.save(new MatchPost(request.type(), creator, team, request.bookingId(), venue, city,

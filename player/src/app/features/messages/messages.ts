@@ -7,6 +7,7 @@ import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { Booking, ChatMessage, ConversationSummary } from '../../core/api.types';
 import { Badges } from '../../core/badges';
+import { digits, l } from '../../i18n/i18n';
 import { bookingChip } from '../../shared/booking-model';
 import { ago, clockAt, dayLabel, localClock } from '../../shared/format';
 import { StatusChip } from '../../shared/status-chip';
@@ -31,6 +32,8 @@ const POLL_MS = 15_000;
   templateUrl: './messages.html',
 })
 export class Messages {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   private readonly route = inject(ActivatedRoute);
@@ -42,6 +45,8 @@ export class Messages {
   protected readonly icons = { ArrowLeft, CalendarDays, MessageSquare, Search, SendHorizontal };
 
   protected readonly fmt = { ago, dayLabel, localClock };
+
+  protected readonly digits = digits;
 
   protected readonly chip = (booking: Booking) => bookingChip(booking);
 
@@ -57,7 +62,7 @@ export class Messages {
   protected readonly compose = computed(() => {
     const params = this.params();
     const id = params.get('venue');
-    return id ? { id, name: params.get('name') ?? 'the venue', booking: params.get('booking') } : null;
+    return id ? { id, name: params.get('name') ?? l().theVenue, booking: params.get('booking') } : null;
   });
 
   protected readonly selectedId = computed(() => {
@@ -174,7 +179,7 @@ export class Messages {
       return;
     }
     if (!body) {
-      this.sendError.set('Type a message first.');
+      this.sendError.set(l().typeMessageFirst);
       return;
     }
     this.sending.set(true);

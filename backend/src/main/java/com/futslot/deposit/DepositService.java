@@ -78,9 +78,10 @@ public class DepositService {
 	public void requireFull(UUID userId) {
 		BigDecimal balance = this.wallets.lock(userId).map(DepositWallet::getBalance).orElse(BigDecimal.ZERO);
 		if (balance.compareTo(AMOUNT) < 0) {
+			BigDecimal toAdd = AMOUNT.subtract(balance).setScale(0, RoundingMode.CEILING);
 			throw new ApiException(HttpStatus.CONFLICT, "DEPOSIT_REQUIRED",
 					"This venue needs your Rs 1,000 FutSlot booking deposit. Add Rs %,d to your deposit to book"
-						.formatted(AMOUNT.subtract(balance).setScale(0, RoundingMode.CEILING).intValueExact()));
+						.formatted(toAdd.intValueExact()), AMOUNT, toAdd);
 		}
 	}
 
@@ -124,7 +125,8 @@ public class DepositService {
 				: "cancelling booking " + booking.getReference() + " late (" + booking.getCancellationFeePercent()
 						+ "% fee)";
 		this.events.publishEvent(new DepositEvent(DepositEvent.Type.FEE_TAKEN, wallet.getUserId(), taken,
-				wallet.getBalance(), booking.getVenue().getName(), what));
+				wallet.getBalance(), booking.getVenue().getName(), what, booking.getReference(),
+				noShow ? null : booking.getCancellationFeePercent()));
 	}
 
 	// Top-ups, reported and checked like other payments to FutSlot
@@ -134,7 +136,7 @@ public class DepositService {
 	public BigDecimal topUpDue(UUID userId) {
 		if (this.withdrawals.findByUserIdAndStatus(userId, WithdrawalStatus.REQUESTED).isPresent()) {
 			throw new ApiException(HttpStatus.CONFLICT, "WITHDRAWAL_PENDING",
-					"You're taking your deposit back. Cancel that first to top up");
+					"You're taking your deposit back. Cancel that first to top up").variant("topUp");
 		}
 		BigDecimal due = toAdd(userId);
 		if (due.signum() == 0) {

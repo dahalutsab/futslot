@@ -29,12 +29,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import com.futslot.common.Words;
 import com.futslot.support.IntegrationTest;
 import com.futslot.support.RecordingPushSender;
-import com.futslot.support.TestUsers;
 import com.futslot.support.TestUsers.TestUser;
-import com.futslot.support.TestVenues;
+import com.futslot.support.TestUsers;
 import com.futslot.support.TestVenues.TestVenue;
+import com.futslot.support.TestVenues;
+import com.futslot.user.UserService;
 import com.jayway.jsonpath.JsonPath;
 
 @IntegrationTest
@@ -61,6 +63,12 @@ class NotificationFlowTests {
 
 	@Autowired
 	JdbcClient jdbcClient;
+
+	@Autowired
+	UserService userService;
+
+	@Autowired
+	Words words;
 
 	@Autowired
 	JdbcTemplate jdbc;
@@ -178,8 +186,8 @@ class NotificationFlowTests {
 				{"courtId":"%s","startsAt":"%s","endsAt":"%s","customerName":"Remind Player","customerPhone":"%s",
 				 "source":"PHONE","price":1500}""".formatted(venue.courtId(), soon, soon.plusHours(1), phoneOf(player)))
 			.andExpect(status().isCreated()));
-		BookingReminders reminders = new BookingReminders(this.jdbcClient, this.notificationService,
-				Duration.ofHours(2), Clock.systemUTC());
+		BookingReminders reminders = new BookingReminders(this.jdbcClient, this.notificationService, this.userService,
+				this.words, Duration.ofHours(2), Clock.systemUTC());
 
 		assertThat(reminders.run()).isGreaterThanOrEqualTo(1);
 		assertThat(reminders.run()).isZero();

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/venue_card.dart';
 import '../../shared/widgets.dart';
 
@@ -47,7 +48,7 @@ class _FavouritesScreenState extends ConsumerState<FavouritesScreen> {
   Widget build(BuildContext context) {
     final venues = _venues;
     return Scaffold(
-      appBar: AppBar(title: const Text('Saved venues')),
+      appBar: AppBar(title: Text(l.savedVenues)),
       body: ScreenBody(
         maxWidth: 720,
         onRefresh: _load,
@@ -58,8 +59,8 @@ class _FavouritesScreenState extends ConsumerState<FavouritesScreen> {
             const Skeleton(height: 256)
           else if (venues.isEmpty)
             EmptyPanel(
-              title: 'No saved venues',
-              body: 'Tap the heart on a venue you like to find it here.',
+              title: l.noSavedVenues,
+              body: l.noSavedVenuesBody,
               action: FilledButton(onPressed: () => context.go('/'), child: const Text('Find a court')),
             )
           else

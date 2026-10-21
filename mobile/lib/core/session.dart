@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../l10n/l10n.dart';
 import 'api_types.dart';
 import 'config.dart';
 
@@ -64,7 +65,7 @@ final authHttpProvider = Provider<Dio>((ref) => Dio(BaseOptions(
       baseUrl: apiBaseUrl,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 30),
-    )));
+    ))..interceptors.add(languageInterceptor));
 
 final sessionProvider = NotifierProvider<Session, StoredSession?>(Session.new);
 

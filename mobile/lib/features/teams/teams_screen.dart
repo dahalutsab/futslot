@@ -7,6 +7,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/labels.dart';
 import '../../shared/notification_bell.dart';
 import '../../shared/play_nav.dart';
@@ -94,7 +95,7 @@ class _TeamsScreenState extends ConsumerState<TeamsScreen> {
   Future<void> _create() async {
     final name = _name.text.trim();
     if (name.length < 2) {
-      setState(() => _error = 'Give the team a name.');
+      setState(() => _error = l.giveTeamName);
       return;
     }
     FocusScope.of(context).unfocus();
@@ -144,7 +145,7 @@ class _TeamsScreenState extends ConsumerState<TeamsScreen> {
     final joined = teams?.where((team) => team.joined).toList() ?? const [];
     final found = _found;
     return Scaffold(
-      appBar: AppBar(title: const Text('Teams'), actions: const [NotificationBell()]),
+      appBar: AppBar(title: Text(l.teams), actions: const [NotificationBell()]),
       body: ScreenBody(
         maxWidth: 768,
         onRefresh: () async {
@@ -155,7 +156,7 @@ class _TeamsScreenState extends ConsumerState<TeamsScreen> {
           if (_error case final error?) ...[const SizedBox(height: 16), Notice(error)],
           if (invites.isNotEmpty) ...[
             const SizedBox(height: 24),
-            const SectionTitle('Invitations'),
+            SectionTitle(l.invitations),
             for (final team in invites)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
@@ -169,11 +170,11 @@ class _TeamsScreenState extends ConsumerState<TeamsScreen> {
                           child: Text(team.name, style: const TextStyle(fontWeight: FontWeight.w500)),
                         ),
                       ),
-                      FilledButton(onPressed: () => _answer(team, true), child: const Text('Join')),
+                      FilledButton(onPressed: () => _answer(team, true), child: Text(l.join)),
                       TextButton(
                         onPressed: () => _answer(team, false),
                         style: TextButton.styleFrom(foregroundColor: c.muted),
-                        child: const Text('Decline'),
+                        child: Text(l.decline),
                       ),
                     ],
                   ),
@@ -182,11 +183,11 @@ class _TeamsScreenState extends ConsumerState<TeamsScreen> {
           ],
           const SizedBox(height: 24),
           SectionTitle(
-            'Your teams',
+            l.yourTeams,
             action: OutlinedButton.icon(
               onPressed: () => setState(() => _creating = !_creating),
               icon: const Icon(LucideIcons.plus, size: 16),
-              label: const Text('New team'),
+              label: Text(l.newTeam),
             ),
           ),
           if (_creating) ...[
@@ -194,7 +195,7 @@ class _TeamsScreenState extends ConsumerState<TeamsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const FieldLabel('Name'),
+                  FieldLabel(l.name),
                   TextField(
                     controller: _name,
                     maxLength: 60,
@@ -202,7 +203,7 @@ class _TeamsScreenState extends ConsumerState<TeamsScreen> {
                     decoration: const InputDecoration(counterText: ''),
                   ),
                   const SizedBox(height: 12),
-                  const FieldLabel('City'),
+                  FieldLabel(l.city),
                   TextField(
                     controller: _city,
                     maxLength: 60,
@@ -211,7 +212,7 @@ class _TeamsScreenState extends ConsumerState<TeamsScreen> {
                   ),
                   const SizedBox(height: 12),
                   PillChoices(
-                    label: 'Level',
+                    label: l.level,
                     options: [for (final s in SkillLevel.values) (s, s.label)],
                     value: _skill,
                     onChanged: (s) => setState(() => _skill = s),
@@ -220,12 +221,12 @@ class _TeamsScreenState extends ConsumerState<TeamsScreen> {
                     alignment: Alignment.centerLeft,
                     child: FilledButton(
                       onPressed: _busy ? null : _create,
-                      child: BusyLabel(busy: _busy, label: 'Create team', busyLabel: 'Creating…'),
+                      child: BusyLabel(busy: _busy, label: l.createTeam, busyLabel: l.creating),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "You'll be the captain, and can invite players by phone.",
+                    l.youllBeCaptain,
                     style: TextStyle(fontSize: 14, color: c.subtle),
                   ),
                 ],
@@ -237,7 +238,7 @@ class _TeamsScreenState extends ConsumerState<TeamsScreen> {
             const Skeleton(height: 72)
           else if (joined.isEmpty && !_creating)
             Text(
-              "You're not in a team yet. Start one, or ask a captain to invite you.",
+              l.notInTeam,
               style: TextStyle(color: c.muted),
             )
           else
@@ -252,14 +253,14 @@ class _TeamsScreenState extends ConsumerState<TeamsScreen> {
                     leading: TeamBadge(name: team.name),
                     title: Text(team.name, style: const TextStyle(fontWeight: FontWeight.w500)),
                     subtitle: Text(
-                      [count(team.memberCount, 'player'), ?team.myRole?.label].join(' · '),
+                      [l.players(team.memberCount), ?team.myRole?.label].join(' · '),
                       style: TextStyle(fontSize: 14, color: c.muted),
                     ),
                   ),
                 ),
               ),
           const SizedBox(height: 32),
-          const SectionTitle('Find a team'),
+          SectionTitle(l.findATeam),
           Row(
             children: [
               Expanded(
@@ -268,18 +269,18 @@ class _TeamsScreenState extends ConsumerState<TeamsScreen> {
                   textInputAction: TextInputAction.search,
                   onSubmitted: (_) => _search(),
                   decoration: InputDecoration(
-                    hintText: 'Team name',
+                    hintText: l.teamName,
                     prefixIcon: Icon(LucideIcons.search, size: 18, color: c.subtle),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              OutlinedButton(onPressed: _search, child: const Text('Search')),
+              OutlinedButton(onPressed: _search, child: Text(l.search)),
             ],
           ),
           const SizedBox(height: 12),
           if (found != null && found.isEmpty)
-            Text('No public teams found.', style: TextStyle(color: c.muted))
+            Text(l.noPublicTeams, style: TextStyle(color: c.muted))
           else
             for (final team in found ?? const <TeamSummary>[])
               Padding(
@@ -290,7 +291,7 @@ class _TeamsScreenState extends ConsumerState<TeamsScreen> {
                     onTap: () => _open(team.slug),
                     title: Text(team.name, style: const TextStyle(fontWeight: FontWeight.w500)),
                     subtitle: Text(
-                      [?team.city, ?team.skillLevel?.label, count(team.memberCount, 'player')].join(' · '),
+                      [?team.city, ?team.skillLevel?.label, l.players(team.memberCount)].join(' · '),
                       style: TextStyle(fontSize: 14, color: c.muted),
                     ),
                   ),

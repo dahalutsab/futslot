@@ -7,6 +7,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/notification_bell.dart';
 import '../../shared/play_nav.dart';
@@ -88,7 +89,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
     final c = context.fs;
     final posts = _posts;
     return Scaffold(
-      appBar: AppBar(title: const Text('Games'), actions: const [NotificationBell()]),
+      appBar: AppBar(title: Text(l.games_), actions: const [NotificationBell()]),
       body: ScreenBody(
         maxWidth: 768,
         onRefresh: _load,
@@ -100,7 +101,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
             children: [
               Expanded(
                 child: Text(
-                  'Short of players, or looking for a team to play? Post it, or join one.',
+                  l.gamesIntro,
                   style: TextStyle(color: c.muted),
                 ),
               ),
@@ -108,13 +109,13 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
               FilledButton.icon(
                 onPressed: () => _open('/matches/new'),
                 icon: const Icon(LucideIcons.plus, size: 18),
-                label: const Text('Post a game'),
+                label: Text(l.postAGame),
               ),
             ],
           ),
           const SizedBox(height: 16),
           Segmented(
-            options: const [(false, 'Open games'), (true, 'Yours')],
+            options: [(false, l.openGames), (true, l.yours)],
             value: _mine,
             onChanged: (mine) => _filter(() => _mine = mine),
           ),
@@ -125,9 +126,9 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
               runSpacing: 8,
               children: [
                 for (final (type, label) in [
-                  (null, 'All'),
-                  (MatchPostType.needPlayers, 'Players wanted'),
-                  (MatchPostType.findOpponent, 'Opponent wanted'),
+                  (null, l.all),
+                  (MatchPostType.needPlayers, l.playersWanted),
+                  (MatchPostType.findOpponent, l.opponentWanted),
                 ])
                   Pill(label: label, height: 36, selected: _type == type, onTap: () => _filter(() => _type = type)),
               ],
@@ -142,7 +143,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: Pill(
-                        label: switch (i) { 0 => 'Any day', 1 => 'Today', 2 => 'Tomorrow', _ => dayLabel(day!) },
+                        label: switch (i) { 0 => l.anyDay, 1 => l.today, 2 => l.tomorrow, _ => dayLabel(day!) },
                         height: 36,
                         selected: _day == day,
                         onTap: () => _filter(() => _day = day),
@@ -161,8 +162,8 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
             const Skeleton(height: 128),
           ] else if (posts.isEmpty)
             EmptyPanel(
-              title: _mine ? "You haven't posted or joined a game" : 'No open games',
-              body: 'Post one, and players nearby can ask to join.',
+              title: _mine ? l.noPostedGames : l.noOpenGames,
+              body: l.noGamesBody,
             )
           else
             for (final post in posts)
@@ -204,14 +205,14 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
   static String? _standing(MatchPost post) {
     if (post.mine) {
       final asking = post.requests.where((r) => r.status == JoinRequestStatus.pending).length;
-      return asking > 0 ? 'Your post · $asking asking to join' : 'Your post';
+      return asking > 0 ? l.yourPostAsking(asking) : l.yourPost;
     }
     return switch (post.myRequestStatus) {
       null => null,
-      JoinRequestStatus.pending => 'You asked to join',
-      JoinRequestStatus.accepted => "You're in",
-      JoinRequestStatus.declined => 'Not this time',
-      JoinRequestStatus.withdrawn => 'You withdrew',
+      JoinRequestStatus.pending => l.youAskedToJoin,
+      JoinRequestStatus.accepted => l.youreIn,
+      JoinRequestStatus.declined => l.notThisTime,
+      JoinRequestStatus.withdrawn => l.youWithdrew,
     };
   }
 }

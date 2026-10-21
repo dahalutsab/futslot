@@ -12,8 +12,10 @@ import '../../core/api_types.dart';
 import '../../core/config.dart';
 import '../../core/session.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/booking_model.dart';
 import '../../shared/format.dart';
+import '../../shared/labels.dart';
 import '../../shared/widgets.dart';
 import 'plans.dart';
 
@@ -172,16 +174,16 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                '${localClock(slot.startsAt)} on ${court.name} is booked',
+                l.slotBookedOn(localClock(slot.startsAt), court.name),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 4),
               Text(
-                "Wait for it, and we'll tell you if it frees up. Whoever books it first then gets it.",
+                l.waitBody,
                 style: TextStyle(color: c.muted),
               ),
               const SizedBox(height: 16),
-              FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Wait for it')),
+              FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(l.waitForIt)),
             ],
           ),
         ),
@@ -195,7 +197,7 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
       if (mounted) {
         setState(() {
           _waiting = {..._waiting, _slotKey(court.courtId, slot.startsAt)};
-          _waitNote = (courtId: court.courtId, ok: true, text: "We'll tell you if ${localClock(slot.startsAt)} frees up.");
+          _waitNote = (courtId: court.courtId, ok: true, text: l.weWillTellYou(localClock(slot.startsAt)));
         });
       }
     } catch (error) {
@@ -221,7 +223,7 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
         actions: [
           if (venue != null) ...[
             IconButton(
-              tooltip: _saved ? 'Saved' : 'Save',
+              tooltip: _saved ? l.saved_ : l.saveVenue,
               isSelected: _saved,
               onPressed: () => _toggleSaved(venue),
               icon: Icon(LucideIcons.heart, color: context.fs.muted),
@@ -229,7 +231,7 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
             ),
             if (ref.watch(sessionProvider) != null)
               IconButton(
-                tooltip: 'Message',
+                tooltip: l.message,
                 onPressed: () => _message(venue),
                 icon: Icon(LucideIcons.messageSquare, color: context.fs.muted),
               ),
@@ -278,11 +280,11 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
                   Icon(Icons.star_rounded, size: 18, color: c.held.line),
                   const SizedBox(width: 2),
                   Text(
-                    v.averageRating.toStringAsFixed(1),
+                    digits(v.averageRating.toStringAsFixed(1)),
                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, fontFeatures: tabular),
                   ),
                   Text(
-                    ' · ${v.reviewCount} ${v.reviewCount == 1 ? 'review' : 'reviews'}',
+                    ' · ${l.reviews(v.reviewCount)}',
                     style: TextStyle(fontSize: 14, color: c.muted),
                   ),
                 ],
@@ -301,9 +303,9 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
           Text(description, style: TextStyle(color: c.muted)),
         ],
         const SizedBox(height: 32),
-        Text('Book a slot', style: text.titleLarge),
+        Text(l.bookASlot, style: text.titleLarge),
         const SizedBox(height: 12),
-        _DayStrip(days: _days, selected: _day, onPick: _pickDay),
+        DayStrip(days: _days, selected: _day, onPick: _pickDay),
         const SizedBox(height: 4),
         ..._slots(context),
         const SizedBox(height: 32),
@@ -311,7 +313,7 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Booking rules', style: text.titleMedium),
+              Text(l.bookingRules, style: text.titleMedium),
               const SizedBox(height: 8),
               for (final line in policyLines(v.policy)) _Bullet(line),
             ],
@@ -325,7 +327,7 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Amenities', style: text.titleMedium),
+                Text(l.amenities, style: text.titleMedium),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -335,7 +337,7 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(999)),
-                        child: Text(amenity.name, style: const TextStyle(fontSize: 14)),
+                        child: Text(amenityLabel(amenity), style: const TextStyle(fontSize: 14)),
                       ),
                   ],
                 ),
@@ -345,13 +347,13 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
         ],
         VenuePlans(venue: v),
         const SizedBox(height: 32),
-        Text('Reviews', style: text.titleLarge),
+        Text(l.reviewsTitle, style: text.titleLarge),
         const SizedBox(height: 8),
         if (_reviews.isEmpty)
-          Text('No reviews yet. Players can review after they play here.', style: TextStyle(color: c.muted))
+          Text(l.noReviewsYet, style: TextStyle(color: c.muted))
         else ...[
           Text(
-            '${v.averageRating.toStringAsFixed(1)} out of 5 from ${v.reviewCount} ${v.reviewCount == 1 ? 'player' : 'players'}',
+            l.ratingFrom(digits(v.averageRating.toStringAsFixed(1)), l.players(v.reviewCount)),
             style: TextStyle(color: c.muted),
           ),
           const SizedBox(height: 12),
@@ -372,7 +374,7 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
       return [const SizedBox(height: 12), const Skeleton(height: 160)];
     }
     if (availability.courts.isEmpty) {
-      return [const SizedBox(height: 12), Text('No courts are open for booking yet.', style: TextStyle(color: c.muted))];
+      return [const SizedBox(height: 12), Text(l.noCourtsYet, style: TextStyle(color: c.muted))];
     }
     return [
       for (final court in availability.courts) ...[
@@ -380,9 +382,9 @@ class _VenueScreenState extends ConsumerState<VenueScreen> {
         _CourtHeading(court),
         const SizedBox(height: 8),
         if (court.slots.isEmpty)
-          Text('Closed this day.', style: TextStyle(fontSize: 14, color: c.muted))
+          Text(l.closedThisDay, style: TextStyle(fontSize: 14, color: c.muted))
         else if (court.slots.every((slot) => slot.status == SlotStatus.past))
-          Text('No more games today.', style: TextStyle(fontSize: 14, color: c.muted))
+          Text(l.noMoreGamesToday, style: TextStyle(fontSize: 14, color: c.muted))
         else
           GridView.count(
             crossAxisCount: MediaQuery.sizeOf(context).width >= 600 ? 5 : 3,
@@ -477,67 +479,6 @@ class _PhotosState extends State<_Photos> {
   }
 }
 
-class _DayStrip extends StatelessWidget {
-  const _DayStrip({required this.days, required this.selected, required this.onPick});
-
-  final List<String> days;
-  final String? selected;
-  final ValueChanged<String> onPick;
-
-  String _name(String day, int index) =>
-      index == 0 ? 'Today' : index == 1 ? 'Tomorrow' : dayLabel(day).split(' ').first;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.fs;
-    return SizedBox(
-      height: 64,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: days.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final day = days[index];
-          final on = day == selected;
-          return Semantics(
-            selected: on,
-            button: true,
-            child: Material(
-              color: on ? c.ink : c.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(color: on ? c.ink : c.border),
-              ),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: () => onPick(day),
-                child: Container(
-                  constraints: const BoxConstraints(minWidth: 64),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _name(day, index),
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: on ? c.inkFg : c.muted),
-                      ),
-                      Text(
-                        dayLabel(day).split(' ').skip(1).join(' '),
-                        style: TextStyle(fontSize: 12, color: on ? c.inkFg : c.muted, fontFeatures: tabular),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
 class _CourtHeading extends StatelessWidget {
   const _CourtHeading(this.court);
 
@@ -552,7 +493,7 @@ class _CourtHeading extends StatelessWidget {
         style: const TextStyle(fontWeight: FontWeight.w500),
         children: [
           TextSpan(
-            text: ' · ${free == 0 ? 'Fully booked' : '$free free'}',
+            text: ' · ${free == 0 ? l.fullyBooked : l.freeSlots(free)}',
             style: TextStyle(fontWeight: FontWeight.w400, color: context.fs.muted),
           ),
         ],
@@ -577,7 +518,7 @@ class _SlotTile extends StatelessWidget {
     final time = localClock(slot.startsAt);
     if (slot.status == SlotStatus.booked && waiting) {
       return Semantics(
-        label: "$time, booked. You're waiting for it",
+        label: l.slotWaiting(time),
         excludeSemantics: true,
         child: Container(
           decoration: BoxDecoration(
@@ -589,7 +530,7 @@ class _SlotTile extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(time, style: TextStyle(fontWeight: FontWeight.w500, color: c.held.fg, fontFeatures: tabular)),
-              Text('Waiting', style: TextStyle(fontSize: 12, color: c.held.fg)),
+              Text(l.waiting, style: TextStyle(fontSize: 12, color: c.held.fg)),
             ],
           ),
         ),
@@ -597,7 +538,7 @@ class _SlotTile extends StatelessWidget {
     }
     if (slot.status == SlotStatus.booked) {
       return Semantics(
-        label: '$time is booked. Wait for it?',
+        label: l.slotWaitQuestion(time),
         button: true,
         // Excluding the InkWell's semantics drops its tap, so screen readers act through this
         onTap: onWait,
@@ -620,7 +561,7 @@ class _SlotTile extends StatelessWidget {
                     fontFeatures: tabular,
                   ),
                 ),
-                Text('Booked', style: TextStyle(fontSize: 12, color: c.subtle)),
+                Text(l.booked, style: TextStyle(fontSize: 12, color: c.subtle)),
               ],
             ),
           ),
@@ -628,9 +569,9 @@ class _SlotTile extends StatelessWidget {
       );
     }
     if (slot.status != SlotStatus.available) {
-      const why = 'Closed';
+      final why = l.closed;
       return Semantics(
-        label: '$time, $why',
+        label: l.slotClosed(time),
         excludeSemantics: true,
         child: Container(
           decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(8)),
@@ -653,7 +594,7 @@ class _SlotTile extends StatelessWidget {
       );
     }
     return Semantics(
-      label: '$time, ${rupees(slot.price)}. Book',
+      label: l.slotBook(time, rupees(slot.price)),
       button: true,
       onTap: onBook,
       excludeSemantics: true,
@@ -711,7 +652,7 @@ class _Hours extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Opening hours', style: Theme.of(context).textTheme.titleMedium),
+          Text(l.openingHours, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           for (final (index, day) in week.indexed)
             Padding(
@@ -754,7 +695,7 @@ class _ReviewCard extends StatelessWidget {
             children: [
               Expanded(child: Text(review.reviewerName, style: const TextStyle(fontWeight: FontWeight.w500))),
               Semantics(
-                label: '${review.rating} out of 5',
+                label: l.starsOutOfFive(digits(review.rating)),
                 excludeSemantics: true,
                 child: Text(
                   '★' * review.rating + '☆' * (5 - review.rating),
@@ -765,7 +706,7 @@ class _ReviewCard extends StatelessWidget {
           ),
           if (review.comment case final comment?) ...[const SizedBox(height: 8), Text(comment)],
           const SizedBox(height: 8),
-          Text('Played ${dayLabel(review.playedOn)}', style: TextStyle(fontSize: 14, color: c.subtle)),
+          Text(l.playedOn(dayLabel(review.playedOn)), style: TextStyle(fontSize: 14, color: c.subtle)),
           if (review.ownerReply case final reply?) ...[
             const SizedBox(height: 12),
             Container(
@@ -775,7 +716,7 @@ class _ReviewCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('$venueName replied', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                  Text(l.venueReplied(venueName), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                   const SizedBox(height: 2),
                   Text(reply, style: TextStyle(fontSize: 14, color: c.muted)),
                 ],

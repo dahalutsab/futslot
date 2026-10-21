@@ -20,6 +20,8 @@ import com.futslot.booking.BookingResponse;
 import com.futslot.booking.BookingStatus;
 import com.futslot.common.ApiException;
 import com.futslot.common.PhoneNumbers;
+import com.futslot.common.Wording;
+import com.futslot.common.Words;
 import com.futslot.user.User;
 import com.futslot.user.UserRepository;
 
@@ -43,15 +45,18 @@ class SplitService {
 
 	private final ApplicationEventPublisher events;
 
+	private final Words words;
+
 	private final Clock clock;
 
 	SplitService(BookingSplitRepository splits, SplitPlayerRepository players, BookingLookup bookings,
-			UserRepository users, ApplicationEventPublisher events, Clock clock) {
+			UserRepository users, ApplicationEventPublisher events, Words words, Clock clock) {
 		this.splits = splits;
 		this.players = players;
 		this.bookings = bookings;
 		this.users = users;
 		this.events = events;
+		this.words = words;
 		this.clock = clock;
 	}
 
@@ -68,7 +73,9 @@ class SplitService {
 			split.apply(request);
 			return view(booking, split, userId);
 		}
-		split = new BookingSplit(bookingId);
+		// The sides are "Team A" and "Team B" in the booker's language until they name them
+		Wording w = this.words.forRequest();
+		split = new BookingSplit(bookingId, w.get("split.sideA"), w.get("split.sideB"));
 		split.apply(request);
 		split = this.splits.save(split);
 		User booker = this.users.findById(userId).orElseThrow();
@@ -94,7 +101,7 @@ class SplitService {
 		BookingSplit split = split(bookingId);
 		requireNoResult(split);
 		if (this.players.countByBookingId(bookingId) >= MAX_PLAYERS) {
-			throw new ApiException(HttpStatus.CONFLICT, "TOO_MANY_PLAYERS", "A game can have at most " + MAX_PLAYERS + " players");
+			throw new ApiException(HttpStatus.CONFLICT, "TOO_MANY_PLAYERS", "A game can have at most " + MAX_PLAYERS + " players", MAX_PLAYERS);
 		}
 		String phone = (request.phone() != null && !request.phone().isBlank()) ? PhoneNumbers.normalize(request.phone())
 				: null;

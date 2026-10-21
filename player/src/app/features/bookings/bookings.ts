@@ -1,11 +1,12 @@
-import { ChangeDetectionStrategy, Component, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { Booking } from '../../core/api.types';
+import { l } from '../../i18n/i18n';
 import { bookingChip } from '../../shared/booking-model';
-import { dayLabel, localClock, rupees } from '../../shared/format';
+import { calendarParts, dayLabel, localClock, rupees } from '../../shared/format';
 import { StatusChip } from '../../shared/status-chip';
 
 type Scope = 'upcoming' | 'past';
@@ -19,10 +20,10 @@ const PAGE = 20;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
-      <h1 class="text-2xl font-semibold tracking-tight">Your bookings</h1>
+      <h1 class="text-2xl font-semibold tracking-tight">{{ l().yourBookings }}</h1>
 
-      <div class="mt-4 flex gap-1 rounded-lg bg-surface-2 p-1" role="tablist" aria-label="Bookings">
-        @for (option of scopes; track option.value) {
+      <div class="mt-4 flex gap-1 rounded-lg bg-surface-2 p-1" role="tablist" [attr.aria-label]="l().tabBookings">
+        @for (option of scopes(); track option.value) {
           <button type="button" role="tab" [attr.aria-selected]="scope() === option.value" (click)="show(option.value)"
             class="h-10 flex-1 rounded-md font-medium text-muted"
             [class.bg-surface]="scope() === option.value" [class.text-text]="scope() === option.value">{{ option.label }}</button>
@@ -32,15 +33,15 @@ const PAGE = 20;
       @if (error(); as message) {
         <div class="mt-6 rounded-xl border border-border bg-surface px-6 py-10 text-center">
           <p class="text-muted">{{ message }}</p>
-          <button type="button" (click)="load(0)" class="mt-4 h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg">Try again</button>
+          <button type="button" (click)="load(0)" class="mt-4 h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().tryAgain }}</button>
         </div>
       } @else if (bookings(); as list) {
         @if (list.length === 0) {
           <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
-            <p class="font-medium">{{ scope() === 'upcoming' ? 'No games coming up' : 'Nothing here yet' }}</p>
-            <p class="mt-1 text-muted">{{ scope() === 'upcoming' ? 'Find a free court and book it in a minute.' : 'Games you play or cancel show up here.' }}</p>
+            <p class="font-medium">{{ scope() === 'upcoming' ? l().noGamesComingUp : l().nothingHereYet }}</p>
+            <p class="mt-1 text-muted">{{ scope() === 'upcoming' ? l().findCourtPitch : l().pastGamesShowHere }}</p>
             @if (scope() === 'upcoming') {
-              <a routerLink="/" class="mt-4 inline-flex h-11 items-center rounded-lg bg-ink px-5 font-medium text-ink-fg">Find a court</a>
+              <a routerLink="/" class="mt-4 inline-flex h-11 items-center rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().findACourt }}</a>
             }
           </div>
         } @else {
@@ -70,13 +71,13 @@ const PAGE = 20;
             <div class="mt-6 text-center">
               <button type="button" (click)="load(page() + 1)" [disabled]="loading()"
                 class="h-11 rounded-lg border border-border bg-surface px-6 font-medium hover:bg-surface-2 disabled:opacity-60">
-                {{ loading() ? 'Loading…' : 'Show more' }}
+                {{ loading() ? l().loadingMore : l().showMore }}
               </button>
             </div>
           }
         }
       } @else {
-        <div class="mt-6 space-y-3" aria-label="Loading">
+        <div class="mt-6 space-y-3" [attr.aria-label]="l().loading">
           @for (i of [1, 2, 3]; track i) {
             <div class="h-24 animate-pulse rounded-xl bg-surface"></div>
           }
@@ -86,16 +87,18 @@ const PAGE = 20;
   `,
 })
 export class Bookings {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   private readonly router = inject(Router);
 
   protected readonly fmt = { rupees, localClock, dayLabel };
 
-  protected readonly scopes: { value: Scope; label: string }[] = [
-    { value: 'upcoming', label: 'Upcoming' },
-    { value: 'past', label: 'Past' },
-  ];
+  protected readonly scopes = computed<{ value: Scope; label: string }[]>(() => [
+    { value: 'upcoming', label: l().upcoming },
+    { value: 'past', label: l().past },
+  ]);
 
   protected readonly scope = signal<Scope>(inject(ActivatedRoute).snapshot.queryParamMap.get('scope') === 'past' ? 'past' : 'upcoming');
 
@@ -113,8 +116,7 @@ export class Bookings {
 
   /** "Thu", "9", "Oct" for the venue-local day a booking starts. */
   protected dateParts(startsAt: string): { weekday: string; day: string; month: string } {
-    const [weekday, day, month] = dayLabel(startsAt.slice(0, 10)).split(' ');
-    return { weekday, day, month };
+    return calendarParts(startsAt.slice(0, 10));
   }
 
   constructor() {

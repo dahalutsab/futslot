@@ -93,7 +93,18 @@ class SiteFlowTests {
 			.andExpect(content().string(not(containsString("noindex"))));
 		this.mvc.perform(get("/sites/sitewise/robots.txt"))
 			.andExpect(content().string(containsString("Sitemap: https://sitewisefutsal.com/sitemap.xml")));
-		this.mvc.perform(get("/sites/sitewise/sitemap.xml")).andExpect(content().string(containsString("<loc>https://sitewisefutsal.com/</loc>")));
+		this.mvc.perform(get("/sites/sitewise/sitemap.xml"))
+			.andExpect(content().string(containsString("<loc>https://sitewisefutsal.com/</loc>")))
+			.andExpect(content().string(containsString("<loc>https://sitewisefutsal.com/ne/</loc>")))
+			.andExpect(content().string(containsString("<xhtml:link rel=\"alternate\" hreflang=\"ne\" href=\"https://sitewisefutsal.com/ne/\"/>")));
+		// The Nepali page names itself as such, and the English one as the default
+		this.mvc.perform(get("/sites/sitewise/ne"))
+			.andExpect(status().isOk())
+			.andExpect(content().string(containsString("<link rel=\"canonical\" href=\"https://sitewisefutsal.com/ne/\">")))
+			.andExpect(content().string(containsString("<link rel=\"alternate\" hreflang=\"en\" href=\"https://sitewisefutsal.com/\">")))
+			.andExpect(content().string(containsString("<link rel=\"alternate\" hreflang=\"x-default\" href=\"https://sitewisefutsal.com/\">")))
+			.andExpect(content().string(containsString("मा फुटसल | अनलाइन बुक गर्नुहोस्")))
+			.andExpect(content().string(containsString("\"@type\":\"SportsActivityLocation\"")));
 		this.mvc.perform(get("/internal/sites/domain-check").param("domain", "www.sitewisefutsal.com")).andExpect(status().isOk());
 		this.mvc.perform(get("/internal/sites/domain-check").param("domain", "sitewise.localhost")).andExpect(status().isOk());
 		this.mvc.perform(get("/internal/sites/domain-check").param("domain", "evil.example.com")).andExpect(status().isNotFound());
@@ -105,6 +116,11 @@ class SiteFlowTests {
 			.andExpect(content().string(containsString("noindex")))
 			.andExpect(content().string(containsString("--accent: #1d4ed8")))
 			.andExpect(header().string("X-Frame-Options", "SAMEORIGIN"));
+		this.mvc.perform(get("/site-preview/" + venue.slug()).param("template", "turf").param("lang", "ne"))
+			.andExpect(content().string(containsString("<html lang=\"ne\">")))
+			.andExpect(content().string(containsString("कोर्ट र मूल्य")))
+			.andExpect(content().string(containsString("href=\"?template=TURF&amp;lang=ne&amp;date=")))
+			.andExpect(content().string(not(containsString("hreflang=\"x-default\""))));
 
 		send(owner, post(site + "/unpublish"), null).andExpect(jsonPath("$.published").value(false));
 		this.mvc.perform(get("/sites/sitewise")).andExpect(status().isNotFound());
@@ -140,6 +156,8 @@ class SiteFlowTests {
 		this.mvc.perform(get("/site-preview/" + venue.slug()))
 			.andExpect(content().string(containsString("Fridays, 10 PM – 1 AM")))
 			.andExpect(content().string(not(containsString("Fridays, 12 AM – 1 AM"))));
+		this.mvc.perform(get("/site-preview/" + venue.slug()).param("lang", "ne"))
+			.andExpect(content().string(containsString("हरेक शुक्रबार, राति १० बजे – राति १ बजे")));
 	}
 
 	private ResultActions send(TestUser user, MockHttpServletRequestBuilder request, String json) throws Exception {

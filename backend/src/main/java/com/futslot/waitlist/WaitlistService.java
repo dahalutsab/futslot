@@ -82,7 +82,7 @@ class WaitlistService {
 		}
 		if (this.entries.countOpen(userId, now) >= MAX_OPEN) {
 			throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "TOO_MANY_WAITLISTS",
-					"You can wait for " + MAX_OPEN + " slots at a time");
+					"You can wait for " + MAX_OPEN + " slots at a time", MAX_OPEN);
 		}
 		if (entry == null) {
 			entry = this.entries.save(new WaitlistEntry(court, userId, start, slot.endsAt().toInstant()));

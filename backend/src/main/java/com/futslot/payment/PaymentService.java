@@ -114,7 +114,7 @@ class PaymentService {
 		}
 		BigDecimal minimum = booking.getAdvanceRequired().subtract(booking.getPaidAmount()).max(BigDecimal.ZERO);
 		if (request.amount().compareTo(minimum) < 0) {
-			throw badRequest("AMOUNT_TOO_LOW", "Pay at least Rs " + minimum.toPlainString() + " to confirm");
+			throw badRequest("AMOUNT_TOO_LOW", "Pay at least Rs " + minimum.toPlainString() + " to confirm").with(minimum);
 		}
 		validateAmount(booking, request.amount());
 		String transactionId = uniqueTransactionId(request.method(), request.transactionId());
@@ -237,7 +237,7 @@ class PaymentService {
 			throw badRequest("INVALID_METHOD", "Pay with eSewa, Khalti, Fonepay or bank transfer");
 		}
 		if (request.amount().compareTo(plan.getPrice()) != 0) {
-			throw badRequest("AMOUNT_MISMATCH", "This plan costs Rs " + plan.getPrice().toPlainString());
+			throw badRequest("AMOUNT_MISMATCH", "This plan costs Rs " + plan.getPrice().toPlainString()).with(plan.getPrice());
 		}
 		String transactionId = uniqueTransactionId(request.method(), request.transactionId());
 		this.payments.save(Payment.membershipClaimed(membership, userId, request.amount(), request.method(),
@@ -283,7 +283,7 @@ class PaymentService {
 		}
 		BigDecimal fee = entry.getTournament().getEntryFee();
 		if (request.amount().compareTo(fee) != 0) {
-			throw badRequest("AMOUNT_MISMATCH", "The entry fee is Rs " + fee.toPlainString());
+			throw badRequest("AMOUNT_MISMATCH", "The entry fee is Rs " + fee.toPlainString()).with(fee);
 		}
 		String transactionId = uniqueTransactionId(request.method(), request.transactionId());
 		Payment payment = this.payments.save(Payment.entryClaimed(entry, userId, fee, request.method(), transactionId));
@@ -430,7 +430,7 @@ class PaymentService {
 
 	private static void validateAmount(Booking booking, BigDecimal amount) {
 		if (amount.compareTo(booking.amountDue()) > 0) {
-			throw badRequest("AMOUNT_TOO_HIGH", "Only Rs " + booking.amountDue().toPlainString() + " is due");
+			throw badRequest("AMOUNT_TOO_HIGH", "Only Rs " + booking.amountDue().toPlainString() + " is due").with(booking.amountDue());
 		}
 	}
 

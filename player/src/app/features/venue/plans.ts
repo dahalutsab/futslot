@@ -5,6 +5,7 @@ import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { MembershipPlan, PaymentClaim, VenueDetail } from '../../core/api.types';
 import { Session } from '../../core/session';
+import { l } from '../../i18n/i18n';
 import { rupees } from '../../shared/format';
 import { planTerms } from '../../shared/labels';
 import { PayForm } from '../../shared/pay-form';
@@ -17,8 +18,8 @@ import { PayForm } from '../../shared/pay-form';
   template: `
     @if (plans().length) {
       <section class="mt-10" aria-labelledby="plans-title">
-        <h2 id="plans-title" class="text-lg font-semibold">Memberships</h2>
-        <p class="text-muted">Play more, pay less. Use it when you book here.</p>
+        <h2 id="plans-title" class="text-lg font-semibold">{{ l().memberships }}</h2>
+        <p class="text-muted">{{ l().membershipsPitch }}</p>
         <ul class="mt-3 grid gap-3 sm:grid-cols-2">
           @for (plan of plans(); track plan.id) {
             <li class="rounded-xl border border-border bg-surface p-4" [class.sm:col-span-2]="buying() === plan.id">
@@ -27,7 +28,7 @@ import { PayForm } from '../../shared/pay-form';
                   <p class="font-semibold">{{ plan.name }}</p>
                   <p class="text-sm text-muted">{{ terms(plan, plan.validityDays) }}</p>
                 </div>
-                <p class="tabular font-semibold">{{ plan.price > 0 ? rupees(plan.price) : 'Free' }}</p>
+                <p class="tabular font-semibold">{{ plan.price > 0 ? rupees(plan.price) : l().free }}</p>
               </div>
               @if (plan.description) {
                 <p class="mt-2 text-sm text-muted">{{ plan.description }}</p>
@@ -36,18 +37,18 @@ import { PayForm } from '../../shared/pay-form';
                 <div class="mt-4">
                   @if (plan.price > 0) {
                     <fs-pay-form [id]="'plan-' + plan.id" [amount]="plan.price" [instructions]="venue().paymentInstructions"
-                      [busy]="busy()" [error]="error()" label="I've paid" (paidWith)="buy(plan, $event)" />
-                    <p class="mt-2 text-sm text-subtle">{{ venue().name }} checks your payment, then your membership starts.</p>
+                      [busy]="busy()" [error]="error()" [label]="l().iPaid" (paidWith)="buy(plan, $event)" />
+                    <p class="mt-2 text-sm text-subtle">{{ l().membershipChecks(venue().name) }}</p>
                   } @else {
                     @if (error(); as message) {
                       <p class="mb-2 text-danger" role="alert">{{ message }}</p>
                     }
-                    <button type="button" (click)="buy(plan, null)" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Get it</button>
+                    <button type="button" (click)="buy(plan, null)" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ l().getIt }}</button>
                   }
-                  <button type="button" (click)="buying.set(null)" class="mt-2 h-11 px-1 text-sm font-medium text-muted hover:text-text">Not now</button>
+                  <button type="button" (click)="buying.set(null)" class="mt-2 h-11 px-1 text-sm font-medium text-muted hover:text-text">{{ l().notNow }}</button>
                 </div>
               } @else {
-                <button type="button" (click)="start(plan)" class="mt-3 h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Buy</button>
+                <button type="button" (click)="start(plan)" class="mt-3 h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">{{ l().buy }}</button>
               }
             </li>
           }
@@ -57,6 +58,8 @@ import { PayForm } from '../../shared/pay-form';
   `,
 })
 export class VenuePlans {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   private readonly router = inject(Router);

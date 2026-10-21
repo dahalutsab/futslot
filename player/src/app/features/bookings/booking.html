@@ -1,5 +1,5 @@
 <div class="mx-auto max-w-xl px-4 py-6 lg:py-10">
-  <a routerLink="/bookings" class="text-sm text-muted hover:text-text">← Your bookings</a>
+  <a routerLink="/bookings" class="text-sm text-muted hover:text-text">← {{ l().yourBookings }}</a>
 
   @if (error(); as message) {
     <p class="mt-6 rounded-xl border border-border bg-surface px-6 py-10 text-center text-muted">{{ message }}</p>
@@ -7,7 +7,7 @@
     @if (booked() && b.status !== 'CANCELLED') {
       <p class="mt-4 flex items-center gap-2 rounded-lg bg-confirmed-bg px-3 py-2 text-confirmed-fg" role="status">
         <lucide-icon [img]="icons.CircleCheck" [size]="18" />
-        {{ b.status === 'CONFIRMED' ? "Booked. See you on the court!" : 'Booked. Pay the advance below to confirm it.' }}
+        {{ b.status === 'CONFIRMED' ? l().bookedSeeYou : l().bookedPayBelow }}
       </p>
     }
 
@@ -27,10 +27,10 @@
         </p>
       }
       <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
-        <p class="tabular flex-1 whitespace-nowrap text-sm text-subtle">Booking {{ b.reference }}</p>
+        <p class="tabular flex-1 whitespace-nowrap text-sm text-subtle">{{ l().bookingRef(b.reference) }}</p>
         <a routerLink="/messages" [queryParams]="{ venue: b.venue.id, name: b.venue.name, booking: b.id }"
           class="flex h-11 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">
-          <lucide-icon [img]="icons.MessageSquare" [size]="16" /> Message the venue
+          <lucide-icon [img]="icons.MessageSquare" [size]="16" /> {{ l().messageTheVenue }}
         </a>
       </div>
     </section>
@@ -40,45 +40,45 @@
       <section class="mt-4 rounded-xl border p-5" [class]="checking() ? 'border-verify-line bg-verify-bg' : 'border-held-line bg-surface'" aria-labelledby="pay-title">
         @if (checking()) {
           <h2 id="pay-title" class="flex items-center gap-2 font-semibold text-verify-fg">
-            <lucide-icon [img]="icons.Wallet" [size]="18" /> Payment sent
+            <lucide-icon [img]="icons.Wallet" [size]="18" /> {{ l().paymentSent }}
           </h2>
-          <p class="mt-1 text-verify-fg">{{ b.venue.name }} is checking it. Your slot is held meanwhile, and we'll let you know when it's confirmed.</p>
+          <p class="mt-1 text-verify-fg">{{ l().venueChecking(b.venue.name) }}</p>
         } @else if (canPay()) {
-          <h2 id="pay-title" class="font-semibold">Pay {{ fmt.rupees(b.advanceRequired - b.paidAmount) }} to confirm</h2>
+          <h2 id="pay-title" class="font-semibold">{{ l().payToConfirm(fmt.rupees(b.advanceRequired - b.paidAmount)) }}</h2>
           <p class="mt-1 flex items-center gap-1.5 text-held-fg">
             <lucide-icon [img]="icons.Clock" [size]="16" />
-            <span>Held for {{ minutesLeft() }} more {{ minutesLeft() === 1 ? 'minute' : 'minutes' }}, until <span class="tabular">{{ fmt.clockAt(b.holdExpiresAt!, venue()?.timezone ?? 'Asia/Kathmandu') }}</span>.</span>
+            <span class="tabular">{{ l().heldFor(minutesLeft(), fmt.clockAt(b.holdExpiresAt!, venue()?.timezone ?? 'Asia/Kathmandu')) }}</span>
           </p>
           <div class="mt-4">
             <fs-pay-form id="advance" [amount]="b.totalAmount - b.paidAmount" [minimum]="b.advanceRequired - b.paidAmount"
               [instructions]="payments()?.paymentInstructions ?? venue()?.paymentInstructions ?? null"
-              [busy]="paying()" [error]="payError()" label="I've paid" (paidWith)="pay($event)" />
+              [busy]="paying()" [error]="payError()" [label]="l().iPaid" (paidWith)="pay($event)" />
           </div>
-          <p class="mt-3 text-sm text-subtle">Pay the venue directly, then tell us the transaction ID. The venue checks it and confirms your booking.</p>
+          <p class="mt-3 text-sm text-subtle">{{ l().payDirectly }}</p>
         } @else {
-          <h2 id="pay-title" class="font-semibold">The time to pay has run out</h2>
-          <p class="mt-1 text-muted">The slot may have gone to someone else. Book again if it's still free.</p>
+          <h2 id="pay-title" class="font-semibold">{{ l().timeToPayRanOut }}</h2>
+          <p class="mt-1 text-muted">{{ l().slotMayBeGone }}</p>
           <a [routerLink]="['/venues', b.venue.slug]" [queryParams]="{ date: b.startsAt.slice(0, 10) }"
-            class="mt-3 inline-flex h-11 items-center rounded-lg bg-ink px-5 font-medium text-ink-fg">See free slots</a>
+            class="mt-3 inline-flex h-11 items-center rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().seeFreeSlots }}</a>
         }
       </section>
     }
 
     <!-- Money -->
     <section class="mt-4 rounded-xl border border-border bg-surface p-5" aria-labelledby="money-title">
-      <h2 id="money-title" class="font-semibold">Payment</h2>
+      <h2 id="money-title" class="font-semibold">{{ l().payment }}</h2>
       <dl class="mt-2 space-y-1">
-        <div class="flex justify-between"><dt class="text-muted">Court</dt><dd class="tabular">{{ fmt.rupees(b.priceAmount) }}</dd></div>
+        <div class="flex justify-between"><dt class="text-muted">{{ l().court }}</dt><dd class="tabular">{{ fmt.rupees(b.priceAmount) }}</dd></div>
         @for (line of b.addOns; track line.itemId) {
-          <div class="flex justify-between"><dt class="text-muted">{{ line.quantity }} × {{ line.name }}</dt><dd class="tabular">{{ fmt.rupees(line.quantity * line.unitPrice) }}</dd></div>
+          <div class="flex justify-between"><dt class="text-muted">{{ l().lineItem(line.quantity, line.name) }}</dt><dd class="tabular">{{ fmt.rupees(line.quantity * line.unitPrice) }}</dd></div>
         }
         @if (b.discountAmount > 0) {
-          <div class="flex justify-between"><dt class="text-muted">Discount</dt><dd class="tabular text-confirmed-fg">−{{ fmt.rupees(b.discountAmount) }}</dd></div>
+          <div class="flex justify-between"><dt class="text-muted">{{ l().discount }}</dt><dd class="tabular text-confirmed-fg">−{{ fmt.rupees(b.discountAmount) }}</dd></div>
         }
-        <div class="flex justify-between border-t border-border pt-2 font-semibold"><dt>Total</dt><dd class="tabular">{{ fmt.rupees(b.totalAmount) }}</dd></div>
-        <div class="flex justify-between"><dt class="text-muted">Paid</dt><dd class="tabular">{{ fmt.rupees(b.paidAmount) }}</dd></div>
+        <div class="flex justify-between border-t border-border pt-2 font-semibold"><dt>{{ l().total }}</dt><dd class="tabular">{{ fmt.rupees(b.totalAmount) }}</dd></div>
+        <div class="flex justify-between"><dt class="text-muted">{{ l().paid }}</dt><dd class="tabular">{{ fmt.rupees(b.paidAmount) }}</dd></div>
         @if (b.status === 'CONFIRMED' || b.status === 'PENDING_PAYMENT') {
-          <div class="flex justify-between"><dt class="text-muted">At the venue</dt><dd class="tabular">{{ fmt.rupees(atVenue()) }}</dd></div>
+          <div class="flex justify-between"><dt class="text-muted">{{ l().atTheVenue }}</dt><dd class="tabular">{{ fmt.rupees(atVenue()) }}</dd></div>
         }
       </dl>
       @if (payments(); as p) {
@@ -87,8 +87,7 @@
             @for (payment of p.payments; track payment.id) {
               <li class="flex justify-between gap-3">
                 <span class="text-muted">
-                  {{ fmt.methodLabel(payment.method) }}
-                  {{ payment.status === 'PENDING' ? '· being checked' : payment.status === 'FAILED' ? '· not received' : payment.status === 'SUCCEEDED' ? '' : '· ' + payment.status.toLowerCase() }}
+                  {{ fmt.methodLabel(payment.method) }}{{ paymentState(payment.status) ? ' · ' + paymentState(payment.status) : '' }}
                   @if (payment.failureReason) { <span class="block text-danger">{{ payment.failureReason }}</span> }
                 </span>
                 <span class="tabular">{{ fmt.rupees(payment.amount) }}</span>
@@ -100,7 +99,7 @@
           <ul class="mt-3 space-y-1 border-t border-border pt-3 text-sm">
             @for (refund of p.refunds; track refund.id) {
               <li class="flex justify-between gap-3">
-                <span class="text-muted">Refund by {{ fmt.methodLabel(refund.originalMethod) }} · {{ refund.status === 'SUCCEEDED' ? 'sent' : 'on its way' }}</span>
+                <span class="text-muted">{{ l().refundBy(fmt.methodLabel(refund.originalMethod), refund.status === 'SUCCEEDED' ? l().refundSent : l().refundOnItsWay) }}</span>
                 <span class="tabular">{{ fmt.rupees(refund.amount) }}</span>
               </li>
             }
@@ -112,26 +111,26 @@
     @if (b.status === 'CONFIRMED' || b.status === 'PENDING_PAYMENT' || b.status === 'COMPLETED') {
       <a [routerLink]="['/bookings', b.id, 'split']" class="mt-4 flex min-h-14 items-center gap-3 rounded-xl border border-border bg-surface px-5 py-3 hover:border-subtle">
         <lucide-icon [img]="icons.Users" [size]="20" class="text-muted" />
-        <span class="min-w-0 flex-1"><span class="block font-medium">Split the cost</span><span class="block text-sm text-muted">Share it equally, or baazi: the losers pay</span></span>
+        <span class="min-w-0 flex-1"><span class="block font-medium">{{ l().splitTheCost }}</span><span class="block text-sm text-muted">{{ l().splitTheCostDetail }}</span></span>
         <span aria-hidden="true" class="text-subtle">›</span>
       </a>
     }
 
     @if (b.notes) {
       <section class="mt-4 rounded-xl border border-border bg-surface p-5">
-        <h2 class="font-semibold">Your note</h2>
+        <h2 class="font-semibold">{{ l().yourNote }}</h2>
         <p class="mt-1 whitespace-pre-line text-muted">{{ b.notes }}</p>
       </section>
     }
 
     @if (b.status === 'CANCELLED') {
       <section class="mt-4 rounded-xl border border-border bg-surface p-5">
-        <h2 class="font-semibold">Cancelled</h2>
+        <h2 class="font-semibold">{{ l().cancelled }}</h2>
         <p class="mt-1 text-muted">
           @if (b.cancellationFeePercent > 0) {
-            Cancelled late, so the venue kept its {{ b.cancellationFeePercent }}% fee@if (b.depositBacked) {, with any part your advance didn't cover taken from your deposit}.
+            {{ b.depositBacked ? l().cancelledLateDeposit(b.cancellationFeePercent) : l().cancelledLate(b.cancellationFeePercent) }}
           } @else {
-            Anything you paid comes back to you.
+            {{ l().cancelledRefund }}
           }
           @if (b.cancellationReason) { <span class="block mt-1">“{{ b.cancellationReason }}”</span> }
         </p>
@@ -143,28 +142,28 @@
       <section id="review" class="mt-4 scroll-mt-20 rounded-xl border border-border bg-surface p-5" aria-labelledby="review-title">
         @let r = review();
         @if (r && !editingReview()) {
-          <h2 id="review-title" class="font-semibold">Your review</h2>
-          <p class="mt-1 text-held-line" [attr.aria-label]="r.rating + ' out of 5'">{{ '★'.repeat(r.rating) }}{{ '☆'.repeat(5 - r.rating) }}</p>
+          <h2 id="review-title" class="font-semibold">{{ l().yourReview }}</h2>
+          <p class="mt-1 text-held-line" [attr.aria-label]="l().starsOutOfFive(r.rating)">{{ '★'.repeat(r.rating) }}{{ '☆'.repeat(5 - r.rating) }}</p>
           @if (r.comment) {
             <p class="mt-1 whitespace-pre-line">{{ r.comment }}</p>
           }
           @if (r.ownerReply) {
             <div class="mt-3 rounded-lg bg-surface-2 px-3 py-2 text-sm">
-              <p class="font-medium">{{ b.venue.name }} replied</p>
+              <p class="font-medium">{{ l().venueReplied(b.venue.name) }}</p>
               <p class="mt-0.5 whitespace-pre-line text-muted">{{ r.ownerReply }}</p>
             </div>
           }
           <div class="mt-3 flex gap-2">
-            <button type="button" (click)="editingReview.set(true)" class="h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Edit</button>
-            <button type="button" (click)="deleteReview()" [disabled]="reviewBusy()" class="h-11 rounded-lg px-4 font-medium text-danger hover:bg-danger-bg">Delete</button>
+            <button type="button" (click)="editingReview.set(true)" class="h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">{{ l().edit }}</button>
+            <button type="button" (click)="deleteReview()" [disabled]="reviewBusy()" class="h-11 rounded-lg px-4 font-medium text-danger hover:bg-danger-bg">{{ l().delete }}</button>
           </div>
         } @else {
-          <h2 id="review-title" class="font-semibold">{{ r ? 'Edit your review' : 'How was ' + b.venue.name + '?' }}</h2>
-          <p class="mb-3 text-sm text-muted">Other players see it with your first name and last initial.</p>
-          <fs-review-form [initial]="r ? { rating: r.rating, comment: r.comment ?? undefined } : null" [label]="r ? 'Save' : 'Post review'"
+          <h2 id="review-title" class="font-semibold">{{ r ? l().editYourReview : l().howWasVenue(b.venue.name) }}</h2>
+          <p class="mb-3 text-sm text-muted">{{ l().reviewShownAs }}</p>
+          <fs-review-form [initial]="r ? { rating: r.rating, comment: r.comment ?? undefined } : null" [label]="r ? l().save : l().postReview"
             [busy]="reviewBusy()" [error]="reviewError()" (saved)="saveReview($event)">
             @if (r) {
-              <button type="button" (click)="editingReview.set(false)" class="h-11 rounded-lg px-4 font-medium">Cancel</button>
+              <button type="button" (click)="editingReview.set(false)" class="h-11 rounded-lg px-4 font-medium">{{ l().cancel }}</button>
             }
           </fs-review-form>
         }
@@ -175,19 +174,19 @@
     @if (canCancel()) {
       @if (cancelOpen()) {
         <section class="mt-4 rounded-xl border border-noshow-line bg-noshow-bg p-5 text-noshow-fg" aria-labelledby="cancel-title">
-          <h2 id="cancel-title" class="font-semibold">Cancel this booking?</h2>
+          <h2 id="cancel-title" class="font-semibold">{{ l().cancelThisBooking }}</h2>
           @if (outcome(); as o) {
             <p class="mt-1">
               @if (o.feePercent === 0) {
-                It's free to cancel now.{{ b.paidAmount > 0 ? ' You get ' + fmt.rupees(o.refund) + ' back.' : '' }}
+                {{ l().freeToCancel }}{{ b.paidAmount > 0 ? ' ' + l().youGetBack(fmt.rupees(o.refund)) : '' }}
               } @else {
-                Cancelling now costs {{ o.feePercent }}% of the price ({{ fmt.rupees(o.fee) }}).
-                {{ o.kept > 0 ? 'The venue keeps ' + fmt.rupees(o.kept) + ' of what you paid' + (o.refund > 0 ? ' and you get ' + fmt.rupees(o.refund) + ' back' : '') + '.' : '' }}
-                {{ o.fromDeposit > 0 ? 'Up to ' + fmt.rupees(o.fromDeposit) + ' more comes out of your FutSlot deposit.' : '' }}
+                {{ l().cancelCosts(o.feePercent, fmt.rupees(o.fee)) }}
+                {{ o.kept > 0 ? (o.refund > 0 ? l().venueKeepsRefund(fmt.rupees(o.kept), fmt.rupees(o.refund)) : l().venueKeeps(fmt.rupees(o.kept))) : '' }}
+                {{ o.fromDeposit > 0 ? l().fromDeposit(fmt.rupees(o.fromDeposit)) : '' }}
               }
             </p>
           }
-          <label for="reason" class="mt-3 block font-medium">Why? <span class="font-normal opacity-80">(optional)</span></label>
+          <label for="reason" class="mt-3 block font-medium">{{ l().why }} <span class="font-normal opacity-80">{{ l().optional }}</span></label>
           <input id="reason" name="reason" type="text" maxlength="500" class="mt-1 h-11 w-full rounded-lg border border-border bg-surface px-3 text-base text-text"
             [ngModel]="reason()" (ngModelChange)="reason.set($event)" />
           @if (cancelError(); as message) {
@@ -195,15 +194,15 @@
           }
           <div class="mt-3 flex gap-2">
             <button type="button" (click)="cancel()" [disabled]="cancelling()"
-              class="h-11 flex-1 rounded-lg bg-danger font-medium text-white disabled:opacity-60">{{ cancelling() ? 'Cancelling…' : 'Cancel booking' }}</button>
-            <button type="button" (click)="cancelOpen.set(false)" class="h-11 rounded-lg bg-surface px-4 font-medium text-text">Keep it</button>
+              class="h-11 flex-1 rounded-lg bg-danger font-medium text-white disabled:opacity-60">{{ cancelling() ? l().cancelling : l().cancelBooking }}</button>
+            <button type="button" (click)="cancelOpen.set(false)" class="h-11 rounded-lg bg-surface px-4 font-medium text-text">{{ l().keepIt }}</button>
           </div>
         </section>
       } @else {
-        <button type="button" (click)="cancelOpen.set(true)" class="mt-4 h-12 w-full rounded-lg font-medium text-danger hover:bg-danger-bg">Cancel booking</button>
+        <button type="button" (click)="cancelOpen.set(true)" class="mt-4 h-12 w-full rounded-lg font-medium text-danger hover:bg-danger-bg">{{ l().cancelBooking }}</button>
       }
     }
   } @else {
-    <div class="mt-4 h-48 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+    <div class="mt-4 h-48 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
   }
 </div>

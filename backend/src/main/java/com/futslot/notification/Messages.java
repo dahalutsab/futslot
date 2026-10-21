@@ -9,7 +9,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.Locale;
 
-/** Wording of user-facing notifications, kept in one place for review and later translation. */
+import com.futslot.common.TextFormat;
+import com.futslot.common.Wording;
+
+/**
+ * How notifications write times, days and money. Those to players take their {@link Wording}: in English as
+ * always, in Nepali the way the apps write them (see {@link TextFormat}). Those to venue staff stay in English.
+ */
 final class Messages {
 
 	private static final DateTimeFormatter WHEN = DateTimeFormatter.ofPattern("EEE d MMM, HH:mm", Locale.ENGLISH);
@@ -43,6 +49,38 @@ final class Messages {
 	static String weekly(DayOfWeek day, LocalTime start, LocalTime end) {
 		String name = day.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
 		return name + "s " + start + "-" + end;
+	}
+
+	/** "Fri 9 Oct, 18:00"; "शुक्र, २३ आश्विन, बेलुका ६ बजे" in Nepali. */
+	static String when(OffsetDateTime time, Wording words) {
+		return words.nepali() ? words.format().day(time.toLocalDate()) + ", " + words.format().clock(time.toLocalTime())
+				: when(time);
+	}
+
+	/** "18:00"; "बेलुका ६ बजे" in Nepali. */
+	static String time(OffsetDateTime time, Wording words) {
+		return words.nepali() ? words.format().clock(time.toLocalTime()) : time(time);
+	}
+
+	/** "9 Oct"; "२३ आश्विन" in Nepali. */
+	static String day(LocalDate date, Wording words) {
+		return words.nepali() ? words.format().dayMonth(date) : day(date);
+	}
+
+	/** "Fri 9 Oct"; "शुक्र, २३ आश्विन" in Nepali. */
+	static String date(LocalDate date, Wording words) {
+		return words.nepali() ? words.format().day(date) : date(date);
+	}
+
+	/** "Fridays 19:00-20:00"; "हरेक शुक्रबार बेलुका ७ बजे – राति ८ बजे" in Nepali. */
+	static String weekly(DayOfWeek day, LocalTime start, LocalTime end, Wording words) {
+		return words.nepali() ? "हरेक " + words.format().weekday(day) + " " + words.format().span(start, end)
+				: weekly(day, start, end);
+	}
+
+	/** "Rs 1200"; "रु १,२००" in Nepali. */
+	static String rupees(BigDecimal amount, Wording words) {
+		return words.nepali() ? words.format().rupees(amount) : rupees(amount);
 	}
 
 	/** The start of a player-written text, cut at a word boundary. */

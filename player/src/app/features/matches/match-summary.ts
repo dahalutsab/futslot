@@ -2,8 +2,9 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { MapPin, LucideAngularModule, Users } from 'lucide-angular';
 
 import { MatchPost } from '../../core/api.types';
+import { l } from '../../i18n/i18n';
 import { dayLabel, localClock, rupees } from '../../shared/format';
-import { SKILL } from '../../shared/labels';
+import { skillLabels } from '../../shared/labels';
 
 /** What a game post asks for, where and when: shared by the list and the post's page. */
 @Component({
@@ -14,54 +15,56 @@ import { SKILL } from '../../shared/labels';
     @let p = post();
     <div class="flex flex-wrap items-center gap-2">
       <span class="rounded-full px-2 py-0.5 text-xs font-medium" [class]="p.type === 'NEED_PLAYERS' ? 'bg-confirmed-bg text-confirmed-fg' : 'bg-tournament-bg text-tournament-fg'">
-        {{ p.type === 'NEED_PLAYERS' ? 'Players wanted' : 'Opponent wanted' }}
+        {{ p.type === 'NEED_PLAYERS' ? l().playersWanted : l().opponentWanted }}
       </span>
       @if (p.status !== 'OPEN') {
         <span class="rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-muted">{{ status() }}</span>
       }
       @if (p.skillLevel) {
-        <span class="text-xs text-muted">{{ skill[p.skillLevel] }}</span>
+        <span class="text-xs text-muted">{{ skill()[p.skillLevel] }}</span>
       }
     </div>
     <p class="mt-2 text-lg font-semibold">{{ headline() }}</p>
     <p class="tabular text-muted">{{ fmt.dayLabel(p.startsAt.slice(0, 10)) }} · {{ fmt.localClock(p.startsAt) }}</p>
     <p class="mt-1 flex items-center gap-1 text-sm text-muted">
-      <lucide-icon [img]="icons.MapPin" [size]="14" />{{ p.venue?.name ?? p.city ?? 'Place to be agreed' }}
+      <lucide-icon [img]="icons.MapPin" [size]="14" />{{ p.venue?.name ?? p.city ?? l().placeToBeAgreed }}
     </p>
     <p class="mt-1 flex items-center gap-1 text-sm text-muted">
       <lucide-icon [img]="icons.Users" [size]="14" />{{ p.team ? p.team.name : p.postedBy.name }}
-      @if (p.costPerPlayer) { · <span class="tabular">{{ fmt.rupees(p.costPerPlayer) }} each</span> }
+      @if (p.costPerPlayer) { · <span class="tabular">{{ l().priceEach(fmt.rupees(p.costPerPlayer)) }}</span> }
     </p>
   `,
 })
 export class MatchSummary {
+  protected readonly l = l;
+
   readonly post = input.required<MatchPost>();
 
   protected readonly icons = { MapPin, Users };
 
   protected readonly fmt = { dayLabel, localClock, rupees };
 
-  protected readonly skill = SKILL;
+  protected readonly skill = skillLabels;
 
   protected readonly headline = computed(() => {
     const p = this.post();
     if (p.type === 'FIND_OPPONENT') {
-      return `${p.team?.name ?? p.postedBy.name} want a game`;
+      return l().teamWantsGame(p.team?.name ?? p.postedBy.name);
     }
     const left = Math.max(0, (p.playersNeeded ?? 0) - p.placesTaken);
-    return left === 0 ? 'Full' : `${left} ${left === 1 ? 'player' : 'players'} needed`;
+    return left === 0 ? l().full : l().playersNeededCount(left);
   });
 
   protected readonly status = computed(() => {
     switch (this.post().status) {
       case 'FILLED':
-        return 'Full';
+        return l().full;
       case 'CANCELLED':
-        return 'Called off';
+        return l().postCalledOff;
       case 'EXPIRED':
-        return 'Over';
+        return l().postOver;
       default:
-        return 'Open';
+        return l().postOpen;
     }
   });
 }

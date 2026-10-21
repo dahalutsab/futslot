@@ -10,6 +10,7 @@ import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/badges.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/notification_bell.dart';
 import '../../shared/widgets.dart';
@@ -96,7 +97,7 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> with WidgetsBin
     final term = _filter.text.trim().toLowerCase();
     final shown = term.isEmpty ? list : list?.where((conversation) => conversation.venueName.toLowerCase().contains(term)).toList();
     return Scaffold(
-      appBar: AppBar(title: const Text('Messages'), actions: const [NotificationBell()]),
+      appBar: AppBar(title: Text(l.messages), actions: const [NotificationBell()]),
       body: ScreenBody(
         maxWidth: 720,
         onRefresh: _load,
@@ -106,7 +107,7 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> with WidgetsBin
               controller: _filter,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                hintText: 'Find a venue',
+                hintText: l.findAVenue,
                 prefixIcon: Icon(LucideIcons.search, size: 18, color: c.subtle),
               ),
             ),
@@ -117,14 +118,18 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> with WidgetsBin
           else if (shown == null)
             const Skeleton(height: 168)
           else if (list!.isEmpty)
-            const EmptyPanel(
-              title: 'No messages yet',
-              body: 'Ask a venue about courts, a booking or anything else: tap Message on its page or on your booking.',
+            EmptyPanel(
+              title: l.noMessagesYet,
+              body: l.noMessagesBody,
             )
           else if (shown.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 32),
-              child: Text('Nobody matches "${_filter.text.trim()}".', textAlign: TextAlign.center, style: TextStyle(color: c.muted)),
+              child: Text(
+                l.nobodyMatches(_filter.text.trim()),
+                textAlign: TextAlign.center,
+                style: TextStyle(color: c.muted),
+              ),
             )
           else
             FsCard(
@@ -202,13 +207,13 @@ class _ConversationRow extends StatelessWidget {
                       if (unread) ...[
                         const SizedBox(width: 8),
                         Semantics(
-                          label: '${conversation.unread} unread',
+                          label: l.unreadCount(conversation.unread),
                           excludeSemantics: true,
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             decoration: BoxDecoration(color: c.ink, borderRadius: BorderRadius.circular(999)),
                             child: Text(
-                              '${conversation.unread}',
+                              digits(conversation.unread),
                               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: c.inkFg, fontFeatures: tabular),
                             ),
                           ),

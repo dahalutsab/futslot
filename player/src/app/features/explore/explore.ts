@@ -6,6 +6,7 @@ import { LucideAngularModule, Search } from 'lucide-angular';
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { VenueSummary } from '../../core/api.types';
+import { l } from '../../i18n/i18n';
 import { VenueCard } from '../../shared/venue-card';
 
 /** Finding a venue: search by name or area, narrow to a city, and featured venues first. */
@@ -15,24 +16,24 @@ import { VenueCard } from '../../shared/venue-card';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-6xl px-4 py-6 lg:px-8 lg:py-10">
-      <h1 class="text-2xl font-semibold tracking-tight lg:text-3xl">Book a futsal court</h1>
-      <p class="mt-1 text-muted">Free slots and prices at venues near you. Pay the advance with eSewa or Khalti.</p>
+      <h1 class="text-2xl font-semibold tracking-tight lg:text-3xl">{{ l().exploreTitle }}</h1>
+      <p class="mt-1 text-muted">{{ l().exploreSubtitle }}</p>
 
       <form class="mt-5 flex gap-2" role="search" (ngSubmit)="search()">
-        <label for="q" class="sr-only">Venue name or area</label>
+        <label for="q" class="sr-only">{{ l().venueSearchHint }}</label>
         <div class="flex h-12 min-w-0 flex-1 items-center gap-2 rounded-lg border border-border bg-surface px-3 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring">
           <lucide-icon [img]="icons.Search" [size]="18" class="text-subtle" />
-          <input id="q" name="q" type="search" placeholder="Venue name or area" autocomplete="off"
+          <input id="q" name="q" type="search" [placeholder]="l().venueSearchHint" autocomplete="off"
             class="h-full min-w-0 flex-1 bg-transparent text-base outline-none" [ngModel]="query()" (ngModelChange)="query.set($event)" />
         </div>
-        <button type="submit" class="h-12 rounded-lg bg-ink px-5 font-medium text-ink-fg">Search</button>
+        <button type="submit" class="h-12 rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().search }}</button>
       </form>
 
       @if (cities().length > 1) {
-        <div class="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]" role="group" aria-label="City">
+        <div class="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]" role="group" [attr.aria-label]="l().city">
           <button type="button" (click)="pickCity(null)" [attr.aria-pressed]="city() === null"
             class="h-9 shrink-0 rounded-full border px-4 text-sm font-medium"
-            [class]="city() === null ? 'border-ink bg-ink text-ink-fg' : 'border-border bg-surface text-muted hover:text-text'">All cities</button>
+            [class]="city() === null ? 'border-ink bg-ink text-ink-fg' : 'border-border bg-surface text-muted hover:text-text'">{{ l().allCities }}</button>
           @for (name of cities(); track name) {
             <button type="button" (click)="pickCity(name)" [attr.aria-pressed]="city() === name"
               class="h-9 shrink-0 rounded-full border px-4 text-sm font-medium"
@@ -43,7 +44,7 @@ import { VenueCard } from '../../shared/venue-card';
 
       @if (featured().length && !filtered()) {
         <section class="mt-8" aria-labelledby="featured-title">
-          <h2 id="featured-title" class="text-lg font-semibold">Featured</h2>
+          <h2 id="featured-title" class="text-lg font-semibold">{{ l().featured }}</h2>
           <ul class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @for (venue of featured(); track venue.id) {
               <li><fs-venue-card [venue]="venue" /></li>
@@ -54,18 +55,18 @@ import { VenueCard } from '../../shared/venue-card';
 
       <section class="mt-8" aria-labelledby="venues-title">
         <h2 id="venues-title" class="text-lg font-semibold">
-          {{ filtered() ? (total() === 1 ? '1 venue' : total() + ' venues') : 'All venues' }}
+          {{ filtered() ? l().venueCount(total()) : l().allVenues }}
         </h2>
         @if (error(); as message) {
           <div class="mt-3 rounded-xl border border-border bg-surface px-6 py-10 text-center">
             <p class="text-muted">{{ message }}</p>
-            <button type="button" (click)="load(0)" class="mt-4 h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg">Try again</button>
+            <button type="button" (click)="load(0)" class="mt-4 h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().tryAgain }}</button>
           </div>
         } @else if (venues(); as list) {
           @if (list.length === 0) {
             <div class="mt-3 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
-              <p class="font-medium">No venues found</p>
-              <p class="mt-1 text-muted">Try another name or area, or all cities.</p>
+              <p class="font-medium">{{ l().noVenuesFound }}</p>
+              <p class="mt-1 text-muted">{{ l().noVenuesFoundBody }}</p>
             </div>
           } @else {
             <ul class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -77,13 +78,13 @@ import { VenueCard } from '../../shared/venue-card';
               <div class="mt-6 text-center">
                 <button type="button" (click)="load(page() + 1)" [disabled]="loading()"
                   class="h-11 rounded-lg border border-border bg-surface px-6 font-medium hover:bg-surface-2 disabled:opacity-60">
-                  {{ loading() ? 'Loading…' : 'Show more venues' }}
+                  {{ loading() ? l().loadingMore : l().showMoreVenues }}
                 </button>
               </div>
             }
           }
         } @else {
-          <ul class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Loading">
+          <ul class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" [attr.aria-label]="l().loading">
             @for (i of [1, 2, 3]; track i) {
               <li class="h-64 animate-pulse rounded-xl bg-surface"></li>
             }
@@ -94,6 +95,8 @@ import { VenueCard } from '../../shared/venue-card';
   `,
 })
 export class Explore {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   private readonly router = inject(Router);

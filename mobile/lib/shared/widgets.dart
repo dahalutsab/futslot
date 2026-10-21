@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
+import '../l10n/l10n.dart';
+import 'format.dart';
 
 /// A bordered surface, the app's basic block. [color] tints it for a state (held, being checked...).
 class FsCard extends StatelessWidget {
@@ -56,10 +58,12 @@ class ScreenBody extends StatelessWidget {
 
 /// A placeholder block while something loads.
 class Skeleton extends StatefulWidget {
-  const Skeleton({super.key, this.height = 96, this.label = 'Loading'});
+  const Skeleton({super.key, this.height = 96, this.label});
 
   final double height;
-  final String label;
+
+  /// Read out while it shows; "Loading" unless set.
+  final String? label;
 
   @override
   State<Skeleton> createState() => _SkeletonState();
@@ -78,7 +82,7 @@ class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: widget.label,
+      label: widget.label ?? l.loading,
       child: FadeTransition(
         opacity: Tween(begin: 0.5, end: 1.0).animate(_pulse),
         child: Container(
@@ -106,7 +110,7 @@ class ErrorPanel extends StatelessWidget {
           Text(message, textAlign: TextAlign.center, style: TextStyle(color: context.fs.muted)),
           if (onRetry != null) ...[
             const SizedBox(height: 16),
-            FilledButton(onPressed: onRetry, child: const Text('Try again')),
+            FilledButton(onPressed: onRetry, child: Text(l.tryAgain)),
           ],
         ],
       ),
@@ -271,7 +275,7 @@ class FieldLabel extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.w500),
           children: [
             if (optional)
-              TextSpan(text: ' (optional)', style: TextStyle(fontWeight: FontWeight.w400, color: context.fs.subtle)),
+              TextSpan(text: l.optional, style: TextStyle(fontWeight: FontWeight.w400, color: context.fs.subtle)),
           ],
         ),
       ),
@@ -414,6 +418,69 @@ class PillChoices<T> extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The next few days to choose between, side by side: "Today", "Tomorrow", then weekday and date ("बिहि", "२३
+/// आश्विन" in Nepali). [days] are YYYY-MM-DD, the first of them today.
+class DayStrip extends StatelessWidget {
+  const DayStrip({super.key, required this.days, required this.selected, required this.onPick});
+
+  final List<String> days;
+  final String? selected;
+  final ValueChanged<String> onPick;
+
+  String _name(String day, int index) =>
+      index == 0 ? l.today : index == 1 ? l.tomorrow : weekdayShort(day);
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.fs;
+    return SizedBox(
+      height: 64,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: days.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final day = days[index];
+          final on = day == selected;
+          return Semantics(
+            selected: on,
+            button: true,
+            child: Material(
+              color: on ? c.ink : c.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: BorderSide(color: on ? c.ink : c.border),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () => onPick(day),
+                child: Container(
+                  constraints: const BoxConstraints(minWidth: 64),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _name(day, index),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: on ? c.inkFg : c.muted),
+                      ),
+                      Text(
+                        shortDate(day),
+                        style: TextStyle(fontSize: 12, color: on ? c.inkFg : c.muted, fontFeatures: tabular),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

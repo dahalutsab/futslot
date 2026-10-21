@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../core/api_types.dart';
 import '../core/theme.dart';
+import '../l10n/l10n.dart';
 import 'format.dart';
 import 'widgets.dart';
 
@@ -18,7 +19,7 @@ class PayForm extends StatefulWidget {
     required this.onPaid,
     this.minimum,
     this.instructions,
-    this.label = 'Send for checking',
+    this.label,
     this.busy = false,
     this.error,
   });
@@ -27,7 +28,9 @@ class PayForm extends StatefulWidget {
   final double amount;
   final double? minimum;
   final String? instructions;
-  final String label;
+
+  /// The button; "Send for checking" unless set.
+  final String? label;
   final bool busy;
   final String? error;
   final ValueChanged<PaymentClaim> onPaid;
@@ -71,11 +74,11 @@ class _PayFormState extends State<PayForm> {
     final minimum = widget.minimum;
     final paid = double.tryParse(_paid.text.trim());
     if (transactionId.length < 4) {
-      setState(() => _local = 'Enter the transaction ID from your receipt.');
+      setState(() => _local = l.enterTransactionId);
       return;
     }
     if (minimum != null && (paid == null || paid < minimum || paid > widget.amount)) {
-      setState(() => _local = 'Enter between ${rupees(minimum)} and ${rupees(widget.amount)}.');
+      setState(() => _local = l.enterAmountBetween(rupees(minimum), rupees(widget.amount)));
       return;
     }
     setState(() => _local = null);
@@ -99,7 +102,7 @@ class _PayFormState extends State<PayForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Send ${minimum != null ? 'at least ${rupees(minimum)}' : rupees(widget.amount)} to',
+                  minimum != null ? l.sendAtLeastTo(rupees(minimum)) : l.sendAmountTo(rupees(widget.amount)),
                   style: TextStyle(fontSize: 14, color: c.muted),
                 ),
                 const SizedBox(height: 2),
@@ -109,7 +112,7 @@ class _PayFormState extends State<PayForm> {
           ),
           const SizedBox(height: 12),
         ],
-        const FieldLabel('Paid with'),
+        FieldLabel(l.paidWith),
         GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,
@@ -128,17 +131,17 @@ class _PayFormState extends State<PayForm> {
         ),
         if (minimum != null) ...[
           const SizedBox(height: 12),
-          const FieldLabel('Amount you sent'),
+          FieldLabel(l.amountYouSent),
           TextField(
             controller: _paid,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
             style: const TextStyle(fontFeatures: tabular),
-            decoration: const InputDecoration(prefixText: 'Rs '),
+            decoration: InputDecoration(prefixText: inNepali ? 'रु ' : 'Rs '),
           ),
         ],
         const SizedBox(height: 12),
-        const FieldLabel('Transaction ID'),
+        FieldLabel(l.transactionId),
         TextField(
           controller: _transactionId,
           maxLength: 100,
@@ -147,13 +150,13 @@ class _PayFormState extends State<PayForm> {
           style: const TextStyle(fontFeatures: tabular),
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => _submit(),
-          decoration: const InputDecoration(hintText: 'From your payment receipt', counterText: ''),
+          decoration: InputDecoration(hintText: l.fromYourReceipt, counterText: ''),
         ),
         if (problem != null) ...[const SizedBox(height: 12), Notice(problem)],
         const SizedBox(height: 12),
         FilledButton(
           onPressed: widget.busy ? null : _submit,
-          child: BusyLabel(busy: widget.busy, label: widget.label, busyLabel: 'Sending…'),
+          child: BusyLabel(busy: widget.busy, label: widget.label ?? l.sendForChecking, busyLabel: l.sending),
         ),
       ],
     );

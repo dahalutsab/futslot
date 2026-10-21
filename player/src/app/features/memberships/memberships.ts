@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { Membership } from '../../core/api.types';
+import { l } from '../../i18n/i18n';
 import { dayLabel } from '../../shared/format';
 import { planTerms } from '../../shared/labels';
 
@@ -14,15 +15,15 @@ import { planTerms } from '../../shared/labels';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-2xl px-4 py-6 lg:py-10">
-      <h1 class="text-2xl font-semibold tracking-tight">Memberships</h1>
-      <p class="mt-1 text-muted">Game packs and passes you bought at venues. They're used when you book there.</p>
+      <h1 class="text-2xl font-semibold tracking-tight">{{ l().memberships }}</h1>
+      <p class="mt-1 text-muted">{{ l().membershipsIntro }}</p>
       @if (error(); as message) {
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>
       } @else if (memberships(); as list) {
         @if (list.length === 0) {
           <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
-            <p class="font-medium">No memberships yet</p>
-            <p class="mt-1 text-muted">Venues that sell game packs or passes list them on their page.</p>
+            <p class="font-medium">{{ l().noMembershipsYet }}</p>
+            <p class="mt-1 text-muted">{{ l().noMembershipsBody }}</p>
           </div>
         } @else {
           <ul class="mt-4 space-y-3">
@@ -35,28 +36,30 @@ import { planTerms } from '../../shared/labels';
                   </div>
                   <span class="rounded-full px-2 py-0.5 text-xs font-medium"
                     [class]="m.status === 'ACTIVE' ? 'bg-confirmed-bg text-confirmed-fg' : m.status === 'PENDING_PAYMENT' ? 'bg-verify-bg text-verify-fg' : 'bg-surface text-muted'">
-                    {{ m.status === 'ACTIVE' ? 'Active' : m.status === 'PENDING_PAYMENT' ? 'Payment being checked' : m.status === 'EXPIRED' ? 'Expired' : 'Cancelled' }}
+                    {{ m.status === 'ACTIVE' ? l().active : m.status === 'PENDING_PAYMENT' ? l().chipVerify : m.status === 'EXPIRED' ? l().expired : l().cancelled }}
                   </span>
                 </div>
                 <p class="mt-2 text-sm">
                   {{ terms(m.plan) }}
-                  @if (m.gamesRemaining !== null) { · <span class="tabular font-medium">{{ m.gamesRemaining }} left</span> }
+                  @if (m.gamesRemaining !== null) { · <span class="tabular font-medium">{{ l().gamesLeft(m.gamesRemaining) }}</span> }
                 </p>
-                <p class="text-sm text-muted">{{ m.status === 'EXPIRED' ? 'Ended' : 'Until' }} {{ fmt.dayLabel(m.expiresOn) }}</p>
+                <p class="text-sm text-muted">{{ m.status === 'EXPIRED' ? l().ended(fmt.dayLabel(m.expiresOn)) : l().until(fmt.dayLabel(m.expiresOn)) }}</p>
                 @if (m.status === 'ACTIVE') {
-                  <a [routerLink]="['/venues', m.venue.slug]" class="mt-3 inline-flex h-11 items-center rounded-lg bg-ink px-4 font-medium text-ink-fg">Book with it</a>
+                  <a [routerLink]="['/venues', m.venue.slug]" class="mt-3 inline-flex h-11 items-center rounded-lg bg-ink px-4 font-medium text-ink-fg">{{ l().bookWithIt }}</a>
                 }
               </li>
             }
           </ul>
         }
       } @else {
-        <div class="mt-6 h-32 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-32 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
       }
     </div>
   `,
 })
 export class Memberships {
+  protected readonly l = l;
+
   private readonly api = inject(Api);
 
   protected readonly fmt = { dayLabel };

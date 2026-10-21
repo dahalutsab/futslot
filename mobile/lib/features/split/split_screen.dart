@@ -7,6 +7,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/labels.dart';
 import '../../shared/widgets.dart';
@@ -124,7 +125,7 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
     final name = _text(_newName);
     final phoneNumber = _newPhone.text.replaceAll(RegExp(r'\D'), '');
     if (name == null && phoneNumber.isEmpty) {
-      setState(() => _actionError = 'Give their name, or the phone number they use FutSlot with.');
+      setState(() => _actionError = l.giveNameOrPhone);
       return Future.value();
     }
     return _act(() async {
@@ -172,7 +173,7 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
   Widget build(BuildContext context) {
     final split = _split;
     return Scaffold(
-      appBar: AppBar(title: const Text('Split the cost')),
+      appBar: AppBar(title: Text(l.splitTheCost)),
       body: switch ((split, _error)) {
         (_, final String error) => ScreenBody(children: [ErrorPanel(message: error, onRetry: _load)]),
         (final CostSplit s, _) when !_editing => ScreenBody(onRefresh: _load, children: _view(context, s)),
@@ -190,12 +191,12 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
     return [
       Text(
         split != null
-            ? 'Change how the cost is shared.'
-            : 'Share what this game costs with the players: equally, or baazi-style.',
+            ? l.changeSplit
+            : l.startSplitIntro,
         style: TextStyle(color: c.muted),
       ),
       const SizedBox(height: 20),
-      Text('Who pays', style: text.titleMedium),
+      Text(l.whoPays, style: text.titleMedium),
       const SizedBox(height: 8),
       for (final rule in SplitRule.values)
         ChoiceTile(
@@ -211,7 +212,7 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
         ),
       if (_rule == SplitRule.losersPayPercent) ...[
         const SizedBox(height: 12),
-        const FieldLabel('The losing side pays'),
+        FieldLabel(l.losingSidePays),
         Row(
           children: [
             SizedBox(
@@ -224,31 +225,31 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            Text('% of everything', style: TextStyle(color: c.muted)),
+            Text(l.percentOfEverything, style: TextStyle(color: c.muted)),
           ],
         ),
       ],
       const SizedBox(height: 20),
-      const FieldLabel('One side'),
+      FieldLabel(l.oneSide),
       TextField(
         controller: _sideA,
         maxLength: 30,
-        decoration: const InputDecoration(hintText: 'Team A', counterText: ''),
+        decoration: InputDecoration(hintText: l.teamA, counterText: ''),
       ),
       const SizedBox(height: 12),
-      const FieldLabel('The other side'),
+      FieldLabel(l.otherSide),
       TextField(
         controller: _sideB,
         maxLength: 30,
-        decoration: const InputDecoration(hintText: 'Team B', counterText: ''),
+        decoration: InputDecoration(hintText: l.teamB, counterText: ''),
       ),
       if (split == null) ...[
         const SizedBox(height: 12),
-        const FieldLabel('You play for'),
+        FieldLabel(l.youPlayFor),
         ListenableBuilder(
           listenable: Listenable.merge([_sideA, _sideB]),
           builder: (context, _) => Segmented(
-            options: [(Side.a, _text(_sideA) ?? 'Team A'), (Side.b, _text(_sideB) ?? 'Team B')],
+            options: [(Side.a, _text(_sideA) ?? l.teamA), (Side.b, _text(_sideB) ?? l.teamB)],
             value: _mySide,
             onChanged: (side) => setState(() => _mySide = side),
           ),
@@ -263,7 +264,7 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const FieldLabel('Extras (Rs)'),
+                FieldLabel(l.extrasRs),
                 TextField(
                   controller: _extras,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -278,11 +279,11 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const FieldLabel('For', optional: true),
+                FieldLabel(l.forWhat, optional: true),
                 TextField(
                   controller: _extrasNote,
                   maxLength: 100,
-                  decoration: const InputDecoration(hintText: 'Water, drinks…', counterText: ''),
+                  decoration: InputDecoration(hintText: l.extrasHint, counterText: ''),
                 ),
               ],
             ),
@@ -296,11 +297,11 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
           FilledButton(
             onPressed: _busy ? null : _saveRules,
             style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
-            child: BusyLabel(busy: _busy, label: split != null ? 'Save' : 'Start splitting', busyLabel: 'Saving…'),
+            child: BusyLabel(busy: _busy, label: split != null ? l.save : l.startSplitting, busyLabel: l.saving),
           ),
           if (split != null) ...[
             const SizedBox(width: 8),
-            TextButton(onPressed: () => setState(() => _editing = false), child: const Text('Cancel')),
+            TextButton(onPressed: () => setState(() => _editing = false), child: Text(l.cancel)),
           ],
         ],
       ),
@@ -331,7 +332,9 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        s.rule == SplitRule.losersPayPercent ? '${s.rule.label} (${s.losersPercent}%)' : s.rule.label,
+                        s.rule == SplitRule.losersPayPercent
+                            ? '${s.rule.label} (${digits(s.losersPercent ?? 0)}%)'
+                            : s.rule.label,
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                       Text(s.rule.detail, style: TextStyle(fontSize: 14, color: c.muted)),
@@ -339,17 +342,17 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
                   ),
                 ),
                 if (s.youAreBooker && s.result == null)
-                  OutlinedButton(onPressed: () => _edit(s), child: const Text('Change')),
+                  OutlinedButton(onPressed: () => _edit(s), child: Text(l.change)),
               ],
             ),
             const SizedBox(height: 12),
-            AmountRow(label: 'Court', value: rupees(s.courtAmount)),
+            AmountRow(label: l.court, value: rupees(s.courtAmount)),
             if (s.extrasAmount > 0)
               AmountRow(
-                label: s.extrasNote != null ? 'Extras · ${s.extrasNote}' : 'Extras',
+                label: s.extrasNote != null ? l.extrasFor(s.extrasNote!) : l.extras,
                 value: rupees(s.extrasAmount),
               ),
-            AmountRow(label: 'Total', value: rupees(s.total), strong: true),
+            AmountRow(label: l.total, value: rupees(s.total), strong: true),
             if (s.result == null && s.rule != SplitRule.equal && s.outcomes.isNotEmpty) ...[
               const SizedBox(height: 16),
               _Outcomes(split: s),
@@ -369,7 +372,7 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      s.rule == SplitRule.equal ? 'Played' : resultLabel(result, s.sideAName, s.sideBName),
+                      s.rule == SplitRule.equal ? l.played : resultLabel(result, s.sideAName, s.sideBName),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
@@ -377,13 +380,13 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
                     TextButton(
                       onPressed: _busy ? null : () => _update(() => _api.undoSplitResult(s.bookingId)),
                       style: TextButton.styleFrom(foregroundColor: c.muted),
-                      child: const Text('Undo'),
+                      child: Text(l.undo),
                     ),
                 ],
               ),
               if (s.youAreBooker)
                 Text(
-                  '${rupees(s.collected)} collected · ${rupees(s.outstanding)} still to come',
+                  l.collectedSoFar(rupees(s.collected), rupees(s.outstanding)),
                   style: TextStyle(fontSize: 14, color: c.muted, fontFeatures: tabular),
                 ),
             ],
@@ -398,11 +401,11 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                s.rule == SplitRule.equal ? 'Played the game?' : 'Who won?',
+                s.rule == SplitRule.equal ? l.playedTheGame : l.whoWon,
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               Text(
-                "This works out everyone's share and tells the players with the app.",
+                l.worksOutShares,
                 style: TextStyle(fontSize: 14, color: c.muted),
               ),
               const SizedBox(height: 12),
@@ -413,7 +416,7 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
                   if (s.rule == SplitRule.equal)
                     FilledButton(
                       onPressed: _busy ? null : () => _update(() => _api.splitResult(s.bookingId, null)),
-                      child: const Text('Work out shares'),
+                      child: Text(l.workOutShares),
                     )
                   else ...[
                     for (final (result, label) in [(MatchResult.aWon, s.sideAName), (MatchResult.bWon, s.sideBName)])
@@ -423,7 +426,7 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
                       ),
                     OutlinedButton(
                       onPressed: _busy ? null : () => _update(() => _api.splitResult(s.bookingId, MatchResult.draw)),
-                      child: const Text('Draw'),
+                      child: Text(l.resultDraw),
                     ),
                   ],
                 ],
@@ -451,13 +454,13 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Add a player', style: text.titleMedium),
+              Text(l.addAPlayer, style: text.titleMedium),
               Text(
-                'By the phone number they use FutSlot with, so they see their share, or just a name.',
+                l.addPlayerHelp,
                 style: TextStyle(fontSize: 14, color: c.muted),
               ),
               const SizedBox(height: 12),
-              const FieldLabel('Phone'),
+              FieldLabel(l.phone),
               TextField(
                 controller: _newPhone,
                 keyboardType: TextInputType.phone,
@@ -466,7 +469,7 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
                 decoration: const InputDecoration(hintText: '98XXXXXXXX'),
               ),
               const SizedBox(height: 12),
-              const FieldLabel('Name'),
+              FieldLabel(l.name),
               TextField(
                 controller: _newName,
                 maxLength: 60,
@@ -482,7 +485,7 @@ class _SplitScreenState extends ConsumerState<SplitScreen> {
               const SizedBox(height: 12),
               Align(
                 alignment: Alignment.centerLeft,
-                child: FilledButton(onPressed: _busy ? null : _addPlayer, child: const Text('Add')),
+                child: FilledButton(onPressed: _busy ? null : _addPlayer, child: Text(l.add)),
               ),
             ],
           ),
@@ -518,12 +521,12 @@ class _Outcomes extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Each player pays, roughly', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        Text(l.eachPaysRoughly, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
         const SizedBox(height: 4),
         Table(
           columnWidths: const {0: FlexColumnWidth(1.4)},
           children: [
-            row(['If', split.sideAName, split.sideBName], head: true),
+            row([l.ifResult, split.sideAName, split.sideBName], head: true),
             for (final o in split.outcomes)
               row([resultLabel(o.result, split.sideAName, split.sideBName), rupees(o.sideAEach), rupees(o.sideBEach)]),
           ],
@@ -550,19 +553,19 @@ class _YourShare extends StatelessWidget {
       color: me.settled ? c.confirmed.bg : null,
       borderColor: me.settled ? c.confirmed.line : null,
       child: switch (share) {
-        null => Text('Your share is worked out once ${booker.name} records the result.'),
+        null => Text(l.shareOnceResult(booker.name)),
         _ when me.settled => Text(
-            'Paid. ${booker.name} has your ${rupees(share)}.',
+            l.sharePaid(booker.name, rupees(share)),
             style: TextStyle(fontWeight: FontWeight.w500, color: c.confirmed.fg),
           ),
         _ => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('You owe ${booker.name} ${rupees(share)}', style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(l.youOwe(booker.name, rupees(share)), style: const TextStyle(fontWeight: FontWeight.w600)),
               if (booker.phone case final number?) ...[
                 const SizedBox(height: 4),
                 Text(
-                  "Pay them on eSewa or Khalti: ${phone(number)}. They tick you off once it's in.",
+                  l.payThemOn(phone(number)),
                   style: TextStyle(color: c.muted, fontFeatures: tabular),
                 ),
               ],
@@ -607,7 +610,10 @@ class _SideCard extends StatelessWidget {
                 text: name,
                 style: const TextStyle(fontWeight: FontWeight.w600),
                 children: [
-                  TextSpan(text: ' · ${players.length}', style: TextStyle(fontWeight: FontWeight.w400, color: c.muted)),
+                  TextSpan(
+                    text: ' · ${digits(players.length)}',
+                    style: TextStyle(fontWeight: FontWeight.w400, color: c.muted),
+                  ),
                 ],
               ),
             ),
@@ -628,9 +634,9 @@ class _SideCard extends StatelessWidget {
                             text: p.name,
                             children: [
                               if (p.you)
-                                TextSpan(text: ' (you)', style: TextStyle(color: c.muted))
+                                TextSpan(text: l.you, style: TextStyle(color: c.muted))
                               else if (p.booker)
-                                TextSpan(text: ' (booked)', style: TextStyle(color: c.muted)),
+                                TextSpan(text: l.bookedBy, style: TextStyle(color: c.muted)),
                             ],
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -655,7 +661,7 @@ class _SideCard extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(left: 8),
                         child: IconButton(
-                          tooltip: p.settled ? 'Paid: ${p.name}' : 'Mark paid: ${p.name}',
+                          tooltip: p.settled ? l.paidName(p.name) : l.markPaidName(p.name),
                           isSelected: p.settled,
                           onPressed: busy ? null : () => onPaid(p),
                           style: IconButton.styleFrom(
@@ -668,12 +674,12 @@ class _SideCard extends StatelessWidget {
                       )
                     else ...[
                       IconButton(
-                        tooltip: 'Move ${p.name} to the other side',
+                        tooltip: l.moveToOtherSide(p.name),
                         onPressed: busy ? null : () => onMove(p),
                         icon: Icon(LucideIcons.arrowLeftRight, size: 16, color: c.subtle),
                       ),
                       IconButton(
-                        tooltip: 'Remove ${p.name}',
+                        tooltip: l.removeName(p.name),
                         onPressed: busy ? null : () => onRemove(p),
                         icon: Icon(LucideIcons.trash2, size: 16, color: c.subtle),
                       ),

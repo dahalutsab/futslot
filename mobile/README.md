@@ -45,6 +45,21 @@ flutter build apk    # release APK in build/app/outputs/flutter-apk
   after.
 - `lib/shared/labels.dart`: how API values read to a player (levels, roles, split rules...), the same words as
   the web app's `labels.ts`.
+- `lib/l10n`: English and Nepali (see below).
+
+## English and Nepali
+
+Every word the app shows is in `lib/l10n/app_en.arb`, with its Nepali in `app_ne.arb`; any build (or
+`flutter gen-l10n`) turns them into `lib/l10n/strings*.dart`. A new string goes in both files, under the same key.
+Screens read the current language's words from `l` (`Text(l.bookThisSlot)`), and the whole app is rebuilt when
+the player switches, from Me or from the top bar before signing in.
+
+In Nepali, numbers use Devanagari digits with lakh grouping (रु १,२०,०००), times say the part of the day
+(बेलुका ६ बजे), and dates are Bikram Sambat (सोम, २ कार्तिक), all through `lib/shared/format.dart`. Phone
+numbers and transaction ids stay in Latin digits, to copy and type. The app starts in the phone's language,
+remembers the player's choice, and keeps the account's `preferredLanguage` in step so notifications match. It
+also sends `Accept-Language`, so the API can answer in it. Venue and court names and other things
+people type stay as written. The date picker for posting a game is still Gregorian.
 
 Riverpod holds the app-wide state (session, API client, theme, the unread counts in `core/badges.dart`, checked
 every minute and when the app comes back to the front); each screen loads its own data the way the

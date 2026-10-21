@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
+import '../l10n/l10n.dart';
 import 'widgets.dart';
 
-const _words = ['', 'Poor', 'Not great', 'Okay', 'Good', 'Great'];
+List<String> get _words => ['', l.ratingPoor, l.ratingNotGreat, l.ratingOkay, l.ratingGood, l.ratingGreat];
 
 /// Stars (required) and a comment (optional). [extra] sits beside the save button, e.g. "Cancel" when editing.
 class ReviewForm extends StatefulWidget {
@@ -12,7 +13,7 @@ class ReviewForm extends StatefulWidget {
     required this.onSaved,
     this.rating = 0,
     this.comment,
-    this.label = 'Post review',
+    this.label,
     this.busy = false,
     this.error,
     this.extra,
@@ -20,7 +21,9 @@ class ReviewForm extends StatefulWidget {
 
   final int rating;
   final String? comment;
-  final String label;
+
+  /// The button; "Post review" unless set.
+  final String? label;
   final bool busy;
   final String? error;
   final Widget? extra;
@@ -48,7 +51,7 @@ class _ReviewFormState extends State<ReviewForm> {
       return;
     }
     if (_rating == 0) {
-      setState(() => _local = 'Pick how many stars.');
+      setState(() => _local = l.pickStars);
       return;
     }
     setState(() => _local = null);
@@ -70,7 +73,7 @@ class _ReviewFormState extends State<ReviewForm> {
               Semantics(
                 inMutuallyExclusiveGroup: true,
                 checked: _rating == n,
-                label: '$n out of 5: ${_words[n]}',
+                label: l.starsOutOfFiveWord(digits(n), _words[n]),
                 // Excluding the button's own semantics drops its tap, so screen readers pick a star through this
                 onTap: () => setState(() => _rating = n),
                 excludeSemantics: true,
@@ -92,14 +95,14 @@ class _ReviewFormState extends State<ReviewForm> {
           ],
         ),
         const SizedBox(height: 12),
-        const FieldLabel('What was it like?', optional: true),
+        FieldLabel(l.whatWasItLike, optional: true),
         TextField(
           controller: _comment,
           maxLength: 1000,
           minLines: 3,
           maxLines: 6,
           textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(hintText: 'The turf, the lights, the staff…', counterText: ''),
+          decoration: InputDecoration(hintText: l.reviewHint, counterText: ''),
         ),
         if (problem != null) ...[const SizedBox(height: 12), Notice(problem)],
         const SizedBox(height: 12),
@@ -108,7 +111,7 @@ class _ReviewFormState extends State<ReviewForm> {
             FilledButton(
               onPressed: widget.busy ? null : _submit,
               style: FilledButton.styleFrom(minimumSize: const Size(96, 44)),
-              child: Text(widget.busy ? 'Saving…' : widget.label),
+              child: Text(widget.busy ? l.saving : widget.label ?? l.postReview),
             ),
             if (widget.extra != null) ...[const SizedBox(width: 8), widget.extra!],
           ],
@@ -127,7 +130,7 @@ class Stars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: '$rating out of 5',
+      label: l.starsOutOfFive(digits(rating)),
       excludeSemantics: true,
       child: Text('★' * rating + '☆' * (5 - rating), style: TextStyle(color: context.fs.held.line)),
     );

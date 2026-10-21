@@ -8,12 +8,16 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/labels.dart';
 import '../../shared/widgets.dart';
 
 /// Nepal's offset, for a time picked without one.
 const _nepalOffset = '+05:45';
+
+/// How far ahead a game can be posted: the API takes up to 30 days from now.
+const _daysAhead = 30;
 
 /// Posting a game: short of players for one of your bookings, or your team looking for an opponent. Where and when
 /// come from the booking, or when nothing's booked yet, from a venue (or just a city) and a time.
@@ -42,8 +46,10 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
 
   final _city = TextEditingController();
 
-  /// When, picked as a Nepal date and time.
-  DateTime? _when;
+  /// When: a day in Nepal (YYYY-MM-DD) and a time on it.
+  String? _day;
+
+  TimeOfDay? _time;
 
   final _needed = TextEditingController(text: '2');
 
@@ -97,30 +103,23 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     super.dispose();
   }
 
-  Future<void> _pickWhen() async {
-    final now = DateTime.now();
-    final day = await showDatePicker(
-      context: context,
-      initialDate: _when ?? now,
-      firstDate: DateTime(now.year, now.month, now.day),
-      lastDate: now.add(const Duration(days: 60)),
-    );
-    if (day == null || !mounted) {
-      return;
-    }
-    final time = await showTimePicker(
-      context: context,
-      initialTime: _when != null ? TimeOfDay.fromDateTime(_when!) : const TimeOfDay(hour: 18, minute: 0),
-    );
+  /// Today and the days after it that a game can be posted for, in Nepal.
+  List<String> get _days {
+    final first = today('Asia/Kathmandu');
+    return [for (var i = 0; i < _daysAhead; i++) addDays(first, i)];
+  }
+
+  Future<void> _pickTime() async {
+    final time = await showTimePicker(context: context, initialTime: _time ?? const TimeOfDay(hour: 18, minute: 0));
     if (time != null && mounted) {
-      setState(() => _when = DateTime(day.year, day.month, day.day, time.hour, time.minute));
+      setState(() => _time = time);
     }
   }
 
   /// "2026-10-20T18:00:00+05:45".
-  static String _startsAt(DateTime when) {
+  static String _startsAt(String day, TimeOfDay time) {
     String two(int n) => n.toString().padLeft(2, '0');
-    return '${when.year}-${two(when.month)}-${two(when.day)}T${two(when.hour)}:${two(when.minute)}:00$_nepalOffset';
+    return '${day}T${two(time.hour)}:${two(time.minute)}:00$_nepalOffset';
   }
 
   bool get _canPost => _type == MatchPostType.needPlayers || _teams.isNotEmpty;
@@ -129,9 +128,10 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     final bookingId = _bookingId;
     final venueId = bookingId == null ? _venueId : null;
     final city = _city.text.trim();
-    final when = _when;
-    if (bookingId == null && (when == null || (venueId == null && city.isEmpty))) {
-      setState(() => _error = 'Say where (a venue or a city) and when, or pick one of your bookings.');
+    final day = _day;
+    final time = _time;
+    if (bookingId == null && (day == null || time == null || (venueId == null && city.isEmpty))) {
+      setState(() => _error = l.sayWhereWhen);
       return;
     }
     final needPlayers = _type == MatchPostType.needPlayers;
@@ -148,7 +148,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
         bookingId: bookingId,
         venueId: venueId,
         city: bookingId == null && venueId == null ? city : null,
-        startsAt: bookingId == null ? _startsAt(when!) : null,
+        startsAt: bookingId == null ? _startsAt(day!, time!) : null,
         playersNeeded: needPlayers ? int.tryParse(_needed.text) ?? 1 : null,
         costPerPlayer: needPlayers && cost != null && cost > 0 ? cost : null,
         skillLevel: _skill,
@@ -172,12 +172,12 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
   Widget build(BuildContext context) {
     final c = context.fs;
     final text = Theme.of(context).textTheme;
-    final when = _when;
+    final time = _time;
     return Scaffold(
-      appBar: AppBar(title: const Text('Post a game')),
+      appBar: AppBar(title: Text(l.postAGame)),
       body: ScreenBody(
         children: [
-          Text('What do you need?', style: text.titleMedium),
+          Text(l.whatDoYouNeed, style: text.titleMedium),
           const SizedBox(height: 8),
           // Side by side at the same height, like the web's grid
           IntrinsicHeight(
@@ -185,8 +185,8 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 for (final (i, (type, label, detail)) in [
-                  (MatchPostType.needPlayers, 'Players', "We're short for a game"),
-                  (MatchPostType.findOpponent, 'An opponent', 'Our team wants a match'),
+                  (MatchPostType.needPlayers, l.needPlayersOption, l.needPlayersDetail),
+                  (MatchPostType.findOpponent, l.needOpponentOption, l.needOpponentDetail),
                 ].indexed) ...[
                   if (i > 0) const SizedBox(width: 8),
                   Expanded(
@@ -216,7 +216,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        'You need to captain a team to find an opponent.',
+                        l.needCaptainForOpponent,
                         style: TextStyle(color: c.held.fg),
                       ),
                     ),
@@ -225,7 +225,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                 ),
               )
             else ...[
-              const FieldLabel('Your team'),
+              FieldLabel(l.yourTeam),
               DropdownButtonFormField<String>(
                 initialValue: _teamId,
                 items: [for (final team in _teams) DropdownMenuItem(value: team.id, child: Text(team.name))],
@@ -234,7 +234,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             ],
           ],
           const SizedBox(height: 20),
-          Text('Where and when', style: text.titleMedium),
+          Text(l.whereAndWhen, style: text.titleMedium),
           const SizedBox(height: 8),
           if (_bookings.isNotEmpty) ...[
             for (final b in _bookings)
@@ -255,17 +255,17 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             ChoiceTile(
               selected: _bookingId == null,
               onTap: () => setState(() => _bookingId = null),
-              child: const Text('Not booked yet', style: TextStyle(fontWeight: FontWeight.w500)),
+              child: Text(l.notBookedYet, style: const TextStyle(fontWeight: FontWeight.w500)),
             ),
           ],
           if (_bookingId == null) ...[
             const SizedBox(height: 4),
-            const FieldLabel('Venue', optional: true),
+            FieldLabel(l.venue, optional: true),
             DropdownButtonFormField<String?>(
               initialValue: _venueId,
               isExpanded: true,
               items: [
-                const DropdownMenuItem(value: null, child: Text('Not decided: just a city')),
+                DropdownMenuItem(value: null, child: Text(l.notDecidedCity)),
                 for (final v in _venues)
                   DropdownMenuItem(value: v.id, child: Text('${v.name}, ${v.city}', overflow: TextOverflow.ellipsis)),
               ],
@@ -273,24 +273,25 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             ),
             if (_venueId == null) ...[
               const SizedBox(height: 12),
-              const FieldLabel('City'),
+              FieldLabel(l.city),
               TextField(
                 controller: _city,
                 maxLength: 60,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(hintText: 'Kathmandu', counterText: ''),
+                decoration: InputDecoration(hintText: l.cityHint, counterText: ''),
               ),
             ],
             const SizedBox(height: 12),
-            const FieldLabel('When'),
+            FieldLabel(l.when),
+            // Days in the app's own calendar (Bikram Sambat in Nepali), rather than a Gregorian date picker
+            DayStrip(days: _days, selected: _day, onPick: (day) => setState(() => _day = day)),
+            const SizedBox(height: 8),
             OutlinedButton.icon(
-              onPressed: _pickWhen,
+              onPressed: _pickTime,
               style: OutlinedButton.styleFrom(alignment: Alignment.centerLeft, minimumSize: const Size.fromHeight(48)),
-              icon: const Icon(LucideIcons.calendarDays, size: 18),
+              icon: const Icon(LucideIcons.clock, size: 18),
               label: Text(
-                when == null
-                    ? 'Pick a day and time'
-                    : '${dayLabel(_startsAt(when).substring(0, 10))} · ${clock(when.hour * 60 + when.minute)}',
+                time == null ? l.pickTime : clock(time.hour * 60 + time.minute),
                 style: const TextStyle(fontFeatures: tabular),
               ),
             ),
@@ -304,7 +305,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const FieldLabel('Players needed'),
+                      FieldLabel(l.playersNeeded),
                       TextField(
                         controller: _needed,
                         keyboardType: TextInputType.number,
@@ -319,13 +320,13 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const FieldLabel('Each pays', optional: true),
+                      FieldLabel(l.eachPays, optional: true),
                       TextField(
                         controller: _cost,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
                         style: const TextStyle(fontFeatures: tabular),
-                        decoration: const InputDecoration(prefixText: 'Rs '),
+                        decoration: InputDecoration(prefixText: inNepali ? 'रु ' : 'Rs '),
                       ),
                     ],
                   ),
@@ -335,27 +336,27 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
           ],
           const SizedBox(height: 20),
           PillChoices(
-            label: 'Level',
+            label: l.level,
             optional: true,
             options: [for (final s in SkillLevel.values) (s, s.label)],
             value: _skill,
             onChanged: (s) => setState(() => _skill = s),
           ),
-          const FieldLabel('Note', optional: true),
+          FieldLabel(l.note, optional: true),
           TextField(
             controller: _note,
             maxLength: 500,
             minLines: 2,
             maxLines: 4,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(hintText: 'e.g. Friendly game, need a keeper', counterText: ''),
+            decoration: InputDecoration(hintText: l.postNoteHint, counterText: ''),
           ),
           if (_error case final error?) ...[const SizedBox(height: 16), Notice(error)],
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _busy || !_canPost ? null : _post,
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-            child: BusyLabel(busy: _busy, label: 'Post it', busyLabel: 'Posting…'),
+            child: BusyLabel(busy: _busy, label: l.postIt, busyLabel: l.posting),
           ),
         ],
       ),

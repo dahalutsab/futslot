@@ -6,6 +6,7 @@ import '../../core/api.dart';
 import '../../core/api_error.dart';
 import '../../core/api_types.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n.dart';
 import '../../shared/format.dart';
 import '../../shared/labels.dart';
 import '../../shared/widgets.dart';
@@ -50,12 +51,12 @@ class _MembershipsScreenState extends ConsumerState<MembershipsScreen> {
     final c = context.fs;
     final list = _memberships;
     return Scaffold(
-      appBar: AppBar(title: const Text('Memberships')),
+      appBar: AppBar(title: Text(l.memberships)),
       body: ScreenBody(
         onRefresh: _load,
         children: [
           Text(
-            "Game packs and passes you bought at venues. They're used when you book there.",
+            l.membershipsIntro,
             style: TextStyle(color: c.muted),
           ),
           const SizedBox(height: 16),
@@ -64,9 +65,9 @@ class _MembershipsScreenState extends ConsumerState<MembershipsScreen> {
           else if (list == null)
             const Skeleton(height: 128)
           else if (list.isEmpty)
-            const EmptyPanel(
-              title: 'No memberships yet',
-              body: 'Venues that sell game packs or passes list them on their page.',
+            EmptyPanel(
+              title: l.noMembershipsYet,
+              body: l.noMembershipsBody,
             )
           else
             for (final m in list) Padding(padding: const EdgeInsets.only(bottom: 12), child: _MembershipCard(m)),
@@ -85,10 +86,10 @@ class _MembershipCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.fs;
     final (label, colors) = switch (m.status) {
-      MembershipStatus.active => ('Active', c.confirmed),
-      MembershipStatus.pendingPayment => ('Payment being checked', c.verify),
-      MembershipStatus.expired => ('Expired', c.blocked),
-      MembershipStatus.cancelled => ('Cancelled', c.blocked),
+      MembershipStatus.active => (l.active, c.confirmed),
+      MembershipStatus.pendingPayment => (l.chipVerify, c.verify),
+      MembershipStatus.expired => (l.expired, c.blocked),
+      MembershipStatus.cancelled => (l.cancelled, c.blocked),
     };
     final terms = planTerms(m.planType, gamesIncluded: m.gamesIncluded, discountPercent: m.discountPercent);
     return FsCard(
@@ -118,11 +119,11 @@ class _MembershipCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            m.gamesRemaining != null ? '$terms · ${m.gamesRemaining} left' : terms,
+            m.gamesRemaining != null ? '$terms · ${l.gamesLeft(m.gamesRemaining!)}' : terms,
             style: const TextStyle(fontSize: 14, fontFeatures: tabular),
           ),
           Text(
-            '${m.status == MembershipStatus.expired ? 'Ended' : 'Until'} ${dayLabel(m.expiresOn)}',
+            (m.status == MembershipStatus.expired ? l.ended : l.until)(dayLabel(m.expiresOn)),
             style: TextStyle(fontSize: 14, color: c.muted),
           ),
           if (m.active && m.venue.slug != null) ...[
