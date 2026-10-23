@@ -58,11 +58,12 @@ public record BookPage(Site site, String step, Slot slot, String phone, boolean 
 	/**
 	 * The player's FutSlot booking deposit. {@code toAdd} is null when it's full; {@code checking}: a top-up was
 	 * sent and FutSlot hasn't checked it yet. {@code withdrawal} is the one FutSlot is about to send, or null;
-	 * {@code canWithdraw} when there's money to take back and nothing asked for yet. {@code court} and
+	 * {@code inUse} while it covers games still to be played; {@code canWithdraw} when there's money to take back,
+	 * nothing asked for yet and nothing it covers. {@code court} and
 	 * {@code start} lead back to the slot they were booking, if any.
 	 */
 	public record Deposit(String required, String balance, String toAdd, String toAddAmount, boolean checking,
-			String instructions, List<Method> methods, Withdrawal withdrawal, boolean canWithdraw,
+			String instructions, List<Method> methods, Withdrawal withdrawal, boolean inUse, boolean canWithdraw,
 			List<Method> sendMethods, String court, String start) {
 	}
 

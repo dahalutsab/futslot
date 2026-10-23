@@ -247,15 +247,13 @@ class SiteBookingController {
 	/** The player's FutSlot deposit, to top up before booking a venue that requires it. */
 	@GetMapping({ SITE + "/deposit", NEPALI + "/deposit" })
 	String deposit(@PathVariable String subdomain, @RequestParam(required = false) String court,
-			@RequestParam(required = false) String start, @RequestParam(required = false) String sent,
-			HttpServletRequest request, Model model) {
+			@RequestParam(required = false) String start, HttpServletRequest request, Model model) {
 		Context context = context(subdomain, request);
 		UUID player = this.session.player(request).orElse(null);
 		if (player == null) {
 			return "redirect:" + SiteLanguage.home(context.base());
 		}
-		return renderDeposit(model, context, player, court, start, null,
-				(sent != null) ? context.text().get("book.topUpSentNotice") : null);
+		return renderDeposit(model, context, player, court, start, null);
 	}
 
 	@PostMapping({ SITE + "/deposit", NEPALI + "/deposit" })
@@ -270,12 +268,12 @@ class SiteBookingController {
 		try {
 			this.payments.claimDepositTopUp(player, PaymentMethod.valueOf(method), transactionId.strip(), amount);
 			String back = StringUtils.hasText(court) && StringUtils.hasText(start)
-					? "&court=" + encode(court) + "&start=" + encode(start) : "";
-			return "redirect:" + context.base() + "/deposit?sent=1" + back;
+					? "?court=" + encode(court) + "&start=" + encode(start) : "";
+			return "redirect:" + context.base() + "/deposit" + back;
 		}
 		catch (ApiException | IllegalArgumentException ex) {
 			String message = (ex instanceof ApiException api) ? context.text().error(api) : context.text().get("book.chooseHowPaid");
-			return renderDeposit(model, context, player, court, start, message, null);
+			return renderDeposit(model, context, player, court, start, message);
 		}
 	}
 
@@ -297,7 +295,7 @@ class SiteBookingController {
 		}
 		catch (ApiException | IllegalArgumentException ex) {
 			String message = (ex instanceof ApiException api) ? context.text().error(api) : context.text().get("book.chooseWhereToSend");
-			return renderDeposit(model, context, player, null, null, message, null);
+			return renderDeposit(model, context, player, null, null, message);
 		}
 	}
 
@@ -314,17 +312,18 @@ class SiteBookingController {
 			return "redirect:" + context.base() + "/deposit";
 		}
 		catch (ApiException ex) {
-			return renderDeposit(model, context, player, null, null, context.text().error(ex), null);
+			return renderDeposit(model, context, player, null, null, context.text().error(ex));
 		}
 	}
 
-	private String renderDeposit(Model model, Context context, UUID player, String court, String start, String error,
-			String notice) {
+	private String renderDeposit(Model model, Context context, UUID player, String court, String start,
+			String error) {
 		TextFormat format = context.text().format();
 		List<BookPage.Method> sendMethods = sendMethods(context.text());
 		DepositViews.Deposit mine = this.deposits.forPlayer(player);
 		BigDecimal toAdd = mine.toAdd();
 		DepositViews.Withdrawal open = mine.withdrawal();
+		boolean inUse = open == null && mine.balance().signum() > 0 && this.deposits.inUse(player);
 		BookPage.Withdrawal withdrawal = (open != null) ? new BookPage.Withdrawal(open.id().toString(),
 				format.rupees(open.amount()), label(sendMethods, open.method().name()), open.sendTo(),
 				format.day(open.dueAt().atZone(ZoneId.of(context.venue().timezone())).toLocalDate())) : null;
@@ -333,9 +332,9 @@ class SiteBookingController {
 				toAdd.toPlainString(), this.payments.depositTopUpBeingChecked(player),
 				(context.text().nepali() && StringUtils.hasText(this.futslotPaymentInstructionsNepali))
 						? this.futslotPaymentInstructionsNepali : this.futslotPaymentInstructions,
-				methods(context.text()), withdrawal, open == null && mine.balance().signum() > 0, sendMethods,
+				methods(context.text()), withdrawal, inUse, open == null && mine.balance().signum() > 0 && !inUse, sendMethods,
 				StringUtils.hasText(court) ? court : null, StringUtils.hasText(start) ? start : null);
-		model.addAttribute("book", new BookPage(context.site(), "deposit", null, null, false, error, notice, true, null,
+		model.addAttribute("book", new BookPage(context.site(), "deposit", null, null, false, error, null, true, null,
 				List.of(), deposit));
 		return "sites/book";
 	}
