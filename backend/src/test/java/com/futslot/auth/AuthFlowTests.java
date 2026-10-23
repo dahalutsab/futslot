@@ -1,6 +1,7 @@
 package com.futslot.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -39,7 +40,8 @@ class AuthFlowTests {
 	void newPlayerSignsUpWithACodeThenSignsInWithTheirPassword() throws Exception {
 		String local = nextLocalPhone();
 		String e164 = "+977" + local;
-		requestCode(local, "SIGN_UP").andExpect(status().isAccepted()).andExpect(jsonPath("$.expiresInSeconds").value(300));
+		requestCode(local, "SIGN_UP").andExpect(status().isAccepted()).andExpect(jsonPath("$.expiresInSeconds").value(300))
+			.andExpect(jsonPath("$.code").value(nullValue()));
 		String code = code(local);
 
 		// A weak password leaves the code usable, so the app can ask again

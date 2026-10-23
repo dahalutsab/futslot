@@ -559,6 +559,11 @@ class SEn extends S {
       'We sent you a code a moment ago. Enter it below.';
 
   @override
+  String codeShown(String code) {
+    return 'Texts cost money and the developer is broke, so here\'s your code instead: $code. Real SMS comes once a few futsals sign up.';
+  }
+
+  @override
   String get accountExists =>
       'This number already has an account. Sign in, or reset your password if you forgot it.';
 

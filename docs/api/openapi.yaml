@@ -8757,6 +8757,8 @@ components:
         resendAfterSeconds:
           type: integer
           format: int64
+        code:
+          type: string
     ModerationRequest:
       type: object
       properties:

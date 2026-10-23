@@ -37,8 +37,9 @@ class OtpService {
 		this.clock = clock;
 	}
 
+	/** Texts a new code. Returns it when codes are shown on screen (a demo without SMS), otherwise null. */
 	@Transactional
-	void send(String phone, OtpPurpose purpose) {
+	String send(String phone, OtpPurpose purpose) {
 		Instant now = this.clock.instant();
 		this.codes.findFirstByPhoneAndPurposeOrderByCreatedAtDesc(phone, purpose)
 			.filter(latest -> latest.getCreatedAt().isAfter(now.minus(this.properties.resendCooldown())))
@@ -55,6 +56,7 @@ class OtpService {
 		// In the language of the screen asking for it; the code itself stays in Latin digits, to be typed
 		Wording w = this.words.forRequest();
 		this.smsSender.send(phone, w.get("sms.code", code, w.format().number(this.properties.ttl().toMinutes())));
+		return this.properties.showCodes() ? code : null;
 	}
 
 	/**

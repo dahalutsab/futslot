@@ -141,6 +141,9 @@ export class Login implements OnDestroy {
     this.error.set(null);
     try {
       const sent = await this.session.requestCode(this.digits(this.phone()), PURPOSE[mode]);
+      if (sent.code) {
+        this.notice.set(`Texts cost money and the developer is broke, so here's your code instead: ${sent.code}. Real SMS comes once a few futsals sign up.`);
+      }
       this.showCodeStep(sent.resendAfterSeconds);
     }
     catch (error) {

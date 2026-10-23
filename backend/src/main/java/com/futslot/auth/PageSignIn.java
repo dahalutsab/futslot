@@ -23,8 +23,9 @@ public class PageSignIn {
 		return this.auth.checkPassword(phone, password).getId();
 	}
 
-	public void sendCode(String phone) {
-		this.auth.requestOtp(new OtpRequest(phone));
+	/** The code to show on the page when codes are shown on screen (a demo without SMS), otherwise null. */
+	public String sendCode(String phone) {
+		return this.auth.requestOtp(new OtpRequest(phone)).code();
 	}
 
 	/** The signed-in person's id. A new number needs {@code fullName} (FULL_NAME_REQUIRED otherwise). */

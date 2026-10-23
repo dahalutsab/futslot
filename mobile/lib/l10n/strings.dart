@@ -895,6 +895,12 @@ abstract class S {
   /// **'We sent you a code a moment ago. Enter it below.'**
   String get codeSentMoment;
 
+  /// No description provided for @codeShown.
+  ///
+  /// In en, this message translates to:
+  /// **'Texts cost money and the developer is broke, so here\'s your code instead: {code}. Real SMS comes once a few futsals sign up.'**
+  String codeShown(String code);
+
   /// No description provided for @accountExists.
   ///
   /// In en, this message translates to:
