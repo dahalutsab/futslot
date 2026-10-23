@@ -9658,6 +9658,8 @@ components:
           type: string
         withdrawal:
           $ref: "#/components/schemas/Withdrawal"
+        inUse:
+          type: boolean
         history:
           type: array
           items:

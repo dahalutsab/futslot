@@ -2568,10 +2568,22 @@ abstract class S {
   /// **'FutSlot sends it to your {method} {sendTo} on {date}. Until then you can\'t book venues that need the deposit.'**
   String withdrawalWhen(String method, String sendTo, String date);
 
+  /// No description provided for @depositInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Your deposit is covering a game'**
+  String get depositInUse;
+
+  /// No description provided for @depositInUseWhen.
+  ///
+  /// In en, this message translates to:
+  /// **'You can take it back once the games you\'ve booked at venues that need it are played or cancelled.'**
+  String get depositInUseWhen;
+
   /// No description provided for @withdrawExplain.
   ///
   /// In en, this message translates to:
-  /// **'FutSlot sends all of {amount} to you 3 days after you ask, once no game you\'ve booked at a venue that needs it is still to be played.'**
+  /// **'FutSlot sends all of {amount} to you 3 days after you ask.'**
   String withdrawExplain(String amount);
 
   /// No description provided for @until.

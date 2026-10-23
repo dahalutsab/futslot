@@ -454,7 +454,9 @@ export const en = {
   ofAmount: (amount: string) => `of ${amount}`,
   comingBack: (amount: string) => `${amount} is coming back to you`,
   withdrawalWhen: (method: string, sendTo: string, date: string) => `FutSlot sends it to your ${method} ${sendTo} on ${date}. Until then you can't book venues that need the deposit.`,
-  withdrawExplain: (amount: string) => `FutSlot sends all of ${amount} to you 3 days after you ask, once no game you've booked at a venue that needs it is still to be played.`,
+  withdrawExplain: (amount: string) => `FutSlot sends all of ${amount} to you 3 days after you ask.`,
+  depositInUse: 'Your deposit is covering a game',
+  depositInUseWhen: "You can take it back once the games you've booked at venues that need it are played or cancelled.",
 
   // Memberships and waitlist
   membershipsIntro: "Game packs and passes you bought at venues. They're used when you book there.",

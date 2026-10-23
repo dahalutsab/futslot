@@ -454,7 +454,9 @@ export const ne: Strings = {
   ofAmount: (amount: string) => `/ ${amount}`,
   comingBack: (amount: string) => `${amount} तपाईंलाई फिर्ता आउँदैछ`,
   withdrawalWhen: (method: string, sendTo: string, date: string) => `FutSlot ले ${date} मा तपाईंको ${method} ${sendTo} मा पठाउँछ। त्यतिन्जेल डिपोजिट चाहिने भेन्यु बुक गर्न मिल्दैन।`,
-  withdrawExplain: (amount: string) => `माग्नुभएको ३ दिनपछि FutSlot ले पूरै ${amount} पठाउँछ, डिपोजिट चाहिने भेन्युमा बुक गरेका सबै खेल सकिएपछि।`,
+  withdrawExplain: (amount: string) => `माग्नुभएको ३ दिनपछि FutSlot ले पूरै ${amount} पठाउँछ।`,
+  depositInUse: 'तपाईंको डिपोजिटले एउटा खेल ढाकेको छ',
+  depositInUseWhen: 'डिपोजिट चाहिने भेन्युमा बुक गरेका खेल खेलिएपछि वा रद्द भएपछि फिर्ता लिन सकिन्छ।',
 
   // Memberships and waitlist
   membershipsIntro: 'भेन्युहरूमा किनेका खेल प्याक र पास। त्यहाँ बुक गर्दा प्रयोग हुन्छन्।',

@@ -740,7 +740,8 @@ class DepositWithdrawal {
 }
 
 /// [toAdd] is what fills it (0 when full). [topUpBeingChecked]: a top-up was sent that FutSlot hasn't checked
-/// yet; [paymentInstructions] says where to send one.
+/// yet; [paymentInstructions] says where to send one. [inUse]: it covers games still to be played, so it can't be
+/// taken back yet.
 class Deposit {
   const Deposit({
     required this.required,
@@ -749,6 +750,7 @@ class Deposit {
     required this.topUpBeingChecked,
     required this.paymentInstructions,
     required this.withdrawal,
+    required this.inUse,
     required this.history,
   });
 
@@ -758,6 +760,7 @@ class Deposit {
   final bool topUpBeingChecked;
   final String? paymentInstructions;
   final DepositWithdrawal? withdrawal;
+  final bool inUse;
   final List<DepositEntry> history;
 
   factory Deposit.fromJson(Json json) => Deposit(
@@ -767,6 +770,7 @@ class Deposit {
         topUpBeingChecked: json['topUpBeingChecked'] as bool? ?? false,
         paymentInstructions: json['paymentInstructions'] as String?,
         withdrawal: json['withdrawal'] == null ? null : DepositWithdrawal.fromJson(json['withdrawal'] as Json),
+        inUse: json['inUse'] as bool? ?? false,
         history: _list(json['history'], DepositEntry.fromJson),
       );
 }

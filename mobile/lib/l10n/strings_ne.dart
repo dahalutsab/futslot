@@ -1501,8 +1501,15 @@ class SNe extends S {
   }
 
   @override
+  String get depositInUse => 'तपाईंको डिपोजिटले एउटा खेल ढाकेको छ';
+
+  @override
+  String get depositInUseWhen =>
+      'डिपोजिट चाहिने भेन्युमा बुक गरेका खेल खेलिएपछि वा रद्द भएपछि फिर्ता लिन सकिन्छ।';
+
+  @override
   String withdrawExplain(String amount) {
-    return 'माग्नुभएको ३ दिनपछि FutSlot ले पूरै $amount पठाउँछ, डिपोजिट चाहिने भेन्युमा बुक गरेका सबै खेल सकिएपछि।';
+    return 'माग्नुभएको ३ दिनपछि FutSlot ले पूरै $amount पठाउँछ।';
   }
 
   @override
