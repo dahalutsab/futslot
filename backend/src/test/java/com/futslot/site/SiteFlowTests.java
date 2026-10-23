@@ -108,6 +108,11 @@ class SiteFlowTests {
 		this.mvc.perform(get("/internal/sites/domain-check").param("domain", "www.sitewisefutsal.com")).andExpect(status().isOk());
 		this.mvc.perform(get("/internal/sites/domain-check").param("domain", "sitewise.localhost")).andExpect(status().isOk());
 		this.mvc.perform(get("/internal/sites/domain-check").param("domain", "evil.example.com")).andExpect(status().isNotFound());
+		// FutSlot's own apps: the player app, owner dashboard and admin
+		this.mvc.perform(get("/internal/sites/domain-check").param("domain", "www.localhost")).andExpect(status().isOk());
+		this.mvc.perform(get("/internal/sites/domain-check").param("domain", "owner.localhost")).andExpect(status().isOk());
+		this.mvc.perform(get("/internal/sites/domain-check").param("domain", "admin.localhost")).andExpect(status().isOk());
+		this.mvc.perform(get("/internal/sites/domain-check").param("domain", "staff.localhost")).andExpect(status().isNotFound());
 
 		// Previews work for any template and stay out of search results
 		this.mvc.perform(get("/site-preview/" + venue.slug()).param("template", "turf").param("accent", "1d4ed8"))

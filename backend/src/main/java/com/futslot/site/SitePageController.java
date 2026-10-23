@@ -120,13 +120,17 @@ class SitePageController {
 	}
 
 	/**
-	 * Asked by the web server before it gets an HTTPS certificate for a host: only hosts of live sites qualify,
-	 * so nobody can make FutSlot request certificates for domains that aren't venues'.
+	 * Asked by the web server before it gets an HTTPS certificate for a host: only hosts of live sites and
+	 * FutSlot's own apps qualify, so nobody can make FutSlot request certificates for domains that aren't venues'.
 	 */
 	@GetMapping("/internal/sites/domain-check")
 	ResponseEntity<Void> domainCheck(@RequestParam String domain) {
 		String host = domain.toLowerCase(Locale.ROOT).replaceFirst("^www\\.", "");
-		String suffix = "." + this.properties.baseDomain();
+		String base = this.properties.baseDomain();
+		if (host.equals(base) || host.equals("owner." + base) || host.equals("admin." + base)) {
+			return ResponseEntity.ok().build();
+		}
+		String suffix = "." + base;
 		Optional<VenueSite> site = host.endsWith(suffix)
 				? this.sites.findBySubdomain(host.substring(0, host.length() - suffix.length()))
 				: this.sites.findByCustomDomain(host);
