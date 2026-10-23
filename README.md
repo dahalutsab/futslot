@@ -14,6 +14,7 @@ Futsal booking platform: players find and book slots, venue owners manage courts
 | `docs/api/`  | OpenAPI contract shared by all clients       |
 | `docs/db/`   | Database schema and ER diagrams              |
 | `docs/design/` | Design tokens and UI guidelines            |
+| `deploy/`    | Running it on a server (Docker, Caddy)       |
 
 ## Local development
 
@@ -302,3 +303,58 @@ http://localhost:4400 and sign in with an admin account (see Venue onboarding ab
 and run `curl -s localhost:8080/v3/api-docs.yaml -o docs/api/openapi.yaml`.
 
 Tests (uses Testcontainers, Docker must be running): `cd backend && ./mvnw verify`
+
+## Deploying
+
+FutSlot runs on one small Linux server with Docker, sized for a 1 GB one (Azure's free B1s) shared with other
+projects. Two parts:
+
+- `deploy/edge/`: the server's one public web server (Caddy), shared by every project on it. It owns ports 80 and
+  443, gets the HTTPS certificates and passes each address to its project over the `edge` Docker network.
+- `deploy/`: FutSlot itself: PostgreSQL, the API and a small web server for the three web apps. About 420 MB in
+  use, capped at 700 MB.
+
+The server doesn't build anything: on each push to `main`, GitHub Actions (`.github/workflows/images.yml`) builds
+`ghcr.io/dahalutsab/futslot-api` and `futslot-web`, and the server pulls them. With
+`FUTSLOT_DOMAIN=futslot.dahalutsab.com.np`:
+
+| Address | What |
+|---------|------|
+| `futslot.dahalutsab.com.np` | Player web app (and the API under `/api`) |
+| `owner.futslot.dahalutsab.com.np` | Owner dashboard |
+| `admin.futslot.dahalutsab.com.np` | Admin web app |
+| `<subdomain>.futslot.dahalutsab.com.np` | Venue websites, also at `futslot.dahalutsab.com.np/sites/<subdomain>` |
+
+Venues' own domains aren't served yet: they need a catch-all certificate rule, which would also catch the other
+projects' sites on the server.
+
+### First time
+
+1. DNS: `A` records for `futslot` and `*.futslot` on the domain, both to the server's public IP.
+2. On the server (Ubuntu), Docker and 2 GB of swap:
+   ```bash
+   curl -fsSL https://get.docker.com | sudo sh && sudo usermod -aG docker $USER   # then log in again
+   sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+   echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+   ```
+3. `git clone` this repo. If its images are private on GitHub, `docker login ghcr.io -u dahalutsab` with a token
+   that has `read:packages`.
+4. The edge server, once per server, outside the repo so it outlives any one project:
+   ```bash
+   cp -r futslot/deploy/edge ~/edge && cd ~/edge && cp .env.example .env   # set ACME_EMAIL
+   docker compose up -d
+   ```
+5. FutSlot: in `futslot/deploy`, `cp .env.example .env` and fill it in (each secret from `openssl rand -base64 48`),
+   then `docker compose pull && docker compose up -d`, and `./seed-demo.sh` once for the demo venues and accounts.
+
+Certificates come on each address's first visit; the edge server asks the API first, so only FutSlot's apps and
+live venue sites qualify. With no SMS provider, `SHOW_SIGN_IN_CODES=true` shows sign-in codes on screen; turn it off
+once real texts are sent.
+
+### Running it
+
+- Updating: `docker compose pull && docker compose up -d` in `futslot/deploy`.
+- Backing up: `docker compose exec db pg_dump -U futslot futslot | gzip > futslot-$(date +%F).sql.gz`; photos are
+  in the `media` volume.
+- Another project on the server: put its `<project>.caddy` in `~/edge/sites/`, put its web container on the
+  `edge` network, then `docker compose restart caddy` in `~/edge`.

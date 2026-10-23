@@ -1,0 +1,31 @@
+# The server's one public web server, shared by every project on it: it owns ports 80 and 443, gets the HTTPS
+# certificates and passes each address to its project over the "edge" network. A project joins by putting a
+# <project>.caddy file in sites/ and its web container on that network; then: docker compose restart caddy
+name: edge
+
+services:
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    mem_limit: 96m
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./sites:/etc/caddy/sites:ro
+      - data:/data
+      - config:/config
+    networks:
+      - edge
+
+networks:
+  edge:
+    name: edge
+
+volumes:
+  data:
+  config:

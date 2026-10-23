@@ -1,0 +1,16 @@
+# FutSlot. On another domain, replace futslot.dahalutsab.com.np below with it.
+futslot.dahalutsab.com.np {
+	encode zstd gzip
+	reverse_proxy futslot-web:80
+}
+
+# Everything else under it: owner., admin., www. and the venue websites. Each gets its certificate on its
+# first visit, once the API says it's one of FutSlot's (a live venue site or one of its apps). They aren't
+# named separately: a name that also matches this wildcard doesn't get its certificate.
+*.futslot.dahalutsab.com.np {
+	tls {
+		on_demand
+	}
+	encode zstd gzip
+	reverse_proxy futslot-web:80
+}
