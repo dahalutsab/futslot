@@ -171,6 +171,11 @@ public class DepositService {
 				open, history);
 	}
 
+	/** Whether the deposit covers games still to be played, so it can't be taken back yet. */
+	public boolean inUse(UUID userId) {
+		return this.bookings.hasLiveDepositBookings(userId);
+	}
+
 	/**
 	 * Takes the whole balance out now; FutSlot sends it to {@code sendTo} (a wallet number or bank account) once
 	 * the wait is over.

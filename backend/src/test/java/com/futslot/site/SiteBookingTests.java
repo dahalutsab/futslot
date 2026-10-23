@@ -267,9 +267,10 @@ class SiteBookingTests {
 		String transaction = "DEP-SITE-" + UUID.randomUUID();
 		this.mvc.perform(post(site + "/deposit").cookie(player).param("method", "ESEWA").param("transactionId", transaction)
 				.param("amount", "1000").param("court", court).param("start", start))
-			.andExpect(redirectedUrlPattern(site + "/deposit?sent=1&court=*"));
+			.andExpect(redirectedUrlPattern(site + "/deposit?court=*"));
 		this.mvc.perform(get(site + "/deposit").cookie(player))
-			.andExpect(content().string(containsString("Top-up sent")));
+			.andExpect(content().string(containsString("Top-up sent")))
+			.andExpect(content().string(not(containsString("role=\"status\""))));
 		TestUser admin = this.users.signUpAdmin("Deposit Site Admin");
 		String paymentId = JsonPath.<List<String>>read(ownerSends(admin, get("/api/v1/admin/payments/pending"), null),
 				"$[?(@.transactionId == '%s')].id".formatted(transaction)).getFirst();
@@ -279,6 +280,9 @@ class SiteBookingTests {
 		String location = this.mvc.perform(post(site + "/book/confirm").param("court", court).param("start", start).cookie(player))
 			.andExpect(redirectedUrlPattern(site + "/bookings/*"))
 			.andReturn().getResponse().getRedirectedUrl();
+		this.mvc.perform(get(site + "/deposit").cookie(player))
+			.andExpect(content().string(containsString("Your deposit is covering a game")))
+			.andExpect(content().string(not(containsString("Take your deposit back"))));
 		this.mvc.perform(post(site + "/deposit/withdraw").cookie(player).param("method", "ESEWA").param("sendTo", "9800000009"))
 			.andExpect(content().string(containsString("role=\"alert\"")))
 			.andExpect(content().string(containsString("bookings you haven")));

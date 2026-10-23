@@ -140,7 +140,7 @@
       <section th:if="${d.withdrawal != null}" class="book-card">
         <h2 th:text="#{book.comingBack(${d.withdrawal.amount})}">Rs 1,000 is coming back to you</h2>
         <p class="book-muted" th:text="#{book.withdrawalWhen(${d.withdrawal.method}, ${d.withdrawal.sendTo}, ${d.withdrawal.due})}">Withdrawal</p>
-        <form method="post" th:action="${book.site.base + '/deposit/withdrawals/' + d.withdrawal.id + '/cancel'}">
+        <form method="post" th:action="${book.site.base + '/deposit/withdrawals/' + d.withdrawal.id + '/cancel'}" class="book-form">
           <button type="submit" class="btn book-secondary book-submit" th:text="#{book.keepDeposit}">Keep my deposit instead</button>
         </form>
       </section>
@@ -164,6 +164,11 @@
           <input id="deposit-txn" name="transactionId" type="text" maxlength="100" required autocomplete="off" th:placeholder="#{book.fromReceipt}">
           <button type="submit" class="btn btn-accent book-submit" th:text="#{book.sendForChecking}">Send for checking</button>
         </form>
+      </section>
+
+      <section th:if="${d.inUse}" class="book-card">
+        <h2 th:text="#{book.depositInUse}">Your deposit is covering a game</h2>
+        <p class="book-muted" th:text="#{book.depositInUseWhen}">You can take it back once it's played or cancelled.</p>
       </section>
 
       <section th:if="${d.canWithdraw}" class="book-card">
