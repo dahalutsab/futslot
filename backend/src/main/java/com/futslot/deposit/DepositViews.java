@@ -20,14 +20,15 @@ public final class DepositViews {
 	/**
 	 * A player's deposit. {@code toAdd} is what they must send to fill it (0 when full).
 	 * {@code topUpBeingChecked}: they've sent a top-up FutSlot hasn't checked yet. {@code paymentInstructions}
-	 * says where to send it. {@code withdrawal} is the one waiting to be sent, or null.
+	 * says where to send it. {@code withdrawal} is the one waiting to be sent, or null. {@code inUse}: it
+	 * covers games still to be played, so it can't be taken back yet.
 	 */
 	public record Deposit(BigDecimal required, BigDecimal balance, BigDecimal toAdd, boolean topUpBeingChecked,
-			String paymentInstructions, Withdrawal withdrawal, List<Entry> history) {
+			String paymentInstructions, Withdrawal withdrawal, boolean inUse, List<Entry> history) {
 
 		Deposit withTopUp(boolean beingChecked, String instructions) {
 			return new Deposit(this.required, this.balance, this.toAdd, beingChecked, instructions, this.withdrawal,
-					this.history);
+					this.inUse, this.history);
 		}
 
 	}

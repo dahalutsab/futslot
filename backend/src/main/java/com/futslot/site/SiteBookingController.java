@@ -323,7 +323,7 @@ class SiteBookingController {
 		DepositViews.Deposit mine = this.deposits.forPlayer(player);
 		BigDecimal toAdd = mine.toAdd();
 		DepositViews.Withdrawal open = mine.withdrawal();
-		boolean inUse = open == null && mine.balance().signum() > 0 && this.deposits.inUse(player);
+		boolean inUse = open == null && mine.balance().signum() > 0 && mine.inUse();
 		BookPage.Withdrawal withdrawal = (open != null) ? new BookPage.Withdrawal(open.id().toString(),
 				format.rupees(open.amount()), label(sendMethods, open.method().name()), open.sendTo(),
 				format.day(open.dueAt().atZone(ZoneId.of(context.venue().timezone())).toLocalDate())) : null;

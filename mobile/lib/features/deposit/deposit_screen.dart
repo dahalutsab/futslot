@@ -301,7 +301,7 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
         ),
       if (d.balance > 0 && withdrawal == null) ...[
         const SizedBox(height: 16),
-        _withdrawCard(context, d),
+        if (d.inUse) _inUseCard(context) else _withdrawCard(context, d),
       ],
       if (d.history.isNotEmpty) ...[
         const SizedBox(height: 24),
@@ -344,6 +344,20 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
         ),
       ],
     ];
+  }
+
+  Widget _inUseCard(BuildContext context) {
+    return FsCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(l.depositInUse, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(l.depositInUseWhen, style: TextStyle(fontSize: 14, color: context.fs.muted)),
+        ],
+      ),
+    );
   }
 
   Widget _withdrawCard(BuildContext context, Deposit d) {

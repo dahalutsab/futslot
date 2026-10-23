@@ -203,9 +203,11 @@ class DepositFlowTests {
 		String bookingId = id(book(player, venue, "07:00"));
 		String withdraw = "{\"method\":\"ESEWA\",\"sendTo\":\"9800000002\"}";
 
+		send(player, get("/api/v1/me/deposit"), null).andExpect(jsonPath("$.inUse").value(true));
 		send(player, post("/api/v1/me/deposit/withdrawals"), withdraw).andExpect(status().isConflict())
 			.andExpect(jsonPath("$.code").value("DEPOSIT_IN_USE"));
 		send(player, post("/api/v1/bookings/" + bookingId + "/cancel"), "{}").andExpect(status().isOk());
+		send(player, get("/api/v1/me/deposit"), null).andExpect(jsonPath("$.inUse").value(false));
 
 		String withdrawalId = id(send(player, post("/api/v1/me/deposit/withdrawals"), withdraw)
 			.andExpect(status().isCreated())

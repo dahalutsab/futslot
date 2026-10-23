@@ -362,6 +362,7 @@ export interface Deposit {
   topUpBeingChecked: boolean;
   paymentInstructions: string | null;
   withdrawal: DepositWithdrawal | null;
+  inUse: boolean;
   history: DepositEntry[];
 }
 

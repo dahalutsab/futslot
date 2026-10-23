@@ -1559,8 +1559,15 @@ class SEn extends S {
   }
 
   @override
+  String get depositInUse => 'Your deposit is covering a game';
+
+  @override
+  String get depositInUseWhen =>
+      'You can take it back once the games you\'ve booked at venues that need it are played or cancelled.';
+
+  @override
   String withdrawExplain(String amount) {
-    return 'FutSlot sends all of $amount to you 3 days after you ask, once no game you\'ve booked at a venue that needs it is still to be played.';
+    return 'FutSlot sends all of $amount to you 3 days after you ask.';
   }
 
   @override

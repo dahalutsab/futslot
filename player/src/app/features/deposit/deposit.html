@@ -46,7 +46,12 @@
       </section>
     }
 
-    @if (d.balance > 0 && !d.withdrawal) {
+    @if (d.balance > 0 && !d.withdrawal && d.inUse) {
+      <section class="mt-4 rounded-xl border border-border bg-surface p-5" aria-labelledby="in-use-title">
+        <h2 id="in-use-title" class="font-semibold">{{ l().depositInUse }}</h2>
+        <p class="mt-1 text-sm text-muted">{{ l().depositInUseWhen }}</p>
+      </section>
+    } @else if (d.balance > 0 && !d.withdrawal) {
       <section class="mt-4 rounded-xl border border-border bg-surface p-5" aria-labelledby="withdraw-title">
         <h2 id="withdraw-title" class="font-semibold">{{ l().takeDepositBack }}</h2>
         <p class="mt-1 text-sm text-muted">{{ l().withdrawExplain(fmt.rupees(d.balance)) }}</p>

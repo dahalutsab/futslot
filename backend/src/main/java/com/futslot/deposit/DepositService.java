@@ -168,12 +168,7 @@ public class DepositService {
 			.map(DepositViews.Entry::from)
 			.toList();
 		return new DepositViews.Deposit(AMOUNT, balance, AMOUNT.subtract(balance).max(BigDecimal.ZERO), false, null,
-				open, history);
-	}
-
-	/** Whether the deposit covers games still to be played, so it can't be taken back yet. */
-	public boolean inUse(UUID userId) {
-		return this.bookings.hasLiveDepositBookings(userId);
+				open, this.bookings.hasLiveDepositBookings(userId), history);
 	}
 
 	/**
