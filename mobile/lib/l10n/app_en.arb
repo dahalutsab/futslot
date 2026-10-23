@@ -370,6 +370,14 @@
   "enterPassword": "Enter your password.",
   "passwordNotSet": "Your account doesn't have a password yet. We'll text you a code to set one.",
   "codeSentMoment": "We sent you a code a moment ago. Enter it below.",
+  "codeShown": "Texts cost money and the developer is broke, so here's your code instead: {code}. Real SMS comes once a few futsals sign up.",
+  "@codeShown": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "accountExists": "This number already has an account. Sign in, or reset your password if you forgot it.",
   "noAccountYet": "No account uses this number yet. Create one below.",
   "enterCode": "Enter the 6-digit code we sent.",

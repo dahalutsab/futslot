@@ -1,0 +1,82 @@
+# FutSlot: PostgreSQL, the API and the web apps, behind the server's shared edge server (deploy/edge), which
+# does HTTPS. From this folder: cp .env.example .env, fill it in, then docker compose pull && docker compose up -d
+# Images come from GitHub (.github/workflows/images.yml); docker compose build makes them locally instead.
+# Sized for a 1 GB server shared with other apps: about 400 MB in use, capped at 700 MB.
+name: futslot-prod
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    mem_limit: 160m
+    # Small caches and few connections: the API holds at most 5
+    command: postgres -c shared_buffers=32MB -c max_connections=20 -c work_mem=2MB -c maintenance_work_mem=32MB
+      -c effective_cache_size=128MB
+    environment:
+      POSTGRES_DB: futslot
+      POSTGRES_USER: futslot
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U futslot -d futslot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    image: ghcr.io/dahalutsab/futslot-api:${FUTSLOT_VERSION:-latest}
+    build: ../backend
+    restart: unless-stopped
+    # Heap 192 MB (JAVA_TOOL_OPTIONS in backend/Dockerfile) plus class data, compiled code and threads
+    mem_limit: 480m
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/futslot
+      DB_USERNAME: futslot
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      OTP_SECRET: ${OTP_SECRET:?set OTP_SECRET in .env}
+      SITES_SESSION_SECRET: ${SITES_SESSION_SECRET:?set SITES_SESSION_SECRET in .env}
+      SITES_BASE_DOMAIN: ${FUTSLOT_DOMAIN:?set FUTSLOT_DOMAIN in .env}
+      SITES_URL_TEMPLATE: https://{subdomain}.${FUTSLOT_DOMAIN}
+      SITES_DNS_TARGET: ${FUTSLOT_DOMAIN}
+      SHOW_SIGN_IN_CODES: ${SHOW_SIGN_IN_CODES:-false}
+      FUTSLOT_PAYMENT_INSTRUCTIONS: ${FUTSLOT_PAYMENT_INSTRUCTIONS:-}
+      FUTSLOT_PAYMENT_INSTRUCTIONS_NE: ${FUTSLOT_PAYMENT_INSTRUCTIONS_NE:-}
+      GOOGLE_WEB_CLIENT_ID: ${GOOGLE_WEB_CLIENT_ID:-}
+      FUTSLOT_MEDIA_DIR: /data/media
+      # The web server in front says the visit was HTTPS: trust it, so redirects and cookies know
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+      SERVER_TOMCAT_THREADS_MAX: 40
+      SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE: 5
+      SPRING_DATASOURCE_HIKARI_MINIMUMIDLE: 1
+    volumes:
+      - media:/data/media
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: ghcr.io/dahalutsab/futslot-web:${FUTSLOT_VERSION:-latest}
+    build:
+      context: ..
+      dockerfile: deploy/web.Dockerfile
+    restart: unless-stopped
+    mem_limit: 64m
+    environment:
+      FUTSLOT_DOMAIN: ${FUTSLOT_DOMAIN}
+    networks:
+      default:
+      edge:
+        aliases:
+          - futslot-web
+    depends_on:
+      - api
+
+networks:
+  edge:
+    external: true
+
+volumes:
+  db-data:
+  media:

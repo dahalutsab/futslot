@@ -73,8 +73,7 @@ class AuthService {
 			throw new ApiException(HttpStatus.NOT_FOUND, "ACCOUNT_NOT_FOUND",
 					"No account uses this number. Sign up instead");
 		}
-		this.otpService.send(phone, request.purpose().otp());
-		return sent();
+		return sent(this.otpService.send(phone, request.purpose().otp()));
 	}
 
 	@Transactional(noRollbackFor = ApiException.class)
@@ -158,8 +157,7 @@ class AuthService {
 	}
 
 	OtpSentResponse requestOtp(OtpRequest request) {
-		this.otpService.send(PhoneNumbers.normalize(request.phone()), OtpPurpose.LOGIN);
-		return sent();
+		return sent(this.otpService.send(PhoneNumbers.normalize(request.phone()), OtpPurpose.LOGIN));
 	}
 
 	/** Checks a LOGIN code and signs the person in, creating their account if it's their first time. */
@@ -213,8 +211,8 @@ class AuthService {
 		}
 	}
 
-	private OtpSentResponse sent() {
-		return new OtpSentResponse(this.otpService.ttlSeconds(), this.otpService.resendCooldownSeconds());
+	private OtpSentResponse sent(String code) {
+		return new OtpSentResponse(this.otpService.ttlSeconds(), this.otpService.resendCooldownSeconds(), code);
 	}
 
 	private ApiException locked() {

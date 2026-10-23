@@ -139,8 +139,10 @@ class SiteBookingController {
 			@RequestParam String phone, HttpServletRequest request, Model model) {
 		Context context = context(subdomain, request);
 		try {
-			this.signIn.sendCode(phone);
-			return render(model, context, "code", court, start, phone, false, null, context.text().get("book.codeSent", phone.strip()), null);
+			String shown = this.signIn.sendCode(phone);
+			String notice = (shown != null) ? context.text().get("book.codeShown", shown)
+					: context.text().get("book.codeSent", phone.strip());
+			return render(model, context, "code", court, start, phone, false, null, notice, null);
 		}
 		catch (ApiException ex) {
 			if ("OTP_COOLDOWN".equals(ex.getCode())) {

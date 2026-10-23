@@ -29,9 +29,10 @@ public record SecurityProperties(@Valid Jwt jwt, @Valid Otp otp, @Valid @Default
 
 	}
 
+	/** {@code showCodes} puts the code on screen as well as in the text, for a demo with no SMS provider. */
 	public record Otp(@NotBlank String secret, @DefaultValue("5m") Duration ttl,
 			@DefaultValue("5") @Min(1) int maxAttempts, @DefaultValue("60s") Duration resendCooldown,
-			@DefaultValue("5") @Min(1) int maxPerHour) {
+			@DefaultValue("5") @Min(1) int maxPerHour, boolean showCodes) {
 
 	}
 

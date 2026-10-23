@@ -43,6 +43,8 @@ export interface AuthOptions {
 export interface OtpSent {
   expiresInSeconds: number;
   resendAfterSeconds: number;
+  /** The code itself, only in a demo without SMS. */
+  code: string | null;
 }
 
 export type VenueStatus = 'DRAFT' | 'PENDING_APPROVAL' | 'ACTIVE' | 'REJECTED' | 'SUSPENDED';

@@ -92,15 +92,18 @@ class AuthOptions {
   factory AuthOptions.fromJson(Json json) => AuthOptions(googleWebClientId: json['googleWebClientId'] as String?);
 }
 
+/// [code] is the code itself, only in a demo without SMS.
 class OtpSent {
-  const OtpSent({required this.expiresInSeconds, required this.resendAfterSeconds});
+  const OtpSent({required this.expiresInSeconds, required this.resendAfterSeconds, this.code});
 
   final int expiresInSeconds;
   final int resendAfterSeconds;
+  final String? code;
 
   factory OtpSent.fromJson(Json json) => OtpSent(
         expiresInSeconds: json['expiresInSeconds'] as int,
         resendAfterSeconds: json['resendAfterSeconds'] as int,
+        code: json['code'] as String?,
       );
 }
 

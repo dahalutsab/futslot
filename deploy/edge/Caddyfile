@@ -1,0 +1,14 @@
+{
+	email {$ACME_EMAIL}
+	# Certificates fetched on a host's first visit (FutSlot's venue websites) are asked for here first, so
+	# nobody can make this server request certificates for domains that aren't venues'
+	on_demand_tls {
+		ask http://futslot-web/internal/sites/domain-check
+	}
+}
+
+import sites/*.caddy
+
+http:// {
+	redir https://{host}{uri} permanent
+}

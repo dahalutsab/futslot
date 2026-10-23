@@ -513,6 +513,11 @@ class SNe extends S {
   String get codeSentMoment => 'भर्खरै कोड पठाइसकेका छौं। तल लेख्नुहोस्।';
 
   @override
+  String codeShown(String code) {
+    return 'SMS पठाउन पैसा लाग्छ र डेभलपरसँग अहिले पैसा छैन, त्यसैले तपाईंको कोड यहीँ छ: $code। केही फुटसलले साइन अप गरेपछि साँच्चैको SMS आउनेछ।';
+  }
+
+  @override
   String get accountExists =>
       'यो नम्बरमा पहिले नै खाता छ। साइन इन गर्नुहोस्, वा पासवर्ड बिर्सनुभएको भए रिसेट गर्नुहोस्।';
 

@@ -142,6 +142,9 @@ export class Login implements OnDestroy {
     this.error.set(null);
     try {
       const sent = await this.session.requestCode(this.digits(this.phone()), PURPOSE[mode]);
+      if (sent.code) {
+        this.notice.set(l().codeShown(sent.code));
+      }
       this.showCodeStep(sent.resendAfterSeconds);
     }
     catch (error) {

@@ -35,6 +35,8 @@ export interface AuthOptions {
 export interface OtpSent {
   expiresInSeconds: number;
   resendAfterSeconds: number;
+  /** The code itself, only in a demo without SMS. */
+  code: string | null;
 }
 
 /** RFC 7807 problem body; {@code code} is stable and machine-readable. */

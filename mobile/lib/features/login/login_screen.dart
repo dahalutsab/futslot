@@ -158,6 +158,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         _ => CodePurpose.signUp,
       };
       final sent = await _session.requestCode(_digits, purpose);
+      if (sent.code case final code?) {
+        _notice = l.codeShown(code);
+      }
       _showCodeStep(sent.resendAfterSeconds);
     } catch (error) {
       final problem = problemOf(error);

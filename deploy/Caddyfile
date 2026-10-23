@@ -1,0 +1,44 @@
+# FutSlot's own web server, behind the shared edge server (deploy/edge), which does HTTPS. It serves the three
+# web apps and passes the API's paths, and every venue website host, to the API.
+{
+	auto_https off
+	admin off
+	# The edge server says the visit was HTTPS; keep that for the API's redirects and cookies
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+# One of the web apps from /srv/<app>, with the API's paths passed through to it
+(app) {
+	@api path /api/* /media/* /site-assets/* /site-preview/* /sites/* /v3/api-docs* /swagger-ui* /actuator/health*
+	handle @api {
+		reverse_proxy api:8080
+	}
+	handle {
+		root * /srv/{args[0]}
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+http://{$FUTSLOT_DOMAIN} {
+	import app player
+}
+
+http://owner.{$FUTSLOT_DOMAIN} {
+	import app dashboard
+}
+
+http://admin.{$FUTSLOT_DOMAIN} {
+	import app admin
+}
+
+http://www.{$FUTSLOT_DOMAIN} {
+	redir https://{$FUTSLOT_DOMAIN}{uri} permanent
+}
+
+# Venue websites (the API tells them apart by host), and the edge server's certificate check
+:80 {
+	reverse_proxy api:8080
+}
