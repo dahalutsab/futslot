@@ -70,12 +70,12 @@
       "destination": "https://futslot-api.onrender.com/sitemap.xml"
     },
     {
-      "source": "/v3/api-docs/:path*",
-      "destination": "https://futslot-api.onrender.com/v3/api-docs/:path*"
-    },
-    {
       "source": "/v3/api-docs",
       "destination": "https://futslot-api.onrender.com/v3/api-docs"
+    },
+    {
+      "source": "/v3/api-docs/:path*",
+      "destination": "https://futslot-api.onrender.com/v3/api-docs/:path*"
     },
     {
       "source": "/swagger-ui/:path*",
