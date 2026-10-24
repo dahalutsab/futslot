@@ -307,7 +307,8 @@ Tests (uses Testcontainers, Docker must be running): `cd backend && ./mvnw verif
 ## Deploying
 
 FutSlot runs on one small Linux server with Docker, sized for a 1 GB one (Azure's free B1s) shared with other
-projects. Two parts:
+projects, as below. Or on free plans with no server of its own (Render, Neon, Cloudinary and Vercel): see
+[deploy/render/README.md](deploy/render/README.md). Two parts:
 
 - `deploy/edge/`: the server's one public web server (Caddy), shared by every project on it. It owns ports 80 and
   443, gets the HTTPS certificates and passes each address to its project over the `edge` Docker network.

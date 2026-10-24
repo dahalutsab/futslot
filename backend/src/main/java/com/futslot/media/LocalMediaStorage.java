@@ -6,12 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.stereotype.Component;
-
 /** Files under {@code futslot.media.dir}. Keys can't climb out of it. */
-@Component
-@EnableConfigurationProperties(MediaProperties.class)
 class LocalMediaStorage implements MediaStorage {
 
 	static final String URL_PREFIX = "/media/";

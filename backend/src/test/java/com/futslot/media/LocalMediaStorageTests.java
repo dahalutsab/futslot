@@ -16,7 +16,7 @@ class LocalMediaStorageTests {
 
 	@Test
 	void storesReadsAndDeletesUnderItsRootOnly() throws Exception {
-		LocalMediaStorage storage = new LocalMediaStorage(new MediaProperties(this.root.resolve("media")));
+		LocalMediaStorage storage = new LocalMediaStorage(new MediaProperties(this.root.resolve("media"), null, null));
 		Files.writeString(this.root.resolve("secret.txt"), "keep out");
 
 		String url = storage.store("venues/v1/a.png", new byte[] { 1, 2, 3 });
