@@ -114,6 +114,15 @@ a.chip:hover { border-color: var(--turf); }
 .hero a.chip:hover { border-color: #fff; background: rgba(255, 255, 255, .08); }
 .hero .chip .muted { color: rgba(255, 255, 255, .72); }
 
+/* A page that isn't there: the turf band fills the screen, with the way out */
+.not-found { min-height: calc(100dvh - 65px); display: flex; align-items: center; }
+.not-found .wrap { width: 100%; }
+.not-found .actions { margin-top: 28px; }
+.btn-on-turf { border-color: rgba(255, 255, 255, .6); color: #fff; }
+.btn-on-turf:hover { border-color: #fff; background: rgba(255, 255, 255, .08); }
+.btn-light { background: #fff; color: #0b4d2b; }
+.btn-light:hover { background: rgba(255, 255, 255, .9); }
+
 /* A city or area's page: the same heading, on the page's own ground */
 .hero-small { padding: 0 0 8px; background: none; color: var(--text); overflow: visible; }
 .hero-small h1 { max-width: none; margin-top: 20px; font-size: clamp(44px, 6.5vw, 76px); }

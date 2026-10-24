@@ -63,7 +63,15 @@ class DirectoryTests {
 			.andExpect(status().isOk())
 			.andExpect(content().string(containsString("<h1>Futsal in Dirtole Chowk, Dirpur</h1>")))
 			.andExpect(content().string(containsString("\"item\":\"" + home + "/futsal/dirpur\"")));
-		this.mvc.perform(get("/futsal/nowhere")).andExpect(status().isNotFound());
+		// A page that isn't there is a page, in the language of its address
+		this.mvc.perform(get("/futsal/nowhere"))
+			.andExpect(status().isNotFound())
+			.andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+			.andExpect(content().string(containsString("We couldn’t find that page")))
+			.andExpect(content().string(containsString("href=\"" + home + "/explore\"")));
+		this.mvc.perform(get("/ne/venues/no-such-venue"))
+			.andExpect(status().isNotFound())
+			.andExpect(content().string(containsString("यो पेज भेटिएन")));
 		this.mvc.perform(get("/futsal/dirpur/nowhere")).andExpect(status().isNotFound());
 
 		// A venue's page: its details and free slots, which book in the player app
