@@ -22,7 +22,7 @@ import { PayForm } from '../../shared/pay-form';
         <p class="text-muted">{{ l().membershipsPitch }}</p>
         <ul class="mt-3 grid gap-3 sm:grid-cols-2">
           @for (plan of plans(); track plan.id) {
-            <li class="rounded-xl border border-border bg-surface p-4" [class.sm:col-span-2]="buying() === plan.id">
+            <li class="rounded-md border border-border bg-surface p-4" [class.sm:col-span-2]="buying() === plan.id">
               <div class="flex items-start gap-3">
                 <div class="min-w-0 flex-1">
                   <p class="font-semibold">{{ plan.name }}</p>
@@ -43,12 +43,12 @@ import { PayForm } from '../../shared/pay-form';
                     @if (error(); as message) {
                       <p class="mb-2 text-danger" role="alert">{{ message }}</p>
                     }
-                    <button type="button" (click)="buy(plan, null)" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ l().getIt }}</button>
+                    <button type="button" (click)="buy(plan, null)" [disabled]="busy()" class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ l().getIt }}</button>
                   }
                   <button type="button" (click)="buying.set(null)" class="mt-2 h-11 px-1 text-sm font-medium text-muted hover:text-text">{{ l().notNow }}</button>
                 </div>
               } @else {
-                <button type="button" (click)="start(plan)" class="mt-3 h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">{{ l().buy }}</button>
+                <button type="button" (click)="start(plan)" class="mt-3 h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2">{{ l().buy }}</button>
               }
             </li>
           }

@@ -23,10 +23,15 @@ public record DirectoryPage(String lang, String base, String switchHref, SitePag
 
 	/**
 	 * A venue in a list. {@code from} is "From Rs 1,200" or null; {@code rating} is "4.5 (12)" or null;
-	 * {@code cover} is the cover photo's address or null.
+	 * {@code cover} is the cover photo's address or null. {@code freeWhen} is "Free today" (or tomorrow, once today's
+	 * games are over) with the next free hours, which book straight away; null when none are free.
 	 */
 	public record Card(String name, String href, String place, String from, String courts, String rating, String cover,
-			String alt) {
+			String alt, String freeWhen, List<Hour> free) {
+	}
+
+	/** A free hour: "7 PM" and where booking it starts. */
+	public record Hour(String time, String book) {
 	}
 
 }

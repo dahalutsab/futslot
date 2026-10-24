@@ -9,7 +9,7 @@ import { l } from '../i18n/i18n';
   imports: [RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <nav class="flex gap-1 rounded-lg bg-surface-2 p-1" [attr.aria-label]="l().tabPlay">
+    <nav class="flex gap-1 rounded-md bg-surface-2 p-1" [attr.aria-label]="l().tabPlay">
       @for (link of links(); track link.path) {
         <a [routerLink]="link.path" routerLinkActive="bg-surface text-text" ariaCurrentWhenActive="page"
           class="flex h-10 flex-1 items-center justify-center rounded-md font-medium text-muted">{{ link.label }}</a>

@@ -27,13 +27,13 @@ import { l } from '../i18n/i18n';
       <div>
         <label [for]="id() + '-comment'" class="mb-1.5 block font-medium">{{ l().whatWasItLike }} <span class="font-normal text-subtle">{{ l().optional }}</span></label>
         <textarea [id]="id() + '-comment'" name="comment" rows="3" maxlength="1000" [placeholder]="l().reviewHint"
-          class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-base" [ngModel]="comment()" (ngModelChange)="comment.set($event)"></textarea>
+          class="w-full rounded-md border border-border bg-surface px-3 py-2 text-base" [ngModel]="comment()" (ngModelChange)="comment.set($event)"></textarea>
       </div>
       @if (problem(); as message) {
         <p class="text-danger" role="alert">{{ message }}</p>
       }
       <div class="flex gap-2">
-        <button type="submit" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ busy() ? l().saving : label() ?? l().postReview }}</button>
+        <button type="submit" [disabled]="busy()" class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ busy() ? l().saving : label() ?? l().postReview }}</button>
         <ng-content />
       </div>
     </form>

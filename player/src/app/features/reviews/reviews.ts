@@ -26,7 +26,7 @@ import { dayLabel, localClock } from '../../shared/format';
           <ul class="mt-3 space-y-2">
             @for (booking of toReview(); track booking.id) {
               <li>
-                <a [routerLink]="['/bookings', booking.id]" fragment="review" class="flex items-center gap-3 rounded-xl border border-border bg-surface p-4 hover:border-subtle">
+                <a [routerLink]="['/bookings', booking.id]" fragment="review" class="flex items-center gap-3 rounded-md border border-border bg-surface p-4 hover:border-subtle">
                   <span class="min-w-0 flex-1">
                     <span class="block font-medium">{{ booking.venue.name }}</span>
                     <span class="tabular block text-sm text-muted">{{ fmt.dayLabel(booking.startsAt.slice(0, 10)) }} · {{ fmt.localClock(booking.startsAt) }}</span>
@@ -47,7 +47,7 @@ import { dayLabel, localClock } from '../../shared/format';
           } @else {
             <ul class="mt-3 space-y-3">
               @for (review of list; track review.id) {
-                <li class="rounded-xl border border-border bg-surface p-4">
+                <li class="rounded-md border border-border bg-surface p-4">
                   <div class="flex items-center gap-3">
                     <p class="min-w-0 flex-1 font-medium">{{ review.venueName }}</p>
                     <span class="text-held-line" [attr.aria-label]="l().starsOutOfFive(review.rating)">{{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}</span>
@@ -59,7 +59,7 @@ import { dayLabel, localClock } from '../../shared/format';
                     <p class="mt-2 text-sm text-noshow-fg">{{ review.status === 'HIDDEN' ? l().reviewHidden : l().reviewRemoved }}</p>
                   }
                   @if (review.ownerReply) {
-                    <div class="mt-3 rounded-lg bg-surface-2 px-3 py-2 text-sm">
+                    <div class="mt-3 rounded-md bg-surface-2 px-3 py-2 text-sm">
                       <p class="font-medium">{{ l().venueReplied(review.venueName) }}</p>
                       <p class="mt-0.5 whitespace-pre-line text-muted">{{ review.ownerReply }}</p>
                     </div>
@@ -75,7 +75,7 @@ import { dayLabel, localClock } from '../../shared/format';
             </ul>
           }
         } @else {
-          <div class="mt-3 h-32 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
+          <div class="mt-3 h-32 animate-pulse rounded-md bg-surface" [attr.aria-label]="l().loading"></div>
         }
       </section>
     </div>

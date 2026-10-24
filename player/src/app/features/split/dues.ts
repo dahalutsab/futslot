@@ -20,7 +20,7 @@ import { dayLabel, localClock, phone, rupees } from '../../shared/format';
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>
       } @else if (dues(); as list) {
         @if (list.length === 0) {
-          <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
+          <div class="mt-6 rounded-md border border-dashed border-border bg-surface px-6 py-12 text-center">
             <p class="font-medium">{{ l().allSquare }}</p>
             <p class="mt-1 text-muted">{{ l().allSquareBody }}</p>
           </div>
@@ -29,7 +29,7 @@ import { dayLabel, localClock, phone, rupees } from '../../shared/format';
           <ul class="mt-3 space-y-3">
             @for (d of list; track d.bookingId) {
               <li>
-                <a [routerLink]="['/bookings', d.bookingId, 'split']" class="flex items-start gap-3 rounded-xl border border-border bg-surface p-4 hover:border-subtle">
+                <a [routerLink]="['/bookings', d.bookingId, 'split']" class="flex items-start gap-3 rounded-md border border-border bg-surface p-4 hover:border-subtle">
                   <div class="min-w-0 flex-1">
                     <p class="font-medium">{{ d.payTo.name }}</p>
                     <p class="tabular text-sm text-muted">{{ d.venueName }} · {{ fmt.dayLabel(d.startsAt.slice(0, 10)) }} · {{ fmt.localClock(d.startsAt) }}</p>
@@ -44,7 +44,7 @@ import { dayLabel, localClock, phone, rupees } from '../../shared/format';
           </ul>
         }
       } @else {
-        <div class="mt-6 h-32 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
+        <div class="mt-6 h-32 animate-pulse rounded-md bg-surface" [attr.aria-label]="l().loading"></div>
       }
     </div>
   `,

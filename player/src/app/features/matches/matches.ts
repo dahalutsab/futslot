@@ -24,13 +24,13 @@ const NEPAL = 'Asia/Kathmandu';
       <fs-play-nav />
       <div class="mt-6 flex items-center gap-3">
         <h1 class="flex-1 text-2xl font-semibold tracking-tight">{{ l().playGames }}</h1>
-        <a routerLink="/matches/new" class="flex h-11 items-center gap-1.5 rounded-lg bg-ink px-4 font-medium text-ink-fg">
+        <a routerLink="/matches/new" class="flex h-11 items-center gap-1.5 rounded-md bg-ink px-4 font-medium text-ink-fg">
           <lucide-icon [img]="icons.Plus" [size]="18" /> {{ l().postAGame }}
         </a>
       </div>
       <p class="mt-1 text-muted">{{ l().gamesIntro }}</p>
 
-      <div class="mt-4 flex gap-1 rounded-lg bg-surface-2 p-1" role="tablist" [attr.aria-label]="l().playGames">
+      <div class="mt-4 flex gap-1 rounded-md bg-surface-2 p-1" role="tablist" [attr.aria-label]="l().playGames">
         <button type="button" role="tab" [attr.aria-selected]="tab() === 'open'" (click)="show('open')" class="h-10 flex-1 rounded-md font-medium text-muted"
           [class.bg-surface]="tab() === 'open'" [class.text-text]="tab() === 'open'">{{ l().openGames }}</button>
         <button type="button" role="tab" [attr.aria-selected]="tab() === 'mine'" (click)="show('mine')" class="h-10 flex-1 rounded-md font-medium text-muted"
@@ -58,7 +58,7 @@ const NEPAL = 'Asia/Kathmandu';
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>
       } @else if (posts(); as list) {
         @if (list.length === 0) {
-          <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
+          <div class="mt-6 rounded-md border border-dashed border-border bg-surface px-6 py-12 text-center">
             <p class="font-medium">{{ tab() === 'open' ? l().noOpenGames : l().noPostedGames }}</p>
             <p class="mt-1 text-muted">{{ l().noGamesBody }}</p>
           </div>
@@ -66,7 +66,7 @@ const NEPAL = 'Asia/Kathmandu';
           <ul class="mt-4 space-y-3">
             @for (post of list; track post.id) {
               <li>
-                <a [routerLink]="['/matches', post.id]" class="block rounded-xl border border-border bg-surface p-4 hover:border-subtle">
+                <a [routerLink]="['/matches', post.id]" class="block rounded-md border border-border bg-surface p-4 hover:border-subtle">
                   <fs-match-summary [post]="post" />
                   @if (post.mine) {
                     <p class="mt-2 text-sm font-medium">{{ pending(post) ? l().yourPostAsking(pending(post)) : l().yourPost }}</p>
@@ -83,7 +83,7 @@ const NEPAL = 'Asia/Kathmandu';
       } @else {
         <div class="mt-6 space-y-3" [attr.aria-label]="l().loading">
           @for (i of [1, 2]; track i) {
-            <div class="h-32 animate-pulse rounded-xl bg-surface"></div>
+            <div class="h-32 animate-pulse rounded-md bg-surface"></div>
           }
         </div>
       }

@@ -20,21 +20,21 @@ import { notificationLink } from '../../shared/notification-link';
       <div class="flex items-center gap-3">
         <h1 class="flex-1 text-2xl font-semibold tracking-tight">{{ l().notifications }}</h1>
         @if (hasUnread()) {
-          <button type="button" (click)="readAll()" class="h-11 rounded-lg px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">{{ l().markAllRead }}</button>
+          <button type="button" (click)="readAll()" class="h-11 rounded-md px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">{{ l().markAllRead }}</button>
         }
       </div>
 
       @if (error(); as message) {
-        <p class="mt-6 rounded-xl border border-border bg-surface px-6 py-10 text-center text-muted">{{ message }}</p>
+        <p class="mt-6 rounded-md border border-border bg-surface px-6 py-10 text-center text-muted">{{ message }}</p>
       } @else if (items(); as list) {
         @if (list.length === 0) {
-          <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
+          <div class="mt-6 rounded-md border border-dashed border-border bg-surface px-6 py-12 text-center">
             <lucide-icon [img]="icons.Bell" [size]="28" class="mx-auto text-subtle" />
             <p class="mt-3 font-medium">{{ l().nothingYet }}</p>
             <p class="mt-1 text-muted">{{ l().notificationsEmpty }}</p>
           </div>
         } @else {
-          <ul class="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+          <ul class="mt-4 divide-y divide-border overflow-hidden rounded-md border border-border bg-surface">
             @for (n of list; track n.id) {
               <li>
                 <button type="button" (click)="open(n)" class="flex w-full gap-3 px-4 py-3 text-left hover:bg-surface-2">
@@ -52,12 +52,12 @@ import { notificationLink } from '../../shared/notification-link';
           </ul>
           @if (hasMore()) {
             <div class="mt-6 text-center">
-              <button type="button" (click)="load(page() + 1)" class="h-11 rounded-lg border border-border bg-surface px-6 font-medium hover:bg-surface-2">{{ l().showOlder }}</button>
+              <button type="button" (click)="load(page() + 1)" class="h-11 rounded-md border border-border bg-surface px-6 font-medium hover:bg-surface-2">{{ l().showOlder }}</button>
             </div>
           }
         }
       } @else {
-        <div class="mt-6 h-48 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
+        <div class="mt-6 h-48 animate-pulse rounded-md bg-surface" [attr.aria-label]="l().loading"></div>
       }
     </div>
   `,

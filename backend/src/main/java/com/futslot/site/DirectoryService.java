@@ -2,8 +2,11 @@ package com.futslot.site;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -14,6 +17,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -22,6 +28,9 @@ import org.springframework.util.StringUtils;
 
 import com.futslot.common.TextFormat;
 import com.futslot.common.Wording;
+import com.futslot.slot.AvailabilityResponse;
+import com.futslot.slot.AvailabilityService;
+import com.futslot.slot.SlotStatus;
 import com.futslot.venue.VenueService;
 import com.futslot.venue.VenueSummaryResponse;
 
@@ -38,7 +47,14 @@ class DirectoryService {
 	/** Every live venue is read for each page; well past what one country's futsal venues number. */
 	private static final int MAX_VENUES = 2000;
 
+	/** Venues in a list whose next free hours are looked up, and how many hours each shows. */
+	private static final int FREE_FOR = 24;
+
+	private static final int FREE_HOURS = 4;
+
 	private final VenueService venues;
+
+	private final AvailabilityService availability;
 
 	private final SitePageService pages;
 
@@ -48,8 +64,10 @@ class DirectoryService {
 
 	private final Clock clock;
 
-	DirectoryService(VenueService venues, SitePageService pages, SiteProperties properties, JsonMapper json, Clock clock) {
+	DirectoryService(VenueService venues, AvailabilityService availability, SitePageService pages, SiteProperties properties,
+			JsonMapper json, Clock clock) {
 		this.venues = venues;
+		this.availability = availability;
 		this.pages = pages;
 		this.properties = properties;
 		this.json = json;
@@ -254,7 +272,9 @@ class DirectoryService {
 
 	private List<DirectoryPage.Card> cards(List<VenueSummaryResponse> venues, String base, Wording text) {
 		TextFormat format = text.format();
+		AtomicInteger looked = new AtomicInteger();
 		return venues.stream().map(venue -> {
+			Free free = (looked.getAndIncrement() < FREE_FOR) ? free(venue.slug(), text) : Free.NONE;
 			String place = StringUtils.hasText(venue.area()) ? venue.area() + ", " + venue.city() : venue.city();
 			String from = (venue.fromPrice() != null) ? text.get("dir.from", format.rupees(venue.fromPrice())) : null;
 			String rating = (venue.reviewCount() > 0 && venue.averageRating() != null)
@@ -263,8 +283,47 @@ class DirectoryService {
 					: null;
 			return new DirectoryPage.Card(venue.name(), base + "/venues/" + venue.slug(), place, from,
 					count(text, "dir.courts", venue.courtCount()), rating, venue.coverPhotoUrl(),
-					text.get("dir.coverAlt", venue.name(), place));
+					text.get("dir.coverAlt", venue.name(), place), free.when(), free.hours());
 		}).toList();
+	}
+
+	/** The venue's next free hours today, or tomorrow once today's are gone, across its courts. */
+	private Free free(String slug, Wording text) {
+		Instant now = this.clock.instant();
+		for (int day = 0; day < 2; day++) {
+			LocalDate date = today().plusDays(day);
+			AvailabilityResponse open;
+			try {
+				open = this.availability.forPlayers(slug, date);
+			}
+			catch (RuntimeException ex) {
+				return Free.NONE;
+			}
+			List<DirectoryPage.Hour> hours = open.courts()
+				.stream()
+				.flatMap(court -> court.slots()
+					.stream()
+					.filter(slot -> slot.status() == SlotStatus.AVAILABLE && slot.startsAt().toInstant().isAfter(now))
+					.map(slot -> Map.entry(slot.startsAt(), court.courtId())))
+				// One chip an hour: the first court free then
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, TreeMap::new))
+				.entrySet()
+				.stream()
+				.limit(FREE_HOURS)
+				.map(e -> new DirectoryPage.Hour(text.format().clock(e.getKey().toLocalTime()), "/venues/" + slug + "/book?court="
+						+ e.getValue() + "&start=" + URLEncoder.encode(e.getKey().toString(), StandardCharsets.UTF_8)))
+				.toList();
+			if (!hours.isEmpty()) {
+				return new Free(text.get((day == 0) ? "dir.freeToday" : "dir.freeTomorrow"), hours);
+			}
+		}
+		return Free.NONE;
+	}
+
+	private record Free(String when, List<DirectoryPage.Hour> hours) {
+
+		static final Free NONE = new Free(null, List.of());
+
 	}
 
 	private static List<DirectoryPage.Place> cityPlaces(Directory all, String base, Wording text) {

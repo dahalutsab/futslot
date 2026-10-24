@@ -1,17 +1,23 @@
 /*
- * FutSlot player web design tokens, shared with the owner dashboard: neutral surfaces and ink buttons, and each
- * booking state has one colour used everywhere (see docs/design/player-web.md). Components use these tokens
- * through Tailwind classes (bg-surface, text-muted, bg-confirmed-bg...), never raw hex.
+ * FutSlot player web design tokens: "floodlights on" (docs/design/floodlights.md), the same as FutSlot's public
+ * pages. Turf green is the brand and the primary button (bg-ink), floodlight yellow marks a free hour and nothing
+ * else, Khand sets headings, prices and hours (font-display), Mukta the rest; both cover Devanagari. Each booking
+ * state has one colour used everywhere (see docs/design/player-web.md). Components use these tokens through
+ * Tailwind classes (bg-surface, text-muted, bg-flood...), never raw hex.
  */
 @import "tailwindcss";
-@import "@fontsource-variable/inter";
-@import "@fontsource/noto-sans-devanagari/400.css";
-@import "@fontsource/noto-sans-devanagari/600.css";
+/* Each weight's file covers Latin and Devanagari by unicode-range, so Nepali only downloads where it's shown */
+@import "@fontsource/khand/600.css";
+@import "@fontsource/khand/700.css";
+@import "@fontsource/mukta/400.css";
+@import "@fontsource/mukta/500.css";
+@import "@fontsource/mukta/600.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --font-sans: "Inter Variable", "Noto Sans Devanagari", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: Mukta, ui-sans-serif, system-ui, sans-serif;
+  --font-display: Khand, Mukta, ui-sans-serif, system-ui, sans-serif;
 
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -26,6 +32,13 @@
   --color-danger: var(--danger);
   --color-danger-bg: var(--danger-bg);
   --color-brand: var(--brand);
+  --color-flood: var(--flood);
+  --color-flood-ink: var(--flood-ink);
+  /* The turf band (explore's header), the same in both themes: turf, its deep shade, and dark text on chalk white */
+  --color-turf: #11673a;
+  --color-turf-deep: #0b4d2b;
+  --color-turf-ink: #14231a;
+  --color-turf-hint: #6b7a70;
 
   /* Booking states: -bg fills, -line borders and accents, -fg text on the fill */
   --color-confirmed-bg: var(--confirmed-bg);
@@ -50,19 +63,21 @@
 }
 
 :root {
-  --bg: #f7f7f8;
+  --bg: #f8faf6;
   --surface: #ffffff;
-  --surface-2: #f4f4f5;
-  --border: #e4e4e7;
-  --text: #18181b;
-  --text-muted: #52525b;
-  --text-subtle: #71717a;
-  --ink: #18181b;
+  --surface-2: #eef2ec;
+  --border: #dce3db;
+  --text: #14231a;
+  --text-muted: #4d5d53;
+  --text-subtle: #6b7a70;
+  --ink: #11673a;
   --ink-fg: #ffffff;
-  --ring: #2563eb;
+  --ring: #1d4ed8;
   --danger: #b91c1c;
   --danger-bg: #fef2f2;
-  --brand: #15803d;
+  --brand: #11673a;
+  --flood: #ffd23f;
+  --flood-ink: #1d1a05;
 
   --confirmed-bg: #ecfdf5;
   --confirmed-line: #10b981;
@@ -87,21 +102,23 @@
   color-scheme: light;
 }
 
-/* A cool, very dark grey rather than black, for long shifts */
+/* Turf at night: a very dark green, not black */
 .dark {
-  --bg: #0f1012;
-  --surface: #17181b;
-  --surface-2: #1f2125;
-  --border: #2c2e33;
-  --text: #ececef;
-  --text-muted: #a1a1aa;
-  --text-subtle: #8b8b93;
-  --ink: #fafafa;
-  --ink-fg: #18181b;
-  --ring: #60a5fa;
+  --bg: #0c1611;
+  --surface: #13201a;
+  --surface-2: #1a2a22;
+  --border: #24342b;
+  --text: #e8efe9;
+  --text-muted: #a7b5ac;
+  --text-subtle: #87968c;
+  --ink: #1e8c50;
+  --ink-fg: #ffffff;
+  --ring: #7aa7ff;
   --danger: #f87171;
   --danger-bg: rgb(248 113 113 / 0.12);
-  --brand: #4ade80;
+  --brand: #4cc27f;
+  --flood: #ffd23f;
+  --flood-ink: #1d1a05;
 
   --confirmed-bg: rgb(16 185 129 / 0.14);
   --confirmed-line: #34d399;
@@ -134,13 +151,21 @@
   body {
     @apply bg-bg text-text font-sans antialiased;
     font-size: 16px;
-    line-height: 1.5;
+    line-height: 1.55;
   }
 
-  @media (min-width: 1024px) {
-    body {
-      font-size: 14px;
-    }
+  /* Headings speak in the scoreboard face */
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: 0;
+  }
+
+  /* Devanagari's vowel signs reach above and below the letters: tight Latin leading would make lines collide */
+  :lang(ne) :is(h1, h2, h3, .font-display) {
+    line-height: 1.25 !important;
   }
 
   :focus-visible {
@@ -152,6 +177,23 @@
   [role="button"],
   a {
     touch-action: manipulation;
+  }
+}
+
+@layer components {
+  /* A free hour, wherever it appears: lit, the one use of floodlight yellow */
+  .lit {
+    @apply bg-flood text-flood-ink;
+    box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.12);
+  }
+
+  .lit:hover {
+    background: #ffe27a;
+  }
+
+  .lit:active {
+    box-shadow: none;
+    transform: translateY(1px);
   }
 }
 

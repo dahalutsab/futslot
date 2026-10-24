@@ -19,10 +19,10 @@ import { VenueCard } from '../../shared/venue-card';
         <p class="mt-6 text-muted">{{ message }}</p>
       } @else if (venues(); as list) {
         @if (list.length === 0) {
-          <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
+          <div class="mt-6 rounded-md border border-dashed border-border bg-surface px-6 py-12 text-center">
             <p class="font-medium">{{ l().noSavedVenues }}</p>
             <p class="mt-1 text-muted">{{ l().noSavedVenuesWebBody }}</p>
-            <a routerLink="/explore" class="mt-4 inline-flex h-11 items-center rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().findACourt }}</a>
+            <a routerLink="/explore" class="mt-4 inline-flex h-11 items-center rounded-md bg-ink px-5 font-medium text-ink-fg">{{ l().findACourt }}</a>
           </div>
         } @else {
           <ul class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -32,7 +32,7 @@ import { VenueCard } from '../../shared/venue-card';
           </ul>
         }
       } @else {
-        <div class="mt-6 h-64 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
+        <div class="mt-6 h-64 animate-pulse rounded-md bg-surface" [attr.aria-label]="l().loading"></div>
       }
     </div>
   `,

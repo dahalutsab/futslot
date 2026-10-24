@@ -1,13 +1,13 @@
 @if (error(); as message) {
   <div class="mx-auto max-w-lg px-4 py-16 text-center">
     <p class="text-muted">{{ message }}</p>
-    <a routerLink="/explore" class="mt-4 inline-flex h-11 items-center rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().seeAllVenues }}</a>
+    <a routerLink="/explore" class="mt-4 inline-flex h-11 items-center rounded-md bg-ink px-5 font-medium text-ink-fg">{{ l().seeAllVenues }}</a>
   </div>
 } @else if (venue(); as v) {
   <div class="mx-auto max-w-6xl lg:px-8 lg:pt-6">
     <!-- Photos -->
     @if (v.photos.length) {
-      <div class="relative aspect-[16/9] bg-surface-2 lg:aspect-[21/8] lg:overflow-hidden lg:rounded-xl">
+      <div class="relative aspect-[16/9] bg-surface-2 lg:aspect-[21/8] lg:overflow-hidden lg:rounded-md">
         <img [src]="v.photos[photo()].url" [alt]="v.photos[photo()].caption ?? v.name" class="size-full object-cover" />
         @if (v.photos.length > 1) {
           <div class="absolute inset-x-0 bottom-3 flex justify-center gap-2" role="group" [attr.aria-label]="l().photos">
@@ -26,19 +26,19 @@
   <div class="mx-auto max-w-6xl px-4 py-5 lg:grid lg:grid-cols-[1fr_340px] lg:gap-10 lg:px-8">
     <div class="min-w-0">
       <div class="flex items-start gap-3">
-        <h1 class="min-w-0 flex-1 text-2xl font-semibold tracking-tight lg:text-3xl">{{ v.name }}</h1>
+        <h1 class="min-w-0 flex-1 text-5xl font-bold leading-[.92] lg:text-7xl">{{ v.name }}</h1>
         <button type="button" (click)="toggleSaved()" [attr.aria-pressed]="saved()"
-          class="flex h-11 shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">
+          class="flex h-11 shrink-0 items-center gap-1.5 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">
           <lucide-icon [img]="icons.Heart" [size]="16" [class]="saved() ? 'fill-current text-noshow-line' : ''" />{{ saved() ? l().saved_ : l().saveVenue }}
         </button>
         @if (session.signedIn()) {
           <button type="button" (click)="message()"
-            class="flex h-11 shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">
+            class="flex h-11 shrink-0 items-center gap-1.5 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">
             <lucide-icon [img]="icons.MessageSquare" [size]="16" /><span class="sr-only sm:not-sr-only">{{ l().message }}</span>
           </button>
         }
       </div>
-      <p class="mt-1 flex items-center gap-1 text-muted">
+      <p class="mt-3 flex items-center gap-1 text-muted">
         <lucide-icon [img]="icons.MapPin" [size]="16" />{{ v.addressLine }}{{ v.area ? ', ' + v.area : '' }}, {{ v.city }}
       </p>
       <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
@@ -60,7 +60,7 @@
 
       <!-- Free slots -->
       <section class="mt-8" aria-labelledby="slots-title">
-        <h2 id="slots-title" class="text-lg font-semibold">{{ l().bookASlot }}</h2>
+        <h2 id="slots-title" class="text-4xl">{{ l().bookASlot }}</h2>
         <fs-day-strip class="mt-3 block" [days]="days()" [selected]="day()" (picked)="pickDay($event)" />
 
         @if (slotsError(); as message) {
@@ -71,8 +71,9 @@
           }
           @for (court of a.courts; track court.courtId) {
             <div class="mt-5">
-              <h3 class="font-medium">{{ court.name }}
-                <span class="font-normal text-muted">· {{ free(court) === 0 ? l().fullyBooked : l().freeSlots(free(court)) }}</span>
+              <h3 class="flex flex-wrap items-baseline gap-x-3">
+                <span class="font-display text-2xl font-semibold">{{ court.name }}</span>
+                <span class="text-sm text-muted">{{ free(court) === 0 ? l().fullyBooked : l().freeSlots(free(court)) }}</span>
               </h3>
               @let upcoming = notPast(court);
               @if (court.slots.length === 0) {
@@ -85,32 +86,32 @@
                     <li>
                       @if (slot.status === 'AVAILABLE') {
                         <button type="button" (click)="book(court, slot)"
-                          class="flex h-16 w-full flex-col items-center justify-center rounded-lg border border-border bg-surface hover:border-ink">
-                          <span class="tabular font-medium">{{ fmt.localClock(slot.startsAt) }}</span>
-                          <span class="tabular text-xs text-muted">{{ fmt.rupees(slot.price) }}</span>
+                          class="lit flex h-16 w-full flex-col items-start justify-center gap-0.5 rounded-md px-3">
+                          <span class="tabular font-display text-2xl font-semibold leading-none">{{ fmt.localClock(slot.startsAt) }}</span>
+                          <span class="tabular text-xs font-medium opacity-80">{{ fmt.rupees(slot.price) }}</span>
                         </button>
                       } @else if (slot.status === 'BOOKED') {
                         @let k = key(court, slot);
                         @if (waiting().has(k)) {
-                          <div class="flex h-16 w-full flex-col items-center justify-center rounded-lg border border-dashed border-held-line bg-held-bg text-held-fg">
+                          <div class="flex h-16 w-full flex-col items-start justify-center rounded-md px-3 border border-dashed border-held-line bg-held-bg text-held-fg">
                             <span class="tabular font-medium">{{ fmt.localClock(slot.startsAt) }}</span>
                             <span class="text-xs">{{ l().waiting }}</span>
                           </div>
                         } @else if (asking() === k) {
                           <button type="button" (click)="wait(court, slot)"
-                            class="flex h-16 w-full flex-col items-center justify-center rounded-lg bg-ink text-ink-fg">
+                            class="flex h-16 w-full flex-col items-start justify-center rounded-md px-3 bg-ink text-ink-fg">
                             <span class="text-sm font-medium">{{ l().waitForIt }}</span>
                             <span class="text-xs opacity-80">{{ l().tellMeIfFree }}</span>
                           </button>
                         } @else {
                           <button type="button" (click)="asking.set(k)" [attr.aria-label]="l().slotWaitQuestion(fmt.localClock(slot.startsAt))"
-                            class="flex h-16 w-full flex-col items-center justify-center rounded-lg bg-surface-2 text-subtle hover:text-muted">
+                            class="flex h-16 w-full flex-col items-start justify-center rounded-md px-3 bg-surface-2 text-subtle hover:text-muted">
                             <span class="tabular font-medium line-through decoration-1">{{ fmt.localClock(slot.startsAt) }}</span>
                             <span class="text-xs">{{ l().booked }}</span>
                           </button>
                         }
                       } @else {
-                        <div class="flex h-16 w-full flex-col items-center justify-center rounded-lg bg-surface-2 text-subtle">
+                        <div class="flex h-16 w-full flex-col items-start justify-center rounded-md px-3 bg-surface-2 text-subtle">
                           <span class="tabular font-medium line-through decoration-1">{{ fmt.localClock(slot.startsAt) }}</span>
                           <span class="text-xs">{{ l().closed }}</span>
                         </div>
@@ -127,7 +128,7 @@
             </div>
           }
         } @else {
-          <div class="mt-4 h-40 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
+          <div class="mt-4 h-40 animate-pulse rounded-md bg-surface" [attr.aria-label]="l().loading"></div>
         }
       </section>
 
@@ -144,7 +145,7 @@
           }
           <ul class="mt-3 space-y-3">
             @for (review of reviews(); track review.id) {
-              <li class="rounded-xl border border-border bg-surface p-4">
+              <li class="rounded-md border border-border bg-surface p-4">
                 <div class="flex items-center gap-3">
                   <p class="min-w-0 flex-1 font-medium">{{ review.reviewerName }}</p>
                   <span class="text-held-line" [attr.aria-label]="l().starsOutOfFive(review.rating)">{{ stars(review.rating) }}</span>
@@ -154,7 +155,7 @@
                 }
                 <p class="mt-2 text-sm text-subtle">{{ l().playedOn(fmt.dayLabel(review.playedOn)) }}</p>
                 @if (review.ownerReply) {
-                  <div class="mt-3 rounded-lg bg-surface-2 px-3 py-2 text-sm">
+                  <div class="mt-3 rounded-md bg-surface-2 px-3 py-2 text-sm">
                     <p class="font-medium">{{ l().venueReplied(v.name) }}</p>
                     <p class="mt-0.5 whitespace-pre-line text-muted">{{ review.ownerReply }}</p>
                   </div>
@@ -168,7 +169,7 @@
 
     <!-- Rules, hours and amenities -->
     <aside class="mt-10 space-y-6 lg:mt-0">
-      <section class="rounded-xl border border-border bg-surface p-4" aria-labelledby="rules-title">
+      <section class="rounded-md border border-border bg-surface p-4" aria-labelledby="rules-title">
         <h2 id="rules-title" class="font-semibold">{{ l().bookingRules }}</h2>
         <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
           @for (line of rules(); track line) {
@@ -176,7 +177,7 @@
           }
         </ul>
       </section>
-      <section class="rounded-xl border border-border bg-surface p-4" aria-labelledby="hours-title">
+      <section class="rounded-md border border-border bg-surface p-4" aria-labelledby="hours-title">
         <h2 id="hours-title" class="font-semibold">{{ l().openingHours }}</h2>
         <dl class="mt-2 space-y-1 text-sm">
           @for (h of hours(); track h.day) {
@@ -188,7 +189,7 @@
         </dl>
       </section>
       @if (v.amenities.length) {
-        <section class="rounded-xl border border-border bg-surface p-4" aria-labelledby="amenities-title">
+        <section class="rounded-md border border-border bg-surface p-4" aria-labelledby="amenities-title">
           <h2 id="amenities-title" class="font-semibold">{{ l().amenities }}</h2>
           <ul class="mt-2 flex flex-wrap gap-2">
             @for (amenity of v.amenities; track amenity.code) {
@@ -201,7 +202,7 @@
   </div>
 } @else {
   <div class="mx-auto max-w-6xl px-4 py-6 lg:px-8" [attr.aria-label]="l().loading">
-    <div class="aspect-[16/9] animate-pulse rounded-xl bg-surface lg:aspect-[21/8]"></div>
+    <div class="aspect-[16/9] animate-pulse rounded-md bg-surface lg:aspect-[21/8]"></div>
     <div class="mt-5 h-8 w-64 animate-pulse rounded bg-surface"></div>
   </div>
 }

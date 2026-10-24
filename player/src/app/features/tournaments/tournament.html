@@ -9,7 +9,7 @@
 
   @if (tournament(); as t) {
     @if (t.bannerUrl) {
-      <img [src]="t.bannerUrl" alt="" class="mt-3 aspect-[16/6] w-full rounded-xl object-cover" />
+      <img [src]="t.bannerUrl" alt="" class="mt-3 aspect-[16/6] w-full rounded-md object-cover" />
     }
     <p class="mt-4 text-sm font-medium text-tournament-fg">{{ status()[t.status] }}</p>
     <h1 class="text-2xl font-semibold tracking-tight lg:text-3xl">{{ t.name }}</h1>
@@ -19,16 +19,16 @@
     </p>
 
     @if (t.champion) {
-      <p class="mt-4 flex items-center gap-2 rounded-xl bg-tournament-bg px-4 py-3 font-semibold text-tournament-fg">
+      <p class="mt-4 flex items-center gap-2 rounded-md bg-tournament-bg px-4 py-3 font-semibold text-tournament-fg">
         <lucide-icon [img]="icons.Trophy" [size]="20" /> {{ l().championWon(t.champion.name) }}
       </p>
     }
 
     <dl class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-      <div class="rounded-lg bg-surface p-3"><dt class="text-xs text-muted">{{ l().format }}</dt><dd class="font-medium">{{ format()[t.format] }}</dd></div>
-      <div class="rounded-lg bg-surface p-3"><dt class="text-xs text-muted">{{ l().entry }}</dt><dd class="tabular font-medium">{{ t.entryFee > 0 ? fmt.rupees(t.entryFee) : l().free }}</dd></div>
-      <div class="rounded-lg bg-surface p-3"><dt class="text-xs text-muted">{{ l().teamsFact }}</dt><dd class="tabular font-medium">{{ l().teamsOf(t.teamsIn, t.maxTeams) }}</dd></div>
-      <div class="rounded-lg bg-surface p-3"><dt class="text-xs text-muted">{{ l().squads }}</dt><dd class="tabular font-medium">{{ l().squadSize(t.teamSize, t.maxSquadSize) }}</dd></div>
+      <div class="rounded-md bg-surface p-3"><dt class="text-xs text-muted">{{ l().format }}</dt><dd class="font-medium">{{ format()[t.format] }}</dd></div>
+      <div class="rounded-md bg-surface p-3"><dt class="text-xs text-muted">{{ l().entry }}</dt><dd class="tabular font-medium">{{ t.entryFee > 0 ? fmt.rupees(t.entryFee) : l().free }}</dd></div>
+      <div class="rounded-md bg-surface p-3"><dt class="text-xs text-muted">{{ l().teamsFact }}</dt><dd class="tabular font-medium">{{ l().teamsOf(t.teamsIn, t.maxTeams) }}</dd></div>
+      <div class="rounded-md bg-surface p-3"><dt class="text-xs text-muted">{{ l().squads }}</dt><dd class="tabular font-medium">{{ l().squadSize(t.teamSize, t.maxSquadSize) }}</dd></div>
     </dl>
 
     @if (t.description) {
@@ -38,31 +38,31 @@
       <section class="mt-5"><h2 class="font-semibold">{{ l().prizes }}</h2><p class="mt-1 whitespace-pre-line text-muted">{{ t.prizeDetails }}</p></section>
     }
     @if (t.rules) {
-      <details class="mt-5 rounded-xl border border-border bg-surface p-4"><summary class="cursor-pointer font-semibold">{{ l().rules }}</summary><p class="mt-2 whitespace-pre-line text-muted">{{ t.rules }}</p></details>
+      <details class="mt-5 rounded-md border border-border bg-surface p-4"><summary class="cursor-pointer font-semibold">{{ l().rules }}</summary><p class="mt-2 whitespace-pre-line text-muted">{{ t.rules }}</p></details>
     }
 
     <!-- The player's team entries -->
     @for (entry of mine(); track entry.id) {
-      <section class="mt-6 rounded-xl border p-5" [class]="entry.status === 'CONFIRMED' ? 'border-confirmed-line bg-confirmed-bg' : 'border-border bg-surface'">
+      <section class="mt-6 rounded-md border p-5" [class]="entry.status === 'CONFIRMED' ? 'border-confirmed-line bg-confirmed-bg' : 'border-border bg-surface'">
         <div class="flex items-start gap-3">
           <div class="min-w-0 flex-1">
             <p class="font-semibold">{{ entry.team.name }}</p>
             <p class="text-sm" [class]="entry.status === 'CONFIRMED' ? 'text-confirmed-fg' : 'text-muted'">{{ checking(entry) ? l().chipVerify : entryStatus()[entry.status] }}{{ entry.groupName ? ' · ' + l().groupName(entry.groupName) : '' }}</p>
           </div>
           @if (entry.status !== 'REJECTED' && (t.status === 'REGISTRATION_OPEN' || t.status === 'REGISTRATION_CLOSED')) {
-            <button type="button" (click)="withdraw(entry)" [disabled]="busy()" class="h-11 rounded-lg px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-danger">{{ l().withdraw }}</button>
+            <button type="button" (click)="withdraw(entry)" [disabled]="busy()" class="h-11 rounded-md px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-danger">{{ l().withdraw }}</button>
           }
         </div>
         <p class="mt-2 text-sm text-muted">{{ l().squadList(entry.squad.map(squadName).join(', ')) }}</p>
         @if (entry.status === 'PENDING_PAYMENT' && checking(entry)) {
-          <div class="mt-4 rounded-lg border border-verify-line bg-verify-bg p-4">
+          <div class="mt-4 rounded-md border border-verify-line bg-verify-bg p-4">
             <p class="flex items-center gap-2 font-semibold text-verify-fg"><lucide-icon [img]="icons.Wallet" [size]="18" /> {{ l().paymentSent }}</p>
             <p class="mt-1 text-verify-fg">{{ l().venueCheckingPlace(t.venue.name) }}</p>
           </div>
         } @else if (entry.status === 'PENDING_PAYMENT' && t.entryFee > 0) {
           <div class="mt-4">
             @if (turnedDown(entry); as reason) {
-              <p class="mb-3 rounded-lg bg-danger-bg px-3 py-2 text-sm text-danger" role="status">{{ l().lastPaymentRejected(reason) }}</p>
+              <p class="mb-3 rounded-md bg-danger-bg px-3 py-2 text-sm text-danger" role="status">{{ l().lastPaymentRejected(reason) }}</p>
             }
             <p class="mb-2 font-medium">{{ l().payAmountTo(fmt.rupees(t.entryFee), t.venue.name) }}</p>
             <fs-pay-form [id]="'entry-' + entry.id" [amount]="t.entryFee" [instructions]="paymentInstructions()" [busy]="busy()" [error]="error()"
@@ -76,7 +76,7 @@
     <!-- Entering a team -->
     @if (t.acceptingTeams) {
       @if (entering()) {
-        <section class="mt-6 rounded-xl border border-border bg-surface p-5" aria-labelledby="enter-title">
+        <section class="mt-6 rounded-md border border-border bg-surface p-5" aria-labelledby="enter-title">
           <h2 id="enter-title" class="font-semibold">{{ l().enterYourTeam }}</h2>
           @if (teams().length === 0) {
             <p class="mt-1 text-muted">{{ l().onlyCaptainCanEnter }} <a routerLink="/teams" class="font-medium text-text underline">{{ l().startATeam }}</a></p>
@@ -84,7 +84,7 @@
             <form class="mt-3 space-y-4" (ngSubmit)="enter()">
               <div>
                 <label for="enter-team" class="mb-1.5 block font-medium">{{ l().team }}</label>
-                <select id="enter-team" name="team" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" [ngModel]="teamId()" (ngModelChange)="pickTeam($event)">
+                <select id="enter-team" name="team" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" [ngModel]="teamId()" (ngModelChange)="pickTeam($event)">
                   @for (team of teams(); track team.id) {
                     <option [value]="team.id">{{ team.name }}</option>
                   }
@@ -93,7 +93,7 @@
               @if (team(); as tm) {
                 <fieldset>
                   <legend class="mb-1.5 font-medium">{{ l().squad }} <span class="font-normal text-muted">{{ l().squadCount(picked(), t.teamSize, t.maxSquadSize) }}</span></legend>
-                  <ul class="divide-y divide-border rounded-lg border border-border">
+                  <ul class="divide-y divide-border rounded-md border border-border">
                     @for (m of tm.members; track m.userId) {
                       @if (m.status === 'ACTIVE') {
                         <li class="flex items-center gap-3 px-3 py-2">
@@ -104,7 +104,7 @@
                           @if (m.userId in squad()) {
                             <label class="sr-only" [for]="'jersey-' + m.userId">{{ l().shirtNumberFor(m.name) }}</label>
                             <input [id]="'jersey-' + m.userId" type="number" inputmode="numeric" min="0" max="99" [placeholder]="l().shirtNo"
-                              class="tabular h-11 w-20 rounded-lg border border-border bg-surface px-2 text-base" [value]="squad()[m.userId]" (input)="jersey(m.userId, $any($event.target).value)" />
+                              class="tabular h-11 w-20 rounded-md border border-border bg-surface px-2 text-base" [value]="squad()[m.userId]" (input)="jersey(m.userId, $any($event.target).value)" />
                           }
                         </li>
                       }
@@ -117,16 +117,16 @@
                 <p class="text-danger" role="alert">{{ message }}</p>
               }
               <div class="flex gap-2">
-                <button type="submit" [disabled]="busy()" class="h-11 flex-1 whitespace-nowrap rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60 sm:flex-none">
+                <button type="submit" [disabled]="busy()" class="h-11 flex-1 whitespace-nowrap rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60 sm:flex-none">
                   {{ t.entryFee > 0 ? l().enterThenPay(fmt.rupees(t.entryFee)) : l().enter }}
                 </button>
-                <button type="button" (click)="entering.set(false)" class="h-11 rounded-lg px-4 font-medium">{{ l().cancel }}</button>
+                <button type="button" (click)="entering.set(false)" class="h-11 rounded-md px-4 font-medium">{{ l().cancel }}</button>
               </div>
             </form>
           }
         </section>
       } @else {
-        <button type="button" (click)="startEntry()" class="mt-6 h-12 w-full rounded-lg bg-ink font-medium text-ink-fg sm:w-auto sm:px-6">{{ l().enterATeam }}</button>
+        <button type="button" (click)="startEntry()" class="mt-6 h-12 w-full rounded-md bg-ink font-medium text-ink-fg sm:w-auto sm:px-6">{{ l().enterATeam }}</button>
         @if (t.registrationClosesAt) {
           <p class="mt-2 text-sm text-subtle">{{ l().entriesClose(fmt.dayLabel(t.registrationClosesAt.slice(0, 10))) }}</p>
         }
@@ -138,7 +138,7 @@
       @if (table.rows.length) {
         <section class="mt-8" [attr.aria-label]="table.groupName ? l().groupName(table.groupName) : l().table">
           <h2 class="font-semibold">{{ table.groupName ? l().groupName(table.groupName) : l().table }}</h2>
-          <div class="mt-2 overflow-x-auto rounded-xl border border-border bg-surface">
+          <div class="mt-2 overflow-x-auto rounded-md border border-border bg-surface">
             <table class="w-full min-w-[420px] text-left text-sm">
               <thead class="border-b border-border text-muted">
                 <tr><th scope="col" class="px-3 py-2 font-medium">{{ l().colTeam }}</th><th scope="col" class="px-2 py-2 text-right font-medium">{{ l().colPlayed }}</th><th scope="col" class="px-2 py-2 text-right font-medium">{{ l().colWon }}</th><th scope="col" class="px-2 py-2 text-right font-medium">{{ l().colDrawn }}</th><th scope="col" class="px-2 py-2 text-right font-medium">{{ l().colLost }}</th><th scope="col" class="px-2 py-2 text-right font-medium">{{ l().colGoalDiff }}</th><th scope="col" class="px-3 py-2 text-right font-medium">{{ l().colPoints }}</th></tr>
@@ -166,7 +166,7 @@
         <h2 id="fixtures-title" class="font-semibold">{{ l().fixtures }}</h2>
         @for (round of rounds(); track round.key) {
           <h3 class="mt-4 text-sm font-medium text-muted">{{ round.label }}</h3>
-          <ul class="mt-2 divide-y divide-border rounded-xl border border-border bg-surface">
+          <ul class="mt-2 divide-y divide-border rounded-md border border-border bg-surface">
             @for (m of round.matches; track m.id) {
               <li class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-3">
                 <span class="truncate text-right" [class.font-semibold]="m.winnerRegistrationId && m.winnerRegistrationId === m.home?.registrationId">{{ m.home?.name ?? l().toBeDecided }}</span>
@@ -196,6 +196,6 @@
       </section>
     }
   } @else if (!error()) {
-    <div class="mt-6 h-64 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
+    <div class="mt-6 h-64 animate-pulse rounded-md bg-surface" [attr.aria-label]="l().loading"></div>
   }
 </div>

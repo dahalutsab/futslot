@@ -8,6 +8,7 @@ import { Badges } from '../core/badges';
 import { Session } from '../core/session';
 import { digits, l, Strings } from '../i18n/i18n';
 import { LanguageToggle } from '../shared/language-toggle';
+import { Logo } from '../shared/logo';
 
 interface NavItem {
   path: string;
@@ -33,16 +34,15 @@ const NAVIGATION: NavItem[] = [
 /** The frame around every screen: a top bar, and a bottom bar on phones. Browsing works signed out. */
 @Component({
   selector: 'fs-shell',
-  imports: [RouterOutlet, RouterLink, LucideAngularModule, LanguageToggle],
+  imports: [RouterOutlet, RouterLink, LucideAngularModule, LanguageToggle, Logo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2">{{ l().skipToContent }}</a>
 
-    <header class="sticky top-0 z-20 border-b border-border bg-surface/95 backdrop-blur">
-      <div class="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 lg:px-8">
-        <a routerLink="/explore" class="flex items-center gap-2" [attr.aria-label]="l().futSlotHome">
-          <span class="grid size-7 place-items-center rounded-md bg-brand text-sm font-bold text-white" aria-hidden="true">F</span>
-          <span class="font-semibold tracking-tight">FutSlot</span>
+    <header class="sticky top-0 z-20 border-b border-border bg-bg/95 backdrop-blur">
+      <div class="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 lg:px-8">
+        <a routerLink="/explore" [attr.aria-label]="l().futSlotHome">
+          <fs-logo />
         </a>
         <nav class="hidden flex-1 items-center gap-1 lg:flex" [attr.aria-label]="l().mainNav">
           @for (item of desktopItems(); track item.path) {
@@ -58,7 +58,7 @@ const NAVIGATION: NavItem[] = [
         <div class="ml-auto flex items-center gap-2">
           @if (!session.signedIn()) {
             <fs-language-toggle />
-            <a routerLink="/login" class="flex h-10 items-center gap-2 rounded-lg bg-ink px-4 font-medium text-ink-fg">
+            <a routerLink="/login" class="flex h-10 items-center gap-2 rounded-md bg-ink px-4 font-medium text-ink-fg">
               <lucide-icon [img]="icons.LogIn" [size]="17" /> {{ l().signIn }}
             </a>
           } @else {

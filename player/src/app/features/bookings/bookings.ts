@@ -22,7 +22,7 @@ const PAGE = 20;
     <div class="mx-auto max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
       <h1 class="text-2xl font-semibold tracking-tight">{{ l().yourBookings }}</h1>
 
-      <div class="mt-4 flex gap-1 rounded-lg bg-surface-2 p-1" role="tablist" [attr.aria-label]="l().tabBookings">
+      <div class="mt-4 flex gap-1 rounded-md bg-surface-2 p-1" role="tablist" [attr.aria-label]="l().tabBookings">
         @for (option of scopes(); track option.value) {
           <button type="button" role="tab" [attr.aria-selected]="scope() === option.value" (click)="show(option.value)"
             class="h-10 flex-1 rounded-md font-medium text-muted"
@@ -31,24 +31,24 @@ const PAGE = 20;
       </div>
 
       @if (error(); as message) {
-        <div class="mt-6 rounded-xl border border-border bg-surface px-6 py-10 text-center">
+        <div class="mt-6 rounded-md border border-border bg-surface px-6 py-10 text-center">
           <p class="text-muted">{{ message }}</p>
-          <button type="button" (click)="load(0)" class="mt-4 h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().tryAgain }}</button>
+          <button type="button" (click)="load(0)" class="mt-4 h-11 rounded-md bg-ink px-5 font-medium text-ink-fg">{{ l().tryAgain }}</button>
         </div>
       } @else if (bookings(); as list) {
         @if (list.length === 0) {
-          <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
+          <div class="mt-6 rounded-md border border-dashed border-border bg-surface px-6 py-12 text-center">
             <p class="font-medium">{{ scope() === 'upcoming' ? l().noGamesComingUp : l().nothingHereYet }}</p>
             <p class="mt-1 text-muted">{{ scope() === 'upcoming' ? l().findCourtPitch : l().pastGamesShowHere }}</p>
             @if (scope() === 'upcoming') {
-              <a routerLink="/explore" class="mt-4 inline-flex h-11 items-center rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().findACourt }}</a>
+              <a routerLink="/explore" class="mt-4 inline-flex h-11 items-center rounded-md bg-ink px-5 font-medium text-ink-fg">{{ l().findACourt }}</a>
             }
           </div>
         } @else {
           <ul class="mt-4 space-y-3">
             @for (booking of list; track booking.id) {
               <li>
-                <a [routerLink]="['/bookings', booking.id]" class="flex items-start gap-4 rounded-xl border border-border bg-surface p-4 hover:border-subtle">
+                <a [routerLink]="['/bookings', booking.id]" class="flex items-start gap-4 rounded-md border border-border bg-surface p-4 hover:border-subtle">
                   @let date = dateParts(booking.startsAt);
                   <div class="w-14 shrink-0 text-center" aria-hidden="true">
                     <p class="text-xs font-medium uppercase text-muted">{{ date.weekday }}</p>
@@ -70,7 +70,7 @@ const PAGE = 20;
           @if (hasMore()) {
             <div class="mt-6 text-center">
               <button type="button" (click)="load(page() + 1)" [disabled]="loading()"
-                class="h-11 rounded-lg border border-border bg-surface px-6 font-medium hover:bg-surface-2 disabled:opacity-60">
+                class="h-11 rounded-md border border-border bg-surface px-6 font-medium hover:bg-surface-2 disabled:opacity-60">
                 {{ loading() ? l().loadingMore : l().showMore }}
               </button>
             </div>
@@ -79,7 +79,7 @@ const PAGE = 20;
       } @else {
         <div class="mt-6 space-y-3" [attr.aria-label]="l().loading">
           @for (i of [1, 2, 3]; track i) {
-            <div class="h-24 animate-pulse rounded-xl bg-surface"></div>
+            <div class="h-24 animate-pulse rounded-md bg-surface"></div>
           }
         </div>
       }

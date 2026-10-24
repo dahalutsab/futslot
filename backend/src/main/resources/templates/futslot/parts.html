@@ -27,8 +27,8 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+Devanagari:wght@400;600&amp;display=swap">
-  <link rel="stylesheet" th:href="@{/site-assets/futslot.css(v=3)}">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Khand:wght@600;700&amp;family=Mukta:wght@400;500;600;700&amp;display=swap">
+  <link rel="stylesheet" th:href="@{/site-assets/futslot.css(v=4)}">
   <script>
     // The player app's theme and language, so these pages match it: dark mode before first paint, and a first-time
     // visitor's language is the language of the page they came in on
@@ -46,7 +46,7 @@
   <header th:fragment="header" class="top">
     <div class="wrap top-inner">
       <a class="logo" th:href="${dir.base + '/'}" th:aria-label="#{dir.nav.home}">
-        <span class="logo-mark" aria-hidden="true">F</span><span>FutSlot</span>
+        <svg th:replace="~{futslot/parts :: mark}"></svg><span>FutSlot</span>
       </a>
       <nav class="top-nav" th:aria-label="#{dir.nav.main}">
         <a href="/explore" th:text="#{dir.nav.explore}">Explore</a>
@@ -68,6 +68,23 @@
     </div>
   </header>
 
+  <!-- FutSlot's mark: a pitch from above -->
+  <svg th:fragment="mark" class="logo-mark" viewBox="0 0 30 20" aria-hidden="true">
+    <rect width="30" height="20" rx="3" fill="currentColor"/>
+    <path d="M15 2.5v15M2.5 6.5h3a3.5 3.5 0 0 1 0 7h-3M27.5 6.5h-3a3.5 3.5 0 0 0 0 7h3" stroke="#fff" stroke-width="1.4" fill="none"/>
+    <circle cx="15" cy="10" r="3.2" stroke="#fff" stroke-width="1.4" fill="none"/>
+  </svg>
+
+  <!-- The court's lines in chalk, behind the front page's heading: goal line, penalty area, half-way line, centre circle -->
+  <svg th:fragment="pitch" class="pitch" viewBox="0 0 1200 560" preserveAspectRatio="xMidYMid slice" fill="none"
+    stroke="currentColor" stroke-width="3" aria-hidden="true">
+    <rect x="-200" y="40" width="1700" height="480"/>
+    <path d="M920 40v480"/>
+    <circle cx="920" cy="280" r="118"/>
+    <circle cx="920" cy="280" r="5" fill="currentColor"/>
+    <path d="M-200 150h90a130 130 0 0 1 0 260h-90"/>
+  </svg>
+
   <nav th:fragment="crumbs" th:if="${!dir.crumbs.isEmpty()}" class="crumbs" th:aria-label="#{dir.crumbs}">
     <ol>
       <li th:each="crumb : ${dir.crumbs}">
@@ -78,21 +95,24 @@
   </nav>
 
   <ul th:fragment="cards(cards)" class="cards">
-    <li th:each="card : ${cards}">
-      <a class="card" th:href="${card.href}">
-        <span class="card-photo">
-          <img th:if="${card.cover}" th:src="${card.cover}" th:alt="${card.alt}" loading="lazy">
-        </span>
-        <span class="card-body">
-          <span class="card-name" th:text="${card.name}">Venue</span>
-          <span class="card-place" th:text="${card.place}">Area, City</span>
-          <span class="card-meta">
-            <span th:if="${card.from}" th:text="${card.from}">From Rs 1,200</span>
-            <span th:text="${card.courts}">2 courts</span>
-            <span th:if="${card.rating}" class="card-rating" th:text="${'★ ' + card.rating}">★ 4.5 (12)</span>
-          </span>
-        </span>
+    <li th:each="card : ${cards}" class="card">
+      <a class="card-photo" th:href="${card.href}" tabindex="-1" aria-hidden="true">
+        <img th:if="${card.cover}" th:src="${card.cover}" th:alt="${card.alt}" loading="lazy">
       </a>
+      <a class="card-name" th:href="${card.href}" th:text="${card.name}">Venue</a>
+      <span class="card-place" th:text="${card.place}">Area, City</span>
+      <span class="card-meta">
+        <span th:if="${card.from}" class="card-from" th:text="${card.from}">From Rs 1,200</span>
+        <span th:text="${card.courts}">2 courts</span>
+        <span th:if="${card.rating}" class="card-rating" th:text="${'★ ' + card.rating}">★ 4.5 (12)</span>
+      </span>
+      <div th:if="${card.freeWhen}" class="free">
+        <span class="free-when" th:text="${card.freeWhen}">Free today</span>
+        <ul class="hours-free">
+          <li th:each="hour : ${card.free}"><a class="lit" th:href="${hour.book}" th:text="${hour.time}"
+            th:aria-label="#{dir.freeHour(${hour.time}, ${card.name})}">7 PM</a></li>
+        </ul>
+      </div>
     </li>
   </ul>
 
@@ -109,7 +129,7 @@
   <footer th:fragment="footer" class="foot">
     <div class="wrap foot-inner">
       <div>
-        <p class="logo"><span class="logo-mark" aria-hidden="true">F</span><span>FutSlot</span></p>
+        <p class="logo"><svg th:replace="~{futslot/parts :: mark}"></svg><span>FutSlot</span></p>
         <p class="muted" th:text="#{dir.footer.tagline}">Book futsal across Nepal.</p>
       </div>
       <nav th:if="${!dir.cities.isEmpty()}" th:aria-label="#{dir.byCity}">

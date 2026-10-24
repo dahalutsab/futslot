@@ -22,7 +22,7 @@ function options<T extends string>(labels: Record<T, string>): { value: T; label
       <p class="mt-1 text-muted">{{ l().profileIntro }}</p>
       @if (card(); as c) {
         <p class="mt-3 text-sm text-muted">{{ l().gamesPlayedOnFutSlot(l().games(c.gamesPlayed)) }}</p>
-        <form class="mt-5 space-y-5 rounded-xl border border-border bg-surface p-5" (ngSubmit)="save()">
+        <form class="mt-5 space-y-5 rounded-md border border-border bg-surface p-5" (ngSubmit)="save()">
           @for (group of groups(); track group.key) {
             <fieldset>
               <legend class="mb-1.5 font-medium">{{ group.label }}</legend>
@@ -37,13 +37,13 @@ function options<T extends string>(labels: Record<T, string>): { value: T; label
           }
           <div>
             <label for="city" class="mb-1.5 block font-medium">{{ l().city }}</label>
-            <input id="city" name="city" type="text" maxlength="60" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+            <input id="city" name="city" type="text" maxlength="60" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
               [ngModel]="city()" (ngModelChange)="city.set($event)" />
           </div>
           <div>
             <label for="bio" class="mb-1.5 block font-medium">{{ l().aboutYou }} <span class="font-normal text-subtle">{{ l().optional }}</span></label>
             <textarea id="bio" name="bio" rows="3" maxlength="500" [placeholder]="l().aboutYouHint"
-              class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-base" [ngModel]="bio()" (ngModelChange)="bio.set($event)"></textarea>
+              class="w-full rounded-md border border-border bg-surface px-3 py-2 text-base" [ngModel]="bio()" (ngModelChange)="bio.set($event)"></textarea>
           </div>
           <label class="flex min-h-11 cursor-pointer items-center gap-3">
             <input type="checkbox" name="isPublic" class="size-5" [ngModel]="isPublic()" (ngModelChange)="isPublic.set($event)" />
@@ -52,10 +52,10 @@ function options<T extends string>(labels: Record<T, string>): { value: T; label
           @if (message(); as m) {
             <p [class]="m.ok ? 'text-confirmed-fg' : 'text-danger'" role="status">{{ m.text }}</p>
           }
-          <button type="submit" [disabled]="saving()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ saving() ? l().saving : l().save }}</button>
+          <button type="submit" [disabled]="saving()" class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ saving() ? l().saving : l().save }}</button>
         </form>
       } @else if (!message()) {
-        <div class="mt-6 h-64 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
+        <div class="mt-6 h-64 animate-pulse rounded-md bg-surface" [attr.aria-label]="l().loading"></div>
       }
     </div>
   `,

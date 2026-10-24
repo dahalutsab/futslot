@@ -21,14 +21,14 @@ import { planTerms } from '../../shared/labels';
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>
       } @else if (memberships(); as list) {
         @if (list.length === 0) {
-          <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
+          <div class="mt-6 rounded-md border border-dashed border-border bg-surface px-6 py-12 text-center">
             <p class="font-medium">{{ l().noMembershipsYet }}</p>
             <p class="mt-1 text-muted">{{ l().noMembershipsBody }}</p>
           </div>
         } @else {
           <ul class="mt-4 space-y-3">
             @for (m of list; track m.id) {
-              <li class="rounded-xl border p-4" [class]="m.status === 'ACTIVE' ? 'border-border bg-surface' : 'border-border bg-surface-2'">
+              <li class="rounded-md border p-4" [class]="m.status === 'ACTIVE' ? 'border-border bg-surface' : 'border-border bg-surface-2'">
                 <div class="flex items-start gap-3">
                   <div class="min-w-0 flex-1">
                     <p class="font-semibold">{{ m.plan.name }}</p>
@@ -45,14 +45,14 @@ import { planTerms } from '../../shared/labels';
                 </p>
                 <p class="text-sm text-muted">{{ m.status === 'EXPIRED' ? l().ended(fmt.dayLabel(m.expiresOn)) : l().until(fmt.dayLabel(m.expiresOn)) }}</p>
                 @if (m.status === 'ACTIVE') {
-                  <a [routerLink]="['/venues', m.venue.slug]" class="mt-3 inline-flex h-11 items-center rounded-lg bg-ink px-4 font-medium text-ink-fg">{{ l().bookWithIt }}</a>
+                  <a [routerLink]="['/venues', m.venue.slug]" class="mt-3 inline-flex h-11 items-center rounded-md bg-ink px-4 font-medium text-ink-fg">{{ l().bookWithIt }}</a>
                 }
               </li>
             }
           </ul>
         }
       } @else {
-        <div class="mt-6 h-32 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
+        <div class="mt-6 h-32 animate-pulse rounded-md bg-surface" [attr.aria-label]="l().loading"></div>
       }
     </div>
   `,

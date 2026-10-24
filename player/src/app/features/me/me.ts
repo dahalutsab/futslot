@@ -29,7 +29,7 @@ interface Link {
       <h1 class="text-2xl font-semibold tracking-tight">{{ session.user()?.fullName }}</h1>
       <p class="tabular text-muted">{{ fmt.phone(session.user()?.phone) }}</p>
 
-      <ul class="mt-5 divide-y divide-border rounded-xl border border-border bg-surface">
+      <ul class="mt-5 divide-y divide-border rounded-md border border-border bg-surface">
         @for (link of links(); track link.path) {
           <li>
             <a [routerLink]="link.path" class="flex min-h-14 items-center gap-3 px-4 py-3 hover:bg-surface-2">
@@ -41,28 +41,28 @@ interface Link {
         }
       </ul>
 
-      <section class="mt-6 rounded-xl border border-border bg-surface p-5" aria-labelledby="details-title">
+      <section class="mt-6 rounded-md border border-border bg-surface p-5" aria-labelledby="details-title">
         <h2 id="details-title" class="font-semibold">{{ l().yourDetails }}</h2>
         <form class="mt-3 space-y-3" (ngSubmit)="save()">
           <div>
             <label for="full-name" class="mb-1.5 block font-medium">{{ l().name }}</label>
             <input id="full-name" name="fullName" type="text" maxlength="100" autocomplete="name"
-              class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" [ngModel]="fullName()" (ngModelChange)="fullName.set($event)" />
+              class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" [ngModel]="fullName()" (ngModelChange)="fullName.set($event)" />
             <p class="mt-1 text-sm text-subtle">{{ l().venuesSeeThis }}</p>
           </div>
           <div>
             <label for="email" class="mb-1.5 block font-medium">{{ l().email }} <span class="font-normal text-subtle">{{ l().optional }}</span></label>
             <input id="email" name="email" type="email" maxlength="254" autocomplete="email"
-              class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" [ngModel]="email()" (ngModelChange)="email.set($event)" />
+              class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" [ngModel]="email()" (ngModelChange)="email.set($event)" />
           </div>
           @if (message(); as m) {
             <p [class]="m.ok ? 'text-confirmed-fg' : 'text-danger'" role="status">{{ m.text }}</p>
           }
-          <button type="submit" [disabled]="saving()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ saving() ? l().saving : l().save }}</button>
+          <button type="submit" [disabled]="saving()" class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ saving() ? l().saving : l().save }}</button>
         </form>
       </section>
 
-      <section class="mt-6 rounded-xl border border-border bg-surface p-5" aria-labelledby="password-title">
+      <section class="mt-6 rounded-md border border-border bg-surface p-5" aria-labelledby="password-title">
         <h2 id="password-title" class="font-semibold">{{ hasPassword() ? l().password : l().setAPassword }}</h2>
         @if (!hasPassword()) {
           <p class="mt-1 text-sm text-muted">{{ l().googleOnlyNote }}</p>
@@ -73,28 +73,28 @@ interface Link {
             <div>
               <label for="current-password" class="mb-1.5 block font-medium">{{ l().currentPassword }}</label>
               <input id="current-password" name="currentPassword" type="password" autocomplete="current-password"
-                class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" [ngModel]="currentPassword()" (ngModelChange)="currentPassword.set($event)" />
+                class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" [ngModel]="currentPassword()" (ngModelChange)="currentPassword.set($event)" />
             </div>
           }
           <div>
             <label for="new-password" class="mb-1.5 block font-medium">{{ l().newPassword }}</label>
             <input id="new-password" name="newPassword" type="password" autocomplete="new-password" aria-describedby="new-password-help"
-              class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" [ngModel]="newPassword()" (ngModelChange)="newPassword.set($event)" />
+              class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" [ngModel]="newPassword()" (ngModelChange)="newPassword.set($event)" />
             <p id="new-password-help" class="mt-1 text-sm text-subtle">{{ l().passwordStayHere }}</p>
           </div>
           @if (passwordMessage(); as m) {
             <p [class]="m.ok ? 'text-confirmed-fg' : 'text-danger'" role="status">{{ m.text }}</p>
           }
-          <button type="submit" [disabled]="changing()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">
+          <button type="submit" [disabled]="changing()" class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">
             {{ changing() ? l().saving : hasPassword() ? l().changePassword : l().setPassword }}
           </button>
         </form>
       </section>
 
-      <section class="mt-6 rounded-xl border border-border bg-surface p-5" aria-labelledby="language-title">
+      <section class="mt-6 rounded-md border border-border bg-surface p-5" aria-labelledby="language-title">
         <h2 id="language-title" class="font-semibold">{{ l().language }}</h2>
         <p class="mt-1 text-sm text-muted">{{ l().languageHelp }}</p>
-        <div class="mt-3 flex rounded-lg bg-surface-2 p-1" role="radiogroup" aria-labelledby="language-title">
+        <div class="mt-3 flex rounded-md bg-surface-2 p-1" role="radiogroup" aria-labelledby="language-title">
           @for (option of languageOptions; track option) {
             <button type="button" role="radio" [attr.aria-checked]="language() === option" (click)="languages.set(option)" [attr.lang]="option"
               class="h-9 flex-1 rounded-md font-medium text-muted" [class.bg-surface]="language() === option" [class.text-text]="language() === option">{{ languageNames[option] }}</button>
@@ -102,9 +102,9 @@ interface Link {
         </div>
       </section>
 
-      <section class="mt-6 rounded-xl border border-border bg-surface p-5" aria-labelledby="theme-title">
+      <section class="mt-6 rounded-md border border-border bg-surface p-5" aria-labelledby="theme-title">
         <h2 id="theme-title" class="font-semibold">{{ l().appearance }}</h2>
-        <div class="mt-3 flex rounded-lg bg-surface-2 p-1" role="radiogroup" aria-labelledby="theme-title">
+        <div class="mt-3 flex rounded-md bg-surface-2 p-1" role="radiogroup" aria-labelledby="theme-title">
           @for (option of themes(); track option.value) {
             <button type="button" role="radio" [attr.aria-checked]="theme.choice() === option.value" (click)="theme.set(option.value)"
               class="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md text-sm font-medium text-muted"
@@ -115,7 +115,7 @@ interface Link {
         </div>
       </section>
 
-      <button type="button" (click)="session.signOut()" class="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-lg font-medium text-danger hover:bg-danger-bg">
+      <button type="button" (click)="session.signOut()" class="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-md font-medium text-danger hover:bg-danger-bg">
         <lucide-icon [img]="icons.LogOut" [size]="18" /> {{ l().signOut }}
       </button>
     </div>

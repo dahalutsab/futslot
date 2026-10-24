@@ -7,9 +7,9 @@
   <h1 class="mt-2 text-2xl font-semibold tracking-tight">{{ l().splitTheCost }}</h1>
 
   @if (error(); as message) {
-    <p class="mt-6 rounded-xl border border-border bg-surface px-6 py-10 text-center text-muted">{{ message }}</p>
+    <p class="mt-6 rounded-md border border-border bg-surface px-6 py-10 text-center text-muted">{{ message }}</p>
   } @else if (split() === undefined) {
-    <div class="mt-6 h-48 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
+    <div class="mt-6 h-48 animate-pulse rounded-md bg-surface" [attr.aria-label]="l().loading"></div>
   } @else if (split() === null || editing()) {
     <!-- Setting up, or changing, the rules -->
     <p class="mt-1 text-muted">{{ split() ? l().changeSplit : l().startSplitIntro }}</p>
@@ -18,7 +18,7 @@
         <legend class="mb-2 font-semibold">{{ l().whoPays }}</legend>
         <div class="space-y-2">
           @for (r of rules(); track r.value) {
-            <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
+            <label class="flex cursor-pointer items-start gap-3 rounded-md border p-3 has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
               [class]="rule() === r.value ? 'bg-surface' : 'border-border bg-surface'">
               <input type="radio" name="rule" class="mt-1" [value]="r.value" [checked]="rule() === r.value" (change)="rule.set(r.value)" />
               <span><span class="block font-medium">{{ r.label }}</span><span class="block text-sm text-muted">{{ r.detail }}</span></span>
@@ -30,7 +30,7 @@
         <div>
           <label for="percent" class="mb-1.5 block font-medium">{{ l().losingSidePays }}</label>
           <div class="flex items-center gap-2">
-            <input id="percent" name="percent" type="number" inputmode="numeric" min="50" max="100" class="tabular h-11 w-24 rounded-lg border border-border bg-surface px-3 text-base"
+            <input id="percent" name="percent" type="number" inputmode="numeric" min="50" max="100" class="tabular h-11 w-24 rounded-md border border-border bg-surface px-3 text-base"
               [ngModel]="percent()" (ngModelChange)="percent.set(+$event)" />
             <span class="text-muted">{{ l().percentOfEverything }}</span>
           </div>
@@ -39,19 +39,19 @@
       <div class="grid gap-3 sm:grid-cols-2">
         <div>
           <label for="side-a" class="mb-1.5 block font-medium">{{ l().oneSide }}</label>
-          <input id="side-a" name="sideA" type="text" maxlength="30" [placeholder]="l().teamA" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+          <input id="side-a" name="sideA" type="text" maxlength="30" [placeholder]="l().teamA" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
             [ngModel]="sideA()" (ngModelChange)="sideA.set($event)" />
         </div>
         <div>
           <label for="side-b" class="mb-1.5 block font-medium">{{ l().otherSide }}</label>
-          <input id="side-b" name="sideB" type="text" maxlength="30" [placeholder]="l().teamB" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+          <input id="side-b" name="sideB" type="text" maxlength="30" [placeholder]="l().teamB" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
             [ngModel]="sideB()" (ngModelChange)="sideB.set($event)" />
         </div>
       </div>
       @if (!split()) {
         <fieldset>
           <legend class="mb-1.5 font-medium">{{ l().youPlayFor }}</legend>
-          <div class="flex rounded-lg bg-surface-2 p-1" role="radiogroup">
+          <div class="flex rounded-md bg-surface-2 p-1" role="radiogroup">
             @for (s of ['A', 'B']; track s) {
               <button type="button" role="radio" [attr.aria-checked]="mySide() === s" (click)="mySide.set($any(s))"
                 class="h-9 flex-1 rounded-md font-medium text-muted" [class.bg-surface]="mySide() === s" [class.text-text]="mySide() === s">
@@ -64,12 +64,12 @@
       <div class="grid gap-3 sm:grid-cols-[160px_1fr]">
         <div>
           <label for="extras" class="mb-1.5 block font-medium">{{ l().extrasRs }}</label>
-          <input id="extras" name="extras" type="number" inputmode="decimal" min="0" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+          <input id="extras" name="extras" type="number" inputmode="decimal" min="0" class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
             [ngModel]="extras()" (ngModelChange)="extras.set(+$event)" />
         </div>
         <div>
           <label for="extras-note" class="mb-1.5 block font-medium">{{ l().forWhat }} <span class="font-normal text-subtle">{{ l().optional }}</span></label>
-          <input id="extras-note" name="extrasNote" type="text" maxlength="100" [placeholder]="l().extrasHint" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+          <input id="extras-note" name="extrasNote" type="text" maxlength="100" [placeholder]="l().extrasHint" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
             [ngModel]="extrasNote()" (ngModelChange)="extrasNote.set($event)" />
         </div>
       </div>
@@ -77,9 +77,9 @@
         <p class="text-danger" role="alert">{{ message }}</p>
       }
       <div class="flex gap-2">
-        <button type="submit" [disabled]="busy()" class="h-12 rounded-lg bg-ink px-6 font-medium text-ink-fg disabled:opacity-60">{{ split() ? l().save : l().startSplitting }}</button>
+        <button type="submit" [disabled]="busy()" class="h-12 rounded-md bg-ink px-6 font-medium text-ink-fg disabled:opacity-60">{{ split() ? l().save : l().startSplitting }}</button>
         @if (split()) {
-          <button type="button" (click)="editing.set(false)" class="h-12 rounded-lg px-4 font-medium">{{ l().cancel }}</button>
+          <button type="button" (click)="editing.set(false)" class="h-12 rounded-md px-4 font-medium">{{ l().cancel }}</button>
         }
       </div>
     </form>
@@ -87,14 +87,14 @@
     <p class="mt-1 text-muted"><span class="tabular">{{ fmt.dayLabel(s.startsAt.slice(0, 10)) }} · {{ fmt.localClock(s.startsAt) }}</span> · {{ s.venueName }}, {{ s.courtName }}</p>
 
     <!-- What it costs and the rule -->
-    <section class="mt-5 rounded-xl border border-border bg-surface p-5">
+    <section class="mt-5 rounded-md border border-border bg-surface p-5">
       <div class="flex items-start gap-3">
         <div class="min-w-0 flex-1">
           <p class="font-semibold">{{ ruleText()[s.rule].label }}{{ s.rule === 'LOSERS_PAY_PERCENT' ? l().withPercent(s.losersPercent ?? 0) : '' }}</p>
           <p class="text-sm text-muted">{{ ruleText()[s.rule].detail }}</p>
         </div>
         @if (s.youAreBooker && !s.result) {
-          <button type="button" (click)="edit()" class="h-11 shrink-0 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">{{ l().change }}</button>
+          <button type="button" (click)="edit()" class="h-11 shrink-0 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">{{ l().change }}</button>
         }
       </div>
       <dl class="mt-3 space-y-1 text-sm">
@@ -126,7 +126,7 @@
     <!-- What you owe, for players other than the booker -->
     @if (!s.youAreBooker) {
       @if (me(); as m) {
-        <section class="mt-4 rounded-xl border p-5" [class]="m.settled ? 'border-confirmed-line bg-confirmed-bg text-confirmed-fg' : 'border-border bg-surface'">
+        <section class="mt-4 rounded-md border p-5" [class]="m.settled ? 'border-confirmed-line bg-confirmed-bg text-confirmed-fg' : 'border-border bg-surface'">
           @if (m.share === null) {
             <p>{{ l().shareOnceResult(s.bookedBy.name) }}</p>
           } @else if (m.settled) {
@@ -143,11 +143,11 @@
 
     <!-- The result -->
     @if (s.result) {
-      <section class="mt-4 rounded-xl border border-border bg-surface p-5">
+      <section class="mt-4 rounded-md border border-border bg-surface p-5">
         <div class="flex items-center gap-3">
           <p class="min-w-0 flex-1 font-semibold">{{ s.rule === 'EQUAL' ? l().played : resultLabel(s.result, s.sideAName, s.sideBName) }}</p>
           @if (s.youAreBooker) {
-            <button type="button" (click)="undoResult()" [disabled]="busy()" class="h-11 rounded-lg px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">{{ l().undo }}</button>
+            <button type="button" (click)="undoResult()" [disabled]="busy()" class="h-11 rounded-md px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">{{ l().undo }}</button>
           }
         </div>
         @if (s.youAreBooker) {
@@ -155,16 +155,16 @@
         }
       </section>
     } @else if (s.youAreBooker && started()) {
-      <section class="mt-4 rounded-xl border border-held-line bg-surface p-5">
+      <section class="mt-4 rounded-md border border-held-line bg-surface p-5">
         <p class="font-semibold">{{ s.rule === 'EQUAL' ? l().playedTheGame : l().whoWon }}</p>
         <p class="text-sm text-muted">{{ l().worksOutShares }}</p>
         <div class="mt-3 flex flex-wrap gap-2">
           @if (s.rule === 'EQUAL') {
-            <button type="button" (click)="record(null)" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">{{ l().workOutShares }}</button>
+            <button type="button" (click)="record(null)" [disabled]="busy()" class="h-11 rounded-md bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">{{ l().workOutShares }}</button>
           } @else {
-            <button type="button" (click)="record('A_WON')" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">{{ s.sideAName }}</button>
-            <button type="button" (click)="record('B_WON')" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">{{ s.sideBName }}</button>
-            <button type="button" (click)="record('DRAW')" [disabled]="busy()" class="h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2 disabled:opacity-60">{{ l().resultDraw }}</button>
+            <button type="button" (click)="record('A_WON')" [disabled]="busy()" class="h-11 rounded-md bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">{{ s.sideAName }}</button>
+            <button type="button" (click)="record('B_WON')" [disabled]="busy()" class="h-11 rounded-md bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">{{ s.sideBName }}</button>
+            <button type="button" (click)="record('DRAW')" [disabled]="busy()" class="h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2 disabled:opacity-60">{{ l().resultDraw }}</button>
           }
         </div>
       </section>
@@ -177,7 +177,7 @@
     <!-- The two sides -->
     <div class="mt-4 grid gap-4 sm:grid-cols-2">
       @for (side of sides(); track side.side) {
-        <section class="rounded-xl border border-border bg-surface p-4" [attr.aria-label]="side.name">
+        <section class="rounded-md border border-border bg-surface p-4" [attr.aria-label]="side.name">
           <h2 class="font-semibold">{{ side.name }} <span class="font-normal text-muted">· {{ digits(side.players.length) }}</span></h2>
           <ul class="mt-2 divide-y divide-border">
             @for (p of side.players; track p.id) {
@@ -217,30 +217,30 @@
 
     <!-- Adding players -->
     @if (s.youAreBooker && !s.result) {
-      <section class="mt-4 rounded-xl border border-border bg-surface p-5" aria-labelledby="add-title">
+      <section class="mt-4 rounded-md border border-border bg-surface p-5" aria-labelledby="add-title">
         <h2 id="add-title" class="font-semibold">{{ l().addAPlayer }}</h2>
         <p class="text-sm text-muted">{{ l().addPlayerHelp }}</p>
         <form class="mt-3 space-y-3" (ngSubmit)="addPlayer()">
           <div class="grid gap-3 sm:grid-cols-2">
             <div>
               <label for="new-phone" class="mb-1.5 block font-medium">{{ l().phone }}</label>
-              <input id="new-phone" name="phone" type="tel" inputmode="numeric" placeholder="98XXXXXXXX" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+              <input id="new-phone" name="phone" type="tel" inputmode="numeric" placeholder="98XXXXXXXX" class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                 [ngModel]="newPhone()" (ngModelChange)="newPhone.set($event)" />
             </div>
             <div>
               <label for="new-name" class="mb-1.5 block font-medium">{{ l().name }}</label>
-              <input id="new-name" name="name" type="text" maxlength="60" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+              <input id="new-name" name="name" type="text" maxlength="60" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                 [ngModel]="newName()" (ngModelChange)="newName.set($event)" />
             </div>
           </div>
           <div class="flex flex-wrap items-center gap-2">
-            <div class="flex rounded-lg bg-surface-2 p-1" role="radiogroup" [attr.aria-label]="l().side">
+            <div class="flex rounded-md bg-surface-2 p-1" role="radiogroup" [attr.aria-label]="l().side">
               @for (side of sides(); track side.side) {
                 <button type="button" role="radio" [attr.aria-checked]="newSide() === side.side" (click)="newSide.set(side.side)"
                   class="h-9 rounded-md px-3 text-sm font-medium text-muted" [class.bg-surface]="newSide() === side.side" [class.text-text]="newSide() === side.side">{{ side.name }}</button>
               }
             </div>
-            <button type="submit" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ l().add }}</button>
+            <button type="submit" [disabled]="busy()" class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ l().add }}</button>
           </div>
         </form>
       </section>

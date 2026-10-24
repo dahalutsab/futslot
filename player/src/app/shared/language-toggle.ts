@@ -12,7 +12,7 @@ export const LANGUAGE_NAMES: Record<Language, string> = { en: 'English', ne: 'рд
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button type="button" (click)="choice.set(other())" [attr.lang]="other()"
-      class="h-10 rounded-lg px-3 font-medium text-muted hover:bg-surface-2 hover:text-text">{{ names[other()] }}</button>
+      class="h-10 rounded-md px-3 font-medium text-muted hover:bg-surface-2 hover:text-text">{{ names[other()] }}</button>
   `,
 })
 export class LanguageToggle {

@@ -27,10 +27,10 @@ import { PlayNav } from '../../shared/play-nav';
           <h2 id="invites-title" class="font-semibold">{{ l().invitations }}</h2>
           <ul class="mt-2 space-y-2">
             @for (team of invites(); track team.id) {
-              <li class="flex flex-wrap items-center gap-3 rounded-xl border border-held-line bg-surface p-4">
+              <li class="flex flex-wrap items-center gap-3 rounded-md border border-held-line bg-surface p-4">
                 <a [routerLink]="['/teams', team.slug]" class="min-w-0 flex-1 font-medium hover:underline">{{ team.name }}</a>
-                <button type="button" (click)="answer(team, true)" class="h-11 rounded-lg bg-ink px-4 font-medium text-ink-fg">{{ l().join }}</button>
-                <button type="button" (click)="answer(team, false)" class="h-11 rounded-lg px-3 font-medium text-muted hover:bg-surface-2">{{ l().decline }}</button>
+                <button type="button" (click)="answer(team, true)" class="h-11 rounded-md bg-ink px-4 font-medium text-ink-fg">{{ l().join }}</button>
+                <button type="button" (click)="answer(team, false)" class="h-11 rounded-md px-3 font-medium text-muted hover:bg-surface-2">{{ l().decline }}</button>
               </li>
             }
           </ul>
@@ -40,21 +40,21 @@ import { PlayNav } from '../../shared/play-nav';
       <section class="mt-6" aria-labelledby="mine-title">
         <div class="flex items-center gap-3">
           <h2 id="mine-title" class="flex-1 font-semibold">{{ l().yourTeams }}</h2>
-          <button type="button" (click)="creating.set(!creating())" class="flex h-11 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">
+          <button type="button" (click)="creating.set(!creating())" class="flex h-11 items-center gap-1.5 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">
             <lucide-icon [img]="icons.Plus" [size]="16" /> {{ l().newTeam }}
           </button>
         </div>
         @if (creating()) {
-          <form class="mt-3 space-y-3 rounded-xl border border-border bg-surface p-4" (ngSubmit)="create()">
+          <form class="mt-3 space-y-3 rounded-md border border-border bg-surface p-4" (ngSubmit)="create()">
             <div class="grid gap-3 sm:grid-cols-2">
               <div>
                 <label for="team-name" class="mb-1.5 block font-medium">{{ l().name }}</label>
-                <input id="team-name" name="name" type="text" maxlength="60" required class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+                <input id="team-name" name="name" type="text" maxlength="60" required class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                   [ngModel]="name()" (ngModelChange)="name.set($event)" />
               </div>
               <div>
                 <label for="team-city" class="mb-1.5 block font-medium">{{ l().city }}</label>
-                <input id="team-city" name="city" type="text" maxlength="60" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+                <input id="team-city" name="city" type="text" maxlength="60" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                   [ngModel]="city()" (ngModelChange)="city.set($event)" />
               </div>
             </div>
@@ -67,7 +67,7 @@ import { PlayNav } from '../../shared/play-nav';
                 }
               </div>
             </fieldset>
-            <button type="submit" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ l().createTeam }}</button>
+            <button type="submit" [disabled]="busy()" class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ l().createTeam }}</button>
             <p class="text-sm text-subtle">{{ l().youllBeCaptain }}</p>
           </form>
         }
@@ -78,8 +78,8 @@ import { PlayNav } from '../../shared/play-nav';
           <ul class="mt-3 space-y-2">
             @for (team of active(); track team.id) {
               <li>
-                <a [routerLink]="['/teams', team.slug]" class="flex items-center gap-3 rounded-xl border border-border bg-surface p-4 hover:border-subtle">
-                  <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-brand font-bold text-white" aria-hidden="true">{{ team.name.charAt(0) }}</span>
+                <a [routerLink]="['/teams', team.slug]" class="flex items-center gap-3 rounded-md border border-border bg-surface p-4 hover:border-subtle">
+                  <span class="grid size-10 shrink-0 place-items-center rounded-md bg-brand font-bold text-white" aria-hidden="true">{{ team.name.charAt(0) }}</span>
                   <span class="min-w-0 flex-1">
                     <span class="block font-medium">{{ team.name }}</span>
                     <span class="block text-sm text-muted">{{ l().players(team.memberCount) }}{{ team.myRole ? ' · ' + role()[team.myRole] : '' }}</span>
@@ -95,11 +95,11 @@ import { PlayNav } from '../../shared/play-nav';
         <h2 id="find-title" class="font-semibold">{{ l().findATeam }}</h2>
         <form class="mt-2 flex gap-2" role="search" (ngSubmit)="search()">
           <label for="team-q" class="sr-only">{{ l().teamName }}</label>
-          <div class="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-lg border border-border bg-surface px-3">
+          <div class="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-md border border-border bg-surface px-3">
             <lucide-icon [img]="icons.Search" [size]="16" class="text-subtle" />
             <input id="team-q" name="q" type="search" [placeholder]="l().teamName" class="h-full min-w-0 flex-1 bg-transparent text-base outline-none" [ngModel]="q()" (ngModelChange)="q.set($event)" />
           </div>
-          <button type="submit" class="h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">{{ l().search }}</button>
+          <button type="submit" class="h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2">{{ l().search }}</button>
         </form>
         @if (found(); as list) {
           @if (list.length === 0) {
@@ -108,7 +108,7 @@ import { PlayNav } from '../../shared/play-nav';
           <ul class="mt-3 grid gap-2 sm:grid-cols-2">
             @for (team of list; track team.id) {
               <li>
-                <a [routerLink]="['/teams', team.slug]" class="block rounded-xl border border-border bg-surface p-4 hover:border-subtle">
+                <a [routerLink]="['/teams', team.slug]" class="block rounded-md border border-border bg-surface p-4 hover:border-subtle">
                   <span class="block font-medium">{{ team.name }}</span>
                   <span class="block text-sm text-muted">{{ [team.city, team.skillLevel ? skillLabel()[team.skillLevel] : null, l().players(team.memberCount)].filter(isText).join(' · ') }}</span>
                 </a>

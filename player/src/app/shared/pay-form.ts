@@ -19,7 +19,7 @@ export const CLAIMABLE: PaymentMethod[] = ['ESEWA', 'KHALTI', 'FONEPAY', 'BANK_T
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (instructions()) {
-      <div class="rounded-lg bg-surface-2 px-3 py-2">
+      <div class="rounded-md bg-surface-2 px-3 py-2">
         @let least = minimum();
         <p class="text-sm text-muted">{{ least !== null ? l().sendAtLeastTo(rupees(least)) : l().sendAmountTo(rupees(amount())) }}</p>
         <p class="mt-0.5 whitespace-pre-line font-medium">{{ instructions() }}</p>
@@ -30,7 +30,7 @@ export const CLAIMABLE: PaymentMethod[] = ['ESEWA', 'KHALTI', 'FONEPAY', 'BANK_T
         <legend class="mb-1.5 font-medium">{{ l().paidWith }}</legend>
         <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
           @for (m of methods(); track m) {
-            <label class="flex h-11 cursor-pointer items-center justify-center rounded-lg border text-sm font-medium has-[:checked]:border-ink has-[:checked]:bg-surface-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
+            <label class="flex h-11 cursor-pointer items-center justify-center rounded-md border text-sm font-medium has-[:checked]:border-ink has-[:checked]:bg-surface-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
               [class]="method() === m ? '' : 'border-border text-muted'">
               <input type="radio" class="sr-only" [name]="id() + '-method'" [value]="m" [checked]="method() === m" (change)="method.set(m)" />
               {{ methodLabel(m) }}
@@ -42,21 +42,21 @@ export const CLAIMABLE: PaymentMethod[] = ['ESEWA', 'KHALTI', 'FONEPAY', 'BANK_T
         <div>
           <label [for]="id() + '-amount'" class="mb-1.5 block font-medium">{{ l().amountYouSent }}</label>
           <input [id]="id() + '-amount'" name="amount" type="number" inputmode="decimal" [min]="minimum()" [max]="amount()"
-            class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+            class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
             [ngModel]="paid()" (ngModelChange)="paid.set(+$event)" required />
         </div>
       }
       <div>
         <label [for]="id() + '-txn'" class="mb-1.5 block font-medium">{{ l().transactionId }}</label>
         <input [id]="id() + '-txn'" name="transactionId" type="text" maxlength="100" autocomplete="off" [placeholder]="l().fromYourReceipt"
-          class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+          class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
           [ngModel]="transactionId()" (ngModelChange)="transactionId.set($event)" required />
       </div>
       @if (problem(); as message) {
         <p class="text-danger" role="alert">{{ message }}</p>
       }
       <button type="submit" [disabled]="busy()"
-        class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+        class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
         @if (busy()) {
           <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> {{ l().sending }}
         } @else {

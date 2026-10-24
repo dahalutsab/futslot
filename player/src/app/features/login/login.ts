@@ -8,6 +8,7 @@ import { CodePurpose } from '../../core/api.types';
 import { Session } from '../../core/session';
 import { l } from '../../i18n/i18n';
 import { GoogleButton } from '../../shared/google-button';
+import { Logo } from '../../shared/logo';
 import { LanguageToggle } from '../../shared/language-toggle';
 
 /**
@@ -23,7 +24,7 @@ const MIN_PASSWORD = 8;
 /** Sign in with a phone number and password, or with Google; create an account; or reset a forgotten password. */
 @Component({
   selector: 'fs-login',
-  imports: [FormsModule, LucideAngularModule, RouterLink, GoogleButton, LanguageToggle],
+  imports: [FormsModule, LucideAngularModule, RouterLink, GoogleButton, LanguageToggle, Logo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.html',
 })

@@ -37,7 +37,7 @@ const DAYS_AHEAD = 30;
           <div class="grid grid-cols-2 gap-2">
             @for (t of types(); track t.value) {
               <button type="button" (click)="type.set(t.value)" [attr.aria-pressed]="type() === t.value"
-                class="rounded-lg border p-3 text-left" [class]="type() === t.value ? 'border-ink bg-surface' : 'border-border bg-surface text-muted'">
+                class="rounded-md border p-3 text-left" [class]="type() === t.value ? 'border-ink bg-surface' : 'border-border bg-surface text-muted'">
                 <span class="block font-medium">{{ t.label }}</span><span class="block text-sm">{{ t.detail }}</span>
               </button>
             }
@@ -46,11 +46,11 @@ const DAYS_AHEAD = 30;
 
         @if (type() === 'FIND_OPPONENT') {
           @if (teams().length === 0) {
-            <p class="rounded-lg bg-held-bg px-3 py-2 text-held-fg">{{ l().needCaptainForOpponent }} <a routerLink="/teams" class="font-medium underline">{{ l().startATeam }}</a></p>
+            <p class="rounded-md bg-held-bg px-3 py-2 text-held-fg">{{ l().needCaptainForOpponent }} <a routerLink="/teams" class="font-medium underline">{{ l().startATeam }}</a></p>
           } @else {
             <div>
               <label for="team" class="mb-1.5 block font-medium">{{ l().yourTeam }}</label>
-              <select id="team" name="team" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" [ngModel]="teamId()" (ngModelChange)="teamId.set($event)">
+              <select id="team" name="team" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" [ngModel]="teamId()" (ngModelChange)="teamId.set($event)">
                 @for (t of teams(); track t.id) {
                   <option [value]="t.id">{{ t.name }}</option>
                 }
@@ -64,12 +64,12 @@ const DAYS_AHEAD = 30;
           @if (bookings().length) {
             <div class="space-y-2">
               @for (b of bookings(); track b.id) {
-                <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-surface p-3 has-[:checked]:border-ink">
+                <label class="flex cursor-pointer items-center gap-3 rounded-md border border-border bg-surface p-3 has-[:checked]:border-ink">
                   <input type="radio" name="where" [checked]="bookingId() === b.id" (change)="bookingId.set(b.id)" />
                   <span><span class="block font-medium">{{ b.venue.name }}</span><span class="tabular block text-sm text-muted">{{ fmt.dayLabel(b.startsAt.slice(0, 10)) }} · {{ fmt.localClock(b.startsAt) }} · {{ b.court.name }}</span></span>
                 </label>
               }
-              <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-surface p-3 has-[:checked]:border-ink">
+              <label class="flex cursor-pointer items-center gap-3 rounded-md border border-border bg-surface p-3 has-[:checked]:border-ink">
                 <input type="radio" name="where" [checked]="bookingId() === null" (change)="bookingId.set(null)" />
                 <span class="font-medium">{{ l().notBookedYet }}</span>
               </label>
@@ -78,7 +78,7 @@ const DAYS_AHEAD = 30;
           @if (bookingId() === null) {
             <div class="mt-3">
               <label for="venue" class="mb-1.5 block font-medium">{{ l().venue }} <span class="font-normal text-subtle">{{ l().optional }}</span></label>
-              <select id="venue" name="venue" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" [ngModel]="venueId()" (ngModelChange)="venueId.set($event || null)">
+              <select id="venue" name="venue" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" [ngModel]="venueId()" (ngModelChange)="venueId.set($event || null)">
                 <option value="">{{ l().notDecidedCity }}</option>
                 @for (v of venues(); track v.id) {
                   <option [value]="v.id">{{ v.name }}, {{ v.city }}</option>
@@ -94,13 +94,13 @@ const DAYS_AHEAD = 30;
               @if (!venueId()) {
                 <div>
                   <label for="city" class="mb-1.5 block font-medium">{{ l().city }}</label>
-                  <input id="city" name="city" type="text" maxlength="60" [placeholder]="l().cityHint" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+                  <input id="city" name="city" type="text" maxlength="60" [placeholder]="l().cityHint" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                     [ngModel]="city()" (ngModelChange)="city.set($event)" />
                 </div>
               }
               <div>
                 <label for="time" class="mb-1.5 block font-medium">{{ l().time }}</label>
-                <input id="time" name="time" type="time" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+                <input id="time" name="time" type="time" class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                   [ngModel]="time()" (ngModelChange)="time.set($event)" />
               </div>
             </div>
@@ -111,12 +111,12 @@ const DAYS_AHEAD = 30;
           <div class="grid gap-3 sm:grid-cols-2">
             <div>
               <label for="needed" class="mb-1.5 block font-medium">{{ l().playersNeeded }}</label>
-              <input id="needed" name="needed" type="number" inputmode="numeric" min="1" max="20" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+              <input id="needed" name="needed" type="number" inputmode="numeric" min="1" max="20" class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                 [ngModel]="needed()" (ngModelChange)="needed.set(+$event)" />
             </div>
             <div>
               <label for="cost" class="mb-1.5 block font-medium">{{ l().eachPays }} <span class="font-normal text-subtle">{{ l().rupeesOptional }}</span></label>
-              <input id="cost" name="cost" type="number" inputmode="decimal" min="0" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+              <input id="cost" name="cost" type="number" inputmode="decimal" min="0" class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                 [ngModel]="cost()" (ngModelChange)="cost.set($event === '' || $event === null ? null : +$event)" />
             </div>
           </div>
@@ -134,14 +134,14 @@ const DAYS_AHEAD = 30;
 
         <div>
           <label for="note" class="mb-1.5 block font-medium">{{ l().note }} <span class="font-normal text-subtle">{{ l().optional }}</span></label>
-          <textarea id="note" name="note" rows="2" maxlength="500" [placeholder]="l().postNoteHint" class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-base"
+          <textarea id="note" name="note" rows="2" maxlength="500" [placeholder]="l().postNoteHint" class="w-full rounded-md border border-border bg-surface px-3 py-2 text-base"
             [ngModel]="note()" (ngModelChange)="note.set($event)"></textarea>
         </div>
 
         @if (error(); as message) {
           <p class="text-danger" role="alert">{{ message }}</p>
         }
-        <button type="submit" [disabled]="busy() || !canPost()" class="h-12 w-full rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">{{ l().postIt }}</button>
+        <button type="submit" [disabled]="busy() || !canPost()" class="h-12 w-full rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">{{ l().postIt }}</button>
       </form>
     </div>
   `,

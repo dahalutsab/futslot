@@ -29,7 +29,7 @@ type Request = MatchPost['requests'][number];
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>
       }
       @if (post(); as p) {
-        <section class="mt-2 rounded-xl border border-border bg-surface p-5">
+        <section class="mt-2 rounded-md border border-border bg-surface p-5">
           <fs-match-summary [post]="p" />
           @if (p.note) {
             <p class="mt-3 whitespace-pre-line">{{ p.note }}</p>
@@ -48,18 +48,18 @@ type Request = MatchPost['requests'][number];
             }
             <ul class="mt-2 space-y-2">
               @for (r of p.requests; track r.id) {
-                <li class="rounded-xl border border-border bg-surface p-4">
+                <li class="rounded-md border border-border bg-surface p-4">
                   <fs-player-card [player]="r.player" />
                   @if (r.team) {
                     <p class="mt-2 text-sm">{{ l().forTeamBefore }}<a [routerLink]="['/teams', r.team.slug]" class="font-medium hover:underline">{{ r.team.name }}</a>{{ l().forTeamAfter }}</p>
                   }
                   @if (r.message) {
-                    <p class="mt-2 rounded-lg bg-surface-2 px-3 py-2 text-sm">{{ r.message }}</p>
+                    <p class="mt-2 rounded-md bg-surface-2 px-3 py-2 text-sm">{{ r.message }}</p>
                   }
                   @if (r.status === 'PENDING' && p.status === 'OPEN') {
                     <div class="mt-3 flex gap-2">
-                      <button type="button" (click)="answer(r, true)" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">{{ l().accept }}</button>
-                      <button type="button" (click)="answer(r, false)" [disabled]="busy()" class="h-11 rounded-lg px-3 font-medium text-muted hover:bg-surface-2">{{ l().decline }}</button>
+                      <button type="button" (click)="answer(r, true)" [disabled]="busy()" class="h-11 rounded-md bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">{{ l().accept }}</button>
+                      <button type="button" (click)="answer(r, false)" [disabled]="busy()" class="h-11 rounded-md px-3 font-medium text-muted hover:bg-surface-2">{{ l().decline }}</button>
                     </div>
                   } @else {
                     <p class="mt-2 text-sm" [class]="r.status === 'ACCEPTED' ? 'text-confirmed-fg' : 'text-muted'">
@@ -72,11 +72,11 @@ type Request = MatchPost['requests'][number];
             </ul>
           </section>
           @if (p.status === 'OPEN') {
-            <button type="button" (click)="cancel()" [disabled]="busy()" class="mt-5 h-11 rounded-lg px-4 font-medium text-danger hover:bg-danger-bg">{{ l().callGameOff }}</button>
+            <button type="button" (click)="cancel()" [disabled]="busy()" class="mt-5 h-11 rounded-md px-4 font-medium text-danger hover:bg-danger-bg">{{ l().callGameOff }}</button>
           }
         } @else if (p.myRequest && p.myRequest.status !== 'WITHDRAWN') {
           <!-- Someone who asked -->
-          <section class="mt-4 rounded-xl border p-5" [class]="p.myRequest.status === 'ACCEPTED' ? 'border-confirmed-line bg-confirmed-bg text-confirmed-fg' : 'border-border bg-surface'">
+          <section class="mt-4 rounded-md border p-5" [class]="p.myRequest.status === 'ACCEPTED' ? 'border-confirmed-line bg-confirmed-bg text-confirmed-fg' : 'border-border bg-surface'">
             @if (p.myRequest.status === 'ACCEPTED') {
               <p class="font-semibold">{{ l().youreInExclaim }}</p>
               @if (p.contactPhone) {
@@ -86,12 +86,12 @@ type Request = MatchPost['requests'][number];
               <p>{{ l().pickedSomeoneElse(p.postedBy.name) }}</p>
             } @else {
               <p>{{ l().askedToJoinDecides(p.postedBy.name) }}</p>
-              <button type="button" (click)="withdraw()" [disabled]="busy()" class="mt-3 h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">{{ l().withdraw }}</button>
+              <button type="button" (click)="withdraw()" [disabled]="busy()" class="mt-3 h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2">{{ l().withdraw }}</button>
             }
           </section>
         } @else if (p.status === 'OPEN') {
           <!-- Everyone else: ask to join -->
-          <section class="mt-4 rounded-xl border border-border bg-surface p-5" aria-labelledby="ask-title">
+          <section class="mt-4 rounded-md border border-border bg-surface p-5" aria-labelledby="ask-title">
             <h2 id="ask-title" class="font-semibold">{{ p.type === 'FIND_OPPONENT' ? l().playThemWithTeam : l().askToJoin }}</h2>
             @if (p.type === 'FIND_OPPONENT' && myTeams().length === 0) {
               <p class="mt-1 text-muted">{{ l().needCaptainToTakeOn }} <a routerLink="/teams" class="font-medium text-text underline">{{ l().startATeam }}</a></p>
@@ -100,7 +100,7 @@ type Request = MatchPost['requests'][number];
                 @if (p.type === 'FIND_OPPONENT') {
                   <div>
                     <label for="ask-team" class="mb-1.5 block font-medium">{{ l().yourTeam }}</label>
-                    <select id="ask-team" name="team" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" [ngModel]="teamId()" (ngModelChange)="teamId.set($event)">
+                    <select id="ask-team" name="team" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" [ngModel]="teamId()" (ngModelChange)="teamId.set($event)">
                       @for (t of myTeams(); track t.id) {
                         <option [value]="t.id">{{ t.name }}</option>
                       }
@@ -109,17 +109,17 @@ type Request = MatchPost['requests'][number];
                 }
                 <div>
                   <label for="ask-message" class="mb-1.5 block font-medium">{{ l().message }} <span class="font-normal text-subtle">{{ l().optional }}</span></label>
-                  <input id="ask-message" name="message" type="text" maxlength="300" [placeholder]="l().joinMessageHint" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+                  <input id="ask-message" name="message" type="text" maxlength="300" [placeholder]="l().joinMessageHint" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                     [ngModel]="message()" (ngModelChange)="message.set($event)" />
                 </div>
-                <button type="submit" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ l().askToJoin }}</button>
+                <button type="submit" [disabled]="busy()" class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ l().askToJoin }}</button>
                 <p class="text-sm text-subtle">{{ l().theySeeProfile }} <a routerLink="/me/profile" class="font-medium text-text underline-offset-2 hover:underline">{{ l().editIt }}</a></p>
               </form>
             }
           </section>
         }
       } @else if (!error()) {
-        <div class="mt-6 h-48 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
+        <div class="mt-6 h-48 animate-pulse rounded-md bg-surface" [attr.aria-label]="l().loading"></div>
       }
     </div>
   `,

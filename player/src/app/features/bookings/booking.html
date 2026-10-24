@@ -2,16 +2,16 @@
   <a routerLink="/bookings" class="text-sm text-muted hover:text-text">← {{ l().yourBookings }}</a>
 
   @if (error(); as message) {
-    <p class="mt-6 rounded-xl border border-border bg-surface px-6 py-10 text-center text-muted">{{ message }}</p>
+    <p class="mt-6 rounded-md border border-border bg-surface px-6 py-10 text-center text-muted">{{ message }}</p>
   } @else if (booking(); as b) {
     @if (booked() && b.status !== 'CANCELLED') {
-      <p class="mt-4 flex items-center gap-2 rounded-lg bg-confirmed-bg px-3 py-2 text-confirmed-fg" role="status">
+      <p class="mt-4 flex items-center gap-2 rounded-md bg-confirmed-bg px-3 py-2 text-confirmed-fg" role="status">
         <lucide-icon [img]="icons.CircleCheck" [size]="18" />
         {{ b.status === 'CONFIRMED' ? l().bookedSeeYou : l().bookedPayBelow }}
       </p>
     }
 
-    <section class="mt-4 rounded-xl border border-border bg-surface p-5">
+    <section class="mt-4 rounded-md border border-border bg-surface p-5">
       <fs-status-chip [value]="chip()" />
       <h1 class="mt-3 text-2xl font-semibold tracking-tight">
         <span class="tabular">{{ fmt.localClock(b.startsAt) }} – {{ fmt.localClock(b.endsAt) }}</span>
@@ -29,7 +29,7 @@
       <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
         <p class="tabular flex-1 whitespace-nowrap text-sm text-subtle">{{ l().bookingRef(b.reference) }}</p>
         <a routerLink="/messages" [queryParams]="{ venue: b.venue.id, name: b.venue.name, booking: b.id }"
-          class="flex h-11 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">
+          class="flex h-11 items-center gap-1.5 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">
           <lucide-icon [img]="icons.MessageSquare" [size]="16" /> {{ l().messageTheVenue }}
         </a>
       </div>
@@ -37,7 +37,7 @@
 
     <!-- Paying the advance -->
     @if (b.status === 'PENDING_PAYMENT') {
-      <section class="mt-4 rounded-xl border p-5" [class]="checking() ? 'border-verify-line bg-verify-bg' : 'border-held-line bg-surface'" aria-labelledby="pay-title">
+      <section class="mt-4 rounded-md border p-5" [class]="checking() ? 'border-verify-line bg-verify-bg' : 'border-held-line bg-surface'" aria-labelledby="pay-title">
         @if (checking()) {
           <h2 id="pay-title" class="flex items-center gap-2 font-semibold text-verify-fg">
             <lucide-icon [img]="icons.Wallet" [size]="18" /> {{ l().paymentSent }}
@@ -59,13 +59,13 @@
           <h2 id="pay-title" class="font-semibold">{{ l().timeToPayRanOut }}</h2>
           <p class="mt-1 text-muted">{{ l().slotMayBeGone }}</p>
           <a [routerLink]="['/venues', b.venue.slug]" [queryParams]="{ date: b.startsAt.slice(0, 10) }"
-            class="mt-3 inline-flex h-11 items-center rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().seeFreeSlots }}</a>
+            class="mt-3 inline-flex h-11 items-center rounded-md bg-ink px-5 font-medium text-ink-fg">{{ l().seeFreeSlots }}</a>
         }
       </section>
     }
 
     <!-- Money -->
-    <section class="mt-4 rounded-xl border border-border bg-surface p-5" aria-labelledby="money-title">
+    <section class="mt-4 rounded-md border border-border bg-surface p-5" aria-labelledby="money-title">
       <h2 id="money-title" class="font-semibold">{{ l().payment }}</h2>
       <dl class="mt-2 space-y-1">
         <div class="flex justify-between"><dt class="text-muted">{{ l().court }}</dt><dd class="tabular">{{ fmt.rupees(b.priceAmount) }}</dd></div>
@@ -109,7 +109,7 @@
     </section>
 
     @if (b.status === 'CONFIRMED' || b.status === 'PENDING_PAYMENT' || b.status === 'COMPLETED') {
-      <a [routerLink]="['/bookings', b.id, 'split']" class="mt-4 flex min-h-14 items-center gap-3 rounded-xl border border-border bg-surface px-5 py-3 hover:border-subtle">
+      <a [routerLink]="['/bookings', b.id, 'split']" class="mt-4 flex min-h-14 items-center gap-3 rounded-md border border-border bg-surface px-5 py-3 hover:border-subtle">
         <lucide-icon [img]="icons.Users" [size]="20" class="text-muted" />
         <span class="min-w-0 flex-1"><span class="block font-medium">{{ l().splitTheCost }}</span><span class="block text-sm text-muted">{{ l().splitTheCostDetail }}</span></span>
         <span aria-hidden="true" class="text-subtle">›</span>
@@ -117,14 +117,14 @@
     }
 
     @if (b.notes) {
-      <section class="mt-4 rounded-xl border border-border bg-surface p-5">
+      <section class="mt-4 rounded-md border border-border bg-surface p-5">
         <h2 class="font-semibold">{{ l().yourNote }}</h2>
         <p class="mt-1 whitespace-pre-line text-muted">{{ b.notes }}</p>
       </section>
     }
 
     @if (b.status === 'CANCELLED') {
-      <section class="mt-4 rounded-xl border border-border bg-surface p-5">
+      <section class="mt-4 rounded-md border border-border bg-surface p-5">
         <h2 class="font-semibold">{{ l().cancelled }}</h2>
         <p class="mt-1 text-muted">
           @if (b.cancellationFeePercent > 0) {
@@ -139,7 +139,7 @@
 
     <!-- Reviewing a played game -->
     @if (b.status === 'COMPLETED' && review() !== undefined) {
-      <section id="review" class="mt-4 scroll-mt-20 rounded-xl border border-border bg-surface p-5" aria-labelledby="review-title">
+      <section id="review" class="mt-4 scroll-mt-20 rounded-md border border-border bg-surface p-5" aria-labelledby="review-title">
         @let r = review();
         @if (r && !editingReview()) {
           <h2 id="review-title" class="font-semibold">{{ l().yourReview }}</h2>
@@ -148,14 +148,14 @@
             <p class="mt-1 whitespace-pre-line">{{ r.comment }}</p>
           }
           @if (r.ownerReply) {
-            <div class="mt-3 rounded-lg bg-surface-2 px-3 py-2 text-sm">
+            <div class="mt-3 rounded-md bg-surface-2 px-3 py-2 text-sm">
               <p class="font-medium">{{ l().venueReplied(b.venue.name) }}</p>
               <p class="mt-0.5 whitespace-pre-line text-muted">{{ r.ownerReply }}</p>
             </div>
           }
           <div class="mt-3 flex gap-2">
-            <button type="button" (click)="editingReview.set(true)" class="h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">{{ l().edit }}</button>
-            <button type="button" (click)="deleteReview()" [disabled]="reviewBusy()" class="h-11 rounded-lg px-4 font-medium text-danger hover:bg-danger-bg">{{ l().delete }}</button>
+            <button type="button" (click)="editingReview.set(true)" class="h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2">{{ l().edit }}</button>
+            <button type="button" (click)="deleteReview()" [disabled]="reviewBusy()" class="h-11 rounded-md px-4 font-medium text-danger hover:bg-danger-bg">{{ l().delete }}</button>
           </div>
         } @else {
           <h2 id="review-title" class="font-semibold">{{ r ? l().editYourReview : l().howWasVenue(b.venue.name) }}</h2>
@@ -163,7 +163,7 @@
           <fs-review-form [initial]="r ? { rating: r.rating, comment: r.comment ?? undefined } : null" [label]="r ? l().save : l().postReview"
             [busy]="reviewBusy()" [error]="reviewError()" (saved)="saveReview($event)">
             @if (r) {
-              <button type="button" (click)="editingReview.set(false)" class="h-11 rounded-lg px-4 font-medium">{{ l().cancel }}</button>
+              <button type="button" (click)="editingReview.set(false)" class="h-11 rounded-md px-4 font-medium">{{ l().cancel }}</button>
             }
           </fs-review-form>
         }
@@ -173,7 +173,7 @@
     <!-- Cancelling -->
     @if (canCancel()) {
       @if (cancelOpen()) {
-        <section class="mt-4 rounded-xl border border-noshow-line bg-noshow-bg p-5 text-noshow-fg" aria-labelledby="cancel-title">
+        <section class="mt-4 rounded-md border border-noshow-line bg-noshow-bg p-5 text-noshow-fg" aria-labelledby="cancel-title">
           <h2 id="cancel-title" class="font-semibold">{{ l().cancelThisBooking }}</h2>
           @if (outcome(); as o) {
             <p class="mt-1">
@@ -187,22 +187,22 @@
             </p>
           }
           <label for="reason" class="mt-3 block font-medium">{{ l().why }} <span class="font-normal opacity-80">{{ l().optional }}</span></label>
-          <input id="reason" name="reason" type="text" maxlength="500" class="mt-1 h-11 w-full rounded-lg border border-border bg-surface px-3 text-base text-text"
+          <input id="reason" name="reason" type="text" maxlength="500" class="mt-1 h-11 w-full rounded-md border border-border bg-surface px-3 text-base text-text"
             [ngModel]="reason()" (ngModelChange)="reason.set($event)" />
           @if (cancelError(); as message) {
             <p class="mt-2 font-medium" role="alert">{{ message }}</p>
           }
           <div class="mt-3 flex gap-2">
             <button type="button" (click)="cancel()" [disabled]="cancelling()"
-              class="h-11 flex-1 rounded-lg bg-danger font-medium text-white disabled:opacity-60">{{ cancelling() ? l().cancelling : l().cancelBooking }}</button>
-            <button type="button" (click)="cancelOpen.set(false)" class="h-11 rounded-lg bg-surface px-4 font-medium text-text">{{ l().keepIt }}</button>
+              class="h-11 flex-1 rounded-md bg-danger font-medium text-white disabled:opacity-60">{{ cancelling() ? l().cancelling : l().cancelBooking }}</button>
+            <button type="button" (click)="cancelOpen.set(false)" class="h-11 rounded-md bg-surface px-4 font-medium text-text">{{ l().keepIt }}</button>
           </div>
         </section>
       } @else {
-        <button type="button" (click)="cancelOpen.set(true)" class="mt-4 h-12 w-full rounded-lg font-medium text-danger hover:bg-danger-bg">{{ l().cancelBooking }}</button>
+        <button type="button" (click)="cancelOpen.set(true)" class="mt-4 h-12 w-full rounded-md font-medium text-danger hover:bg-danger-bg">{{ l().cancelBooking }}</button>
       }
     }
   } @else {
-    <div class="mt-4 h-48 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
+    <div class="mt-4 h-48 animate-pulse rounded-md bg-surface" [attr.aria-label]="l().loading"></div>
   }
 </div>

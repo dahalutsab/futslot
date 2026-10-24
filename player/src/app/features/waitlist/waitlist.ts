@@ -21,14 +21,14 @@ import { dayLabel, localClock } from '../../shared/format';
       }
       @if (entries(); as list) {
         @if (list.length === 0) {
-          <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
+          <div class="mt-6 rounded-md border border-dashed border-border bg-surface px-6 py-12 text-center">
             <p class="font-medium">{{ l().notWaiting }}</p>
             <p class="mt-1 text-muted">{{ l().notWaitingBody }}</p>
           </div>
         } @else {
           <ul class="mt-4 space-y-3">
             @for (entry of list; track entry.id) {
-              <li class="flex items-start gap-3 rounded-xl border border-border bg-surface p-4">
+              <li class="flex items-start gap-3 rounded-md border border-border bg-surface p-4">
                 <div class="min-w-0 flex-1">
                   <a [routerLink]="['/venues', entry.venueSlug]" [queryParams]="{ date: entry.startsAt.slice(0, 10) }" class="font-medium hover:underline">{{ entry.venueName }}</a>
                   <p class="tabular text-sm text-muted">{{ fmt.dayLabel(entry.startsAt.slice(0, 10)) }} · {{ fmt.localClock(entry.startsAt) }} – {{ fmt.localClock(entry.endsAt) }} · {{ entry.courtName }}</p>
@@ -36,13 +36,13 @@ import { dayLabel, localClock } from '../../shared/format';
                     <p class="mt-2 text-sm font-medium text-confirmed-fg">{{ l().itFreedUp }}</p>
                   }
                 </div>
-                <button type="button" (click)="leave(entry)" class="h-11 shrink-0 rounded-lg px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">{{ l().stopWaiting }}</button>
+                <button type="button" (click)="leave(entry)" class="h-11 shrink-0 rounded-md px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">{{ l().stopWaiting }}</button>
               </li>
             }
           </ul>
         }
       } @else {
-        <div class="mt-6 h-32 animate-pulse rounded-xl bg-surface" [attr.aria-label]="l().loading"></div>
+        <div class="mt-6 h-32 animate-pulse rounded-md bg-surface" [attr.aria-label]="l().loading"></div>
       }
     </div>
   `,
