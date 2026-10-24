@@ -23,7 +23,7 @@ type Tab = 'upcoming' | 'past' | 'mine';
       @if (session.signedIn()) {
         <fs-play-nav />
       }
-      <h1 class="mt-6 text-2xl font-semibold tracking-tight">{{ l().tournaments }}</h1>
+      <h1 class="mt-6 text-4xl">{{ l().tournaments }}</h1>
       <div class="mt-4 flex gap-1 rounded-md bg-surface-2 p-1" role="tablist" [attr.aria-label]="l().tournaments">
         @for (t of tabs(); track t.value) {
           <button type="button" role="tab" [attr.aria-selected]="tab() === t.value" (click)="show(t.value)" class="h-10 flex-1 rounded-md font-medium text-muted"

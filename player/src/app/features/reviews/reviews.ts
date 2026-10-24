@@ -14,7 +14,7 @@ import { dayLabel, localClock } from '../../shared/format';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-2xl px-4 py-6 lg:py-10">
-      <h1 class="text-2xl font-semibold tracking-tight">{{ l().meReviews }}</h1>
+      <h1 class="text-4xl">{{ l().meReviews }}</h1>
       @if (error(); as message) {
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>
       }

@@ -3,7 +3,7 @@
   <section class="min-h-0 flex-1 flex-col border-border bg-surface lg:flex lg:border-r" [class]="open() ? 'hidden' : 'flex'"
     [attr.aria-label]="l().conversations">
     <div class="px-4 pb-3 pt-4 lg:pt-6">
-      <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">{{ l().messages }}</h1>
+      <h1 class="text-4xl">{{ l().messages }}</h1>
       @if ((conversations()?.length ?? 0) > 6) {
         <label class="relative mt-3 block">
           <span class="sr-only">{{ l().findAConversation }}</span>

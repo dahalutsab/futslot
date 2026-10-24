@@ -18,7 +18,7 @@ import { notificationLink } from '../../shared/notification-link';
   template: `
     <div class="mx-auto max-w-2xl px-4 py-6 lg:py-10">
       <div class="flex items-center gap-3">
-        <h1 class="flex-1 text-2xl font-semibold tracking-tight">{{ l().notifications }}</h1>
+        <h1 class="flex-1 text-4xl">{{ l().notifications }}</h1>
         @if (hasUnread()) {
           <button type="button" (click)="readAll()" class="h-11 rounded-md px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">{{ l().markAllRead }}</button>
         }

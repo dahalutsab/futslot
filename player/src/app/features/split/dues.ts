@@ -14,7 +14,7 @@ import { dayLabel, localClock, phone, rupees } from '../../shared/format';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-2xl px-4 py-6 lg:py-10">
-      <h1 class="text-2xl font-semibold tracking-tight">{{ l().meDues }}</h1>
+      <h1 class="text-4xl">{{ l().meDues }}</h1>
       <p class="mt-1 text-muted">{{ l().duesIntro }}</p>
       @if (error(); as message) {
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>

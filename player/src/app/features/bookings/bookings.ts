@@ -20,7 +20,7 @@ const PAGE = 20;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
-      <h1 class="text-2xl font-semibold tracking-tight">{{ l().yourBookings }}</h1>
+      <h1 class="text-4xl">{{ l().yourBookings }}</h1>
 
       <div class="mt-4 flex gap-1 rounded-md bg-surface-2 p-1" role="tablist" [attr.aria-label]="l().tabBookings">
         @for (option of scopes(); track option.value) {

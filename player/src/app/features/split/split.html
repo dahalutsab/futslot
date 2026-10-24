@@ -4,7 +4,7 @@
   } @else {
     <a [routerLink]="['/bookings', id()]" class="text-sm text-muted hover:text-text">← {{ l().theBooking }}</a>
   }
-  <h1 class="mt-2 text-2xl font-semibold tracking-tight">{{ l().splitTheCost }}</h1>
+  <h1 class="mt-2 text-4xl">{{ l().splitTheCost }}</h1>
 
   @if (error(); as message) {
     <p class="mt-6 rounded-md border border-border bg-surface px-6 py-10 text-center text-muted">{{ message }}</p>

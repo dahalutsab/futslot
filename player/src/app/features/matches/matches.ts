@@ -23,7 +23,7 @@ const NEPAL = 'Asia/Kathmandu';
     <div class="mx-auto max-w-3xl px-4 py-6 lg:py-10">
       <fs-play-nav />
       <div class="mt-6 flex items-center gap-3">
-        <h1 class="flex-1 text-2xl font-semibold tracking-tight">{{ l().playGames }}</h1>
+        <h1 class="flex-1 text-4xl">{{ l().playGames }}</h1>
         <a routerLink="/matches/new" class="flex h-11 items-center gap-1.5 rounded-md bg-ink px-4 font-medium text-ink-fg">
           <lucide-icon [img]="icons.Plus" [size]="18" /> {{ l().postAGame }}
         </a>

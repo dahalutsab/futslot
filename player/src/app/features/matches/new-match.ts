@@ -29,7 +29,7 @@ const DAYS_AHEAD = 30;
     <div class="mx-auto max-w-xl px-4 py-6 lg:py-10">
       <fs-play-nav />
       <a routerLink="/matches" class="mt-4 inline-block text-sm text-muted hover:text-text">← {{ l().playGames }}</a>
-      <h1 class="mt-2 text-2xl font-semibold tracking-tight">{{ l().postAGame }}</h1>
+      <h1 class="mt-2 text-4xl">{{ l().postAGame }}</h1>
 
       <form class="mt-5 space-y-5" (ngSubmit)="post()">
         <fieldset>

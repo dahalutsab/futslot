@@ -1,6 +1,6 @@
 <div class="mx-auto max-w-xl px-4 py-6 lg:py-10">
   <a [routerLink]="['/venues', slug()]" class="text-sm text-muted hover:text-text">← {{ venue()?.name ?? l().backToVenue }}</a>
-  <h1 class="mt-2 text-2xl font-semibold tracking-tight">{{ l().bookThisSlot }}</h1>
+  <h1 class="mt-2 text-4xl">{{ l().bookThisSlot }}</h1>
   <p class="mt-1 text-muted"><span class="tabular">{{ when() }}</span>@if (courtName()) { · {{ courtName() }}}</p>
 
   @if (problem(); as message) {

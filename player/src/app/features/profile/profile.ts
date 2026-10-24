@@ -18,7 +18,7 @@ function options<T extends string>(labels: Record<T, string>): { value: T; label
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-xl px-4 py-6 lg:py-10">
-      <h1 class="text-2xl font-semibold tracking-tight">{{ l().meProfile }}</h1>
+      <h1 class="text-4xl">{{ l().meProfile }}</h1>
       <p class="mt-1 text-muted">{{ l().profileIntro }}</p>
       @if (card(); as c) {
         <p class="mt-3 text-sm text-muted">{{ l().gamesPlayedOnFutSlot(l().games(c.gamesPlayed)) }}</p>
