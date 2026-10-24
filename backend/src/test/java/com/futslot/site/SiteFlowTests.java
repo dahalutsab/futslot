@@ -146,6 +146,14 @@ class SiteFlowTests {
 		this.mvc.perform(get("http://hostfutsal.localhost/site-assets/turf.css")).andExpect(status().isOk());
 		this.mvc.perform(get("http://www.localhost/actuator/health")).andExpect(status().isOk());
 		this.mvc.perform(get("http://api.localhost/actuator/health")).andExpect(status().isOk());
+		// Through a proxy that names the site in the path instead (Vercel): the same pages, links still from its address
+		this.mvc.perform(get("http://futslot-api.onrender.com/site-host/hostfutsal")).andExpect(forwardedUrl("/sites/hostfutsal"));
+		this.mvc.perform(get("http://futslot-api.onrender.com/site-host/hostfutsal/ne/book").param("court", "x"))
+			.andExpect(forwardedUrl("/sites/hostfutsal/ne/book"));
+		this.mvc.perform(get("http://futslot-api.onrender.com/site-host/hostfutsal/site-assets/turf.css"))
+			.andExpect(forwardedUrl("/site-assets/turf.css"));
+		this.mvc.perform(get("http://futslot-api.onrender.com/site-host/hostfutsal/api/v1/me")).andExpect(status().isNotFound());
+		this.mvc.perform(get("http://futslot-api.onrender.com/site-host/..")).andExpect(status().isNotFound());
 	}
 
 	@Test

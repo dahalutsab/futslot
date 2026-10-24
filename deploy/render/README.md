@@ -59,5 +59,5 @@ The Vercel settings are in each project's `vercel.json`, the Render ones in `ren
 - Background jobs (tidying up unpaid holds, booking reminders) run every 20 minutes instead of every few, so Neon
   can sleep. Slots show as free as soon as a hold runs out either way; reminders come up to 20 minutes late.
 - Venues' own domains (not `*.futslot`) aren't served.
-- If a venue website shows FutSlot's front page instead, the venue's address isn't reaching the API: check that
-  Render passes Vercel's `X-Forwarded-Host` header through.
+- Vercel doesn't tell Render which address was visited, so the venue websites project puts the venue's name at the
+  start of the path (`/site-host/dhuku/book`), and the API treats that as a visit to dhuku's own address.

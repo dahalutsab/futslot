@@ -19,10 +19,17 @@ import jakarta.servlet.http.HttpServletResponse;
  * Sends requests for a venue's own address (dhuku.futslot.com, or a custom domain) to its site pages. Runs
  * before security: site pages are public, and anything else on those hosts other than photos and the site's
  * stylesheets doesn't exist there. The same pages in Nepali are beneath /ne (see {@link SiteLanguage}).
+ * <p>
+ * A proxy in front that can't pass the venue's address on (Vercel's rewrites don't) names the site at the start
+ * of the path instead: /site-host/dhuku/book is a visit to dhuku's address for /book.
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 class SiteHostFilter extends OncePerRequestFilter {
+
+	static final String PROXIED = "/site-host/";
+
+	private static final Pattern SUBDOMAIN = Pattern.compile("[a-z0-9][a-z0-9-]*");
 
 	private static final Pattern BOOKING = Pattern.compile(
 			"/book(/password|/code|/verify|/confirm)?|/bookings(/[0-9a-f-]{36}(/pay)?)?|/deposit(/withdraw|/withdrawals/[0-9a-f-]{36}/cancel)?|/sign-out");
@@ -45,14 +52,32 @@ class SiteHostFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws ServletException, IOException {
-		Optional<String> subdomain = siteFor(request.getServerName().toLowerCase(Locale.ROOT));
+		String path = request.getRequestURI();
+		Optional<String> subdomain;
+		if (path.startsWith(PROXIED)) {
+			int slash = path.indexOf('/', PROXIED.length());
+			String named = path.substring(PROXIED.length(), (slash < 0) ? path.length() : slash).toLowerCase(Locale.ROOT);
+			if (!SUBDOMAIN.matcher(named).matches()) {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND);
+				return;
+			}
+			subdomain = Optional.of(named);
+			path = (slash < 0) ? "/" : path.substring(slash);
+		}
+		else {
+			subdomain = siteFor(request.getServerName().toLowerCase(Locale.ROOT));
+		}
 		if (subdomain.isEmpty()) {
 			chain.doFilter(request, response);
 			return;
 		}
-		String path = request.getRequestURI();
 		if (path.startsWith("/media/") || path.startsWith("/site-assets/")) {
-			chain.doFilter(request, response);
+			if (path.equals(request.getRequestURI())) {
+				chain.doFilter(request, response);
+			}
+			else {
+				request.getRequestDispatcher(path).forward(request, response);
+			}
 			return;
 		}
 		String site = "/sites/" + subdomain.get();

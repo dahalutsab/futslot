@@ -6,8 +6,22 @@
   "outputDirectory": "public",
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "https://futslot-api.onrender.com/$1"
+      "source": "/media/:path*",
+      "destination": "https://futslot-api.onrender.com/media/:path*"
+    },
+    {
+      "source": "/site-assets/:path*",
+      "destination": "https://futslot-api.onrender.com/site-assets/:path*"
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "(?<site>[a-z0-9-]+)\\.futslot\\.dahalutsab\\.com\\.np"
+        }
+      ],
+      "destination": "https://futslot-api.onrender.com/site-host/:site/:path*"
     }
   ]
 }
