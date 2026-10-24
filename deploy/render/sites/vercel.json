@@ -1,27 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "installCommand": "",
+  "installCommand": "npm ci",
   "buildCommand": "mkdir -p public && echo 'FutSlot venue websites: every path is the API on Render' > public/futslot-sites.txt",
-  "outputDirectory": "public",
-  "rewrites": [
-    {
-      "source": "/media/:path*",
-      "destination": "https://futslot-api.onrender.com/media/:path*"
-    },
-    {
-      "source": "/site-assets/:path*",
-      "destination": "https://futslot-api.onrender.com/site-assets/:path*"
-    },
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "(?<site>[a-z0-9-]+)\\.futslot\\.dahalutsab\\.com\\.np"
-        }
-      ],
-      "destination": "https://futslot-api.onrender.com/site-host/:site/:path*"
-    }
-  ]
+  "outputDirectory": "public"
 }

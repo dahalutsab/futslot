@@ -1,0 +1,9 @@
+{
+  "name": "futslot-venue-sites",
+  "private": true,
+  "type": "module",
+  "description": "Every venue website (dhuku.futslot.dahalutsab.com.np) on Vercel: middleware.js passes it to the API on Render",
+  "dependencies": {
+    "@vercel/functions": "3.9.11"
+  }
+}
