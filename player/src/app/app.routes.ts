@@ -14,14 +14,17 @@ export const routes: Routes = [
     path: '',
     loadComponent: () => import('./layout/shell').then((m) => m.Shell),
     children: [
+      // The server owns / and /venues/:slug (whole pages for search engines, see the API's DirectoryController);
+      // inside the app they lead to the app's own explore and venue screens
+      { path: '', pathMatch: 'full', redirectTo: 'explore' },
       {
-        path: '',
-        pathMatch: 'full',
+        path: 'explore',
         title: () => l().titleHome,
         loadComponent: () => import('./features/explore/explore').then((m) => m.Explore),
       },
+      { path: 'venues/:slug', pathMatch: 'full', redirectTo: 'venues/:slug/slots' },
       {
-        path: 'venues/:slug',
+        path: 'venues/:slug/slots',
         loadComponent: () => import('./features/venue/venue').then((m) => m.VenuePage),
       },
       {

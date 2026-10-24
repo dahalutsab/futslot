@@ -22,7 +22,13 @@
 	}
 }
 
+# FutSlot's public pages (home, cities, areas, venues, the same beneath /ne, robots.txt and the sitemap) come whole
+# from the API, so search engines and link previews get every word; the rest is the player app
 http://{$FUTSLOT_DOMAIN} {
+	@pages path_regexp ^/((ne/?)|(ne/)?(futsal/[^/]+(/[^/]+)?|venues/[^/]+)|robots\.txt|sitemap\.xml)?$
+	handle @pages {
+		reverse_proxy api:8080
+	}
 	import app player
 }
 

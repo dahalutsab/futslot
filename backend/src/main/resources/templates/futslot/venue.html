@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" th:lang="${page.lang}">
+<!-- A venue on FutSlot: the details its website shows, with FutSlot around them. Free slots book in the player app. -->
+<head th:replace="~{futslot/parts :: head(${page.seo}, ${page.lang}, ${dir.breadcrumbsJsonLd})}"></head>
+<body>
+  <header th:replace="~{futslot/parts :: header}"></header>
+
+  <main>
+    <div class="wrap">
+      <nav th:replace="~{futslot/parts :: crumbs}"></nav>
+      <img th:if="${page.venue.cover}" class="cover" th:src="${page.venue.cover}" th:alt="${page.photos[0].alt}" fetchpriority="high">
+    </div>
+
+    <section class="wrap venue-head">
+      <p class="eyebrow" th:text="#{site.eyebrow(${page.venue.formats}, ${page.venue.place})}">5-a-side futsal</p>
+      <h1 th:text="${page.venue.name}">Venue</h1>
+      <p class="muted address"><svg th:replace="~{sites/parts :: icon('pin')}"></svg>
+        <span th:text="${page.venue.address + ', ' + page.venue.place}">Address</span></p>
+      <ul class="facts">
+        <li th:if="${page.rating}">
+          <span th:replace="~{sites/parts :: stars(${page.rating.rounded}, ${page.rating.label})}"></span>
+          <span th:text="${page.rating.average + ' (' + page.rating.reviews + ')'}">4.0</span>
+        </li>
+        <li th:if="${page.pricing.from}" th:text="#{site.fromAGame(${page.pricing.from})}">From</li>
+        <li><svg th:replace="~{sites/parts :: icon('clock')}"></svg><span th:text="${page.venue.openNow}">Open</span></li>
+      </ul>
+      <p class="about" th:if="${page.venue.about}" th:text="${page.venue.about}">About</p>
+      <div class="actions">
+        <a class="btn btn-ink" href="#slots" th:text="#{site.seeFreeSlots}">See free slots</a>
+        <a class="btn btn-outline" th:href="${app}" th:text="#{dir.venue.app}">Save it</a>
+        <a th:if="${page.contact.tel}" class="btn btn-outline" th:href="${page.contact.tel}">
+          <svg th:replace="~{sites/parts :: icon('phone')}"></svg><span th:text="#{site.call}">Call</span>
+        </a>
+      </div>
+    </section>
+
+    <section id="slots" class="section" aria-labelledby="slots-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="slots-title" th:text="#{site.freeSlots}">Free slots</h2>
+          <p class="muted" th:text="#{site.tapToBook}">Tap a time to book it.</p>
+        </div>
+        <nav class="days" th:aria-label="#{site.day}">
+          <a th:each="day : ${page.slots.days}" th:href="${day.href}" th:text="${day.label}" class="chip"
+            th:classappend="${day.selected} ? 'is-selected'" th:attr="aria-current=${day.selected ? 'date' : null}">Today</a>
+        </nav>
+        <div th:if="${page.slots.free > 0}" class="courts">
+          <article th:each="court : ${page.slots.courts}" class="panel">
+            <h3 th:text="${court.name}">Court A</h3>
+            <p th:if="${court.slots.isEmpty()}" class="muted" th:text="#{site.fullyBooked}">Fully booked.</p>
+            <ul class="slot-grid">
+              <li th:each="slot : ${court.slots}">
+                <a class="slot" th:href="${slot.book}">
+                  <span class="slot-time" th:text="${slot.time}">6 PM</span>
+                  <span class="slot-price" th:text="${slot.price}">Rs 1,200</span>
+                </a>
+              </li>
+            </ul>
+          </article>
+        </div>
+        <p th:if="${page.slots.free == 0}" class="empty"
+          th:text="${(page.slots.relative == 'today' ? #messages.msg('site.nothingToday') : page.slots.relative == 'tomorrow' ? #messages.msg('site.nothingTomorrow') : #messages.msg('site.nothingOn', page.slots.dayLabel))
+            + ' ' + (page.contact.phone != null ? #messages.msg('site.tryAnotherDayOrCall') : #messages.msg('site.tryAnotherDay'))}">
+          Nothing free.
+        </p>
+      </div>
+    </section>
+
+    <section class="section section-tint" aria-labelledby="prices-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="prices-title" th:text="#{site.courtsAndPrices}">Courts and prices</h2>
+          <p class="muted" th:text="#{site.perGame}">Per game, for the whole team.</p>
+        </div>
+        <div class="grid-2">
+          <article th:each="court : ${page.pricing.courts}" class="panel">
+            <h3 th:text="${court.name}">Court A</h3>
+            <p class="muted small" th:text="${court.details}">5-a-side</p>
+            <table class="prices">
+              <caption class="sr-only" th:text="#{site.courtPrices(${court.name})}">Prices</caption>
+              <tr th:each="price : ${court.prices}">
+                <th scope="row"><span th:text="${price.label}">Standard</span><span class="muted small" th:text="${price.when}">Every day</span></th>
+                <td th:text="${price.amount}">Rs 1,200</td>
+              </tr>
+            </table>
+          </article>
+        </div>
+        <ul th:if="${!page.amenities.isEmpty()}" class="chips" th:aria-label="#{site.amenities}">
+          <li th:each="amenity : ${page.amenities}" class="chip chip-static" th:text="${amenity}">Parking</li>
+        </ul>
+      </div>
+    </section>
+
+    <section th:if="${page.photos.size() > 1}" class="section" aria-labelledby="photos-title">
+      <div class="wrap">
+        <h2 id="photos-title" th:text="#{site.photos}">Photos</h2>
+        <ul class="gallery">
+          <li th:each="photo, i : ${page.photos}" th:unless="${i.first}">
+            <img th:src="${photo.url}" th:alt="${photo.alt}" loading="lazy">
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section th:if="${!page.reviews.isEmpty()}" class="section" aria-labelledby="reviews-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="reviews-title" th:text="#{site.whatPlayersSay}">What players say</h2>
+          <p th:if="${page.rating}" class="rating-line">
+            <span th:replace="~{sites/parts :: stars(${page.rating.rounded}, ${page.rating.label})}"></span>
+            <strong th:text="${page.rating.average}">4.0</strong>
+            <span class="muted" th:text="#{rating.from(${page.rating.reviews})}">from 3 reviews</span>
+          </p>
+        </div>
+        <ul class="grid-2">
+          <li th:each="review : ${page.reviews}" class="panel">
+            <span th:replace="~{sites/parts :: stars(${review.rating}, ${review.ratingLabel})}"></span>
+            <p th:if="${review.comment}" th:text="${review.comment}">Great court</p>
+            <p class="muted small"><strong th:text="${review.name}">Ram S.</strong> · <span th:text="${review.played}">Played</span></p>
+            <p th:if="${review.reply}" class="reply small"><strong th:text="${page.venue.name}">Venue</strong>
+              <span th:text="#{site.replied}">replied</span>: <span th:text="${review.reply}">Thanks</span></p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section th:if="${!page.tournaments.isEmpty() or !page.plans.isEmpty()}" class="section" aria-labelledby="more-title">
+      <div class="wrap grid-2">
+        <h2 id="more-title" class="sr-only" th:text="#{site.moreTitle}">Tournaments and memberships</h2>
+        <div th:if="${!page.tournaments.isEmpty()}">
+          <h3 th:text="#{site.tournaments}">Tournaments</h3>
+          <article th:each="t : ${page.tournaments}" class="panel">
+            <h4 th:text="${t.name}">Cup</h4>
+            <p class="muted small" th:text="${t.format + ' · ' + t.dates}">Knockout</p>
+            <p class="small" th:text="${t.entry + ' · ' + t.spots}">Entry</p>
+          </article>
+        </div>
+        <div th:if="${!page.plans.isEmpty()}">
+          <h3 th:text="#{site.playMore}">Play more, pay less</h3>
+          <article th:each="plan : ${page.plans}" class="panel">
+            <h4><span th:text="${plan.name}">Pack</span> · <span th:text="${plan.price}">Rs 11,000</span></h4>
+            <p class="muted small" th:text="${plan.summary}">10 games</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="find-us" class="section section-tint" aria-labelledby="find-title">
+      <div class="wrap grid-2">
+        <div>
+          <h2 id="find-title" th:text="#{site.findUs}">Find us</h2>
+          <table class="hours">
+            <caption class="muted small" th:text="#{site.openingHours}">Opening hours</caption>
+            <tr th:each="row : ${page.hours}" th:classappend="${row.today} ? 'is-today'">
+              <th scope="row" th:text="${row.day}">Sunday</th>
+              <td th:text="${row.hours}">6 AM – 10 PM</td>
+            </tr>
+          </table>
+          <div class="actions">
+            <a class="btn btn-ink" th:href="${page.contact.directions}" target="_blank" rel="noopener" th:text="#{site.getDirections}">Get directions</a>
+            <a th:if="${page.contact.tel}" class="btn btn-outline" th:href="${page.contact.tel}" th:text="${page.contact.phone}">Phone</a>
+          </div>
+        </div>
+        <iframe class="map" th:src="${page.contact.mapEmbed}" th:title="#{site.mapOf(${page.venue.name})}" loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </section>
+
+    <!-- The venue's area (or city): th:if runs before th:with, so the block works it out first -->
+    <th:block th:with="near=${dir.crumbs.size() > 2 ? dir.crumbs[dir.crumbs.size() - 2] : null}">
+      <section th:if="${near}" class="section">
+        <div class="wrap">
+          <a class="btn btn-outline" th:href="${near.href}" th:text="#{dir.venue.more(${near.name})}">More futsal in New Baneshwor</a>
+        </div>
+      </section>
+    </th:block>
+  </main>
+
+  <footer th:replace="~{futslot/parts :: footer}"></footer>
+</body>
+</html>

@@ -176,7 +176,7 @@
   <footer class="footer">
     <div class="wrap footer-inner">
       <span class="mark" th:text="${page.venue.name}">Venue</span>
-      <span class="muted small">© <span th:text="${page.year}">2026</span> · <span th:text="#{site.websiteBy}">Website by</span> <a href="https://futslot.com">FutSlot</a></span>
+      <span class="muted small">© <span th:text="${page.year}">2026</span> · <span th:text="#{site.websiteBy}">Website by</span> <a th:href="${futslotHome}">FutSlot</a></span>
     </div>
   </footer>
 

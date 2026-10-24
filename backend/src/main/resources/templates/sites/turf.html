@@ -202,7 +202,7 @@
   <footer class="footer">
     <div class="wrap">
       <p><strong th:text="${page.venue.name}">Venue</strong> · <span th:text="${page.venue.place}">Place</span></p>
-      <p class="muted small">© <span th:text="${page.year}">2026</span> · <span th:text="#{site.websiteBy}">Website by</span> <a href="https://futslot.com">FutSlot</a><span th:text="#{site.tagline}">, book futsal across Nepal.</span></p>
+      <p class="muted small">© <span th:text="${page.year}">2026</span> · <span th:text="#{site.websiteBy}">Website by</span> <a th:href="${futslotHome}">FutSlot</a><span th:text="#{site.tagline}">, book futsal across Nepal.</span></p>
     </div>
   </footer>
 

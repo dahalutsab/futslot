@@ -12,6 +12,13 @@ public record SitePage(String template, String lang, String switchHref, String a
 		Contact contact, List<Photo> photos, Pricing pricing, Slots slots, List<HoursRow> hours, List<String> amenities, Rating rating,
 		List<Review> reviews, List<Plan> plans, List<Tournament> tournaments, String year) {
 
+	/** The same page with other search details, for the venue's page on FutSlot's own site. */
+	public SitePage withSeo(Seo other) {
+		return new SitePage(this.template, this.lang, this.switchHref, this.accent, this.accentInk, this.accentText, other,
+				this.venue, this.contact, this.photos, this.pricing, this.slots, this.hours, this.amenities, this.rating,
+				this.reviews, this.plans, this.tournaments, this.year);
+	}
+
 	/**
 	 * {@code canonical} is this page at the site's own address, and {@code english} and {@code nepali} the page in
 	 * each language (null in previews); {@code noindex} keeps previews out of search results.
