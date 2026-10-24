@@ -22,7 +22,7 @@ import { VenueCard } from '../../shared/venue-card';
           <div class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
             <p class="font-medium">{{ l().noSavedVenues }}</p>
             <p class="mt-1 text-muted">{{ l().noSavedVenuesWebBody }}</p>
-            <a routerLink="/" class="mt-4 inline-flex h-11 items-center rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().findACourt }}</a>
+            <a routerLink="/explore" class="mt-4 inline-flex h-11 items-center rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().findACourt }}</a>
           </div>
         } @else {
           <ul class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

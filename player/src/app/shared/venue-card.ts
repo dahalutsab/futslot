@@ -13,7 +13,7 @@ import { digits, l } from '../i18n/i18n';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let v = venue();
-    <a [routerLink]="['/venues', v.slug]" class="group block overflow-hidden rounded-xl border border-border bg-surface hover:border-subtle">
+    <a [routerLink]="['/venues', v.slug, 'slots']" class="group block overflow-hidden rounded-xl border border-border bg-surface hover:border-subtle">
       <div class="aspect-[16/9] bg-surface-2">
         @if (v.coverPhotoUrl) {
           <img [src]="v.coverPhotoUrl" alt="" loading="lazy" class="size-full object-cover" />

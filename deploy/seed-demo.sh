@@ -55,11 +55,11 @@ PLAYER=$(account 9800000101 "Aarav Shrestha")
 HOURS=$(jq -nc '[("MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY")
 	| {day: ., openTime: "06:00", closeTime: "21:00"}]')
 
-venue() { # name area city lat lng description amenities(json) deposit(true/false) template subdomain accent headline
+venue() { # name area city lat lng description amenities(json) deposit(true/false) template subdomain accent headline street
 	local id base
-	id=$(call POST /owner/venues "$OWNER" "$(jq -nc --arg n "$1" --arg a "$2" --arg c "$3" --arg d "$6" \
+	id=$(call POST /owner/venues "$OWNER" "$(jq -nc --arg n "$1" --arg a "$2" --arg c "$3" --arg d "$6" --arg s "${13}" \
 		--argjson lat "$4" --argjson lng "$5" \
-		'{name: $n, area: $a, city: $c, addressLine: ($a + ", " + $c), latitude: $lat, longitude: $lng, description: $d}')" \
+		'{name: $n, area: $a, city: $c, addressLine: $s, latitude: $lat, longitude: $lng, description: $d}')" \
 		| jq -r .id)
 	base=/owner/venues/$id
 	call PUT "$base/operating-hours" "$OWNER" "$HOURS" > /dev/null
@@ -85,15 +85,16 @@ venue() { # name area city lat lng description amenities(json) deposit(true/fals
 
 DHUKU=$(venue "Dhuku Futsal" "New Baneshwor" "Kathmandu" 27.6915 85.3420 \
 	"A demo venue: two floodlit turf courts off the main road, with parking and a small cafe. Book a slot and see how FutSlot works." \
-	'["PARKING","CHANGING_ROOM","DRINKING_WATER","CAFE","FLOODLIGHTS"]' false TURF dhuku "#1f7a3a" "Evening games under the lights")
+	'["PARKING","CHANGING_ROOM","DRINKING_WATER","CAFE","FLOODLIGHTS"]' false TURF dhuku "#1f7a3a" "Evening games under the lights" \
+	"Shantinagar Marg")
 venue "Jhamsikhel Kick Arena" "Jhamsikhel" "Lalitpur" 27.6788 85.3070 \
 	"A demo venue that needs the FutSlot booking deposit, so you can try topping it up (no real money)." \
 	'["PARKING","CHANGING_ROOM","SHOWER","DRINKING_WATER","FLOODLIGHTS","WIFI"]' true FLOODLIGHT kickarena "#f59e0b" \
-	"Late-night futsal in Lalitpur" > /dev/null
+	"Late-night futsal in Lalitpur" "Jhamsikhel Road" > /dev/null
 venue "Thimi Futsal Hub" "Madhyapur Thimi" "Bhaktapur" 27.6780 85.3870 \
 	"A demo venue east of the valley with seating for supporters." \
 	'["PARKING","DRINKING_WATER","FIRST_AID","SPECTATOR_SEATING","EQUIPMENT_RENTAL"]' false TURF thimi "#2563eb" \
-	"Your weekly game in Bhaktapur" > /dev/null
+	"Your weekly game in Bhaktapur" "Bode Road" > /dev/null
 
 # Two bookings for the demo player at Dhuku, tomorrow evening
 SLUG=$(call GET "/owner/venues/$DHUKU" "$OWNER" | jq -r .slug)

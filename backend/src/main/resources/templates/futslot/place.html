@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" th:lang="${dir.lang}">
+<!-- A city's or an area's futsal venues: what people searching "futsal in Kathmandu" land on. -->
+<head th:replace="~{futslot/parts :: head(${dir.seo}, ${dir.lang}, null)}"></head>
+<body>
+  <header th:replace="~{futslot/parts :: header}"></header>
+
+  <main>
+    <section class="hero hero-small">
+      <div class="wrap">
+        <nav th:replace="~{futslot/parts :: crumbs}"></nav>
+        <h1 th:text="${dir.heading}">Futsal in Kathmandu</h1>
+        <p class="lede" th:text="${dir.intro}">3 futsal venues.</p>
+        <ul th:if="${!dir.places.isEmpty()}" class="chips" th:aria-label="#{dir.areas}">
+          <li th:each="area : ${dir.places}">
+            <a class="chip" th:href="${area.href}"><span th:text="${area.name}">New Baneshwor</span>
+              <span class="muted" th:text="${area.count}">1 venue</span></a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="venues-title">
+      <div class="wrap">
+        <h2 id="venues-title" th:text="#{dir.allVenues}">Futsal venues</h2>
+        <ul th:replace="~{futslot/parts :: cards(${dir.venues})}"></ul>
+      </div>
+    </section>
+
+    <section th:if="${dir.cheapest}" class="section section-tint" aria-labelledby="faq-title">
+      <div class="wrap narrow">
+        <h2 id="faq-title" th:text="#{dir.faq.title}">Questions players ask</h2>
+        <div class="faq">
+          <details open>
+            <summary th:text="#{dir.faq.cost}">How much does futsal cost?</summary>
+            <p th:text="#{dir.faq.costBody(${dir.cheapest})}">From Rs 1,200.</p>
+          </details>
+          <details>
+            <summary th:text="#{dir.faq.cancel}">What if I can't make it?</summary>
+            <p th:text="#{dir.faq.cancelBody}">Each venue sets its own rules.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section th:replace="~{futslot/parts :: owners}"></section>
+  </main>
+
+  <footer th:replace="~{futslot/parts :: footer}"></footer>
+</body>
+</html>

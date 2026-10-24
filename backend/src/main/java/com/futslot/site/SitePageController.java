@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -64,7 +65,7 @@ class SitePageController {
 				+ ((date != null && date.matches("\\d{4}-\\d{2}-\\d{2}")) ? "?date=" + date : "");
 		String mine = this.session.player(request).isPresent() ? base + "/bookings" : null;
 		model.addAttribute("page", this.pages.build(slug, site.getTemplate(), site.getAccentColor(), site.getHeadline(), date,
-				canonical(site), "?", false, text, other, base, mine));
+				SitePageService.Addresses.site(canonical(site)), "?", !this.properties.searchIndexing(), text, other, base, mine));
 		if (mine != null) {
 			// Personal (it links to their bookings), so not for shared caches
 			response.setHeader("Cache-Control", "private, no-cache");
@@ -84,9 +85,16 @@ class SitePageController {
 		Wording text = this.language.of(Languages.of(lang), request);
 		String view = "?template=" + chosen.name() + (color != null ? "&accent=" + color.substring(1) : "");
 		String prefix = view + (text.nepali() ? "&lang=ne" : "") + "&";
-		model.addAttribute("page", this.pages.build(slug, chosen, color, headline, date, this.properties.urlFor(slug), prefix, true,
+		model.addAttribute("page", this.pages.build(slug, chosen, color, headline, date,
+				SitePageService.Addresses.site(this.properties.urlFor(slug)), prefix, true,
 				text, view + (text.nepali() ? "" : "&lang=ne")));
 		return "sites/" + chosen.name().toLowerCase(Locale.ROOT);
+	}
+
+	/** FutSlot's own address, for the "Website by FutSlot" link at the foot of every site. */
+	@ModelAttribute("futslotHome")
+	String futslotHome() {
+		return this.properties.home() + "/";
 	}
 
 	@GetMapping(value = "/sites/{subdomain}/robots.txt", produces = MediaType.TEXT_PLAIN_VALUE)

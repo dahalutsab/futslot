@@ -351,6 +351,21 @@ Certificates come on each address's first visit; the edge server asks the API fi
 live venue sites qualify. With no SMS provider, `SHOW_SIGN_IN_CODES=true` shows sign-in codes on screen; turn it off
 once real texts are sent.
 
+### Search engines
+
+FutSlot's public pages come whole from the API, not the player app, so search engines and link previews get every
+word: the front page, a page for each city and area with venues (`/futsal/kathmandu`, `/futsal/kathmandu/new-baneshwor`),
+and each venue (`/venues/dhuku-futsal`), in Nepali beneath `/ne`, with a sitemap at `/sitemap.xml`. The player app's
+own screens moved to `/explore` and `/venues/{slug}/slots`, and say `noindex`.
+
+`SEARCH_INDEXING=false` (the demo's setting) marks the city, area and venue pages and the venue websites `noindex`
+and leaves them out of the sitemap, so made-up venues don't show up in searches. Set it to `true` once real venues
+have joined and the demo ones are gone.
+
+Once the site is up, add it to [Google Search Console](https://search.google.com/search-console) (a Domain
+property, verified with a DNS TXT record) and submit `https://<domain>/sitemap.xml`; do the same in Bing Webmaster
+Tools.
+
 ### Running it
 
 - Updating: `docker compose pull && docker compose up -d` in `futslot/deploy`.

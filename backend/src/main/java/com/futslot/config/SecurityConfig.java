@@ -41,6 +41,10 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/v1/auth/options").permitAll()
 				.requestMatchers(HttpMethod.GET, "/media/**").permitAll()
+				// FutSlot's own public pages (home, cities, areas, venues; the same beneath /ne)
+				.requestMatchers(HttpMethod.GET, "/", "/ne", "/ne/", "/futsal/*", "/futsal/*/*", "/venues/*", "/ne/futsal/*",
+						"/ne/futsal/*/*", "/ne/venues/*", "/robots.txt", "/sitemap.xml")
+				.permitAll()
 				// Venue websites and what they load
 				.requestMatchers(HttpMethod.GET, "/sites/**", "/site-preview/**", "/site-assets/**", "/internal/sites/domain-check").permitAll()
 				.requestMatchers(HttpMethod.POST, "/sites/*/book/*", "/sites/*/bookings/*/pay", "/sites/*/deposit",

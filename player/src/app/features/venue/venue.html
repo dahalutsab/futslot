@@ -1,7 +1,7 @@
 @if (error(); as message) {
   <div class="mx-auto max-w-lg px-4 py-16 text-center">
     <p class="text-muted">{{ message }}</p>
-    <a routerLink="/" class="mt-4 inline-flex h-11 items-center rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().seeAllVenues }}</a>
+    <a routerLink="/explore" class="mt-4 inline-flex h-11 items-center rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().seeAllVenues }}</a>
   </div>
 } @else if (venue(); as v) {
   <div class="mx-auto max-w-6xl lg:px-8 lg:pt-6">

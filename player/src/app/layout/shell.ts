@@ -23,7 +23,7 @@ interface NavItem {
 }
 
 const NAVIGATION: NavItem[] = [
-  { path: '/', label: (w) => w.tabExplore, icon: Compass, private: false, onPhoneBar: true },
+  { path: '/explore', label: (w) => w.tabExplore, icon: Compass, private: false, onPhoneBar: true },
   { path: '/bookings', label: (w) => w.tabBookings, icon: CalendarDays, private: true, onPhoneBar: true },
   { path: '/matches', label: (w) => w.tabPlay, icon: Trophy, private: true, onPhoneBar: true, also: ['/tournaments', '/teams'] },
   { path: '/messages', label: (w) => w.tabMessages, icon: MessageSquare, private: true, onPhoneBar: true, badge: 'messages' },
@@ -40,7 +40,7 @@ const NAVIGATION: NavItem[] = [
 
     <header class="sticky top-0 z-20 border-b border-border bg-surface/95 backdrop-blur">
       <div class="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 lg:px-8">
-        <a routerLink="/" class="flex items-center gap-2" [attr.aria-label]="l().futSlotHome">
+        <a routerLink="/explore" class="flex items-center gap-2" [attr.aria-label]="l().futSlotHome">
           <span class="grid size-7 place-items-center rounded-md bg-brand text-sm font-bold text-white" aria-hidden="true">F</span>
           <span class="font-semibold tracking-tight">FutSlot</span>
         </a>
@@ -117,7 +117,7 @@ export class Shell {
   protected current(item: NavItem): boolean {
     const path = this.url().split(/[?#]/)[0];
     const under = (base: string) => path === base || path.startsWith(base + '/');
-    return item.path === '/' ? path === '/' || path.startsWith('/venues') : under(item.path) || (item.also ?? []).some(under);
+    return item.path === '/explore' ? under('/explore') || path.startsWith('/venues') : under(item.path) || (item.also ?? []).some(under);
   }
 
   protected readonly desktopItems = computed(() => NAVIGATION.filter((item) => !item.private || this.session.signedIn()));

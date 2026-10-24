@@ -41,7 +41,7 @@ const PAGE = 20;
             <p class="font-medium">{{ scope() === 'upcoming' ? l().noGamesComingUp : l().nothingHereYet }}</p>
             <p class="mt-1 text-muted">{{ scope() === 'upcoming' ? l().findCourtPitch : l().pastGamesShowHere }}</p>
             @if (scope() === 'upcoming') {
-              <a routerLink="/" class="mt-4 inline-flex h-11 items-center rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().findACourt }}</a>
+              <a routerLink="/explore" class="mt-4 inline-flex h-11 items-center rounded-lg bg-ink px-5 font-medium text-ink-fg">{{ l().findACourt }}</a>
             }
           </div>
         } @else {

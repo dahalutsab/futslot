@@ -84,14 +84,14 @@ class SitePageService {
 	}
 
 	/**
-	 * @param canonical the site's own address, without the language
+	 * @param addresses where this page lives, in each language
 	 * @param linkPrefix what links to other days start with, e.g. "?" on a live site or "?template=turf&" in a
 	 * preview, so switching day keeps the same view
 	 * @param switchHref this page in the other language
 	 */
 	SitePage build(String slug, SiteTemplate template, String accent, String headline, String requestedDate,
-			String canonical, String linkPrefix, boolean noindex, Wording text, String switchHref) {
-		return build(slug, template, accent, headline, requestedDate, canonical, linkPrefix, noindex, text, switchHref, null,
+			Addresses addresses, String linkPrefix, boolean noindex, Wording text, String switchHref) {
+		return build(slug, template, accent, headline, requestedDate, addresses, linkPrefix, noindex, text, switchHref, null,
 				null);
 	}
 
@@ -101,7 +101,7 @@ class SitePageService {
 	 * @param mine link to the signed-in player's bookings, or null
 	 */
 	SitePage build(String slug, SiteTemplate template, String accent, String headline, String requestedDate,
-			String canonical, String linkPrefix, boolean noindex, Wording text, String switchHref, String bookingBase,
+			Addresses addresses, String linkPrefix, boolean noindex, Wording text, String switchHref, String bookingBase,
 			String mine) {
 		TextFormat format = text.format();
 		VenueResponse venue = this.venues.getActiveBySlug(slug);
@@ -150,7 +150,7 @@ class SitePageService {
 			.toList();
 		return new SitePage(template.name().toLowerCase(), text.code(), switchHref, color, SiteFormat.inkOn(color),
 				SiteFormat.readableOn(color, background),
-				seo(venue, about, pricing, rating, contact, canonical, cover, noindex, text), about, contact.page(), photos,
+				seo(venue, about, pricing, rating, contact, addresses, cover, noindex, text), about, contact.page(), photos,
 				pricing, slots, hours, amenities, rating, reviews(slug, text), plans(slug, text), tournaments(venue, text),
 				format.year(today));
 	}
@@ -356,7 +356,7 @@ class SitePageService {
 	}
 
 	private SitePage.Seo seo(VenueResponse venue, SitePage.Venue about, SitePage.Pricing pricing, SitePage.Rating rating,
-			Contact contact, String canonical, String cover, boolean noindex, Wording text) {
+			Contact contact, Addresses addresses, String cover, boolean noindex, Wording text) {
 		String title = text.get("seo.title", venue.name(), about.place());
 		List<String> sentences = new ArrayList<>();
 		String courts = text.get((about.courtCount() == 1) ? "seo.courts.one" : "seo.courts.many", about.courts());
@@ -366,11 +366,11 @@ class SitePageService {
 			sentences.add(text.get("seo.openToday", about.todayHours()));
 		}
 		sentences.add(text.get(contact.page().phone() != null ? "seo.bookByPhone" : "seo.book"));
-		String image = (cover != null) ? canonical + cover : null;
-		String english = noindex ? null : canonical + "/";
-		String nepali = noindex ? null : canonical + SiteLanguage.NEPALI + "/";
-		return new SitePage.Seo(title, String.join(" ", sentences), text.nepali() ? canonical + SiteLanguage.NEPALI + "/" : canonical + "/",
-				english, nepali, image, jsonLd(venue, pricing, rating, contact, canonical, image, text), noindex);
+		String image = (cover != null) ? addresses.origin() + cover : null;
+		String english = noindex ? null : addresses.english();
+		String nepali = noindex ? null : addresses.nepali();
+		return new SitePage.Seo(title, String.join(" ", sentences), text.nepali() ? addresses.nepali() : addresses.english(),
+				english, nepali, image, jsonLd(venue, pricing, rating, contact, addresses.english(), image, text), noindex);
 	}
 
 	/** schema.org data search engines use for opening hours, location, prices and rating. */
@@ -429,6 +429,19 @@ class SitePageService {
 
 	private static String hhmm(LocalTime time) {
 		return "%02d:%02d".formatted(time.getHour(), time.getMinute());
+	}
+
+	/**
+	 * Where a page lives: {@code origin} is its host (photos are beneath it), {@code english} and {@code nepali} the
+	 * page's full address in each language.
+	 */
+	record Addresses(String origin, String english, String nepali) {
+
+		/** A venue website's front page: the site's address, and beneath /ne in Nepali. */
+		static Addresses site(String origin) {
+			return new Addresses(origin, origin + "/", origin + SiteLanguage.NEPALI + "/");
+		}
+
 	}
 
 	private static Contact contact(VenueResponse venue) {
