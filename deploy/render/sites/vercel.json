@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "",
-  "buildCommand": "mkdir -p public",
+  "buildCommand": "mkdir -p public && echo 'FutSlot venue websites: every path is the API on Render' > public/futslot-sites.txt",
   "outputDirectory": "public",
   "rewrites": [
     {

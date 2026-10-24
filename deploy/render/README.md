@@ -15,7 +15,7 @@ everything, is in the main README under "Deploying".
 | `futslot.dahalutsab.com.np` | `player`: the player app, with FutSlot's public pages, `/api`, photos and venue sites (`/sites/<subdomain>`) from Render |
 | `owner.futslot.dahalutsab.com.np` | `dashboard` |
 | `admin.futslot.dahalutsab.com.np` | `admin` |
-| `dhuku.futslot.dahalutsab.com.np`, ... | `deploy/render/sites`: every path from Render, which tells venues apart by address |
+| `*.futslot.dahalutsab.com.np` (`dhuku`, ...) | `deploy/render/sites`: every path from Render, which tells venues apart by address |
 
 The Vercel settings are in each project's `vercel.json`, the Render ones in `render.yaml`.
 
@@ -40,12 +40,13 @@ The Vercel settings are in each project's `vercel.json`, the Render ones in `ren
    That uses Render's 750 free hours on this one service, so don't run another free service in the same workspace.
    The liveness check doesn't touch the database, so Neon still sleeps between the API's background jobs.
 5. **Vercel**: import this repo four times, once per row of the table above, with that **Root Directory** and the
-   framework preset **Other** (`vercel.json` has the build). Under **Settings > Git**, set the production branch to
-   the one deployed. Under **Settings > Domains**, add each project's address: one per venue for the venue websites
-   project (`dhuku`, `kickarena` and `thimi` for the demo ones). Vercel only takes `*.futslot` when it runs the
-   domain's DNS, so each venue's address is added by hand.
-6. **DNS** (Cloudflare, for `dahalutsab.com.np`): the `CNAME` records Vercel asks for, for `futslot`,
-   `owner.futslot`, `admin.futslot` and each venue, set to **DNS only** (grey cloud) so Vercel can get the certificates.
+   framework preset **Other** (`vercel.json` has the build). Under **Settings > Domains**, add each project's
+   address; for the venue websites project, the wildcard `*.futslot.dahalutsab.com.np`, which covers every venue.
+6. **DNS** (Cloudflare, for `dahalutsab.com.np`), all **DNS only** (grey cloud) so Vercel can get the certificates:
+   - `CNAME` records for `futslot`, `owner.futslot` and `admin.futslot`, to what Vercel shows for each.
+   - `CNAME` `*.futslot` to `cname.vercel-dns.com`, for every venue website.
+   - Two `NS` records named `_acme-challenge.futslot`, to `ns1.vercel-dns.com` and `ns2.vercel-dns.com`: Vercel
+     can only get a certificate for `*.futslot` by answering that name itself. Only that one name moves to Vercel.
 7. **Demo data**: on your own computer, in `deploy/`, make a `.env` with `FUTSLOT_DOMAIN=futslot.dahalutsab.com.np`
    and `DEMO_PASSWORD=...`, then run `./seed-demo.sh` (needs curl and jq). It makes the demo venues and the
    admin, owner and player accounts. Add venue photos from the owner dashboard.
