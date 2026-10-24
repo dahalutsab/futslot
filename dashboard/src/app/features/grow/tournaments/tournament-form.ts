@@ -40,13 +40,13 @@ interface Form {
         <div>
           <label for="t-name" class="mb-1.5 block font-medium">Name</label>
           <input id="t-name" type="text" maxlength="100" [value]="f.name" (input)="patch({ name: $any($event.target).value })"
-            placeholder="e.g. Dashain Cup 2083" class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+            placeholder="e.g. Dashain Cup 2083" class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
         </div>
         <fieldset [disabled]="locked()">
           <legend class="mb-1.5 font-medium">Format</legend>
           <div class="space-y-2">
             @for (option of formats; track option.value) {
-              <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3" [class]="f.format === option.value ? 'border-ink bg-surface-2' : 'border-border'">
+              <label class="flex cursor-pointer items-start gap-3 rounded-md border p-3" [class]="f.format === option.value ? 'border-ink bg-surface-2' : 'border-border'">
                 <input type="radio" name="format" class="mt-1 size-4 accent-current" [checked]="f.format === option.value" (change)="patch({ format: option.value })" />
                 <span><span class="block font-medium">{{ option.label }}</span><span class="text-sm text-muted">{{ option.detail }}</span></span>
               </label>
@@ -59,23 +59,23 @@ interface Form {
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label for="t-start" class="mb-1.5 block font-medium">Starts</label>
-            <input id="t-start" type="date" [value]="f.startsOn" (input)="patch({ startsOn: $any($event.target).value })" class="h-12 w-full rounded-lg border border-border bg-surface px-2 text-base" />
+            <input id="t-start" type="date" [value]="f.startsOn" (input)="patch({ startsOn: $any($event.target).value })" class="h-12 w-full rounded-md border border-border bg-surface px-2 text-base" />
           </div>
           <div>
             <label for="t-end" class="mb-1.5 block font-medium">Ends</label>
-            <input id="t-end" type="date" [value]="f.endsOn" (input)="patch({ endsOn: $any($event.target).value })" class="h-12 w-full rounded-lg border border-border bg-surface px-2 text-base" />
+            <input id="t-end" type="date" [value]="f.endsOn" (input)="patch({ endsOn: $any($event.target).value })" class="h-12 w-full rounded-md border border-border bg-surface px-2 text-base" />
           </div>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label for="t-teams" class="mb-1.5 block font-medium">Teams</label>
             <input id="t-teams" type="number" inputmode="numeric" min="2" max="32" [value]="f.maxTeams" (input)="patch({ maxTeams: $any($event.target).value })"
-              class="tabular h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+              class="tabular h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
           </div>
           @if (f.format === 'GROUP_KNOCKOUT') {
             <div>
               <label for="t-groups" class="mb-1.5 block font-medium">Groups</label>
-              <select id="t-groups" [disabled]="locked()" (change)="patch({ groupCount: $any($event.target).value })" class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base">
+              <select id="t-groups" [disabled]="locked()" (change)="patch({ groupCount: $any($event.target).value })" class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base">
                 @for (n of ['2', '4', '8']; track n) {
                   <option [value]="n" [selected]="f.groupCount === n">{{ n }} groups</option>
                 }
@@ -85,7 +85,7 @@ interface Form {
             <div>
               <label for="t-size" class="mb-1.5 block font-medium">Players a side</label>
               <input id="t-size" type="number" inputmode="numeric" min="3" max="11" [disabled]="locked()" [value]="f.teamSize" (input)="patch({ teamSize: $any($event.target).value })"
-                class="tabular h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                class="tabular h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
             </div>
           }
         </div>
@@ -95,14 +95,14 @@ interface Form {
             <div class="relative">
               <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">Rs</span>
               <input id="t-fee" type="number" inputmode="numeric" min="0" step="100" [value]="f.entryFee" (input)="patch({ entryFee: $any($event.target).value })"
-                class="tabular h-12 w-full rounded-lg border border-border bg-surface pl-10 pr-3 text-base" />
+                class="tabular h-12 w-full rounded-md border border-border bg-surface pl-10 pr-3 text-base" />
             </div>
           </div>
           <div>
             <label for="t-minutes" class="mb-1.5 block font-medium">Match length</label>
             <div class="relative">
               <input id="t-minutes" type="number" inputmode="numeric" min="10" max="240" [value]="f.matchMinutes" (input)="patch({ matchMinutes: $any($event.target).value })"
-                class="tabular h-12 w-full rounded-lg border border-border bg-surface pl-3 pr-12 text-base" />
+                class="tabular h-12 w-full rounded-md border border-border bg-surface pl-3 pr-12 text-base" />
               <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">min</span>
             </div>
           </div>
@@ -110,14 +110,14 @@ interface Form {
         <div>
           <label for="t-prize" class="mb-1.5 block font-medium">Prizes <span class="font-normal text-subtle">(optional)</span></label>
           <input id="t-prize" type="text" maxlength="500" [value]="f.prizeDetails" (input)="patch({ prizeDetails: $any($event.target).value })"
-            placeholder="e.g. Rs 25,000 and a trophy for the winners" class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+            placeholder="e.g. Rs 25,000 and a trophy for the winners" class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
         </div>
         <div>
           <label for="t-description" class="mb-1.5 block font-medium">About <span class="font-normal text-subtle">(optional)</span></label>
           <textarea id="t-description" rows="2" maxlength="2000" [value]="f.description" (input)="patch({ description: $any($event.target).value })"
-            class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-base"></textarea>
+            class="w-full rounded-md border border-border bg-surface px-3 py-2 text-base"></textarea>
         </div>
-        <details class="rounded-lg border border-border">
+        <details class="rounded-md border border-border">
           <summary class="flex h-11 cursor-pointer items-center px-3 font-medium">More options</summary>
           <div class="space-y-4 border-t border-border p-3">
             <div class="grid grid-cols-2 gap-3">
@@ -125,18 +125,18 @@ interface Form {
                 <div>
                   <label for="t-size2" class="mb-1.5 block text-sm font-medium">Players a side</label>
                   <input id="t-size2" type="number" inputmode="numeric" min="3" max="11" [disabled]="locked()" [value]="f.teamSize" (input)="patch({ teamSize: $any($event.target).value })"
-                    class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                    class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
                 </div>
               }
               <div>
                 <label for="t-squad" class="mb-1.5 block text-sm font-medium">Squad up to</label>
                 <input id="t-squad" type="number" inputmode="numeric" min="3" max="20" [value]="f.maxSquadSize" (input)="patch({ maxSquadSize: $any($event.target).value })"
-                  class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                  class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
               </div>
               <div>
                 <label for="t-closes" class="mb-1.5 block text-sm font-medium">Registration closes</label>
                 <input id="t-closes" type="date" [value]="f.closesOn" (input)="patch({ closesOn: $any($event.target).value })"
-                  class="h-11 w-full rounded-lg border border-border bg-surface px-2 text-base" />
+                  class="h-11 w-full rounded-md border border-border bg-surface px-2 text-base" />
               </div>
             </div>
             @if (f.format !== 'KNOCKOUT') {
@@ -144,12 +144,12 @@ interface Form {
                 <div>
                   <label for="t-win" class="mb-1.5 block text-sm font-medium">Points for a win</label>
                   <input id="t-win" type="number" inputmode="numeric" min="0" max="10" [value]="f.pointsForWin" (input)="patch({ pointsForWin: $any($event.target).value })"
-                    class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                    class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
                 </div>
                 <div>
                   <label for="t-draw" class="mb-1.5 block text-sm font-medium">Points for a draw</label>
                   <input id="t-draw" type="number" inputmode="numeric" min="0" max="10" [value]="f.pointsForDraw" (input)="patch({ pointsForDraw: $any($event.target).value })"
-                    class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                    class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
                 </div>
               </div>
             }
@@ -157,16 +157,16 @@ interface Form {
               <label for="t-rules" class="mb-1.5 block text-sm font-medium">Rules</label>
               <textarea id="t-rules" rows="4" maxlength="4000" [value]="f.rules" (input)="patch({ rules: $any($event.target).value })"
                 placeholder="e.g. Two halves of 20 minutes. Rolling substitutes. Yellow card: 2 minutes off."
-                class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-base"></textarea>
+                class="w-full rounded-md border border-border bg-surface px-3 py-2 text-base"></textarea>
             </div>
           </div>
         </details>
       </form>
       @if (error(); as message) {
-        <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+        <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
       }
       <div sheet-footer class="border-t border-border px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-        <button type="submit" form="tournament-form" [disabled]="busy()" class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+        <button type="submit" form="tournament-form" [disabled]="busy()" class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
           @if (busy()) {
             <lucide-icon [img]="spinner" [size]="18" class="animate-spin" />
           }

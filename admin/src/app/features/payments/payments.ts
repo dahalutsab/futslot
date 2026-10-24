@@ -19,20 +19,20 @@ import { NoteForm } from '../../shared/note-form';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-4xl px-4 py-6 lg:px-8 lg:py-8">
-      <h1 class="text-2xl font-semibold tracking-tight">Payments to check</h1>
+      <h1 class="text-3xl lg:text-4xl">Payments to check</h1>
       <p class="mt-1 text-muted">Look for each one in FutSlot's wallet or account, then approve it. A deposit top-up approved here fills the player's deposit straight away.</p>
       @if (error(); as message) {
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>
       } @else if (payments(); as list) {
         @if (list.length === 0) {
-          <div class="mt-6 flex flex-col items-center rounded-xl border border-dashed border-border bg-surface px-6 py-14 text-center">
+          <div class="mt-6 flex flex-col items-center rounded-md border border-dashed border-border bg-surface px-6 py-14 text-center">
             <lucide-icon [img]="icons.CircleCheck" [size]="28" class="text-confirmed-line" />
             <p class="mt-3 font-medium">All caught up</p>
           </div>
         } @else {
           <ul class="mt-4 space-y-3">
             @for (p of list; track p.id) {
-              <li class="rounded-xl border border-border bg-surface p-4">
+              <li class="rounded-md border border-border bg-surface p-4">
                 <div class="flex flex-wrap items-start gap-x-4 gap-y-1">
                   <div class="min-w-0 flex-1">
                     <p class="font-medium">{{ p.customerName }}</p>
@@ -43,7 +43,7 @@ import { NoteForm } from '../../shared/note-form';
                     <p class="text-sm text-muted">{{ fmt.methodLabel(p.method) }}</p>
                   </div>
                 </div>
-                <p class="mt-3 flex items-center gap-2 rounded-lg bg-verify-bg px-3 py-2 text-verify-fg">
+                <p class="mt-3 flex items-center gap-2 rounded-md bg-verify-bg px-3 py-2 text-verify-fg">
                   <lucide-icon [img]="icons.Wallet" [size]="16" />
                   <span class="text-sm">Transaction</span>
                   <span class="tabular select-all font-medium">{{ p.transactionId }}</span>
@@ -57,8 +57,8 @@ import { NoteForm } from '../../shared/note-form';
                       placeholder="e.g. Not in our eSewa" (done)="reject(p, $event)" (cancelled)="rejecting.set(null)" />
                   } @else {
                     <div class="flex gap-2">
-                      <button type="button" (click)="approve(p)" [disabled]="busy() === p.id" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Approve</button>
-                      <button type="button" (click)="rejecting.set(p.id)" class="h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Not received</button>
+                      <button type="button" (click)="approve(p)" [disabled]="busy() === p.id" class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Approve</button>
+                      <button type="button" (click)="rejecting.set(p.id)" class="h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2">Not received</button>
                     </div>
                   }
                 </div>
@@ -67,7 +67,7 @@ import { NoteForm } from '../../shared/note-form';
           </ul>
         }
       } @else {
-        <div class="mt-6 h-40 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-40 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
       }
     </div>
   `,

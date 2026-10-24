@@ -1,12 +1,12 @@
 <div class="mx-auto max-w-5xl px-4 py-6 lg:px-8 lg:py-8">
   <a routerLink="/venues" class="text-sm text-muted hover:text-text">← Venues</a>
   @if (error(); as message) {
-    <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+    <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
   }
   @if (venue(); as v) {
     <div class="mt-2 flex flex-wrap items-start gap-3">
       <div class="min-w-0 flex-1">
-        <h1 class="text-2xl font-semibold tracking-tight">{{ v.name }}</h1>
+        <h1 class="text-3xl lg:text-4xl">{{ v.name }}</h1>
         <p class="text-muted">{{ v.addressLine }}{{ v.area ? ', ' + v.area : '' }}, {{ v.city }}</p>
       </div>
       <span class="rounded-full px-3 py-1 text-sm font-medium"
@@ -15,11 +15,11 @@
       </span>
     </div>
     @if (v.rejectionReason && (v.status === 'REJECTED' || v.status === 'SUSPENDED')) {
-      <p class="mt-3 rounded-lg bg-surface-2 px-3 py-2 text-sm"><span class="font-medium">Reason given:</span> {{ v.rejectionReason }}</p>
+      <p class="mt-3 rounded-md bg-surface-2 px-3 py-2 text-sm"><span class="font-medium">Reason given:</span> {{ v.rejectionReason }}</p>
     }
 
     <!-- Decision -->
-    <section class="mt-5 rounded-xl border border-border bg-surface p-5" aria-label="Decision">
+    <section class="mt-5 rounded-md border border-border bg-surface p-5" aria-label="Decision">
       @if (refusing(); as action) {
         <fs-note-form id="refuse-reason" [label]="reasonLabel[action]"
           [action]="action === 'reject' ? 'Reject' : 'Suspend'" [danger]="true" [busy]="busy()"
@@ -29,17 +29,17 @@
           @case ('PENDING_APPROVAL') {
             <p class="text-muted">Check the details below, then put it live or tell the owner what to fix.</p>
             <div class="mt-3 flex flex-wrap gap-2">
-              <button type="button" (click)="approve()" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Approve and put live</button>
-              <button type="button" (click)="refusing.set('reject')" class="h-11 rounded-lg border border-border px-5 font-medium hover:bg-surface-2">Reject</button>
+              <button type="button" (click)="approve()" [disabled]="busy()" class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Approve and put live</button>
+              <button type="button" (click)="refusing.set('reject')" class="h-11 rounded-md border border-border px-5 font-medium hover:bg-surface-2">Reject</button>
             </div>
           }
           @case ('ACTIVE') {
             <p class="text-muted">Live: players can find and book it.</p>
-            <button type="button" (click)="refusing.set('suspend')" class="mt-3 h-11 rounded-lg px-4 font-medium text-danger hover:bg-danger-bg">Suspend</button>
+            <button type="button" (click)="refusing.set('suspend')" class="mt-3 h-11 rounded-md px-4 font-medium text-danger hover:bg-danger-bg">Suspend</button>
           }
           @case ('SUSPENDED') {
             <p class="text-muted">Suspended: hidden from players.</p>
-            <button type="button" (click)="reinstate()" [disabled]="busy()" class="mt-3 h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Reinstate</button>
+            <button type="button" (click)="reinstate()" [disabled]="busy()" class="mt-3 h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Reinstate</button>
           }
           @case ('REJECTED') {
             <p class="text-muted">The owner can fix it and submit it again.</p>
@@ -57,12 +57,12 @@
           <section aria-label="Photos">
             <ul class="grid grid-cols-2 gap-2 sm:grid-cols-3">
               @for (p of v.photos; track p.id) {
-                <li><img [src]="p.url" [alt]="p.caption ?? ''" loading="lazy" class="aspect-[4/3] w-full rounded-lg object-cover" /></li>
+                <li><img [src]="p.url" [alt]="p.caption ?? ''" loading="lazy" class="aspect-[4/3] w-full rounded-md object-cover" /></li>
               }
             </ul>
           </section>
         } @else {
-          <p class="rounded-lg bg-held-bg px-3 py-2 text-sm text-held-fg">No photos yet.</p>
+          <p class="rounded-md bg-held-bg px-3 py-2 text-sm text-held-fg">No photos yet.</p>
         }
         @if (v.description) {
           <p class="whitespace-pre-line">{{ v.description }}</p>
@@ -72,7 +72,7 @@
           <h2 id="courts-title" class="font-semibold">Courts and prices</h2>
           <ul class="mt-2 space-y-2">
             @for (c of v.courts; track c.id) {
-              <li class="rounded-xl border border-border bg-surface p-4">
+              <li class="rounded-md border border-border bg-surface p-4">
                 <p class="font-medium">{{ c.name }} <span class="font-normal text-muted">· {{ c.slotDurationMinutes }} min slots{{ c.indoor ? ' · indoor' : '' }}{{ c.status === 'INACTIVE' ? ' · not in use' : '' }}</span></p>
                 <ul class="mt-1 text-sm text-muted">
                   @for (r of c.pricingRules; track r.id) {
@@ -91,12 +91,12 @@
         <section aria-labelledby="rules-title">
           <h2 id="rules-title" class="font-semibold">Booking rules</h2>
           <dl class="mt-2 grid grid-cols-2 gap-2 text-sm">
-            <div class="rounded-lg bg-surface p-3"><dt class="text-muted">Pay up front</dt><dd class="tabular font-medium">{{ v.policy.advancePercent }}%</dd></div>
-            <div class="rounded-lg bg-surface p-3"><dt class="text-muted">Book ahead</dt><dd class="tabular font-medium">{{ v.policy.maxAdvanceBookingDays }} days</dd></div>
-            <div class="rounded-lg bg-surface p-3"><dt class="text-muted">Late cancellation fees</dt><dd class="tabular font-medium">
+            <div class="rounded-md bg-surface p-3"><dt class="text-muted">Pay up front</dt><dd class="tabular font-medium">{{ v.policy.advancePercent }}%</dd></div>
+            <div class="rounded-md bg-surface p-3"><dt class="text-muted">Book ahead</dt><dd class="tabular font-medium">{{ v.policy.maxAdvanceBookingDays }} days</dd></div>
+            <div class="rounded-md bg-surface p-3"><dt class="text-muted">Late cancellation fees</dt><dd class="tabular font-medium">
               @for (t of v.policy.cancellationTiers; track t.withinHours; let last = $last) { {{ t.feePercent }}% within {{ t.withinHours }}h{{ last ? '' : ', ' }} } @empty { None }
             </dd></div>
-            <div class="rounded-lg bg-surface p-3"><dt class="text-muted">FutSlot deposit</dt><dd class="font-medium">{{ v.policy.depositRequired ? 'Required' : 'Not required' }}</dd></div>
+            <div class="rounded-md bg-surface p-3"><dt class="text-muted">FutSlot deposit</dt><dd class="font-medium">{{ v.policy.depositRequired ? 'Required' : 'Not required' }}</dd></div>
           </dl>
         </section>
 
@@ -106,7 +106,7 @@
               <h2 id="history-title" class="flex-1 font-semibold">Recent activity</h2>
               <a routerLink="/audit" [queryParams]="{ venue: v.id, name: v.name }" class="text-sm font-medium text-muted hover:text-text">All</a>
             </div>
-            <ul class="mt-2 divide-y divide-border rounded-xl border border-border bg-surface text-sm">
+            <ul class="mt-2 divide-y divide-border rounded-md border border-border bg-surface text-sm">
               @for (e of history(); track e.id) {
                 <li class="px-4 py-2.5">
                   <p><span class="font-medium">{{ fmt.actionLabel(e.action) }}</span><span class="text-muted"> by {{ e.actorName ?? 'FutSlot' }} · {{ fmt.ago(e.createdAt) }}</span></p>
@@ -119,7 +119,7 @@
       </div>
 
       <aside class="space-y-4">
-        <section class="rounded-xl border border-border bg-surface p-4" aria-labelledby="contact-title">
+        <section class="rounded-md border border-border bg-surface p-4" aria-labelledby="contact-title">
           <h2 id="contact-title" class="font-semibold">Contact</h2>
           <dl class="mt-2 space-y-1 text-sm">
             @if (v.phone) { <div><dt class="sr-only">Phone</dt><dd><a [href]="'tel:' + v.phone" class="tabular hover:underline">{{ fmt.phone(v.phone) }}</a></dd></div> }
@@ -127,7 +127,7 @@
             <div><dt class="text-muted">Payments to the venue</dt><dd class="whitespace-pre-line">{{ v.paymentInstructions ?? 'Not set' }}</dd></div>
           </dl>
         </section>
-        <section class="rounded-xl border border-border bg-surface p-4" aria-labelledby="hours-title">
+        <section class="rounded-md border border-border bg-surface p-4" aria-labelledby="hours-title">
           <h2 id="hours-title" class="font-semibold">Opening hours</h2>
           <dl class="mt-2 space-y-1 text-sm">
             @for (h of hours(); track h.day) {
@@ -136,7 +136,7 @@
           </dl>
         </section>
         @if (v.amenities.length) {
-          <section class="rounded-xl border border-border bg-surface p-4" aria-labelledby="amenities-title">
+          <section class="rounded-md border border-border bg-surface p-4" aria-labelledby="amenities-title">
             <h2 id="amenities-title" class="font-semibold">Amenities</h2>
             <p class="mt-1 text-sm text-muted">{{ v.amenities.map(amenityName).join(', ') }}</p>
           </section>
@@ -144,6 +144,6 @@
       </aside>
     </div>
   } @else if (!error()) {
-    <div class="mt-6 h-64 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+    <div class="mt-6 h-64 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
   }
 </div>

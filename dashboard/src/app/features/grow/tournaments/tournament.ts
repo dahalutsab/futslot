@@ -33,20 +33,20 @@ const ENTRY_LABELS: Record<TournamentEntry['status'], string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-4xl px-4 py-4 lg:px-8 lg:py-6">
-      <a routerLink="/grow/tournaments" class="-ml-2 inline-flex h-10 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">
+      <a routerLink="/grow/tournaments" class="-ml-2 inline-flex h-10 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">
         <lucide-icon [img]="icons.ArrowLeft" [size]="16" />Tournaments
       </a>
 
       @if (error(); as message) {
-        <p class="mt-4 rounded-xl border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
+        <p class="mt-4 rounded-md border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
       } @else if (t(); as t) {
         <div class="mt-1 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">{{ t.name }}</h1>
+            <h1 class="text-3xl lg:text-4xl">{{ t.name }}</h1>
             <p class="mt-1 text-muted">{{ format(t.format) }} · {{ fmt.dayLabel(t.startsOn) }}{{ t.endsOn !== t.startsOn ? ' – ' + fmt.dayLabel(t.endsOn) : '' }} · {{ statusLabels[t.status] }}</p>
           </div>
           @if (editable()) {
-            <button type="button" (click)="editing.set(true)" class="h-10 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">Edit details</button>
+            <button type="button" (click)="editing.set(true)" class="h-10 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">Edit details</button>
           }
         </div>
 
@@ -60,14 +60,14 @@ const ENTRY_LABELS: Record<TournamentEntry['status'], string> = {
         </div>
 
         @if (actionError(); as message) {
-          <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+          <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
         }
 
         <div class="mt-5" role="tabpanel">
           @switch (tab()) {
             @case ('overview') {
               @if (t.champion) {
-                <section class="flex items-center gap-3 rounded-xl border border-border bg-surface p-4">
+                <section class="flex items-center gap-3 rounded-md border border-border bg-surface p-4">
                   <lucide-icon [img]="icons.Trophy" [size]="28" class="shrink-0 text-muted" />
                   <div><p class="text-sm text-muted">Champions</p><p class="text-lg font-semibold">{{ t.champion.name }}</p></div>
                 </section>
@@ -81,7 +81,7 @@ const ENTRY_LABELS: Record<TournamentEntry['status'], string> = {
                   <ng-container [ngTemplateOutlet]="step" [ngTemplateOutletContext]="{ title: t.teamsIn + ' of ' + t.maxTeams + ' teams in' + (t.waitlisted ? ', ' + t.waitlisted + ' waiting' : ''), text: 'Close registration when you’re ready to make the draw.', action: 'close', label: 'Close registration' }" />
                 }
                 @case ('REGISTRATION_CLOSED') {
-                  <section class="rounded-xl border border-border bg-surface p-4">
+                  <section class="rounded-md border border-border bg-surface p-4">
                     <h2 class="font-semibold">Make the draw</h2>
                     <p class="mt-1 text-muted">{{ confirmedCount() }} confirmed {{ confirmedCount() === 1 ? 'team goes' : 'teams go' }} into the draw.
                       @if (pendingCount()) { {{ pendingCount() }} still waiting for their entry fee {{ pendingCount() === 1 ? 'is' : 'are' }} left out unless you record the payment first. }
@@ -90,27 +90,27 @@ const ENTRY_LABELS: Record<TournamentEntry['status'], string> = {
                       <input type="checkbox" class="size-4 accent-current" [checked]="shuffle()" (change)="shuffle.set(!shuffle())" />
                       <span>Draw at random <span class="text-subtle">(otherwise seeded in the order they signed up)</span></span>
                     </label>
-                    <button type="button" (click)="act('draw')" [disabled]="busy()" class="mt-3 h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Make the draw</button>
+                    <button type="button" (click)="act('draw')" [disabled]="busy()" class="mt-3 h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Make the draw</button>
                   </section>
                 }
                 @case ('IN_PROGRESS') {
                   @if (t.format === 'GROUP_KNOCKOUT' && groupsDone()) {
                     <ng-container [ngTemplateOutlet]="step" [ngTemplateOutletContext]="{ title: 'The groups are done', text: 'Draw the knockout: the top two of each group go through.', action: 'knockout', label: 'Draw the knockout' }" />
                   } @else {
-                    <section class="rounded-xl border border-border bg-surface p-4">
+                    <section class="rounded-md border border-border bg-surface p-4">
                       <h2 class="font-semibold">{{ playedCount() }} of {{ matchCount() }} matches played</h2>
                       <p class="mt-1 text-muted">Book a court for each match and enter results under Fixtures.{{ unbookedCount() ? ' ' + unbookedCount() + ' still need a court.' : '' }}</p>
-                      <button type="button" (click)="tab.set('fixtures')" class="mt-3 h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Go to fixtures</button>
+                      <button type="button" (click)="tab.set('fixtures')" class="mt-3 h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2">Go to fixtures</button>
                     </section>
                   }
                 }
               }
 
               <dl class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <div class="rounded-lg bg-surface px-3 py-2"><dt class="text-xs text-muted">Teams</dt><dd class="tabular font-medium">{{ t.teamsIn }} of {{ t.maxTeams }}</dd></div>
-                <div class="rounded-lg bg-surface px-3 py-2"><dt class="text-xs text-muted">Entry fee</dt><dd class="tabular font-medium">{{ t.entryFee > 0 ? fmt.rupees(t.entryFee) : 'Free' }}</dd></div>
-                <div class="rounded-lg bg-surface px-3 py-2"><dt class="text-xs text-muted">Players</dt><dd class="tabular font-medium">{{ t.teamSize }}-a-side, squads up to {{ t.maxSquadSize }}</dd></div>
-                <div class="rounded-lg bg-surface px-3 py-2"><dt class="text-xs text-muted">Matches</dt><dd class="tabular font-medium">{{ t.matchMinutes }} min</dd></div>
+                <div class="rounded-md bg-surface px-3 py-2"><dt class="text-xs text-muted">Teams</dt><dd class="tabular font-medium">{{ t.teamsIn }} of {{ t.maxTeams }}</dd></div>
+                <div class="rounded-md bg-surface px-3 py-2"><dt class="text-xs text-muted">Entry fee</dt><dd class="tabular font-medium">{{ t.entryFee > 0 ? fmt.rupees(t.entryFee) : 'Free' }}</dd></div>
+                <div class="rounded-md bg-surface px-3 py-2"><dt class="text-xs text-muted">Players</dt><dd class="tabular font-medium">{{ t.teamSize }}-a-side, squads up to {{ t.maxSquadSize }}</dd></div>
+                <div class="rounded-md bg-surface px-3 py-2"><dt class="text-xs text-muted">Matches</dt><dd class="tabular font-medium">{{ t.matchMinutes }} min</dd></div>
               </dl>
               @if (t.prizeDetails) {
                 <p class="mt-4"><span class="text-muted">Prizes:</span> {{ t.prizeDetails }}</p>
@@ -119,7 +119,7 @@ const ENTRY_LABELS: Record<TournamentEntry['status'], string> = {
                 <p class="mt-2 whitespace-pre-line">{{ t.description }}</p>
               }
               @if (t.rules) {
-                <details class="mt-4 rounded-lg border border-border"><summary class="flex h-11 cursor-pointer items-center px-3 font-medium">Rules</summary>
+                <details class="mt-4 rounded-md border border-border"><summary class="flex h-11 cursor-pointer items-center px-3 font-medium">Rules</summary>
                   <p class="whitespace-pre-line border-t border-border p-3 text-muted">{{ t.rules }}</p></details>
               }
 
@@ -129,11 +129,11 @@ const ENTRY_LABELS: Record<TournamentEntry['status'], string> = {
                     <p class="font-medium">Cancel {{ t.name }}?</p>
                     <p class="text-sm text-muted">Teams are told, booked courts are freed and paid entry fees are owed back, which you refund under Payments.</p>
                     <div class="mt-3 flex gap-2">
-                      <button type="button" (click)="act('cancel')" [disabled]="busy()" class="h-11 rounded-lg bg-danger px-4 font-medium text-surface disabled:opacity-60">Cancel tournament</button>
-                      <button type="button" (click)="confirmCancel.set(false)" class="h-11 rounded-lg border border-border px-4 font-medium">Keep it</button>
+                      <button type="button" (click)="act('cancel')" [disabled]="busy()" class="h-11 rounded-md bg-danger px-4 font-medium text-surface disabled:opacity-60">Cancel tournament</button>
+                      <button type="button" (click)="confirmCancel.set(false)" class="h-11 rounded-md border border-border px-4 font-medium">Keep it</button>
                     </div>
                   } @else {
-                    <button type="button" (click)="confirmCancel.set(true)" class="h-11 rounded-lg px-1 font-medium text-danger hover:underline">Cancel tournament</button>
+                    <button type="button" (click)="confirmCancel.set(true)" class="h-11 rounded-md px-1 font-medium text-danger hover:underline">Cancel tournament</button>
                   }
                 </div>
               }
@@ -141,11 +141,11 @@ const ENTRY_LABELS: Record<TournamentEntry['status'], string> = {
 
             @case ('teams') {
               @if (t.registrations.length === 0) {
-                <p class="rounded-xl border border-dashed border-border bg-surface px-6 py-8 text-center text-muted">
+                <p class="rounded-md border border-dashed border-border bg-surface px-6 py-8 text-center text-muted">
                   {{ t.status === 'DRAFT' ? 'Open registration and teams can sign up in the app.' : 'No teams yet.' }}
                 </p>
               } @else {
-                <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+                <ul class="divide-y divide-border overflow-hidden rounded-md border border-border bg-surface">
                   @for (entry of entries(); track entry.id) {
                     <li class="px-4 py-3">
                       <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -159,28 +159,28 @@ const ENTRY_LABELS: Record<TournamentEntry['status'], string> = {
                       @if (entry.status === 'PENDING_PAYMENT') {
                         @if (recording() === entry.id) {
                           <form class="mt-2 flex flex-wrap items-end gap-2" (submit)="$event.preventDefault(); recordFee(entry)">
-                            <select (change)="feeMethod.set($any($event.target).value)" aria-label="Paid with" class="h-10 rounded-lg border border-border bg-surface px-2 text-base">
+                            <select (change)="feeMethod.set($any($event.target).value)" aria-label="Paid with" class="h-10 rounded-md border border-border bg-surface px-2 text-base">
                               @for (method of methods; track method) {
                                 <option [value]="method" [selected]="feeMethod() === method">{{ fmt.methodLabel(method) }}</option>
                               }
                             </select>
                             @if (feeMethod() !== 'CASH') {
                               <input type="text" maxlength="100" placeholder="Transaction ID" [value]="feeTxn()" (input)="feeTxn.set($any($event.target).value)" aria-label="Transaction ID"
-                                class="tabular h-10 w-44 rounded-lg border border-border bg-surface px-2 text-base" />
+                                class="tabular h-10 w-44 rounded-md border border-border bg-surface px-2 text-base" />
                             }
-                            <button type="submit" [disabled]="busy()" class="h-10 rounded-lg bg-ink px-3 text-sm font-medium text-ink-fg disabled:opacity-60">Paid {{ fmt.rupees(t.entryFee) }}</button>
-                            <button type="button" (click)="recording.set(null)" class="h-10 rounded-lg px-2 text-sm font-medium hover:bg-surface-2">Cancel</button>
+                            <button type="submit" [disabled]="busy()" class="h-10 rounded-md bg-ink px-3 text-sm font-medium text-ink-fg disabled:opacity-60">Paid {{ fmt.rupees(t.entryFee) }}</button>
+                            <button type="button" (click)="recording.set(null)" class="h-10 rounded-md px-2 text-sm font-medium hover:bg-surface-2">Cancel</button>
                           </form>
                         } @else {
                           <div class="mt-2 flex gap-2">
-                            <button type="button" (click)="startRecording(entry)" class="h-9 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">Record entry fee</button>
+                            <button type="button" (click)="startRecording(entry)" class="h-9 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">Record entry fee</button>
                             @if (!hasFixtures()) {
-                              <button type="button" (click)="reject(entry)" [disabled]="busy()" class="h-9 rounded-lg px-2 text-sm font-medium text-muted hover:bg-surface-2">Remove team</button>
+                              <button type="button" (click)="reject(entry)" [disabled]="busy()" class="h-9 rounded-md px-2 text-sm font-medium text-muted hover:bg-surface-2">Remove team</button>
                             }
                           </div>
                         }
                       } @else if (entry.status === 'CONFIRMED' && !hasFixtures()) {
-                        <button type="button" (click)="reject(entry)" [disabled]="busy()" class="mt-1 h-9 rounded-lg px-1 text-sm font-medium text-muted hover:underline">Remove team</button>
+                        <button type="button" (click)="reject(entry)" [disabled]="busy()" class="mt-1 h-9 rounded-md px-1 text-sm font-medium text-muted hover:underline">Remove team</button>
                       }
                     </li>
                   }
@@ -193,11 +193,11 @@ const ENTRY_LABELS: Record<TournamentEntry['status'], string> = {
 
             @case ('fixtures') {
               @if (fixtureSections().length === 0) {
-                <p class="rounded-xl border border-dashed border-border bg-surface px-6 py-8 text-center text-muted">Fixtures appear after the draw.</p>
+                <p class="rounded-md border border-dashed border-border bg-surface px-6 py-8 text-center text-muted">Fixtures appear after the draw.</p>
               } @else {
                 @for (section of fixtureSections(); track section.key) {
-                  <h2 class="mb-2 mt-5 text-sm font-medium uppercase tracking-wide text-subtle first:mt-0">{{ section.title }}</h2>
-                  <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+                  <h2 class="mb-2 mt-5 text-sm font-medium text-subtle first:mt-0">{{ section.title }}</h2>
+                  <ul class="divide-y divide-border overflow-hidden rounded-md border border-border bg-surface">
                     @for (m of section.matches; track m.id) {
                       <li>
                         <button type="button" (click)="openMatch(m)" class="flex w-full flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-left hover:bg-surface-2">
@@ -219,9 +219,9 @@ const ENTRY_LABELS: Record<TournamentEntry['status'], string> = {
             @case ('table') {
               @for (table of t.tables; track table.groupName ?? 'league') {
                 @if (table.groupName) {
-                  <h2 class="mb-2 mt-5 text-sm font-medium uppercase tracking-wide text-subtle first:mt-0">Group {{ table.groupName }}</h2>
+                  <h2 class="mb-2 mt-5 text-sm font-medium text-subtle first:mt-0">Group {{ table.groupName }}</h2>
                 }
-                <div class="overflow-x-auto rounded-xl border border-border bg-surface">
+                <div class="overflow-x-auto rounded-md border border-border bg-surface">
                   <table class="w-full text-sm">
                     <thead><tr class="text-left text-muted">
                       <th scope="col" class="px-4 py-2 font-medium">Team</th>
@@ -250,14 +250,14 @@ const ENTRY_LABELS: Record<TournamentEntry['status'], string> = {
         </div>
 
         <ng-template #step let-title="title" let-text="text" let-action="action" let-label="label">
-          <section class="rounded-xl border border-border bg-surface p-4">
+          <section class="rounded-md border border-border bg-surface p-4">
             <h2 class="font-semibold">{{ title }}</h2>
             <p class="mt-1 text-muted">{{ text }}</p>
-            <button type="button" (click)="act(action)" [disabled]="busy()" class="mt-3 h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ label }}</button>
+            <button type="button" (click)="act(action)" [disabled]="busy()" class="mt-3 h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">{{ label }}</button>
           </section>
         </ng-template>
       } @else {
-        <div class="mt-4 h-64 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-4 h-64 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
       }
     </div>
 

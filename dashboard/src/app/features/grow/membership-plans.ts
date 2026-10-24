@@ -41,24 +41,24 @@ export function planSummary(plan: Pick<MembershipPlan, 'type' | 'gamesIncluded' 
   template: `
     <div class="flex flex-wrap items-center justify-between gap-3">
       <p class="text-muted">Regulars pay up front and get a better price. Players see active plans in the app.</p>
-      <button type="button" (click)="add()" class="flex h-11 items-center gap-2 rounded-lg bg-ink px-4 font-medium text-ink-fg hover:opacity-90">
+      <button type="button" (click)="add()" class="flex h-11 items-center gap-2 rounded-md bg-ink px-4 font-medium text-ink-fg hover:opacity-90">
         <lucide-icon [img]="icons.Plus" [size]="18" />New plan
       </button>
     </div>
     @if (error(); as message) {
-      <p class="mt-4 rounded-xl border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
+      <p class="mt-4 rounded-md border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
     } @else if (plans(); as list) {
       @if (list.length === 0) {
-        <div class="mt-4 rounded-xl border border-dashed border-border bg-surface px-6 py-8 text-center">
+        <div class="mt-4 rounded-md border border-dashed border-border bg-surface px-6 py-8 text-center">
           <p class="font-medium">No plans yet</p>
           <p class="mt-1 text-muted">A 10-game pack is a good start: regulars pay once and you fill the court.</p>
-          <button type="button" (click)="add('GAME_PACK')" class="mt-4 h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Create a 10-game pack</button>
+          <button type="button" (click)="add('GAME_PACK')" class="mt-4 h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2">Create a 10-game pack</button>
         </div>
       } @else {
         <ul class="mt-4 grid gap-3 sm:grid-cols-2">
           @for (plan of list; track plan.id) {
             <li>
-              <button type="button" (click)="edit(plan)" class="flex h-full w-full flex-col rounded-xl border border-border bg-surface p-4 text-left hover:bg-surface-2" [class.opacity-60]="!plan.active">
+              <button type="button" (click)="edit(plan)" class="flex h-full w-full flex-col rounded-md border border-border bg-surface p-4 text-left hover:bg-surface-2" [class.opacity-60]="!plan.active">
                 <span class="flex w-full items-baseline justify-between gap-3">
                   <span class="font-semibold">{{ plan.name }}</span>
                   <span class="tabular font-semibold">{{ fmt.rupees(plan.price) }}</span>
@@ -76,7 +76,7 @@ export function planSummary(plan: Pick<MembershipPlan, 'type' | 'gamesIncluded' 
         </ul>
       }
     } @else {
-      <div class="mt-4 h-32 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+      <div class="mt-4 h-32 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
     }
 
     @if (editing(); as e) {
@@ -86,7 +86,7 @@ export function planSummary(plan: Pick<MembershipPlan, 'type' | 'gamesIncluded' 
             <legend class="mb-1.5 font-medium">Kind</legend>
             <div class="space-y-2">
               @for (kind of kinds; track kind.value) {
-                <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3" [class]="e.type === kind.value ? 'border-ink bg-surface-2' : 'border-border'">
+                <label class="flex cursor-pointer items-start gap-3 rounded-md border p-3" [class]="e.type === kind.value ? 'border-ink bg-surface-2' : 'border-border'">
                   <input type="radio" name="kind" class="mt-1 size-4 accent-current" [checked]="e.type === kind.value" (change)="patch({ type: kind.value })" />
                   <span><span class="block font-medium">{{ kind.label }}</span><span class="text-sm text-muted">{{ kind.detail }}</span></span>
                 </label>
@@ -101,14 +101,14 @@ export function planSummary(plan: Pick<MembershipPlan, 'type' | 'gamesIncluded' 
               <div>
                 <label for="plan-games" class="mb-1.5 block font-medium">Games</label>
                 <input id="plan-games" type="number" inputmode="numeric" min="1" max="500" [value]="e.games" (input)="patch({ games: $any($event.target).value })"
-                  class="tabular h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                  class="tabular h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
               </div>
             } @else {
               <div>
                 <label for="plan-percent" class="mb-1.5 block font-medium">Discount</label>
                 <div class="relative">
                   <input id="plan-percent" type="number" inputmode="numeric" min="1" max="100" [value]="e.percent" (input)="patch({ percent: $any($event.target).value })"
-                    class="tabular h-12 w-full rounded-lg border border-border bg-surface pl-3 pr-8 text-base" />
+                    class="tabular h-12 w-full rounded-md border border-border bg-surface pl-3 pr-8 text-base" />
                   <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">%</span>
                 </div>
               </div>
@@ -117,7 +117,7 @@ export function planSummary(plan: Pick<MembershipPlan, 'type' | 'gamesIncluded' 
               <label for="plan-days" class="mb-1.5 block font-medium">Valid for</label>
               <div class="relative">
                 <input id="plan-days" type="number" inputmode="numeric" min="1" max="366" [value]="e.days" (input)="patch({ days: $any($event.target).value })"
-                  class="tabular h-12 w-full rounded-lg border border-border bg-surface pl-3 pr-14 text-base" />
+                  class="tabular h-12 w-full rounded-md border border-border bg-surface pl-3 pr-14 text-base" />
                 <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">days</span>
               </div>
             </div>
@@ -127,7 +127,7 @@ export function planSummary(plan: Pick<MembershipPlan, 'type' | 'gamesIncluded' 
               <label for="plan-cap" class="mb-1.5 block font-medium">Limit to <span class="font-normal text-subtle">(optional)</span></label>
               <div class="relative w-40">
                 <input id="plan-cap" type="number" inputmode="numeric" min="1" max="500" [value]="e.games" (input)="patch({ games: $any($event.target).value })"
-                  class="tabular h-12 w-full rounded-lg border border-border bg-surface pl-3 pr-16 text-base" />
+                  class="tabular h-12 w-full rounded-md border border-border bg-surface pl-3 pr-16 text-base" />
                 <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">games</span>
               </div>
             </div>
@@ -137,7 +137,7 @@ export function planSummary(plan: Pick<MembershipPlan, 'type' | 'gamesIncluded' 
             <div class="relative w-40">
               <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">Rs</span>
               <input id="plan-price" type="number" inputmode="numeric" min="0" step="100" [value]="e.price" (input)="patch({ price: $any($event.target).value })"
-                class="tabular h-12 w-full rounded-lg border border-border bg-surface pl-10 pr-3 text-base" />
+                class="tabular h-12 w-full rounded-md border border-border bg-surface pl-10 pr-3 text-base" />
             </div>
             @if (draftPerGame(); as each) {
               <p class="mt-1.5 text-sm text-muted">{{ each }} a game.</p>
@@ -146,25 +146,25 @@ export function planSummary(plan: Pick<MembershipPlan, 'type' | 'gamesIncluded' 
           <div>
             <label for="plan-name" class="mb-1.5 block font-medium">Name</label>
             <input id="plan-name" type="text" maxlength="100" [value]="e.name" [placeholder]="suggestedName()" (input)="patch({ name: $any($event.target).value })"
-              class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+              class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
           </div>
           <div>
             <label for="plan-description" class="mb-1.5 block font-medium">Details for players <span class="font-normal text-subtle">(optional)</span></label>
             <textarea id="plan-description" rows="2" maxlength="500" [value]="e.description" (input)="patch({ description: $any($event.target).value })"
-              placeholder="e.g. Any court, any time. Book in the app as usual." class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-base"></textarea>
+              placeholder="e.g. Any court, any time. Book in the app as usual." class="w-full rounded-md border border-border bg-surface px-3 py-2 text-base"></textarea>
           </div>
           @if (e.plan) {
-            <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-3">
+            <label class="flex cursor-pointer items-start gap-3 rounded-md border border-border p-3">
               <input type="checkbox" class="mt-1 size-4 accent-current" [checked]="e.active" (change)="patch({ active: !e.active })" />
               <span><span class="block font-medium">On sale</span><span class="text-sm text-subtle">Members who already bought it keep it either way.</span></span>
             </label>
           }
         </form>
         @if (formError(); as message) {
-          <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+          <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
         }
         <div sheet-footer class="border-t border-border px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-          <button type="submit" form="plan-form" [disabled]="saving()" class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+          <button type="submit" form="plan-form" [disabled]="saving()" class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
             @if (saving()) {
               <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" />
             }

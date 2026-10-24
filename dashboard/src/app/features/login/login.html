@@ -1,39 +1,41 @@
 <div class="grid min-h-dvh lg:grid-cols-2">
-  <section class="hidden flex-col justify-between bg-[#0f2a1a] p-12 text-white lg:flex" aria-hidden="true">
-    <div class="flex items-center gap-2">
-      <span class="grid size-8 place-items-center rounded-md bg-[#22c55e] font-bold text-[#0f2a1a]">F</span>
-      <span class="text-lg font-semibold">FutSlot</span>
-    </div>
+  <section class="relative isolate hidden flex-col justify-between overflow-hidden bg-turf p-12 text-white lg:flex" aria-hidden="true">
+    <!-- The court's lines in chalk, as on FutSlot's front page -->
+    <svg class="absolute inset-0 -z-10 size-full text-white/15" viewBox="0 0 640 800" preserveAspectRatio="xMidYMid slice"
+      fill="none" stroke="currentColor" stroke-width="3">
+      <rect x="40" y="-100" width="560" height="1000" />
+      <path d="M40 560h560" />
+      <circle cx="320" cy="560" r="96" />
+      <circle cx="320" cy="560" r="5" fill="currentColor" />
+    </svg>
+    <fs-logo [onTurf]="true" name="FutSlot" />
     <div>
-      <p class="text-3xl font-semibold leading-tight">Your courts, bookings and payments, all in one place.</p>
-      <p class="mt-4 max-w-md text-white/70">See today's schedule at a glance, verify eSewa and Khalti payments in a tap, and
+      <p class="max-w-[16ch] font-display text-6xl font-bold leading-[.9]">Your courts, bookings and payments, all in one place.</p>
+      <p class="mt-5 max-w-md text-white/85">See today's schedule at a glance, verify eSewa and Khalti payments in a tap, and
         know which hours earn the most.</p>
     </div>
-    <p class="text-sm text-white/50">For futsal venues across Nepal</p>
+    <p class="text-sm text-white/70">For futsal venues across Nepal</p>
   </section>
 
   <section class="flex items-center justify-center px-5 py-12">
     <div class="w-full max-w-sm">
-      <div class="mb-8 flex items-center gap-2 lg:hidden">
-        <span class="grid size-8 place-items-center rounded-md bg-brand font-bold text-white" aria-hidden="true">F</span>
-        <span class="text-lg font-semibold">FutSlot</span>
-      </div>
+      <fs-logo name="FutSlot" class="mb-8 lg:hidden" />
 
-      <h1 class="text-2xl font-semibold tracking-tight">{{ title() }}</h1>
+      <h1 class="text-4xl">{{ title() }}</h1>
       <p class="mt-1 text-muted">{{ subtitle() }}</p>
 
       @if (expired && mode() === 'signIn') {
-        <p class="mt-4 rounded-lg bg-held-bg px-3 py-2 text-held-fg" role="status">You were signed out. Please sign in again.</p>
+        <p class="mt-4 rounded-md bg-held-bg px-3 py-2 text-held-fg" role="status">You were signed out. Please sign in again.</p>
       }
       @if (notice(); as message) {
-        <p class="mt-4 rounded-lg bg-surface-2 px-3 py-2 text-muted" role="status">{{ message }}</p>
+        <p class="mt-4 rounded-md bg-surface-2 px-3 py-2 text-muted" role="status">{{ message }}</p>
       }
 
       @if (mode() === 'signIn') {
         <form class="mt-8 space-y-4" (ngSubmit)="signIn()">
           <div>
             <label for="phone" class="mb-1.5 block font-medium">Mobile number</label>
-            <div class="flex h-12 items-center rounded-lg border border-border bg-surface focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring">
+            <div class="flex h-12 items-center rounded-md border border-border bg-surface focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring">
               <span class="tabular border-r border-border px-3 text-muted">+977</span>
               <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98XXXXXXXX"
                 class="tabular h-full min-w-0 flex-1 bg-transparent px-3 text-base outline-none"
@@ -45,7 +47,7 @@
               <label for="password" class="font-medium">Password</label>
               <button type="button" class="text-sm font-medium text-muted underline underline-offset-2 hover:text-text" (click)="switchTo('reset')">Forgot password?</button>
             </div>
-            <div class="flex h-12 items-center rounded-lg border border-border bg-surface focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring">
+            <div class="flex h-12 items-center rounded-md border border-border bg-surface focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring">
               <input id="password" name="password" [type]="showPassword() ? 'text' : 'password'" autocomplete="current-password"
                 class="h-full min-w-0 flex-1 bg-transparent px-3 text-base outline-none"
                 [ngModel]="password()" (ngModelChange)="password.set($event)" required />
@@ -59,7 +61,7 @@
             <p class="text-danger" role="alert">{{ message }}</p>
           }
           <button type="submit" [disabled]="busy()"
-            class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60 aria-disabled:opacity-40">
+            class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60 aria-disabled:opacity-40">
             @if (busy()) {
               <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> Signing in…
             } @else {
@@ -81,7 +83,7 @@
         <form class="mt-8 space-y-4" (ngSubmit)="sendCode()">
           <div>
             <label for="phone" class="mb-1.5 block font-medium">Mobile number</label>
-            <div class="flex h-12 items-center rounded-lg border border-border bg-surface focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring">
+            <div class="flex h-12 items-center rounded-md border border-border bg-surface focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring">
               <span class="tabular border-r border-border px-3 text-muted">+977</span>
               <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98XXXXXXXX"
                 class="tabular h-full min-w-0 flex-1 bg-transparent px-3 text-base outline-none"
@@ -92,7 +94,7 @@
             <p class="text-danger" role="alert">{{ message }}</p>
           }
           <button type="submit" [disabled]="busy()" [attr.aria-disabled]="!phoneValid()"
-            class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60 aria-disabled:opacity-40">
+            class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60 aria-disabled:opacity-40">
             @if (busy()) {
               <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> Sending…
             } @else {
@@ -105,7 +107,7 @@
           <div>
             <label for="code" class="mb-1.5 block font-medium">6-digit code</label>
             <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
-              class="tabular h-12 w-full rounded-lg border border-border bg-surface px-3 text-center text-xl tracking-[0.5em]"
+              class="tabular h-12 w-full rounded-md border border-border bg-surface px-3 text-center text-xl tracking-[0.5em]"
               [ngModel]="code()" (ngModelChange)="code.set($event.replace(/\D/g, ''))" aria-describedby="code-help" required />
             <p id="code-help" class="mt-1.5 text-sm text-subtle">
               Sent to <span class="tabular">+977 {{ phone() }}</span> ·
@@ -116,7 +118,7 @@
             <div>
               <label for="full-name" class="mb-1.5 block font-medium">Your name</label>
               <input id="full-name" name="fullName" type="text" autocomplete="name"
-                class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base"
+                class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base"
                 [ngModel]="fullName()" (ngModelChange)="fullName.set($event)" aria-describedby="name-help" required />
               <p id="name-help" class="mt-1.5 text-sm text-subtle">Your name is shown to your staff.</p>
             </div>
@@ -126,7 +128,7 @@
               <div class="mb-1.5 flex items-baseline justify-between gap-3">
                 <label for="password" class="font-medium">{{ mode() === 'reset' ? 'New password' : 'Password' }}</label>
               </div>
-              <div class="flex h-12 items-center rounded-lg border border-border bg-surface focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring">
+              <div class="flex h-12 items-center rounded-md border border-border bg-surface focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring">
                 <input id="password" name="password" [type]="showPassword() ? 'text' : 'password'" autocomplete="new-password"
                   class="h-full min-w-0 flex-1 bg-transparent px-3 text-base outline-none" aria-describedby="password-help"
                   [ngModel]="password()" (ngModelChange)="password.set($event)" required />
@@ -142,7 +144,7 @@
             <p class="text-danger" role="alert">{{ message }}</p>
           }
           <button type="submit" [disabled]="busy()"
-            class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60 aria-disabled:opacity-40">
+            class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60 aria-disabled:opacity-40">
             @if (busy()) {
               <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> Checking…
             } @else {

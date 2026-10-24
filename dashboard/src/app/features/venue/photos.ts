@@ -31,7 +31,7 @@ interface Upload {
     <div class="mx-auto max-w-5xl px-4 py-4 lg:px-8 lg:py-6">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 class="flex items-baseline gap-3 text-xl font-semibold tracking-tight lg:text-2xl">
+          <h1 class="flex items-baseline gap-3 text-3xl lg:text-4xl">
             Photos
             @if (photos(); as list) {
               <span class="tabular text-base font-normal text-muted">{{ list.length }} of {{ max }}</span>
@@ -40,7 +40,7 @@ interface Upload {
           <p class="mt-1 text-muted">Bright, wide shots of the court in daylight work best. The cover shows first in the app.</p>
         </div>
         @if (photos() && room() > 0) {
-          <label class="flex h-11 cursor-pointer items-center gap-2 rounded-lg bg-ink px-4 font-medium text-ink-fg hover:opacity-90 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring">
+          <label class="flex h-11 cursor-pointer items-center gap-2 rounded-md bg-ink px-4 font-medium text-ink-fg hover:opacity-90 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring">
             <lucide-icon [img]="icons.ImagePlus" [size]="18" />Add photos
             <input type="file" accept="image/*" multiple class="sr-only" (change)="picked($event)" />
           </label>
@@ -48,17 +48,17 @@ interface Upload {
       </div>
 
       @if (notice(); as message) {
-        <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+        <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
       }
 
       @if (error(); as message) {
-        <div class="mt-6 rounded-xl border border-border bg-surface px-6 py-8 text-center">
+        <div class="mt-6 rounded-md border border-border bg-surface px-6 py-8 text-center">
           <p class="text-muted">{{ message }}</p>
-          <button type="button" (click)="retry()" class="mt-3 h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Try again</button>
+          <button type="button" (click)="retry()" class="mt-3 h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2">Try again</button>
         </div>
       } @else if (photos(); as list) {
         @if (list.length === 0 && uploads().length === 0) {
-          <label class="mt-5 flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-border bg-surface px-6 py-12 text-center hover:bg-surface-2">
+          <label class="mt-5 flex cursor-pointer flex-col items-center rounded-md border-2 border-dashed border-border bg-surface px-6 py-12 text-center hover:bg-surface-2">
             <lucide-icon [img]="icons.ImagePlus" [size]="32" class="text-subtle" />
             <span class="mt-3 font-medium">Add photos of your venue</span>
             <span class="mt-1 text-muted">Drop them here or choose from your phone or computer. Up to {{ max }}.</span>
@@ -67,7 +67,7 @@ interface Upload {
         }
         <ul class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           @for (photo of list; track photo.id; let i = $index, last = $last) {
-            <li class="overflow-hidden rounded-xl border border-border bg-surface">
+            <li class="overflow-hidden rounded-md border border-border bg-surface">
               <div class="relative aspect-[4/3] bg-surface-2">
                 <img [src]="photo.url" [alt]="photo.caption || 'Venue photo ' + (i + 1)" loading="lazy" class="size-full object-cover" />
                 @if (photo.cover) {
@@ -80,29 +80,29 @@ interface Upload {
                 <label [for]="'caption-' + photo.id" class="sr-only">Caption</label>
                 <input [id]="'caption-' + photo.id" type="text" maxlength="200" placeholder="Add a caption" [value]="photo.caption ?? ''"
                   (change)="caption(photo, $any($event.target).value)" (keydown.enter)="$any($event.target).blur()"
-                  class="h-10 w-full rounded-lg border border-transparent bg-transparent px-2 text-sm hover:border-border focus:border-border" />
+                  class="h-10 w-full rounded-md border border-transparent bg-transparent px-2 text-sm hover:border-border focus:border-border" />
                 <div class="flex items-center gap-1">
                   @if (!photo.cover) {
-                    <button type="button" (click)="makeCover(photo)" [disabled]="busy()" class="h-10 rounded-lg px-2 text-sm font-medium hover:bg-surface-2 disabled:opacity-60">Make cover</button>
+                    <button type="button" (click)="makeCover(photo)" [disabled]="busy()" class="h-10 rounded-md px-2 text-sm font-medium hover:bg-surface-2 disabled:opacity-60">Make cover</button>
                   }
                   <span class="flex-1"></span>
                   <!-- The cover always shows first; the rest follow in the owner's order -->
                   @if (!photo.cover) {
                     <button type="button" (click)="move(i, -1)" [disabled]="i === 0 || list[i - 1].cover || busy()" aria-label="Move earlier"
-                      class="grid size-10 place-items-center rounded-lg text-muted hover:bg-surface-2 disabled:opacity-30">
+                      class="grid size-10 place-items-center rounded-md text-muted hover:bg-surface-2 disabled:opacity-30">
                       <lucide-icon [img]="icons.ChevronLeft" [size]="18" />
                     </button>
                     <button type="button" (click)="move(i, 1)" [disabled]="last || busy()" aria-label="Move later"
-                      class="grid size-10 place-items-center rounded-lg text-muted hover:bg-surface-2 disabled:opacity-30">
+                      class="grid size-10 place-items-center rounded-md text-muted hover:bg-surface-2 disabled:opacity-30">
                       <lucide-icon [img]="icons.ChevronRight" [size]="18" />
                     </button>
                   }
                   @if (confirming() === photo.id) {
-                    <button type="button" (click)="remove(photo)" [disabled]="busy()" class="h-10 rounded-lg bg-danger px-3 text-sm font-medium text-surface disabled:opacity-60">Delete</button>
-                    <button type="button" (click)="confirming.set(null)" class="h-10 rounded-lg px-2 text-sm font-medium hover:bg-surface-2">Keep</button>
+                    <button type="button" (click)="remove(photo)" [disabled]="busy()" class="h-10 rounded-md bg-danger px-3 text-sm font-medium text-surface disabled:opacity-60">Delete</button>
+                    <button type="button" (click)="confirming.set(null)" class="h-10 rounded-md px-2 text-sm font-medium hover:bg-surface-2">Keep</button>
                   } @else {
                     <button type="button" (click)="confirming.set(photo.id)" aria-label="Delete photo"
-                      class="grid size-10 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-danger">
+                      class="grid size-10 place-items-center rounded-md text-muted hover:bg-surface-2 hover:text-danger">
                       <lucide-icon [img]="icons.Trash2" [size]="18" />
                     </button>
                   }
@@ -111,7 +111,7 @@ interface Upload {
             </li>
           }
           @for (upload of uploads(); track upload.key) {
-            <li class="overflow-hidden rounded-xl border border-border bg-surface">
+            <li class="overflow-hidden rounded-md border border-border bg-surface">
               <div class="grid aspect-[4/3] place-items-center bg-surface-2 px-4 text-center">
                 @if (upload.error) {
                   <p class="text-sm text-danger" role="alert">{{ upload.error }}</p>
@@ -128,7 +128,7 @@ interface Upload {
               <div class="flex items-center gap-2 p-3">
                 <p class="min-w-0 flex-1 truncate text-sm text-muted">{{ upload.name }}</p>
                 @if (upload.error) {
-                  <button type="button" (click)="dismiss(upload)" class="h-10 rounded-lg px-2 text-sm font-medium hover:bg-surface-2">Dismiss</button>
+                  <button type="button" (click)="dismiss(upload)" class="h-10 rounded-md px-2 text-sm font-medium hover:bg-surface-2">Dismiss</button>
                 }
               </div>
             </li>
@@ -137,7 +137,7 @@ interface Upload {
       } @else {
         <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Loading">
           @for (n of [1, 2, 3]; track n) {
-            <div class="aspect-[4/3] animate-pulse rounded-xl bg-surface"></div>
+            <div class="aspect-[4/3] animate-pulse rounded-md bg-surface"></div>
           }
         </div>
       }

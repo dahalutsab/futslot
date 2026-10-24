@@ -51,17 +51,17 @@ interface Editing {
   template: `
     <div class="flex flex-wrap items-center justify-between gap-3">
       <p class="text-muted">Share a code on social media or with a team; players enter it when they book.</p>
-      <button type="button" (click)="add()" class="flex h-11 items-center gap-2 rounded-lg bg-ink px-4 font-medium text-ink-fg hover:opacity-90">
+      <button type="button" (click)="add()" class="flex h-11 items-center gap-2 rounded-md bg-ink px-4 font-medium text-ink-fg hover:opacity-90">
         <lucide-icon [img]="icons.Plus" [size]="18" />New code
       </button>
     </div>
     @if (error(); as message) {
-      <p class="mt-4 rounded-xl border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
+      <p class="mt-4 rounded-md border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
     } @else if (codes(); as list) {
       @if (list.length === 0) {
-        <p class="mt-4 rounded-xl border border-dashed border-border bg-surface px-6 py-8 text-center text-muted">No codes yet. Try one for a festival or a quiet weekday morning.</p>
+        <p class="mt-4 rounded-md border border-dashed border-border bg-surface px-6 py-8 text-center text-muted">No codes yet. Try one for a festival or a quiet weekday morning.</p>
       } @else {
-        <ul class="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+        <ul class="mt-4 divide-y divide-border overflow-hidden rounded-md border border-border bg-surface">
           @for (code of list; track code.id) {
             <li>
               <button type="button" (click)="edit(code)" class="flex w-full flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-left hover:bg-surface-2">
@@ -82,7 +82,7 @@ interface Editing {
         </ul>
       }
     } @else {
-      <div class="mt-4 h-32 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+      <div class="mt-4 h-32 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
     }
 
     @if (editing(); as e) {
@@ -93,16 +93,16 @@ interface Editing {
               <label for="code-text" class="mb-1.5 block font-medium">Code</label>
               <input id="code-text" type="text" maxlength="32" autocomplete="off" autocapitalize="characters" [value]="e.text"
                 (input)="patch({ text: $any($event.target).value.toUpperCase() })" placeholder="e.g. DASHAIN20"
-                class="tabular h-12 w-full rounded-lg border border-border bg-surface px-3 text-base uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal" />
+                class="tabular h-12 w-full rounded-md border border-border bg-surface px-3 text-base uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal" />
               <p class="mt-1.5 text-sm text-subtle">3 to 32 letters or digits. It can't be changed later.</p>
             </div>
             <fieldset>
               <legend class="mb-1.5 font-medium">Discount</legend>
               <div class="flex gap-2">
-                <label class="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-lg border font-medium" [class]="e.type === 'PERCENT' ? 'border-ink bg-surface-2' : 'border-border text-muted'">
+                <label class="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-md border font-medium" [class]="e.type === 'PERCENT' ? 'border-ink bg-surface-2' : 'border-border text-muted'">
                   <input type="radio" name="type" class="sr-only" [checked]="e.type === 'PERCENT'" (change)="patch({ type: 'PERCENT' })" />Percent off
                 </label>
-                <label class="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-lg border font-medium" [class]="e.type === 'FIXED' ? 'border-ink bg-surface-2' : 'border-border text-muted'">
+                <label class="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-md border font-medium" [class]="e.type === 'FIXED' ? 'border-ink bg-surface-2' : 'border-border text-muted'">
                   <input type="radio" name="type" class="sr-only" [checked]="e.type === 'FIXED'" (change)="patch({ type: 'FIXED' })" />Rupees off
                 </label>
               </div>
@@ -112,65 +112,65 @@ interface Editing {
             <div>
               <label for="code-value" class="mb-1.5 block font-medium">{{ e.type === 'PERCENT' ? 'Percent off' : 'Rupees off' }}</label>
               <input id="code-value" type="number" inputmode="numeric" min="1" [max]="e.type === 'PERCENT' ? 100 : null" [value]="e.value" (input)="patch({ value: $any($event.target).value })"
-                class="tabular h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                class="tabular h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
             </div>
             @if (e.type === 'PERCENT') {
               <div>
                 <label for="code-max" class="mb-1.5 block font-medium">Up to Rs <span class="font-normal text-subtle">(optional)</span></label>
                 <input id="code-max" type="number" inputmode="numeric" min="1" [value]="e.max" (input)="patch({ max: $any($event.target).value })"
-                  class="tabular h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                  class="tabular h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
               </div>
             }
           </div>
           <div>
             <label for="code-description" class="mb-1.5 block font-medium">Note <span class="font-normal text-subtle">(optional, players see it)</span></label>
             <input id="code-description" type="text" maxlength="200" [value]="e.description" (input)="patch({ description: $any($event.target).value })"
-              placeholder="e.g. Dashain offer" class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+              placeholder="e.g. Dashain offer" class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
           </div>
-          <details class="rounded-lg border border-border" [open]="!!(e.min || e.from || e.to || e.usageLimit || e.perUserLimit)">
+          <details class="rounded-md border border-border" [open]="!!(e.min || e.from || e.to || e.usageLimit || e.perUserLimit)">
             <summary class="flex h-11 cursor-pointer items-center px-3 font-medium">Limits</summary>
             <div class="space-y-4 border-t border-border p-3">
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label for="code-from" class="mb-1.5 block text-sm font-medium">From</label>
-                  <input id="code-from" type="date" [value]="e.from" (input)="patch({ from: $any($event.target).value })" class="h-11 w-full rounded-lg border border-border bg-surface px-2 text-base" />
+                  <input id="code-from" type="date" [value]="e.from" (input)="patch({ from: $any($event.target).value })" class="h-11 w-full rounded-md border border-border bg-surface px-2 text-base" />
                 </div>
                 <div>
                   <label for="code-to" class="mb-1.5 block text-sm font-medium">Until</label>
-                  <input id="code-to" type="date" [value]="e.to" (input)="patch({ to: $any($event.target).value })" class="h-11 w-full rounded-lg border border-border bg-surface px-2 text-base" />
+                  <input id="code-to" type="date" [value]="e.to" (input)="patch({ to: $any($event.target).value })" class="h-11 w-full rounded-md border border-border bg-surface px-2 text-base" />
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label for="code-uses" class="mb-1.5 block text-sm font-medium">Total uses</label>
                   <input id="code-uses" type="number" inputmode="numeric" min="1" placeholder="No limit" [value]="e.usageLimit" (input)="patch({ usageLimit: $any($event.target).value })"
-                    class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                    class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
                 </div>
                 <div>
                   <label for="code-per" class="mb-1.5 block text-sm font-medium">Uses per player</label>
                   <input id="code-per" type="number" inputmode="numeric" min="1" placeholder="No limit" [value]="e.perUserLimit" (input)="patch({ perUserLimit: $any($event.target).value })"
-                    class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                    class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
                 </div>
               </div>
               <div>
                 <label for="code-min" class="mb-1.5 block text-sm font-medium">Only on bookings of at least Rs</label>
                 <input id="code-min" type="number" inputmode="numeric" min="0" [value]="e.min" (input)="patch({ min: $any($event.target).value })"
-                  class="tabular h-11 w-40 rounded-lg border border-border bg-surface px-3 text-base" />
+                  class="tabular h-11 w-40 rounded-md border border-border bg-surface px-3 text-base" />
               </div>
             </div>
           </details>
           @if (e.code) {
-            <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-3">
+            <label class="flex cursor-pointer items-center gap-3 rounded-md border border-border p-3">
               <input type="checkbox" class="size-4 accent-current" [checked]="e.active" (change)="patch({ active: !e.active })" />
               <span class="font-medium">Players can use it</span>
             </label>
           }
         </form>
         @if (formError(); as message) {
-          <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+          <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
         }
         <div sheet-footer class="border-t border-border px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-          <button type="submit" form="code-form" [disabled]="saving()" class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+          <button type="submit" form="code-form" [disabled]="saving()" class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
             @if (saving()) {
               <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" />
             }

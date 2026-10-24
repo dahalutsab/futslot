@@ -56,10 +56,10 @@ function hhmm(minutes: number): string {
           <span class="mb-1.5 block font-medium" id="price-hours">Hours</span>
           <div class="flex items-center gap-2" role="group" aria-labelledby="price-hours">
             <input type="time" step="900" [value]="from()" (input)="from.set($any($event.target).value)" aria-label="From"
-              class="tabular h-12 flex-1 rounded-lg border border-border bg-surface px-3 text-base" />
+              class="tabular h-12 flex-1 rounded-md border border-border bg-surface px-3 text-base" />
             <span class="text-muted">to</span>
             <input type="time" step="900" [value]="to()" (input)="to.set($any($event.target).value)" aria-label="To"
-              class="tabular h-12 flex-1 rounded-lg border border-border bg-surface px-3 text-base" />
+              class="tabular h-12 flex-1 rounded-md border border-border bg-surface px-3 text-base" />
           </div>
           @if (pastMidnight()) {
             <p class="mt-1.5 text-sm text-muted">Runs past midnight. Late hours count as the night they started, so Friday 11 PM – 1 AM is late Friday night.</p>
@@ -71,12 +71,12 @@ function hhmm(minutes: number): string {
             <div class="relative">
               <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">Rs</span>
               <input id="price-amount" type="number" inputmode="numeric" min="0" step="50" [value]="price()" (input)="price.set($any($event.target).value)"
-                class="tabular h-12 w-full rounded-lg border border-border bg-surface pl-10 pr-3 text-base" />
+                class="tabular h-12 w-full rounded-md border border-border bg-surface pl-10 pr-3 text-base" />
             </div>
           </div>
           <div>
             <label for="price-label" class="mb-1.5 block font-medium">Shown as</label>
-            <select id="price-label" (change)="label.set($any($event.target).value)" class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base">
+            <select id="price-label" (change)="label.set($any($event.target).value)" class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base">
               @for (option of labels; track option.value) {
                 <option [value]="option.value" [selected]="label() === option.value">{{ option.label }}</option>
               }
@@ -84,26 +84,26 @@ function hhmm(minutes: number): string {
           </div>
         </div>
 
-        <details class="rounded-lg border border-border" [open]="moreOpen()">
+        <details class="rounded-md border border-border" [open]="moreOpen()">
           <summary class="flex h-11 cursor-pointer items-center px-3 font-medium">More options</summary>
           <div class="space-y-4 border-t border-border p-3">
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label for="price-from-date" class="mb-1.5 block text-sm font-medium">Starting</label>
                 <input id="price-from-date" type="date" [value]="validFrom()" (input)="validFrom.set($any($event.target).value)"
-                  class="h-11 w-full rounded-lg border border-border bg-surface px-2 text-base" />
+                  class="h-11 w-full rounded-md border border-border bg-surface px-2 text-base" />
               </div>
               <div>
                 <label for="price-to-date" class="mb-1.5 block text-sm font-medium">Until</label>
                 <input id="price-to-date" type="date" [value]="validTo()" (input)="validTo.set($any($event.target).value)"
-                  class="h-11 w-full rounded-lg border border-border bg-surface px-2 text-base" />
+                  class="h-11 w-full rounded-md border border-border bg-surface px-2 text-base" />
               </div>
             </div>
             <p class="-mt-2 text-sm text-subtle">Leave empty to apply from now on, e.g. set dates for a Dashain offer.</p>
             <div>
               <label for="price-priority" class="mb-1.5 block text-sm font-medium">Priority</label>
               <input id="price-priority" type="number" inputmode="numeric" [value]="priority()" (input)="priority.set(+$any($event.target).value)"
-                class="tabular h-11 w-24 rounded-lg border border-border bg-surface px-3 text-base" />
+                class="tabular h-11 w-24 rounded-md border border-border bg-surface px-3 text-base" />
               <p class="mt-1 text-sm text-subtle">Where prices overlap, the higher number wins. At equal priority a single day beats "every day".</p>
             </div>
             @if (rule()) {
@@ -122,22 +122,22 @@ function hhmm(minutes: number): string {
             <p class="font-medium">Delete this price?</p>
             <p class="text-sm text-muted">Hours it covered become unbookable unless another price covers them.</p>
             <div class="mt-3 flex gap-2">
-              <button type="button" (click)="remove()" [disabled]="busy()" class="h-11 rounded-lg bg-danger px-4 font-medium text-surface disabled:opacity-60">Delete</button>
-              <button type="button" (click)="confirmDelete.set(false)" class="h-11 rounded-lg border border-border px-4 font-medium">Keep it</button>
+              <button type="button" (click)="remove()" [disabled]="busy()" class="h-11 rounded-md bg-danger px-4 font-medium text-surface disabled:opacity-60">Delete</button>
+              <button type="button" (click)="confirmDelete.set(false)" class="h-11 rounded-md border border-border px-4 font-medium">Keep it</button>
             </div>
           } @else {
-            <button type="button" (click)="confirmDelete.set(true)" class="h-11 rounded-lg px-1 font-medium text-danger hover:underline">Delete price</button>
+            <button type="button" (click)="confirmDelete.set(true)" class="h-11 rounded-md px-1 font-medium text-danger hover:underline">Delete price</button>
           }
         </div>
       }
 
       @if (error(); as message) {
-        <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+        <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
       }
 
       <div sheet-footer class="border-t border-border px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <button type="submit" form="price-form" [disabled]="busy()"
-          class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+          class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
           @if (busy()) {
             <lucide-icon [img]="spinner" [size]="18" class="animate-spin" />
           }

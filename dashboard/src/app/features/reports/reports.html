@@ -1,15 +1,15 @@
 <div class="mx-auto max-w-6xl px-4 py-4 lg:px-8 lg:py-6">
   <div class="flex flex-wrap items-center gap-3">
-    <h1 class="mr-auto text-xl font-semibold tracking-tight lg:text-2xl">Reports</h1>
+    <h1 class="mr-auto text-3xl lg:text-4xl">Reports</h1>
     <button type="button" (click)="exportCsv()" [disabled]="exporting()"
-      class="flex h-11 items-center gap-2 rounded-lg border border-border bg-surface px-4 font-medium hover:bg-surface-2 disabled:opacity-60 lg:h-9">
+      class="flex h-11 items-center gap-2 rounded-md border border-border bg-surface px-4 font-medium hover:bg-surface-2 disabled:opacity-60 lg:h-9">
       <lucide-icon [img]="icons.Download" [size]="16" /> Export bookings (CSV)
     </button>
   </div>
 
   <!-- One row of filters scopes everything below -->
   <div class="mt-4 flex flex-wrap items-center gap-2">
-    <div class="flex gap-1 overflow-x-auto rounded-lg bg-surface-2 p-1 [scrollbar-width:none]" role="radiogroup" aria-label="Period">
+    <div class="flex gap-1 overflow-x-auto rounded-md bg-surface-2 p-1 [scrollbar-width:none]" role="radiogroup" aria-label="Period">
       @for (option of presets; track option.value) {
         <button type="button" role="radio" [attr.aria-checked]="preset() === option.value" (click)="choose(option.value)"
           class="flex h-9 shrink-0 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-muted"
@@ -23,12 +23,12 @@
       <label class="flex items-center gap-2 text-sm">
         <span class="text-muted">From</span>
         <input type="date" [value]="range().from" (change)="setFrom($any($event.target).value)"
-          class="h-10 rounded-lg border border-border bg-surface px-2" />
+          class="h-10 rounded-md border border-border bg-surface px-2" />
       </label>
       <label class="flex items-center gap-2 text-sm">
         <span class="text-muted">to</span>
         <input type="date" [value]="range().to" (change)="setTo($any($event.target).value)"
-          class="h-10 rounded-lg border border-border bg-surface px-2" />
+          class="h-10 rounded-md border border-border bg-surface px-2" />
       </label>
     } @else {
       <span class="text-sm text-muted">{{ fmt.dayLabel(range().from) }} – {{ fmt.dayLabel(range().to) }}</span>
@@ -36,40 +36,40 @@
   </div>
 
   @if (error(); as message) {
-    <p class="mt-6 rounded-xl border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
+    <p class="mt-6 rounded-md border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
   }
 
   @if (data(); as d) {
     <div class="transition-opacity" [class.opacity-50]="loading()" [attr.aria-busy]="loading()">
       <!-- The numbers asked for first -->
       <dl class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div class="rounded-xl border border-border bg-surface p-4">
+        <div class="rounded-md border border-border bg-surface p-4">
           <dt class="text-sm text-muted">Booked value</dt>
-          <dd class="mt-1 text-2xl font-semibold">{{ fmt.rupees(d.summary.money.bookedValue) }}</dd>
+          <dd class="tabular mt-1 font-display text-4xl font-semibold leading-none">{{ fmt.rupees(d.summary.money.bookedValue) }}</dd>
           <dd class="mt-1 text-xs text-subtle">{{ fmt.rupees(d.summary.money.discounts) }} in discounts</dd>
         </div>
-        <div class="rounded-xl border border-border bg-surface p-4">
+        <div class="rounded-md border border-border bg-surface p-4">
           <dt class="text-sm text-muted">Collected</dt>
-          <dd class="mt-1 text-2xl font-semibold">{{ fmt.rupees(d.summary.money.net) }}</dd>
+          <dd class="tabular mt-1 font-display text-4xl font-semibold leading-none">{{ fmt.rupees(d.summary.money.net) }}</dd>
           <dd class="mt-1 text-xs text-subtle">after {{ fmt.rupees(d.summary.money.refunded) }} refunded · {{ fmt.rupees(d.summary.money.outstanding) }} still owed</dd>
         </div>
-        <div class="rounded-xl border border-border bg-surface p-4">
+        <div class="rounded-md border border-border bg-surface p-4">
           <dt class="text-sm text-muted">Bookings played</dt>
-          <dd class="mt-1 text-2xl font-semibold">{{ d.summary.bookings.played }}</dd>
+          <dd class="tabular mt-1 font-display text-4xl font-semibold leading-none">{{ d.summary.bookings.played }}</dd>
           <dd class="mt-1 text-xs text-subtle">{{ percent(d.summary.bookings.cancellationRate) }} cancelled · {{ percent(d.summary.bookings.noShowRate) }} no-shows</dd>
         </div>
-        <div class="rounded-xl border border-border bg-surface p-4">
+        <div class="rounded-md border border-border bg-surface p-4">
           <dt class="text-sm text-muted">Courts in use</dt>
-          <dd class="mt-1 text-2xl font-semibold">{{ percent(d.summary.occupancy.rate) }}</dd>
+          <dd class="tabular mt-1 font-display text-4xl font-semibold leading-none">{{ percent(d.summary.occupancy.rate) }}</dd>
           <dd class="mt-1 text-xs text-subtle">{{ d.summary.occupancy.bookedHours }} of {{ d.summary.occupancy.openHours }} open hours</dd>
         </div>
       </dl>
 
-      <section class="mt-5 rounded-xl border border-border bg-surface p-4 lg:p-5" aria-labelledby="daily-title">
+      <section class="mt-5 rounded-md border border-border bg-surface p-4 lg:p-5" aria-labelledby="daily-title">
         <div class="flex items-center gap-3">
           <h2 id="daily-title" class="mr-auto font-semibold">Booked value {{ d.daily.length > 62 ? 'per week' : 'per day' }}</h2>
           <button type="button" (click)="showTable.set(!showTable())" [attr.aria-pressed]="showTable()"
-            class="flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">
+            class="flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">
             <lucide-icon [img]="icons.Table" [size]="16" /> {{ showTable() ? 'Show chart' : 'Show as table' }}
           </button>
         </div>
@@ -98,13 +98,13 @@
       </section>
 
       <div class="mt-5 grid gap-5 lg:grid-cols-[3fr_2fr]">
-        <section class="rounded-xl border border-border bg-surface p-4 lg:p-5" aria-labelledby="peak-title">
+        <section class="rounded-md border border-border bg-surface p-4 lg:p-5" aria-labelledby="peak-title">
           <h2 id="peak-title" class="font-semibold">When it's busy</h2>
           <p class="mt-0.5 text-sm text-muted">Played bookings by start time</p>
           <div class="mt-3"><fs-peak-heatmap [cells]="d.peak" /></div>
         </section>
 
-        <section class="rounded-xl border border-border bg-surface p-4 lg:p-5" aria-labelledby="money-title">
+        <section class="rounded-md border border-border bg-surface p-4 lg:p-5" aria-labelledby="money-title">
           <h2 id="money-title" class="font-semibold">Collected by</h2>
           @if (methods().length === 0) {
             <p class="mt-3 text-muted">No money recorded in this period.</p>
@@ -134,7 +134,7 @@
       </div>
 
       <div class="mt-5 grid gap-5 lg:grid-cols-2">
-        <section class="rounded-xl border border-border bg-surface p-4 lg:p-5" aria-labelledby="courts-title">
+        <section class="rounded-md border border-border bg-surface p-4 lg:p-5" aria-labelledby="courts-title">
           <h2 id="courts-title" class="font-semibold">Courts</h2>
           <table class="mt-3 w-full text-left text-sm">
             <thead class="text-muted"><tr><th scope="col" class="pb-2 font-medium">Court</th><th scope="col" class="pb-2 text-right font-medium">Bookings</th>
@@ -159,7 +159,7 @@
           </table>
         </section>
 
-        <section class="rounded-xl border border-border bg-surface p-4 lg:p-5" aria-labelledby="regulars-title">
+        <section class="rounded-md border border-border bg-surface p-4 lg:p-5" aria-labelledby="regulars-title">
           <h2 id="regulars-title" class="font-semibold">Regulars</h2>
           @if (d.top.length === 0) {
             <p class="mt-3 text-muted">No one has played yet in this period.</p>
@@ -184,8 +184,8 @@
     </div>
   } @else if (!error()) {
     <div class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Loading">
-      @for (i of [1, 2, 3, 4]; track i) { <div class="h-28 animate-pulse rounded-xl bg-surface"></div> }
+      @for (i of [1, 2, 3, 4]; track i) { <div class="h-28 animate-pulse rounded-md bg-surface"></div> }
     </div>
-    <div class="mt-5 h-72 animate-pulse rounded-xl bg-surface"></div>
+    <div class="mt-5 h-72 animate-pulse rounded-md bg-surface"></div>
   }
 </div>

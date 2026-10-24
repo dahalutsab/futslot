@@ -46,24 +46,24 @@ interface Editing {
     <div class="mx-auto max-w-3xl px-4 py-4 lg:px-8 lg:py-6">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">Extras</h1>
+          <h1 class="text-3xl lg:text-4xl">Extras</h1>
           <p class="mt-1 text-muted">Things you sell or rent with a booking. Add them to a booking from the schedule.</p>
         </div>
         @if (items()) {
-          <button type="button" (click)="add()" class="flex h-11 items-center gap-2 rounded-lg bg-ink px-4 font-medium text-ink-fg hover:opacity-90">
+          <button type="button" (click)="add()" class="flex h-11 items-center gap-2 rounded-md bg-ink px-4 font-medium text-ink-fg hover:opacity-90">
             <lucide-icon [img]="icons.Plus" [size]="18" />Add extra
           </button>
         }
       </div>
 
       @if (error(); as message) {
-        <div class="mt-6 rounded-xl border border-border bg-surface px-6 py-8 text-center">
+        <div class="mt-6 rounded-md border border-border bg-surface px-6 py-8 text-center">
           <p class="text-muted">{{ message }}</p>
-          <button type="button" (click)="retry()" class="mt-3 h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Try again</button>
+          <button type="button" (click)="retry()" class="mt-3 h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2">Try again</button>
         </div>
       } @else if (items(); as list) {
         @if (list.length === 0) {
-          <div class="mt-5 rounded-xl border border-dashed border-border bg-surface px-6 py-8 text-center">
+          <div class="mt-5 rounded-md border border-dashed border-border bg-surface px-6 py-8 text-center">
             <p class="font-medium">Nothing for sale yet</p>
             <p class="mt-1 text-muted">Start with what players usually ask for:</p>
             <div class="mt-4 flex flex-wrap justify-center gap-2">
@@ -77,8 +77,8 @@ interface Editing {
         }
         @for (group of groups(); track group.value) {
           <section class="mt-5" [attr.aria-labelledby]="'extras-' + group.value">
-            <h2 [id]="'extras-' + group.value" class="mb-2 text-sm font-medium uppercase tracking-wide text-subtle">{{ group.label }}</h2>
-            <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+            <h2 [id]="'extras-' + group.value" class="mb-2 text-sm font-medium text-subtle">{{ group.label }}</h2>
+            <ul class="divide-y divide-border overflow-hidden rounded-md border border-border bg-surface">
               @for (item of group.items; track item.id) {
                 <li class="flex items-center gap-3 pr-3">
                   <button type="button" (click)="edit(item)" class="flex min-h-14 min-w-0 flex-1 items-center gap-3 px-4 text-left hover:bg-surface-2">
@@ -101,7 +101,7 @@ interface Editing {
           <p class="mt-3 text-sm text-danger" role="alert">{{ message }}</p>
         }
       } @else {
-        <div class="mt-6 h-64 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-64 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
       }
     </div>
 
@@ -111,13 +111,13 @@ interface Editing {
           <div>
             <label for="extra-name" class="mb-1.5 block font-medium">Name</label>
             <input id="extra-name" type="text" maxlength="60" autocomplete="off" [value]="e.name" (input)="patch({ name: $any($event.target).value })"
-              placeholder="e.g. Bibs (set)" class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+              placeholder="e.g. Bibs (set)" class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
           </div>
           <fieldset>
             <legend class="mb-1.5 font-medium">Kind</legend>
             <div class="flex gap-2">
               @for (option of categories; track option.value) {
-                <label class="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-lg border px-2 text-center font-medium"
+                <label class="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-md border px-2 text-center font-medium"
                   [class]="e.category === option.value ? 'border-ink bg-surface-2' : 'border-border text-muted'">
                   <input type="radio" name="category" class="sr-only" [checked]="e.category === option.value" (change)="patch({ category: option.value })" />
                   {{ option.label }}
@@ -130,12 +130,12 @@ interface Editing {
             <div class="relative w-40">
               <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">Rs</span>
               <input id="extra-price" type="number" inputmode="numeric" min="0" step="5" [value]="e.price" (input)="patch({ price: $any($event.target).value })"
-                class="tabular h-12 w-full rounded-lg border border-border bg-surface pl-10 pr-3 text-base" />
+                class="tabular h-12 w-full rounded-md border border-border bg-surface pl-10 pr-3 text-base" />
             </div>
             <p class="mt-1.5 text-sm text-subtle">For one, e.g. one bottle. Staff choose how many.</p>
           </div>
           @if (e.item) {
-            <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-3">
+            <label class="flex cursor-pointer items-start gap-3 rounded-md border border-border p-3">
               <input type="checkbox" class="mt-1 size-4 accent-current" [checked]="e.active" (change)="patch({ active: !e.active })" />
               <span>
                 <span class="block font-medium">On sale</span>
@@ -145,11 +145,11 @@ interface Editing {
           }
         </form>
         @if (formError(); as message) {
-          <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+          <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
         }
         <div sheet-footer class="border-t border-border px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <button type="submit" form="extra-form" [disabled]="saving()"
-            class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+            class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
             @if (saving()) {
               <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" />
             }

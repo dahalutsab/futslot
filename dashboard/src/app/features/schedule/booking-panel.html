@@ -7,7 +7,7 @@
   </div>
 
   <a [href]="'tel:' + booking().customer.phone"
-    class="mt-4 flex h-12 items-center gap-3 rounded-lg border border-border px-3 hover:bg-surface-2">
+    class="mt-4 flex h-12 items-center gap-3 rounded-md border border-border px-3 hover:bg-surface-2">
     <lucide-icon [img]="icons.Phone" [size]="18" class="text-muted" />
     <span class="tabular font-medium">{{ phone(booking().customer.phone) }}</span>
     <span class="ml-auto text-sm text-subtle">Call</span>
@@ -30,12 +30,12 @@
   </dl>
 
   @if (booking().notes) {
-    <p class="mt-4 rounded-lg bg-surface-2 px-3 py-2 text-muted">{{ booking().notes }}</p>
+    <p class="mt-4 rounded-md bg-surface-2 px-3 py-2 text-muted">{{ booking().notes }}</p>
   }
 
   <!-- The payment staff need to check -->
   @if (state() === 'verify' && canManage()) {
-    <section class="mt-5 rounded-xl border border-verify-line bg-verify-bg p-4 text-verify-fg" aria-label="Payment to verify">
+    <section class="mt-5 rounded-md border border-verify-line bg-verify-bg p-4 text-verify-fg" aria-label="Payment to verify">
       @if (pending(); as payment) {
         <p class="font-medium">{{ rupees(payment.amount) }} by {{ methodLabel(payment.method) }}</p>
         <p class="tabular mt-0.5 text-sm">Transaction {{ payment.transactionId }}</p>
@@ -43,21 +43,21 @@
         @if (step() !== 'reject') {
           <div class="mt-3 flex gap-2">
             <button type="button" (click)="approve()" [disabled]="busy()"
-              class="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+              class="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
               <lucide-icon [img]="icons.Check" [size]="18" /> Approve
             </button>
             <button type="button" (click)="go('reject')"
-              class="h-11 flex-1 rounded-lg border border-verify-line font-medium">Not received</button>
+              class="h-11 flex-1 rounded-md border border-verify-line font-medium">Not received</button>
           </div>
         } @else {
           <form class="mt-3 space-y-2" (ngSubmit)="reject()">
             <label for="reject-reason" class="block text-sm font-medium">What's wrong?</label>
             <input id="reject-reason" name="reason" type="text" maxlength="500" placeholder="e.g. Not in our eSewa"
-              class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base text-text"
+              class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base text-text"
               [ngModel]="reason()" (ngModelChange)="reason.set($event)" />
             <div class="flex gap-2">
-              <button type="submit" [disabled]="busy()" class="h-11 flex-1 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">Reject payment</button>
-              <button type="button" (click)="go('view')" class="h-11 rounded-lg px-4 font-medium">Back</button>
+              <button type="submit" [disabled]="busy()" class="h-11 flex-1 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">Reject payment</button>
+              <button type="button" (click)="go('view')" class="h-11 rounded-md px-4 font-medium">Back</button>
             </div>
             <p class="text-sm">The player gets their hold time back to pay again.</p>
           </form>
@@ -69,10 +69,10 @@
   }
 
   @if (step() === 'take-payment') {
-    <form class="mt-5 space-y-4 rounded-xl border border-border p-4" (ngSubmit)="takePayment()">
+    <form class="mt-5 space-y-4 rounded-md border border-border p-4" (ngSubmit)="takePayment()">
       <div>
         <label for="pay-amount" class="mb-1.5 block font-medium">Amount</label>
-        <div class="flex h-12 items-center rounded-lg border border-border bg-surface">
+        <div class="flex h-12 items-center rounded-md border border-border bg-surface">
           <span class="border-r border-border px-3 text-muted">Rs</span>
           <input id="pay-amount" name="amount" type="number" inputmode="decimal" min="1" [max]="due()"
             class="tabular h-full min-w-0 flex-1 bg-transparent px-3 text-base outline-none"
@@ -83,7 +83,7 @@
         <legend class="mb-1.5 font-medium">Paid by</legend>
         <div class="grid grid-cols-3 gap-2">
           @for (option of methods; track option.value) {
-            <label class="flex h-11 cursor-pointer items-center justify-center rounded-lg border text-sm font-medium"
+            <label class="flex h-11 cursor-pointer items-center justify-center rounded-md border text-sm font-medium"
               [class]="method() === option.value ? 'border-ink bg-surface-2' : 'border-border text-muted'">
               <input type="radio" name="method" class="sr-only" [value]="option.value"
                 [checked]="method() === option.value" (change)="method.set(option.value)" />
@@ -96,21 +96,21 @@
         <div>
           <label for="pay-txn" class="mb-1.5 block font-medium">Transaction ID <span class="font-normal text-subtle">(optional)</span></label>
           <input id="pay-txn" name="txn" type="text" maxlength="100"
-            class="tabular h-12 w-full rounded-lg border border-border bg-surface px-3 text-base"
+            class="tabular h-12 w-full rounded-md border border-border bg-surface px-3 text-base"
             [ngModel]="transactionId()" (ngModelChange)="transactionId.set($event)" />
         </div>
       }
       <div class="flex gap-2">
-        <button type="submit" [disabled]="busy()" class="h-12 flex-1 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+        <button type="submit" [disabled]="busy()" class="h-12 flex-1 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
           Record {{ rupees(amount() || 0) }}
         </button>
-        <button type="button" (click)="go('view')" class="h-12 rounded-lg px-4 font-medium">Back</button>
+        <button type="button" (click)="go('view')" class="h-12 rounded-md px-4 font-medium">Back</button>
       </div>
     </form>
   }
 
   @if (step() === 'extras') {
-    <section class="mt-5 rounded-xl border border-border p-4" aria-label="Extras">
+    <section class="mt-5 rounded-md border border-border p-4" aria-label="Extras">
       <p class="font-medium">Extras</p>
       @if (extras(); as lines) {
         @if (lines.length === 0) {
@@ -126,12 +126,12 @@
                 <div class="flex items-center gap-1">
                   <button type="button" (click)="adjust(line.item.id, -1)" [disabled]="line.quantity === 0"
                     [attr.aria-label]="'One less ' + line.item.name"
-                    class="grid size-11 place-items-center rounded-lg border border-border disabled:opacity-40">
+                    class="grid size-11 place-items-center rounded-md border border-border disabled:opacity-40">
                     <lucide-icon [img]="icons.Minus" [size]="16" />
                   </button>
                   <span class="tabular w-8 text-center font-medium" aria-live="polite">{{ line.quantity }}</span>
                   <button type="button" (click)="adjust(line.item.id, 1)" [attr.aria-label]="'One more ' + line.item.name"
-                    class="grid size-11 place-items-center rounded-lg border border-border">
+                    class="grid size-11 place-items-center rounded-md border border-border">
                     <lucide-icon [img]="icons.Plus" [size]="16" />
                   </button>
                 </div>
@@ -140,8 +140,8 @@
           </ul>
           <div class="mt-3 flex gap-2">
             <button type="button" (click)="saveExtras()" [disabled]="busy()"
-              class="h-12 flex-1 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">Save · {{ rupees(extrasTotal()) }}</button>
-            <button type="button" (click)="go('view')" class="h-12 rounded-lg px-4 font-medium">Back</button>
+              class="h-12 flex-1 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">Save · {{ rupees(extrasTotal()) }}</button>
+            <button type="button" (click)="go('view')" class="h-12 rounded-md px-4 font-medium">Back</button>
           </div>
           <p class="mt-2 text-sm text-subtle">Items already on the booking keep the price they were charged.</p>
         }
@@ -152,7 +152,7 @@
   }
 
   @if (step() === 'cancel') {
-    <form class="mt-5 space-y-3 rounded-xl border border-noshow-line bg-noshow-bg p-4 text-noshow-fg" (ngSubmit)="cancel()">
+    <form class="mt-5 space-y-3 rounded-md border border-noshow-line bg-noshow-bg p-4 text-noshow-fg" (ngSubmit)="cancel()">
       <p class="font-medium">Cancel this booking?</p>
       <p class="text-sm">
         The player is told.
@@ -160,37 +160,37 @@
       </p>
       <label for="cancel-reason" class="block text-sm font-medium">Reason <span class="font-normal">(optional, the player sees it)</span></label>
       <input id="cancel-reason" name="reason" type="text" maxlength="500"
-        class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base text-text"
+        class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base text-text"
         [ngModel]="reason()" (ngModelChange)="reason.set($event)" />
       <div class="flex gap-2">
-        <button type="submit" [disabled]="busy()" class="h-11 flex-1 rounded-lg bg-danger font-medium text-white disabled:opacity-60">Cancel booking</button>
-        <button type="button" (click)="go('view')" class="h-11 rounded-lg px-4 font-medium">Keep it</button>
+        <button type="submit" [disabled]="busy()" class="h-11 flex-1 rounded-md bg-danger font-medium text-white disabled:opacity-60">Cancel booking</button>
+        <button type="button" (click)="go('view')" class="h-11 rounded-md px-4 font-medium">Keep it</button>
       </div>
     </form>
   }
 
   @if (error(); as message) {
-    <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+    <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
   }
 
   @if (step() === 'view' && canManage()) {
     <div class="mt-6 space-y-2">
       @if (canTakePayment()) {
         <button type="button" (click)="go('take-payment')"
-          class="h-12 w-full rounded-lg bg-ink font-medium text-ink-fg">Take payment · {{ rupees(due()) }} due</button>
+          class="h-12 w-full rounded-md bg-ink font-medium text-ink-fg">Take payment · {{ rupees(due()) }} due</button>
       }
       @if (canEditExtras()) {
         <button type="button" (click)="openExtras()"
-          class="h-12 w-full rounded-lg border border-border font-medium hover:bg-surface-2">
+          class="h-12 w-full rounded-md border border-border font-medium hover:bg-surface-2">
           {{ booking().addOns.length ? 'Change extras' : 'Add extras (bibs, water…)' }}
         </button>
       }
       @if (booking().status === 'CONFIRMED' && started()) {
         <div class="flex gap-2">
           <button type="button" (click)="played()" [disabled]="busy()"
-            class="h-12 flex-1 rounded-lg border border-border font-medium hover:bg-surface-2 disabled:opacity-60">Mark played</button>
+            class="h-12 flex-1 rounded-md border border-border font-medium hover:bg-surface-2 disabled:opacity-60">Mark played</button>
           <button type="button" (click)="noShow()" [disabled]="busy()"
-            class="h-12 flex-1 rounded-lg border border-border font-medium hover:bg-surface-2 disabled:opacity-60">No-show</button>
+            class="h-12 flex-1 rounded-md border border-border font-medium hover:bg-surface-2 disabled:opacity-60">No-show</button>
         </div>
         @if (booking().depositBacked) {
           <p class="text-sm text-muted">A no-show costs them your last-minute cancellation fee: what they paid covers it first, then their FutSlot deposit.</p>
@@ -198,7 +198,7 @@
       }
       @if (live()) {
         <button type="button" (click)="go('cancel')"
-          class="h-12 w-full rounded-lg font-medium text-danger hover:bg-danger-bg">Cancel booking</button>
+          class="h-12 w-full rounded-md font-medium text-danger hover:bg-danger-bg">Cancel booking</button>
       }
     </div>
   }

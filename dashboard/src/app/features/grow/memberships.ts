@@ -37,7 +37,7 @@ interface Selling {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-4xl px-4 py-4 lg:px-8 lg:py-6">
-      <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">Memberships & codes</h1>
+      <h1 class="text-3xl lg:text-4xl">Memberships & codes</h1>
       <div class="mt-4 flex gap-1 border-b border-border" role="tablist">
         @for (option of tabs(); track option.value) {
           <button type="button" role="tab" [attr.aria-selected]="tab() === option.value" (click)="go(option.value)"
@@ -58,7 +58,7 @@ interface Selling {
             }
             @default {
               <div class="flex flex-wrap items-center justify-between gap-3">
-                <div class="flex rounded-lg bg-surface-2 p-1" role="radiogroup" aria-label="Show">
+                <div class="flex rounded-md bg-surface-2 p-1" role="radiogroup" aria-label="Show">
                   @for (option of filters; track option.label) {
                     <button type="button" role="radio" [attr.aria-checked]="status() === option.value" (click)="status.set(option.value)"
                       class="h-9 rounded-md px-3 text-sm font-medium text-muted" [class.bg-surface]="status() === option.value" [class.text-text]="status() === option.value">
@@ -67,20 +67,20 @@ interface Selling {
                   }
                 </div>
                 @if (canSell()) {
-                  <button type="button" (click)="startSelling()" class="flex h-11 items-center gap-2 rounded-lg bg-ink px-4 font-medium text-ink-fg hover:opacity-90">
+                  <button type="button" (click)="startSelling()" class="flex h-11 items-center gap-2 rounded-md bg-ink px-4 font-medium text-ink-fg hover:opacity-90">
                     <lucide-icon [img]="icons.Plus" [size]="18" />Sell membership
                   </button>
                 }
               </div>
               @if (error(); as message) {
-                <p class="mt-4 rounded-xl border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
+                <p class="mt-4 rounded-md border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
               } @else if (members(); as list) {
                 @if (list.length === 0) {
-                  <p class="mt-4 rounded-xl border border-dashed border-border bg-surface px-6 py-8 text-center text-muted">
+                  <p class="mt-4 rounded-md border border-dashed border-border bg-surface px-6 py-8 text-center text-muted">
                     {{ status() === 'ACTIVE' ? 'No active members. Sell one at the counter, or players can buy plans in the app.' : 'Nothing here.' }}
                   </p>
                 } @else {
-                  <ul class="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+                  <ul class="mt-4 divide-y divide-border overflow-hidden rounded-md border border-border bg-surface">
                     @for (m of list; track m.id) {
                       <li>
                         <button type="button" (click)="open(m)" class="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-surface-2">
@@ -99,11 +99,11 @@ interface Selling {
                     }
                   </ul>
                   @if (hasMore()) {
-                    <button type="button" (click)="more()" class="mt-3 h-11 w-full rounded-lg border border-border font-medium hover:bg-surface-2">Show more</button>
+                    <button type="button" (click)="more()" class="mt-3 h-11 w-full rounded-md border border-border font-medium hover:bg-surface-2">Show more</button>
                   }
                 }
               } @else {
-                <div class="mt-4 h-32 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+                <div class="mt-4 h-32 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
               }
             }
           }
@@ -121,7 +121,7 @@ interface Selling {
               <legend class="mb-1.5 font-medium">Plan</legend>
               <div class="space-y-2">
                 @for (plan of plans(); track plan.id) {
-                  <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3" [class]="s.planId === plan.id ? 'border-ink bg-surface-2' : 'border-border'">
+                  <label class="flex cursor-pointer items-start gap-3 rounded-md border p-3" [class]="s.planId === plan.id ? 'border-ink bg-surface-2' : 'border-border'">
                     <input type="radio" name="plan" class="mt-1 size-4 accent-current" [checked]="s.planId === plan.id" (change)="patchSale({ planId: plan.id })" />
                     <span class="flex-1"><span class="block font-medium">{{ plan.name }}</span><span class="text-sm text-muted">{{ summary(plan) }}</span></span>
                     <span class="tabular font-medium">{{ fmt.rupees(plan.price) }}</span>
@@ -132,18 +132,18 @@ interface Selling {
             <div>
               <label for="sell-phone" class="mb-1.5 block font-medium">Phone</label>
               <input id="sell-phone" type="tel" inputmode="numeric" autocomplete="off" placeholder="98XXXXXXXX" [value]="s.phone" (input)="patchSale({ phone: $any($event.target).value })"
-                class="tabular h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                class="tabular h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
               <p class="mt-1.5 text-sm text-subtle">Their bookings with this number use the membership.</p>
             </div>
             <div>
               <label for="sell-name" class="mb-1.5 block font-medium">Name</label>
               <input id="sell-name" type="text" maxlength="100" autocomplete="off" [value]="s.name" (input)="patchSale({ name: $any($event.target).value })"
-                class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label for="sell-method" class="mb-1.5 block font-medium">Paid with</label>
-                <select id="sell-method" (change)="patchSale({ method: $any($event.target).value })" class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base">
+                <select id="sell-method" (change)="patchSale({ method: $any($event.target).value })" class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base">
                   @for (method of methods; track method) {
                     <option [value]="method" [selected]="s.method === method">{{ fmt.methodLabel(method) }}</option>
                   }
@@ -153,18 +153,18 @@ interface Selling {
                 <div>
                   <label for="sell-txn" class="mb-1.5 block font-medium">Transaction ID</label>
                   <input id="sell-txn" type="text" maxlength="100" autocomplete="off" [value]="s.transactionId" (input)="patchSale({ transactionId: $any($event.target).value })"
-                    class="tabular h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                    class="tabular h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
                 </div>
               }
             </div>
           </form>
         }
         @if (sellError(); as message) {
-          <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+          <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
         }
         @if (plans().length > 0) {
           <div sheet-footer class="border-t border-border px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-            <button type="submit" form="sell-form" [disabled]="busy()" class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+            <button type="submit" form="sell-form" [disabled]="busy()" class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
               @if (busy()) {
                 <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" />
               }
@@ -178,19 +178,19 @@ interface Selling {
     @if (selected(); as m) {
       <fs-sheet [title]="m.customer.name" [subtitle]="m.plan.name" (closed)="selected.set(null)">
         <dl class="grid grid-cols-2 gap-3">
-          <div class="rounded-lg bg-surface-2 px-3 py-2"><dt class="text-xs text-muted">Status</dt><dd class="font-medium">{{ statusText(m) }}</dd></div>
-          <div class="rounded-lg bg-surface-2 px-3 py-2"><dt class="text-xs text-muted">Phone</dt><dd class="tabular font-medium">{{ fmt.phone(m.customer.phone) }}</dd></div>
-          <div class="rounded-lg bg-surface-2 px-3 py-2"><dt class="text-xs text-muted">Started</dt><dd class="tabular font-medium">{{ fmt.withYear(m.startsOn) }}</dd></div>
-          <div class="rounded-lg bg-surface-2 px-3 py-2"><dt class="text-xs text-muted">Ends</dt><dd class="tabular font-medium">{{ fmt.withYear(m.expiresOn) }}</dd></div>
+          <div class="rounded-md bg-surface-2 px-3 py-2"><dt class="text-xs text-muted">Status</dt><dd class="font-medium">{{ statusText(m) }}</dd></div>
+          <div class="rounded-md bg-surface-2 px-3 py-2"><dt class="text-xs text-muted">Phone</dt><dd class="tabular font-medium">{{ fmt.phone(m.customer.phone) }}</dd></div>
+          <div class="rounded-md bg-surface-2 px-3 py-2"><dt class="text-xs text-muted">Started</dt><dd class="tabular font-medium">{{ fmt.withYear(m.startsOn) }}</dd></div>
+          <div class="rounded-md bg-surface-2 px-3 py-2"><dt class="text-xs text-muted">Ends</dt><dd class="tabular font-medium">{{ fmt.withYear(m.expiresOn) }}</dd></div>
           @if (m.gamesRemaining !== null) {
-            <div class="rounded-lg bg-surface-2 px-3 py-2"><dt class="text-xs text-muted">Games left</dt><dd class="tabular font-medium">{{ m.gamesRemaining }}</dd></div>
+            <div class="rounded-md bg-surface-2 px-3 py-2"><dt class="text-xs text-muted">Games left</dt><dd class="tabular font-medium">{{ m.gamesRemaining }}</dd></div>
           }
           @if (m.plan.discountPercent) {
-            <div class="rounded-lg bg-surface-2 px-3 py-2"><dt class="text-xs text-muted">Discount</dt><dd class="tabular font-medium">{{ m.plan.discountPercent }}% off</dd></div>
+            <div class="rounded-md bg-surface-2 px-3 py-2"><dt class="text-xs text-muted">Discount</dt><dd class="tabular font-medium">{{ m.plan.discountPercent }}% off</dd></div>
           }
         </dl>
         @if (m.status === 'PENDING_PAYMENT') {
-          <p class="mt-4 rounded-lg bg-surface-2 px-3 py-2 text-sm">Bought in the app and waiting for you to check the payment under Payments.</p>
+          <p class="mt-4 rounded-md bg-surface-2 px-3 py-2 text-sm">Bought in the app and waiting for you to check the payment under Payments.</p>
         }
         @if (canSell() && (m.status === 'ACTIVE' || m.status === 'PENDING_PAYMENT')) {
           <div class="mt-6 border-t border-border pt-4">
@@ -198,16 +198,16 @@ interface Selling {
               <p class="font-medium">Cancel this membership?</p>
               <p class="text-sm text-muted">Remaining games or discount stop now. Any refund is up to you, outside FutSlot.</p>
               <div class="mt-3 flex gap-2">
-                <button type="button" (click)="cancel(m)" [disabled]="busy()" class="h-11 rounded-lg bg-danger px-4 font-medium text-surface disabled:opacity-60">Cancel membership</button>
-                <button type="button" (click)="confirmCancel.set(false)" class="h-11 rounded-lg border border-border px-4 font-medium">Keep it</button>
+                <button type="button" (click)="cancel(m)" [disabled]="busy()" class="h-11 rounded-md bg-danger px-4 font-medium text-surface disabled:opacity-60">Cancel membership</button>
+                <button type="button" (click)="confirmCancel.set(false)" class="h-11 rounded-md border border-border px-4 font-medium">Keep it</button>
               </div>
             } @else {
-              <button type="button" (click)="confirmCancel.set(true)" class="h-11 rounded-lg px-1 font-medium text-danger hover:underline">Cancel membership</button>
+              <button type="button" (click)="confirmCancel.set(true)" class="h-11 rounded-md px-1 font-medium text-danger hover:underline">Cancel membership</button>
             }
           </div>
         }
         @if (sellError(); as message) {
-          <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+          <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
         }
       </fs-sheet>
     }

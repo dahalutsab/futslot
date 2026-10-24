@@ -1,5 +1,5 @@
 <div class="mx-auto max-w-5xl px-4 py-4 lg:px-8 lg:py-6">
-  <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">Bookings</h1>
+  <h1 class="text-3xl lg:text-4xl">Bookings</h1>
 
   <div class="mt-4 flex flex-wrap items-center gap-2">
     <label class="relative min-w-0 flex-1 basis-64">
@@ -7,7 +7,7 @@
       <lucide-icon [img]="icons.Search" [size]="18" class="pointer-events-none absolute left-3 top-1/2 flex -translate-y-1/2 text-subtle" />
       <input type="search" [value]="query()" (input)="typed($any($event.target).value)" autocomplete="off"
         placeholder="Reference, name or phone"
-        class="h-12 w-full rounded-lg border border-border bg-surface pl-11 pr-11 text-base lg:h-10 [&::-webkit-search-cancel-button]:hidden" />
+        class="h-12 w-full rounded-md border border-border bg-surface pl-11 pr-11 text-base lg:h-10 [&::-webkit-search-cancel-button]:hidden" />
       @if (query()) {
         <button type="button" (click)="clearSearch()" aria-label="Clear search"
           class="absolute right-0 top-1/2 grid size-11 -translate-y-1/2 place-items-center text-subtle hover:text-text lg:size-10">
@@ -18,17 +18,17 @@
     @if (!searching()) {
       <div class="flex items-center gap-1">
         <button type="button" (click)="shift(-1)" aria-label="Previous day"
-          class="grid size-11 place-items-center rounded-lg border border-border bg-surface hover:bg-surface-2 lg:size-10">
+          class="grid size-11 place-items-center rounded-md border border-border bg-surface hover:bg-surface-2 lg:size-10">
           <lucide-icon [img]="icons.ChevronLeft" [size]="18" />
         </button>
-        <label class="relative flex h-11 items-center gap-2 rounded-lg border border-border bg-surface px-3 font-medium lg:h-10">
+        <label class="relative flex h-11 items-center gap-2 rounded-md border border-border bg-surface px-3 font-medium lg:h-10">
           <lucide-icon [img]="icons.CalendarDays" [size]="16" class="text-muted" />
           {{ fmt.dayLabel(date()) }}
           <input type="date" [value]="date()" (change)="setDate($any($event.target).value)" aria-label="Choose a day"
             class="absolute inset-0 cursor-pointer opacity-0" />
         </label>
         <button type="button" (click)="shift(1)" aria-label="Next day"
-          class="grid size-11 place-items-center rounded-lg border border-border bg-surface hover:bg-surface-2 lg:size-10">
+          class="grid size-11 place-items-center rounded-md border border-border bg-surface hover:bg-surface-2 lg:size-10">
           <lucide-icon [img]="icons.ChevronRight" [size]="18" />
         </button>
       </div>
@@ -48,16 +48,16 @@
   }
 
   @if (error(); as message) {
-    <p class="mt-6 rounded-xl border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
+    <p class="mt-6 rounded-md border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
   } @else if (!loaded()) {
-    <div class="mt-4 h-48 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+    <div class="mt-4 h-48 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
   } @else if (shown().length === 0) {
-    <p class="mt-4 rounded-xl border border-dashed border-border bg-surface px-6 py-10 text-center text-muted">
+    <p class="mt-4 rounded-md border border-dashed border-border bg-surface px-6 py-10 text-center text-muted">
       {{ searching() ? 'No bookings match "' + query().trim() + '".' : 'No bookings here.' }}
     </p>
   } @else {
     <!-- Wide screens: a table -->
-    <div class="mt-4 hidden overflow-hidden rounded-xl border border-border bg-surface md:block">
+    <div class="mt-4 hidden overflow-hidden rounded-md border border-border bg-surface md:block">
       <table class="w-full text-left">
         <thead class="border-b border-border text-sm text-muted">
           <tr>
@@ -103,7 +103,7 @@
       @for (booking of shown(); track booking.id) {
         <li>
           <button type="button" (click)="selected.set(booking)"
-            class="flex w-full flex-col gap-1.5 rounded-xl border border-border bg-surface p-4 text-left">
+            class="flex w-full flex-col gap-1.5 rounded-md border border-border bg-surface p-4 text-left">
             <span class="flex w-full items-start gap-2">
               <span class="min-w-0 flex-1 truncate font-medium">{{ booking.customer.name }}</span>
               <span class="tabular font-medium">{{ due(booking) > 0 ? fmt.rupees(due(booking)) + ' due' : fmt.rupees(booking.totalAmount) }}</span>

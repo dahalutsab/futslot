@@ -29,10 +29,10 @@ const REASONS: Record<string, string> = {
         <p class="mt-4 text-sm text-subtle">Scheduled from Tournaments. Move or cancel the match there.</p>
       } @else if (canRemove()) {
         @if (error(); as message) {
-          <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+          <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
         }
         <button type="button" (click)="remove()" [disabled]="busy()"
-          class="mt-6 h-12 w-full rounded-lg border border-border font-medium hover:bg-surface-2 disabled:opacity-60">
+          class="mt-6 h-12 w-full rounded-md border border-border font-medium hover:bg-surface-2 disabled:opacity-60">
           Remove block (open for booking)
         </button>
       }

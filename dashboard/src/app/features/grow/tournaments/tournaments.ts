@@ -20,21 +20,21 @@ import { formatLabel, STATUS_LABELS } from './tournament-model';
     <div class="mx-auto max-w-4xl px-4 py-4 lg:px-8 lg:py-6">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">Tournaments</h1>
+          <h1 class="text-3xl lg:text-4xl">Tournaments</h1>
           <p class="mt-1 text-muted">Teams sign up and pay in the app. You make the draw, book the courts and enter results.</p>
         </div>
         @if (list()) {
-          <button type="button" (click)="creating.set(true)" class="flex h-11 items-center gap-2 rounded-lg bg-ink px-4 font-medium text-ink-fg hover:opacity-90">
+          <button type="button" (click)="creating.set(true)" class="flex h-11 items-center gap-2 rounded-md bg-ink px-4 font-medium text-ink-fg hover:opacity-90">
             <lucide-icon [img]="icons.Plus" [size]="18" />New tournament
           </button>
         }
       </div>
 
       @if (error(); as message) {
-        <p class="mt-5 rounded-xl border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
+        <p class="mt-5 rounded-md border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
       } @else if (list(); as tournaments) {
         @if (tournaments.length === 0) {
-          <div class="mt-5 rounded-xl border border-dashed border-border bg-surface px-6 py-10 text-center">
+          <div class="mt-5 rounded-md border border-dashed border-border bg-surface px-6 py-10 text-center">
             <lucide-icon [img]="icons.Trophy" [size]="28" class="mx-auto text-subtle" />
             <p class="mt-3 font-medium">No tournaments yet</p>
             <p class="mt-1 text-muted">A weekend knockout fills quiet hours and brings new teams to your venue.</p>
@@ -43,7 +43,7 @@ import { formatLabel, STATUS_LABELS } from './tournament-model';
           <ul class="mt-5 grid gap-3 sm:grid-cols-2">
             @for (t of tournaments; track t.id) {
               <li>
-                <a [routerLink]="t.id" class="flex h-full flex-col rounded-xl border border-border bg-surface p-4 hover:bg-surface-2">
+                <a [routerLink]="t.id" class="flex h-full flex-col rounded-md border border-border bg-surface p-4 hover:bg-surface-2">
                   <span class="flex items-start justify-between gap-3">
                     <span class="font-semibold">{{ t.name }}</span>
                     <span class="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-muted">{{ statusLabels[t.status] }}</span>
@@ -59,7 +59,7 @@ import { formatLabel, STATUS_LABELS } from './tournament-model';
           </ul>
         }
       } @else {
-        <div class="mt-5 h-40 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-5 h-40 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
       }
     </div>
 

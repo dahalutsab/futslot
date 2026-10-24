@@ -7,6 +7,7 @@ import { problemOf } from '../../core/api-error';
 import { CodePurpose } from '../../core/api.types';
 import { Session } from '../../core/session';
 import { GoogleButton } from '../../shared/google-button';
+import { Logo } from '../../shared/logo';
 
 /**
  * signIn: phone and password. The others text a code first: signUp makes an account, reset sets a new password (or
@@ -24,7 +25,7 @@ const MIN_PASSWORD = 8;
  */
 @Component({
   selector: 'fs-login',
-  imports: [FormsModule, LucideAngularModule, GoogleButton],
+  imports: [FormsModule, LucideAngularModule, GoogleButton, Logo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.html',
 })

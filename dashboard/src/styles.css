@@ -4,14 +4,18 @@
  * tokens through Tailwind classes (bg-surface, text-muted, bg-confirmed-bg...), never raw hex.
  */
 @import "tailwindcss";
-@import "@fontsource-variable/inter";
-@import "@fontsource/noto-sans-devanagari/400.css";
-@import "@fontsource/noto-sans-devanagari/600.css";
+/* Each weight's file covers Latin and Devanagari by unicode-range, so Nepali only downloads where it's shown */
+@import "@fontsource/khand/600.css";
+@import "@fontsource/khand/700.css";
+@import "@fontsource/mukta/400.css";
+@import "@fontsource/mukta/500.css";
+@import "@fontsource/mukta/600.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --font-sans: "Inter Variable", "Noto Sans Devanagari", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: Mukta, ui-sans-serif, system-ui, sans-serif;
+  --font-display: Khand, Mukta, ui-sans-serif, system-ui, sans-serif;
 
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -26,6 +30,8 @@
   --color-danger: var(--danger);
   --color-danger-bg: var(--danger-bg);
   --color-brand: var(--brand);
+  /* The turf band (sign-in's side), the same in both themes */
+  --color-turf: #11673a;
 
   /* Booking states: -bg fills, -line borders and accents, -fg text on the fill */
   --color-confirmed-bg: var(--confirmed-bg);
@@ -47,7 +53,7 @@
   --color-noshow-line: var(--noshow-line);
   --color-noshow-fg: var(--noshow-fg);
 
-  /* Charts: one validated blue (magnitude), and a 5-step sequential ramp for the heatmap */
+  /* Charts: turf green for magnitude, and a 5-step sequential green ramp for the heatmap */
   --color-viz: var(--viz);
   --color-heat-1: var(--heat-1);
   --color-heat-2: var(--heat-2);
@@ -57,19 +63,19 @@
 }
 
 :root {
-  --bg: #f7f7f8;
+  --bg: #f8faf6;
   --surface: #ffffff;
-  --surface-2: #f4f4f5;
-  --border: #e4e4e7;
-  --text: #18181b;
-  --text-muted: #52525b;
-  --text-subtle: #71717a;
-  --ink: #18181b;
+  --surface-2: #eef2ec;
+  --border: #dce3db;
+  --text: #14231a;
+  --text-muted: #4d5d53;
+  --text-subtle: #6b7a70;
+  --ink: #11673a;
   --ink-fg: #ffffff;
-  --ring: #2563eb;
+  --ring: #1d4ed8;
   --danger: #b91c1c;
   --danger-bg: #fef2f2;
-  --brand: #15803d;
+  --brand: #11673a;
 
   --confirmed-bg: #ecfdf5;
   --confirmed-line: #10b981;
@@ -90,31 +96,31 @@
   --noshow-line: #ef4444;
   --noshow-fg: #991b1b;
 
-  --viz: #2a78d6;
-  --heat-1: #86b6ef;
-  --heat-2: #5598e7;
-  --heat-3: #2a78d6;
-  --heat-4: #1c5cab;
-  --heat-5: #104281;
+  --viz: #11673a;
+  --heat-1: #b5dcc2;
+  --heat-2: #79c095;
+  --heat-3: #3a9a63;
+  --heat-4: #17733f;
+  --heat-5: #0b4d2b;
 
   color-scheme: light;
 }
 
-/* A cool, very dark grey rather than black, for long shifts */
+/* Turf at night: a very dark green, not black, for long shifts */
 .dark {
-  --bg: #0f1012;
-  --surface: #17181b;
-  --surface-2: #1f2125;
-  --border: #2c2e33;
-  --text: #ececef;
-  --text-muted: #a1a1aa;
-  --text-subtle: #8b8b93;
-  --ink: #fafafa;
-  --ink-fg: #18181b;
-  --ring: #60a5fa;
+  --bg: #0c1611;
+  --surface: #13201a;
+  --surface-2: #1a2a22;
+  --border: #24342b;
+  --text: #e8efe9;
+  --text-muted: #a7b5ac;
+  --text-subtle: #87968c;
+  --ink: #1e8c50;
+  --ink-fg: #ffffff;
+  --ring: #7aa7ff;
   --danger: #f87171;
   --danger-bg: rgb(248 113 113 / 0.12);
-  --brand: #4ade80;
+  --brand: #4cc27f;
 
   --confirmed-bg: rgb(16 185 129 / 0.14);
   --confirmed-line: #34d399;
@@ -136,12 +142,12 @@
   --noshow-fg: #fca5a5;
 
   /* Dark steps of the same ramps: low values recede toward the dark surface */
-  --viz: #3987e5;
-  --heat-1: #184f95;
-  --heat-2: #256abf;
-  --heat-3: #3987e5;
-  --heat-4: #6da7ec;
-  --heat-5: #9ec5f4;
+  --viz: #4cc27f;
+  --heat-1: #17402a;
+  --heat-2: #1f6a41;
+  --heat-3: #2f9a5c;
+  --heat-4: #5cbf84;
+  --heat-5: #9bdcb3;
 
   color-scheme: dark;
 }
@@ -161,6 +167,19 @@
     body {
       font-size: 14px;
     }
+  }
+
+  /* Page titles speak in the scoreboard face; smaller headings stay in Mukta, for reading at a glance */
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: 0;
+  }
+
+  /* Devanagari's vowel signs reach above and below the letters: tight Latin leading would make lines collide */
+  :lang(ne) :is(h1, h2, h3, .font-display) {
+    line-height: 1.25 !important;
   }
 
   :focus-visible {

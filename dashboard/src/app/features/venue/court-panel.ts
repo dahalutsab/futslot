@@ -33,13 +33,13 @@ const LENGTHS = [30, 45, 60, 90, 120];
         <div>
           <label for="court-name" class="mb-1.5 block font-medium">Name</label>
           <input id="court-name" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Court A" [value]="name()"
-            (input)="name.set($any($event.target).value)" class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+            (input)="name.set($any($event.target).value)" class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
         </div>
         <fieldset>
           <legend class="mb-1.5 font-medium">Size</legend>
           <div class="flex gap-2">
             @for (option of formats; track option.value) {
-              <label class="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-lg border font-medium"
+              <label class="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-md border font-medium"
                 [class]="format() === option.value ? 'border-ink bg-surface-2' : 'border-border text-muted'">
                 <input type="radio" name="format" class="sr-only" [checked]="format() === option.value" (change)="format.set(option.value)" />
                 {{ option.label }}
@@ -51,7 +51,7 @@ const LENGTHS = [30, 45, 60, 90, 120];
           <div>
             <label for="court-surface" class="mb-1.5 block font-medium">Surface</label>
             <select id="court-surface" (change)="surface.set($any($event.target).value)"
-              class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base">
+              class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base">
               @for (option of surfaces; track option.value) {
                 <option [value]="option.value" [selected]="surface() === option.value">{{ option.label }}</option>
               }
@@ -60,7 +60,7 @@ const LENGTHS = [30, 45, 60, 90, 120];
           <div>
             <label for="court-length" class="mb-1.5 block font-medium">Each booking</label>
             <select id="court-length" (change)="length.set(+$any($event.target).value)"
-              class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base">
+              class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base">
               @for (minutes of lengths(); track minutes) {
                 <option [value]="minutes" [selected]="length() === minutes">{{ minutes < 60 ? minutes + ' min' : minutes / 60 + (minutes === 60 ? ' hour' : ' hours') }}</option>
               }
@@ -70,12 +70,12 @@ const LENGTHS = [30, 45, 60, 90, 120];
         @if (court() && length() !== court()!.slotDurationMinutes) {
           <p class="text-sm text-muted">Bookings already made keep their length. New ones use the new length.</p>
         }
-        <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-3">
+        <label class="flex cursor-pointer items-center gap-3 rounded-md border border-border p-3">
           <input type="checkbox" class="size-4 accent-current" [checked]="indoor()" (change)="indoor.set(!indoor())" />
           <span class="font-medium">Indoor <span class="font-normal text-subtle">(covered from rain)</span></span>
         </label>
         @if (court()) {
-          <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-3">
+          <label class="flex cursor-pointer items-start gap-3 rounded-md border border-border p-3">
             <input type="checkbox" class="mt-1 size-4 accent-current" [checked]="active()" (change)="active.set(!active())" />
             <span>
               <span class="block font-medium">Players can book this court</span>
@@ -86,7 +86,7 @@ const LENGTHS = [30, 45, 60, 90, 120];
           <div>
             <label for="court-copy" class="mb-1.5 block font-medium">Prices</label>
             <select id="court-copy" (change)="copyFrom.set($any($event.target).value || null)"
-              class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base">
+              class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base">
               @for (other of others(); track other.id) {
                 <option [value]="other.id" [selected]="copyFrom() === other.id">Same as {{ other.name }}</option>
               }
@@ -97,12 +97,12 @@ const LENGTHS = [30, 45, 60, 90, 120];
       </form>
 
       @if (error(); as message) {
-        <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+        <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
       }
 
       <div sheet-footer class="border-t border-border px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <button type="submit" form="court-form" [disabled]="busy()"
-          class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+          class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
           @if (busy()) {
             <lucide-icon [img]="spinner" [size]="18" class="animate-spin" />
           }

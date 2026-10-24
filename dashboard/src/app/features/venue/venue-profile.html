@@ -1,24 +1,24 @@
 <div class="mx-auto max-w-3xl px-4 py-4 lg:px-8 lg:py-6">
-  <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">Profile & hours</h1>
+  <h1 class="text-3xl lg:text-4xl">Profile & hours</h1>
   <p class="mt-1 text-muted">What players see about your venue, and the rules they book under.</p>
 
   @if (loadError(); as message) {
-    <div class="mt-6 rounded-xl border border-border bg-surface px-6 py-8 text-center">
+    <div class="mt-6 rounded-md border border-border bg-surface px-6 py-8 text-center">
       <p class="text-muted">{{ message }}</p>
-      <button type="button" (click)="retry()" class="mt-3 h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Try again</button>
+      <button type="button" (click)="retry()" class="mt-3 h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2">Try again</button>
     </div>
   } @else if (venue(); as v) {
     <!-- Listing status -->
     @switch (v.status) {
       @case ('DRAFT') {
-        <section class="mt-5 rounded-xl border border-border bg-surface p-4">
+        <section class="mt-5 rounded-md border border-border bg-surface p-4">
           <h2 class="font-semibold">Not listed yet</h2>
           <p class="mt-1 text-muted">Players can't find your venue until FutSlot approves it. Fill in the details and opening hours, add at least one court with a price, then submit.</p>
           <ng-container [ngTemplateOutlet]="submitButton" />
         </section>
       }
       @case ('REJECTED') {
-        <section class="mt-5 rounded-xl border border-danger/40 bg-danger-bg p-4" role="alert">
+        <section class="mt-5 rounded-md border border-danger/40 bg-danger-bg p-4" role="alert">
           <h2 class="flex items-center gap-2 font-semibold text-danger"><lucide-icon [img]="icons.CircleAlert" [size]="18" />Not approved</h2>
           @if (v.rejectionReason) {
             <p class="mt-1">FutSlot said: “{{ v.rejectionReason }}”</p>
@@ -28,7 +28,7 @@
         </section>
       }
       @case ('PENDING_APPROVAL') {
-        <section class="mt-5 flex gap-3 rounded-xl border border-border bg-surface p-4">
+        <section class="mt-5 flex gap-3 rounded-md border border-border bg-surface p-4">
           <lucide-icon [img]="icons.Clock" [size]="20" class="mt-0.5 shrink-0 text-muted" />
           <div>
             <h2 class="font-semibold">Waiting for approval</h2>
@@ -37,7 +37,7 @@
         </section>
       }
       @case ('SUSPENDED') {
-        <section class="mt-5 rounded-xl border border-danger/40 bg-danger-bg p-4" role="alert">
+        <section class="mt-5 rounded-md border border-danger/40 bg-danger-bg p-4" role="alert">
           <h2 class="flex items-center gap-2 font-semibold text-danger"><lucide-icon [img]="icons.CircleAlert" [size]="18" />Suspended</h2>
           <p class="mt-1">Players can't find or book your venue right now. Contact FutSlot support to sort it out.</p>
         </section>
@@ -46,50 +46,50 @@
 
     <!-- Details -->
     @if (details(); as form) {
-      <section class="mt-5 rounded-xl border border-border bg-surface p-4 lg:p-6" aria-labelledby="details-title">
+      <section class="mt-5 rounded-md border border-border bg-surface p-4 lg:p-6" aria-labelledby="details-title">
         <h2 id="details-title" class="text-lg font-semibold">Details</h2>
         <form class="mt-4 grid gap-4 sm:grid-cols-2" (submit)="$event.preventDefault(); save('details')">
           <div class="sm:col-span-2">
             <label for="v-name" class="mb-1.5 block font-medium">Venue name</label>
             <input id="v-name" type="text" maxlength="120" [value]="form.name" (input)="setDetail('name', $any($event.target).value)"
-              class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+              class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
           </div>
           <div class="sm:col-span-2">
             <label for="v-description" class="mb-1.5 block font-medium">About <span class="font-normal text-subtle">(optional)</span></label>
             <textarea id="v-description" rows="3" maxlength="2000" [value]="form.description" (input)="setDetail('description', $any($event.target).value)"
               placeholder="e.g. Two floodlit 5-a-side courts with new turf, 5 minutes from Baneshwor chowk."
-              class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-base"></textarea>
+              class="w-full rounded-md border border-border bg-surface px-3 py-2 text-base"></textarea>
           </div>
           <div>
             <label for="v-phone" class="mb-1.5 block font-medium">Phone for players</label>
             <input id="v-phone" type="tel" inputmode="tel" autocomplete="off" [value]="form.phone" (input)="setDetail('phone', $any($event.target).value)"
-              placeholder="98XXXXXXXX" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+              placeholder="98XXXXXXXX" class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
           </div>
           <div>
             <label for="v-email" class="mb-1.5 block font-medium">Email <span class="font-normal text-subtle">(optional)</span></label>
             <input id="v-email" type="email" autocomplete="off" maxlength="254" [value]="form.email" (input)="setDetail('email', $any($event.target).value)"
-              class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+              class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
           </div>
           <div class="sm:col-span-2">
             <label for="v-address" class="mb-1.5 block font-medium">Address</label>
             <input id="v-address" type="text" maxlength="200" [value]="form.addressLine" (input)="setDetail('addressLine', $any($event.target).value)"
-              placeholder="e.g. Near Shankhamul bridge" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+              placeholder="e.g. Near Shankhamul bridge" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
           </div>
           <div>
             <label for="v-area" class="mb-1.5 block font-medium">Area <span class="font-normal text-subtle">(optional)</span></label>
             <input id="v-area" type="text" maxlength="80" [value]="form.area" (input)="setDetail('area', $any($event.target).value)"
-              placeholder="e.g. Baneshwor" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+              placeholder="e.g. Baneshwor" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
           </div>
           <div>
             <label for="v-city" class="mb-1.5 block font-medium">City</label>
             <input id="v-city" type="text" maxlength="80" [value]="form.city" (input)="setDetail('city', $any($event.target).value)"
-              class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+              class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
           </div>
           <div class="sm:col-span-2">
             <label for="v-location" class="mb-1.5 block font-medium">Map location <span class="font-normal text-subtle">(lets players get directions)</span></label>
             <input id="v-location" type="text" autocomplete="off" [value]="form.location" (input)="setDetail('location', $any($event.target).value)"
               placeholder="Paste from Google Maps" aria-describedby="v-location-help"
-              class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+              class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
             <p id="v-location-help" class="mt-1.5 text-sm text-muted">
               @if (location(); as point) {
                 <a [href]="'https://www.google.com/maps?q=' + point.latitude + ',' + point.longitude" target="_blank" rel="noopener"
@@ -109,7 +109,7 @@
     }
 
     <!-- Opening hours -->
-    <section class="mt-5 rounded-xl border border-border bg-surface p-4 lg:p-6" aria-labelledby="hours-title">
+    <section class="mt-5 rounded-md border border-border bg-surface p-4 lg:p-6" aria-labelledby="hours-title">
       <div class="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 id="hours-title" class="text-lg font-semibold">Opening hours</h2>
@@ -122,7 +122,7 @@
             Hours need a price on each court to be bookable; set them in <a routerLink="/venue/courts" class="font-medium text-text underline underline-offset-2">Courts & pricing</a>.
           </p>
         </div>
-        <button type="button" (click)="copyFirstDay()" class="flex h-10 items-center gap-2 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">
+        <button type="button" (click)="copyFirstDay()" class="flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">
           <lucide-icon [img]="icons.Copy" [size]="16" />Use Sunday's hours every day
         </button>
       </div>
@@ -141,10 +141,10 @@
               @if (row.open) {
                 <span class="flex items-center gap-2">
                   <input type="time" step="900" [value]="row.from" (input)="setRow(i, { from: $any($event.target).value })" [attr.aria-label]="row.label + ' opens'"
-                    class="tabular h-11 rounded-lg border border-border bg-surface px-2 text-base" />
+                    class="tabular h-11 rounded-md border border-border bg-surface px-2 text-base" />
                   <span class="text-muted">to</span>
                   <input type="time" step="900" [value]="row.to" (input)="setRow(i, { to: $any($event.target).value })" [attr.aria-label]="row.label + ' closes'"
-                    class="tabular h-11 rounded-lg border border-border bg-surface px-2 text-base" />
+                    class="tabular h-11 rounded-md border border-border bg-surface px-2 text-base" />
                 </span>
                 @if (overnight(row)) {
                   <span class="text-sm text-muted">closes the next day</span>
@@ -159,7 +159,7 @@
 
     <!-- Booking rules -->
     @if (policy(); as p) {
-      <section class="mt-5 rounded-xl border border-border bg-surface p-4 lg:p-6" aria-labelledby="policy-title">
+      <section class="mt-5 rounded-md border border-border bg-surface p-4 lg:p-6" aria-labelledby="policy-title">
         <h2 id="policy-title" class="text-lg font-semibold">Booking rules</h2>
         <form class="mt-4 space-y-4" (submit)="$event.preventDefault(); save('policy')">
           <div class="grid gap-4 sm:grid-cols-2">
@@ -181,21 +181,21 @@
                   <label [for]="'tier-hours-' + i" class="text-muted">Within</label>
                   <input [id]="'tier-hours-' + i" type="number" inputmode="numeric" min="1" max="24" [value]="tier.withinHours"
                     (input)="setTier(i, { withinHours: +$any($event.target).value })"
-                    class="tabular h-11 w-20 rounded-lg border border-border bg-surface px-3 text-base" />
+                    class="tabular h-11 w-20 rounded-md border border-border bg-surface px-3 text-base" />
                   <label [for]="'tier-fee-' + i" class="text-muted">hours before, charge</label>
                   <input [id]="'tier-fee-' + i" type="number" inputmode="numeric" min="1" max="100" [value]="tier.feePercent"
                     (input)="setTier(i, { feePercent: +$any($event.target).value })"
-                    class="tabular h-11 w-20 rounded-lg border border-border bg-surface px-3 text-base" />
+                    class="tabular h-11 w-20 rounded-md border border-border bg-surface px-3 text-base" />
                   <span class="text-muted">%</span>
                   <button type="button" (click)="removeTier(i)" [attr.aria-label]="'Remove the fee within ' + tier.withinHours + ' hours'"
-                    class="flex h-11 w-11 items-center justify-center rounded-lg text-muted hover:bg-surface-2 hover:text-danger">
+                    class="flex h-11 w-11 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-danger">
                     <lucide-icon [img]="icons.Trash2" [size]="16" />
                   </button>
                 </li>
               }
             </ul>
             @if (p.cancellationTiers.length < maxTiers) {
-              <button type="button" (click)="addTier()" class="mt-3 flex h-10 items-center gap-2 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">
+              <button type="button" (click)="addTier()" class="mt-3 flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">
                 <lucide-icon [img]="icons.Plus" [size]="16" />Add a fee
               </button>
             }
@@ -214,11 +214,11 @@
                 <label for="strike-limit" class="text-muted">After</label>
                 <input id="strike-limit" type="number" inputmode="numeric" min="1" max="10" [value]="p.strikeLimit"
                   (input)="setPolicy('strikeLimit', +$any($event.target).value)"
-                  class="tabular h-11 w-20 rounded-lg border border-border bg-surface px-3 text-base" />
+                  class="tabular h-11 w-20 rounded-md border border-border bg-surface px-3 text-base" />
                 <label for="strike-advance" class="text-muted">in {{ strikeWindowDays }} days, they pay</label>
                 <input id="strike-advance" type="number" inputmode="numeric" min="1" max="100" [value]="p.strikeAdvancePercent"
                   (input)="setPolicy('strikeAdvancePercent', +$any($event.target).value)"
-                  class="tabular h-11 w-20 rounded-lg border border-border bg-surface px-3 text-base" />
+                  class="tabular h-11 w-20 rounded-md border border-border bg-surface px-3 text-base" />
                 <span class="text-muted">% up front</span>
               </div>
               <p class="mt-1 text-sm text-muted">Only bookings players make themselves. Bookings you add for them aren't affected.</p>
@@ -239,11 +239,11 @@
                 FutSlot keeps none of it and pays you each month's fees after the month ends. Bookings you add for players aren't affected.
               </p>
               @if (p.cancellationTiers.length === 0) {
-                <p class="mt-2 rounded-lg bg-noshow-bg px-3 py-2 text-sm text-noshow-fg">You have no late cancellation fees, so the deposit never pays you anything. Add a fee above.</p>
+                <p class="mt-2 rounded-md bg-noshow-bg px-3 py-2 text-sm text-noshow-fg">You have no late cancellation fees, so the deposit never pays you anything. Add a fee above.</p>
               }
             }
           </fieldset>
-          <div class="rounded-lg bg-surface-2 px-4 py-3">
+          <div class="rounded-md bg-surface-2 px-4 py-3">
             <p class="text-sm font-medium text-muted">What players are told</p>
             <ul class="mt-1 list-disc space-y-0.5 pl-5">
               @for (line of summary(); track line) {
@@ -261,7 +261,7 @@
           <div class="flex items-center gap-2">
             <input [id]="'p-' + field" type="number" inputmode="numeric" [min]="min" [max]="max" [value]="$any(p)[field]"
               (input)="setPolicy(field, +$any($event.target).value)"
-              class="tabular h-11 w-24 rounded-lg border border-border bg-surface px-3 text-base" />
+              class="tabular h-11 w-24 rounded-md border border-border bg-surface px-3 text-base" />
             <span class="text-muted">{{ unit }}</span>
           </div>
           @if (help) {
@@ -272,20 +272,20 @@
     }
 
     <!-- How to pay -->
-    <section class="mt-5 rounded-xl border border-border bg-surface p-4 lg:p-6" aria-labelledby="payment-title">
+    <section class="mt-5 rounded-md border border-border bg-surface p-4 lg:p-6" aria-labelledby="payment-title">
       <h2 id="payment-title" class="text-lg font-semibold">How players pay you</h2>
       <p class="mt-0.5 text-sm text-muted">Shown when a player has to pay up front. They pay you directly, then enter the transaction ID for you to check under Payments.</p>
       <form class="mt-4" (submit)="$event.preventDefault(); save('payment')">
         <label for="v-instructions" class="sr-only">Payment instructions</label>
         <textarea id="v-instructions" rows="3" maxlength="1000" [value]="instructions()" (input)="setInstructions($any($event.target).value)"
           placeholder="e.g. eSewa or Khalti: 98XXXXXXXX (Dhuku Futsal). Fonepay QR at the counter."
-          class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-base"></textarea>
+          class="w-full rounded-md border border-border bg-surface px-3 py-2 text-base"></textarea>
         <div class="mt-3"><ng-container [ngTemplateOutlet]="footer" [ngTemplateOutletContext]="{ $implicit: 'payment' }" /></div>
       </form>
     </section>
 
     <!-- Amenities -->
-    <section class="mt-5 rounded-xl border border-border bg-surface p-4 lg:p-6" aria-labelledby="amenities-title">
+    <section class="mt-5 rounded-md border border-border bg-surface p-4 lg:p-6" aria-labelledby="amenities-title">
       <h2 id="amenities-title" class="text-lg font-semibold">Amenities</h2>
       <p class="mt-0.5 text-sm text-muted">Players can filter venues by these.</p>
       <form class="mt-4" (submit)="$event.preventDefault(); save('amenities')">
@@ -303,8 +303,8 @@
     </section>
   } @else {
     <div class="mt-6 space-y-5" aria-label="Loading">
-      <div class="h-72 animate-pulse rounded-xl bg-surface"></div>
-      <div class="h-96 animate-pulse rounded-xl bg-surface"></div>
+      <div class="h-72 animate-pulse rounded-md bg-surface"></div>
+      <div class="h-96 animate-pulse rounded-md bg-surface"></div>
     </div>
   }
 </div>
@@ -312,7 +312,7 @@
 <ng-template #footer let-section>
   <div class="flex flex-wrap items-center gap-3">
     <button type="submit" [disabled]="saving() === section || !isDirty(section)"
-      class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg hover:opacity-90 disabled:opacity-50">
+      class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg hover:opacity-90 disabled:opacity-50">
       {{ saving() === section ? 'Saving…' : 'Save' }}
     </button>
     @if (errorOf(section); as message) {
@@ -328,7 +328,7 @@
 <ng-template #submitButton>
   <div class="mt-3 flex flex-wrap items-center gap-3">
     <button type="button" (click)="submit()" [disabled]="saving() === 'submit'"
-      class="flex h-11 items-center gap-2 rounded-lg bg-ink px-5 font-medium text-ink-fg hover:opacity-90 disabled:opacity-60">
+      class="flex h-11 items-center gap-2 rounded-md bg-ink px-5 font-medium text-ink-fg hover:opacity-90 disabled:opacity-60">
       <lucide-icon [img]="icons.Send" [size]="18" />{{ saving() === 'submit' ? 'Submitting…' : 'Submit for approval' }}
     </button>
     @if (errorOf('submit'); as message) {

@@ -1,10 +1,13 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
-/** FutSlot's mark (a pitch from above) and name. {@code onTurf} draws it white, for the turf band. */
+/**
+ * FutSlot's mark (a pitch from above) and name, the same in every app. {@code onTurf} draws it white, for the turf
+ * band; {@code name} is what follows the mark ("FutSlot admin"), and an empty one shows the mark alone.
+ */
 @Component({
   selector: 'fs-logo',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'flex items-center gap-2.5' },
+  host: { class: 'flex shrink-0 items-center gap-2.5' },
   template: `
     <svg viewBox="0 0 30 20" class="h-5 w-[30px] shrink-0" [class]="onTurf() ? 'text-white' : 'text-brand'" aria-hidden="true">
       <rect width="30" height="20" rx="3" fill="currentColor" />
@@ -13,9 +16,13 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
         <circle cx="15" cy="10" r="3.2" />
       </g>
     </svg>
-    <span class="font-display text-[26px] font-bold leading-none">FutSlot</span>
+    @if (name()) {
+      <span class="font-display text-[26px] font-bold leading-none">{{ name() }}</span>
+    }
   `,
 })
 export class Logo {
   readonly onTurf = input(false);
+
+  readonly name = input('FutSlot');
 }

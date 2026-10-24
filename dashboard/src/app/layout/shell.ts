@@ -10,6 +10,7 @@ import { VenueContext } from '../core/venue-context';
 import { Badges } from './badges';
 import { CommandPalette } from './command-palette';
 import { ALL_ITEMS, canSee, NAVIGATION, NavGroup, NavItem } from './navigation';
+import { Logo } from '../shared/logo';
 
 /**
  * The frame around every screen: a sidebar on wide screens, a top bar and bottom bar on phones. Only what the
@@ -17,7 +18,7 @@ import { ALL_ITEMS, canSee, NAVIGATION, NavGroup, NavItem } from './navigation';
  */
 @Component({
   selector: 'fs-shell',
-  imports: [A11yModule, CommandPalette, RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule],
+  imports: [A11yModule, CommandPalette, RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule, Logo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown)': 'shortcuts($event)' },
   templateUrl: './shell.html',

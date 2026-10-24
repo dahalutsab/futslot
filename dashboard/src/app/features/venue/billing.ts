@@ -35,33 +35,33 @@ function featureLabel(code: string): string {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-4xl px-4 py-4 lg:px-8 lg:py-6">
-      <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">Plan & billing</h1>
+      <h1 class="text-3xl lg:text-4xl">Plan & billing</h1>
       <p class="mt-1 text-muted">Your FutSlot plan for {{ venueName() }}.</p>
 
       @if (error(); as message) {
-        <div class="mt-6 rounded-xl border border-border bg-surface px-6 py-8 text-center">
+        <div class="mt-6 rounded-md border border-border bg-surface px-6 py-8 text-center">
           <p class="text-muted">{{ message }}</p>
-          <button type="button" (click)="retry()" class="mt-3 h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Try again</button>
+          <button type="button" (click)="retry()" class="mt-3 h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2">Try again</button>
         </div>
       } @else if (subscription(); as s) {
         @if (!s.limitsEnforced) {
-          <p class="mt-5 flex gap-3 rounded-xl border border-border bg-surface px-4 py-3">
+          <p class="mt-5 flex gap-3 rounded-md border border-border bg-surface px-4 py-3">
             <lucide-icon [img]="icons.Sparkles" [size]="20" class="mt-0.5 shrink-0 text-muted" />
             <span>While FutSlot is launching, every venue gets everything with no limits, whatever the plan.</span>
           </p>
         }
 
         <!-- Current plan -->
-        <section class="mt-5 rounded-xl border border-border bg-surface p-4 lg:p-6" aria-labelledby="current-title">
+        <section class="mt-5 rounded-md border border-border bg-surface p-4 lg:p-6" aria-labelledby="current-title">
           <p class="text-sm text-muted">Current plan</p>
           <h2 id="current-title" class="mt-0.5 text-2xl font-semibold">{{ s.plan.name }}</h2>
           <p class="mt-1 text-muted">{{ statusLine(s) }}</p>
           <dl class="mt-4 grid grid-cols-2 gap-3 sm:max-w-sm">
-            <div class="rounded-lg bg-surface-2 px-3 py-2">
+            <div class="rounded-md bg-surface-2 px-3 py-2">
               <dt class="text-xs text-muted">Courts</dt>
               <dd class="tabular font-semibold">{{ s.courts }}{{ s.plan.maxCourts != null ? ' of ' + s.plan.maxCourts : '' }}</dd>
             </div>
-            <div class="rounded-lg bg-surface-2 px-3 py-2">
+            <div class="rounded-md bg-surface-2 px-3 py-2">
               <dt class="text-xs text-muted">Staff</dt>
               <dd class="tabular font-semibold">{{ s.staff }}{{ s.plan.maxStaff != null ? ' of ' + s.plan.maxStaff : '' }}</dd>
             </div>
@@ -70,7 +70,7 @@ function featureLabel(code: string): string {
 
         <!-- What's owed -->
         @if (s.openInvoice; as invoice) {
-          <section class="mt-5 rounded-xl border p-4 lg:p-6" [class]="invoice.status === 'OVERDUE' ? 'border-danger/40 bg-danger-bg' : 'border-border bg-surface'"
+          <section class="mt-5 rounded-md border p-4 lg:p-6" [class]="invoice.status === 'OVERDUE' ? 'border-danger/40 bg-danger-bg' : 'border-border bg-surface'"
             aria-labelledby="invoice-title">
             <div class="flex flex-wrap items-baseline justify-between gap-2">
               <h2 id="invoice-title" class="text-lg font-semibold">{{ invoice.status === 'OVERDUE' ? 'Overdue' : 'To pay' }}: {{ fmt.rupees(invoice.amount) }}</h2>
@@ -78,18 +78,18 @@ function featureLabel(code: string): string {
             </div>
             <p class="mt-1 text-sm text-muted">{{ invoice.planName }}, {{ fmt.longDate(invoice.periodStart) }} to {{ fmt.longDate(invoice.periodEnd) }}</p>
             @if (invoice.paymentPending || claimed()) {
-              <p class="mt-4 flex items-center gap-2 rounded-lg bg-surface-2 px-3 py-2" role="status">
+              <p class="mt-4 flex items-center gap-2 rounded-md bg-surface-2 px-3 py-2" role="status">
                 <lucide-icon [img]="icons.Clock" [size]="18" class="shrink-0 text-muted" />Payment sent. FutSlot will confirm it soon and let you know.
               </p>
             } @else {
-              <div class="mt-4 rounded-lg bg-surface-2 px-3 py-2">
+              <div class="mt-4 rounded-md bg-surface-2 px-3 py-2">
                 <p class="text-sm font-medium text-muted">Pay FutSlot</p>
                 <p class="mt-0.5 whitespace-pre-line">{{ s.paymentInstructions || 'Contact FutSlot for payment details.' }}</p>
               </div>
               <form class="mt-4 grid gap-3 sm:grid-cols-[auto_1fr_auto] sm:items-end" (submit)="$event.preventDefault(); claim(invoice)">
                 <div>
                   <label for="claim-method" class="mb-1.5 block text-sm font-medium">Paid with</label>
-                  <select id="claim-method" (change)="method.set($any($event.target).value)" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base">
+                  <select id="claim-method" (change)="method.set($any($event.target).value)" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base">
                     @for (wallet of wallets; track wallet) {
                       <option [value]="wallet" [selected]="method() === wallet">{{ fmt.methodLabel(wallet) }}</option>
                     }
@@ -98,9 +98,9 @@ function featureLabel(code: string): string {
                 <div>
                   <label for="claim-id" class="mb-1.5 block text-sm font-medium">Transaction ID</label>
                   <input id="claim-id" type="text" maxlength="100" autocomplete="off" [value]="transactionId()" (input)="transactionId.set($any($event.target).value)"
-                    class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                    class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
                 </div>
-                <button type="submit" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">I've paid {{ fmt.rupees(invoice.amount) }}</button>
+                <button type="submit" [disabled]="busy()" class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">I've paid {{ fmt.rupees(invoice.amount) }}</button>
               </form>
               @if (claimError(); as message) {
                 <p class="mt-2 text-sm text-danger" role="alert">{{ message }}</p>
@@ -114,7 +114,7 @@ function featureLabel(code: string): string {
           <div class="flex flex-wrap items-center justify-between gap-3">
             <h2 id="plans-title" class="text-lg font-semibold">Plans</h2>
             @if (offersYearly()) {
-              <div class="flex rounded-lg bg-surface-2 p-1" role="radiogroup" aria-label="Billing">
+              <div class="flex rounded-md bg-surface-2 p-1" role="radiogroup" aria-label="Billing">
                 @for (option of cycles; track option.value) {
                   <button type="button" role="radio" [attr.aria-checked]="cycle() === option.value" (click)="cycle.set(option.value)"
                     class="h-9 rounded-md px-3 text-sm font-medium text-muted" [class.bg-surface]="cycle() === option.value" [class.text-text]="cycle() === option.value">
@@ -127,7 +127,7 @@ function featureLabel(code: string): string {
           <ul class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @for (plan of plans(); track plan.id) {
               @let current = isCurrent(s, plan);
-              <li class="flex flex-col rounded-xl border bg-surface p-4" [class]="current ? 'border-ink' : 'border-border'">
+              <li class="flex flex-col rounded-md border bg-surface p-4" [class]="current ? 'border-ink' : 'border-border'">
                 <h3 class="font-semibold">{{ plan.name }}</h3>
                 <p class="mt-1">
                   @if (priceOf(plan) === null) {
@@ -149,24 +149,24 @@ function featureLabel(code: string): string {
                   }
                 </ul>
                 @if (current && (s.nextPlan || s.cancelAtPeriodEnd)) {
-                  <button type="button" (click)="choose(plan)" [disabled]="busy()" class="mt-4 h-11 rounded-lg border border-border font-medium hover:bg-surface-2 disabled:opacity-60">
+                  <button type="button" (click)="choose(plan)" [disabled]="busy()" class="mt-4 h-11 rounded-md border border-border font-medium hover:bg-surface-2 disabled:opacity-60">
                     Stay on {{ plan.name }}
                   </button>
                 } @else if (current) {
-                  <p class="mt-4 flex h-11 items-center justify-center rounded-lg bg-surface-2 font-medium text-muted">Current plan</p>
+                  <p class="mt-4 flex h-11 items-center justify-center rounded-md bg-surface-2 font-medium text-muted">Current plan</p>
                 } @else if (isNext(s, plan)) {
-                  <p class="mt-4 flex h-11 items-center justify-center rounded-lg bg-surface-2 text-sm font-medium text-muted">Starts {{ s.currentPeriodEnd ? fmt.longDate(s.currentPeriodEnd) : 'at renewal' }}</p>
+                  <p class="mt-4 flex h-11 items-center justify-center rounded-md bg-surface-2 text-sm font-medium text-muted">Starts {{ s.currentPeriodEnd ? fmt.longDate(s.currentPeriodEnd) : 'at renewal' }}</p>
                 } @else if (confirming() === plan.code) {
-                  <div class="mt-4 rounded-lg bg-surface-2 p-3">
+                  <div class="mt-4 rounded-md bg-surface-2 p-3">
                     <p class="text-sm">{{ consequence(s, plan) }}</p>
                     <div class="mt-3 flex gap-2">
-                      <button type="button" (click)="choose(plan)" [disabled]="busy() || priceOf(plan) === null" class="h-10 flex-1 rounded-lg bg-ink px-3 text-sm font-medium text-ink-fg disabled:opacity-60">Confirm</button>
-                      <button type="button" (click)="confirming.set(null)" class="h-10 rounded-lg border border-border px-3 text-sm font-medium">Back</button>
+                      <button type="button" (click)="choose(plan)" [disabled]="busy() || priceOf(plan) === null" class="h-10 flex-1 rounded-md bg-ink px-3 text-sm font-medium text-ink-fg disabled:opacity-60">Confirm</button>
+                      <button type="button" (click)="confirming.set(null)" class="h-10 rounded-md border border-border px-3 text-sm font-medium">Back</button>
                     </div>
                   </div>
                 } @else {
                   <button type="button" (click)="confirming.set(plan.code)" [disabled]="priceOf(plan) === null"
-                    class="mt-4 h-11 rounded-lg border border-border font-medium hover:bg-surface-2 disabled:opacity-50">
+                    class="mt-4 h-11 rounded-md border border-border font-medium hover:bg-surface-2 disabled:opacity-50">
                     Switch to {{ plan.name }}
                   </button>
                 }
@@ -182,7 +182,7 @@ function featureLabel(code: string): string {
         @if (invoices().length > 0) {
           <section class="mt-8" aria-labelledby="invoices-title">
             <h2 id="invoices-title" class="text-lg font-semibold">Invoices</h2>
-            <ul class="mt-3 divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+            <ul class="mt-3 divide-y divide-border overflow-hidden rounded-md border border-border bg-surface">
               @for (invoice of invoices(); track invoice.id) {
                 <li class="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
                   <span class="tabular whitespace-nowrap font-medium">{{ invoice.invoiceNumber }}</span>
@@ -195,7 +195,7 @@ function featureLabel(code: string): string {
           </section>
         }
       } @else {
-        <div class="mt-6 h-64 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-64 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
       }
     </div>
   `,

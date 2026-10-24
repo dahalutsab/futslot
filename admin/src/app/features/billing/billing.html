@@ -1,35 +1,35 @@
 <div class="mx-auto max-w-5xl px-4 py-6 lg:px-8 lg:py-8">
-  <h1 class="text-2xl font-semibold tracking-tight">Plans &amp; billing</h1>
-  <div class="mt-4 flex gap-1 overflow-x-auto rounded-lg bg-surface-2 p-1 [scrollbar-width:none]" role="tablist" aria-label="Billing">
+  <h1 class="text-3xl lg:text-4xl">Plans &amp; billing</h1>
+  <div class="mt-4 flex gap-1 overflow-x-auto rounded-md bg-surface-2 p-1 [scrollbar-width:none]" role="tablist" aria-label="Billing">
     @for (t of tabs; track t.value) {
       <button type="button" role="tab" [attr.aria-selected]="tab() === t.value" (click)="show(t.value)"
         class="h-10 flex-1 shrink-0 rounded-md px-4 font-medium text-muted" [class.bg-surface]="tab() === t.value" [class.text-text]="tab() === t.value">{{ t.label }}</button>
     }
   </div>
   @if (error(); as message) {
-    <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+    <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
   }
 
   <!-- The form for recording a payment taken another way -->
   <ng-template #recordForm let-kind="kind" let-id="id" let-amount="amount">
-    <form class="mt-3 space-y-3 rounded-lg bg-surface-2 p-3" (ngSubmit)="recordPayment(kind, id)">
+    <form class="mt-3 space-y-3 rounded-md bg-surface-2 p-3" (ngSubmit)="recordPayment(kind, id)">
       <fieldset>
         <legend class="mb-1.5 font-medium">Paid by</legend>
         <div class="flex flex-wrap gap-2">
           @for (m of methods; track m) {
-            <button type="button" (click)="method.set(m)" [attr.aria-pressed]="method() === m" class="h-10 rounded-lg border bg-surface px-3 text-sm font-medium"
+            <button type="button" (click)="method.set(m)" [attr.aria-pressed]="method() === m" class="h-10 rounded-md border bg-surface px-3 text-sm font-medium"
               [class]="method() === m ? 'border-ink' : 'border-border text-muted'">{{ fmt.methodLabel(m) }}</button>
           }
         </div>
       </fieldset>
       <div>
         <label [for]="'txn-' + id" class="mb-1.5 block font-medium">Transaction ID <span class="font-normal text-subtle">(optional for cash)</span></label>
-        <input [id]="'txn-' + id" name="transactionId" type="text" maxlength="100" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+        <input [id]="'txn-' + id" name="transactionId" type="text" maxlength="100" class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
           [ngModel]="transactionId()" (ngModelChange)="transactionId.set($event)" />
       </div>
       <div class="flex gap-2">
-        <button type="submit" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">Record {{ fmt.rupees(amount) }} paid</button>
-        <button type="button" (click)="recording.set(null)" class="h-11 rounded-lg px-4 font-medium">Back</button>
+        <button type="submit" [disabled]="busy()" class="h-11 rounded-md bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">Record {{ fmt.rupees(amount) }} paid</button>
+        <button type="button" (click)="recording.set(null)" class="h-11 rounded-md px-4 font-medium">Back</button>
       </div>
     </form>
   </ng-template>
@@ -39,56 +39,56 @@
       <div class="mt-4 flex items-center gap-3">
         <p class="flex-1 text-muted">What venues can subscribe to. Changes apply to new invoices.</p>
         @if (editing() === null) {
-          <button type="button" (click)="edit(null)" class="h-11 rounded-lg bg-ink px-4 font-medium text-ink-fg">New plan</button>
+          <button type="button" (click)="edit(null)" class="h-11 rounded-md bg-ink px-4 font-medium text-ink-fg">New plan</button>
         }
       </div>
       @if (editing(); as id) {
         @let f = form();
-        <form class="mt-4 space-y-4 rounded-xl border border-border bg-surface p-5" (ngSubmit)="savePlan()">
+        <form class="mt-4 space-y-4 rounded-md border border-border bg-surface p-5" (ngSubmit)="savePlan()">
           <h2 class="font-semibold">{{ id === 'new' ? 'New plan' : 'Edit ' + f.name }}</h2>
           <div class="grid gap-3 sm:grid-cols-2">
             @if (id === 'new') {
               <div>
                 <label for="plan-code" class="mb-1.5 block font-medium">Code</label>
-                <input id="plan-code" name="code" type="text" maxlength="30" placeholder="PRO" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base uppercase"
+                <input id="plan-code" name="code" type="text" maxlength="30" placeholder="PRO" class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base uppercase"
                   [ngModel]="f.code" (ngModelChange)="set('code', $event)" />
                 <p class="mt-1 text-sm text-subtle">Capital letters, set once.</p>
               </div>
             }
             <div>
               <label for="plan-name" class="mb-1.5 block font-medium">Name</label>
-              <input id="plan-name" name="name" type="text" maxlength="60" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+              <input id="plan-name" name="name" type="text" maxlength="60" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                 [ngModel]="f.name" (ngModelChange)="set('name', $event)" />
             </div>
             <div>
               <label for="plan-monthly" class="mb-1.5 block font-medium">Monthly price (Rs)</label>
-              <input id="plan-monthly" name="monthly" type="number" min="0" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+              <input id="plan-monthly" name="monthly" type="number" min="0" class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                 [ngModel]="f.monthlyPrice" (ngModelChange)="set('monthlyPrice', $event === '' || $event === null ? null : +$event)" />
             </div>
             <div>
               <label for="plan-yearly" class="mb-1.5 block font-medium">Yearly price (Rs) <span class="font-normal text-subtle">(empty: monthly only)</span></label>
-              <input id="plan-yearly" name="yearly" type="number" min="0" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+              <input id="plan-yearly" name="yearly" type="number" min="0" class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                 [ngModel]="f.yearlyPrice" (ngModelChange)="set('yearlyPrice', $event === '' || $event === null ? null : +$event)" />
             </div>
             <div>
               <label for="plan-courts" class="mb-1.5 block font-medium">Courts <span class="font-normal text-subtle">(empty: no limit)</span></label>
-              <input id="plan-courts" name="courts" type="number" min="1" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+              <input id="plan-courts" name="courts" type="number" min="1" class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                 [ngModel]="f.maxCourts" (ngModelChange)="set('maxCourts', $event === '' || $event === null ? null : +$event)" />
             </div>
             <div>
               <label for="plan-staff" class="mb-1.5 block font-medium">Staff <span class="font-normal text-subtle">(empty: no limit)</span></label>
-              <input id="plan-staff" name="staff" type="number" min="0" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+              <input id="plan-staff" name="staff" type="number" min="0" class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                 [ngModel]="f.maxStaff" (ngModelChange)="set('maxStaff', $event === '' || $event === null ? null : +$event)" />
             </div>
           </div>
           <div>
             <label for="plan-description" class="mb-1.5 block font-medium">Description</label>
-            <input id="plan-description" name="description" type="text" maxlength="500" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+            <input id="plan-description" name="description" type="text" maxlength="500" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
               [ngModel]="f.description" (ngModelChange)="set('description', $event)" />
           </div>
           <div>
             <label for="plan-features" class="mb-1.5 block font-medium">Features <span class="font-normal text-subtle">(one per line)</span></label>
-            <textarea id="plan-features" name="features" rows="4" class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-base"
+            <textarea id="plan-features" name="features" rows="4" class="w-full rounded-md border border-border bg-surface px-3 py-2 text-base"
               [ngModel]="f.features" (ngModelChange)="set('features', $event)"></textarea>
           </div>
           <label class="flex min-h-11 items-center gap-3">
@@ -96,21 +96,21 @@
             <span>On sale</span>
           </label>
           <div class="flex gap-2">
-            <button type="submit" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Save plan</button>
-            <button type="button" (click)="editing.set(null)" class="h-11 rounded-lg px-4 font-medium">Cancel</button>
+            <button type="submit" [disabled]="busy()" class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Save plan</button>
+            <button type="button" (click)="editing.set(null)" class="h-11 rounded-md px-4 font-medium">Cancel</button>
           </div>
         </form>
       }
       @if (plans(); as list) {
         <ul class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           @for (p of list; track p.id) {
-            <li class="rounded-xl border border-border bg-surface p-4" [class.opacity-60]="!p.active">
+            <li class="rounded-md border border-border bg-surface p-4" [class.opacity-60]="!p.active">
               <div class="flex items-start gap-3">
                 <div class="min-w-0 flex-1">
                   <p class="font-semibold">{{ p.name }} <span class="tabular text-xs font-normal text-subtle">{{ p.code }}</span></p>
                   <p class="tabular text-sm">{{ fmt.rupees(p.monthlyPrice) }}/month{{ p.yearlyPrice !== null ? ' · ' + fmt.rupees(p.yearlyPrice) + '/year' : '' }}</p>
                 </div>
-                <button type="button" (click)="edit(p)" class="h-10 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">Edit</button>
+                <button type="button" (click)="edit(p)" class="h-10 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">Edit</button>
               </div>
               <p class="mt-2 text-sm text-muted">{{ p.maxCourts ?? 'Any number of' }} courts · {{ p.maxStaff ?? 'any' }} staff{{ p.active ? '' : ' · not on sale' }}</p>
               @if (p.features.length) {
@@ -125,7 +125,7 @@
     }
 
     @case ('invoices') {
-      <div class="mt-4 flex rounded-lg bg-surface-2 p-1 sm:w-fit" role="radiogroup" aria-label="Invoices">
+      <div class="mt-4 flex rounded-md bg-surface-2 p-1 sm:w-fit" role="radiogroup" aria-label="Invoices">
         <button type="button" role="radio" [attr.aria-checked]="!paid()" (click)="paid.set(false)" class="h-9 flex-1 rounded-md px-4 text-sm font-medium text-muted"
           [class.bg-surface]="!paid()" [class.text-text]="!paid()">Unpaid</button>
         <button type="button" role="radio" [attr.aria-checked]="paid()" (click)="paid.set(true)" class="h-9 flex-1 rounded-md px-4 text-sm font-medium text-muted"
@@ -133,11 +133,11 @@
       </div>
       @if (invoices(); as list) {
         @if (list.length === 0) {
-          <p class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center text-muted">{{ paid() ? 'No paid invoices.' : 'Every invoice is paid.' }}</p>
+          <p class="mt-6 rounded-md border border-dashed border-border bg-surface px-6 py-12 text-center text-muted">{{ paid() ? 'No paid invoices.' : 'Every invoice is paid.' }}</p>
         }
         <ul class="mt-4 space-y-3">
           @for (i of list; track i.id) {
-            <li class="rounded-xl border border-border bg-surface p-4">
+            <li class="rounded-md border border-border bg-surface p-4">
               <div class="flex flex-wrap items-start gap-x-4 gap-y-1">
                 <div class="min-w-0 flex-1">
                   <a [routerLink]="['/venues', i.venueId]" class="font-medium hover:underline">{{ i.venueName ?? 'Venue' }}</a>
@@ -156,25 +156,25 @@
                 @if (recording() === i.id) {
                   <ng-container [ngTemplateOutlet]="recordForm" [ngTemplateOutletContext]="{ kind: 'invoice', id: i.id, amount: i.amount }" />
                 } @else {
-                  <button type="button" (click)="record(i.id)" class="mt-3 h-10 rounded-lg border border-border px-4 text-sm font-medium hover:bg-surface-2">Record a payment</button>
+                  <button type="button" (click)="record(i.id)" class="mt-3 h-10 rounded-md border border-border px-4 text-sm font-medium hover:bg-surface-2">Record a payment</button>
                 }
               }
             </li>
           }
         </ul>
       } @else {
-        <div class="mt-6 h-40 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-40 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
       }
     }
 
     @case ('featured') {
       @if (featured(); as list) {
         @if (list.length === 0) {
-          <p class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center text-muted">No featured listings booked.</p>
+          <p class="mt-6 rounded-md border border-dashed border-border bg-surface px-6 py-12 text-center text-muted">No featured listings booked.</p>
         }
         <ul class="mt-4 space-y-3">
           @for (l of list; track l.id) {
-            <li class="rounded-xl border border-border bg-surface p-4">
+            <li class="rounded-md border border-border bg-surface p-4">
               <div class="flex flex-wrap items-start gap-x-4 gap-y-1">
                 <div class="min-w-0 flex-1">
                   <a [routerLink]="['/venues', l.venueId]" class="font-medium hover:underline">{{ l.venueName }}</a>
@@ -191,7 +191,7 @@
                 @if (recording() === l.id) {
                   <ng-container [ngTemplateOutlet]="recordForm" [ngTemplateOutletContext]="{ kind: 'featured', id: l.id, amount: l.price }" />
                 } @else {
-                  <button type="button" (click)="record(l.id)" class="mt-3 h-10 rounded-lg border border-border px-4 text-sm font-medium hover:bg-surface-2">Record a payment</button>
+                  <button type="button" (click)="record(l.id)" class="mt-3 h-10 rounded-md border border-border px-4 text-sm font-medium hover:bg-surface-2">Record a payment</button>
                 }
               }
             </li>

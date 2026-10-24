@@ -6,6 +6,7 @@ import { ArrowRight, Eye, EyeOff, LoaderCircle, LucideAngularModule, ShieldCheck
 import { problemOf } from '../../core/api-error';
 import { User } from '../../core/api.types';
 import { Session } from '../../core/session';
+import { Logo } from '../../shared/logo';
 
 /** signIn: phone and password. reset: a texted code, then a new password (or the first one, for an older account). */
 type Mode = 'signIn' | 'reset';
@@ -17,7 +18,7 @@ const NOT_ADMIN = "This number isn't a FutSlot admin account.";
 /** Sign in with a phone number and password, or reset a forgotten one. Only FutSlot admin accounts get in. */
 @Component({
   selector: 'fs-login',
-  imports: [FormsModule, LucideAngularModule],
+  imports: [FormsModule, LucideAngularModule, Logo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.html',
 })

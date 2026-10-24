@@ -26,7 +26,11 @@
             ],
             "styles": [
               "src/styles.css"
-            ]
+            ],
+            "outputPath": {
+              "base": "dist/dashboard",
+              "media": "files"
+            }
           },
           "configurations": {
             "production": {

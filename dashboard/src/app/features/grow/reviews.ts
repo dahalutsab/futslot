@@ -19,11 +19,11 @@ import { ago, dayLabel } from '../../shared/format';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-3xl px-4 py-4 lg:px-8 lg:py-6">
-      <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">Reviews</h1>
+      <h1 class="text-3xl lg:text-4xl">Reviews</h1>
       <p class="mt-1 text-muted">Players can review a game they played. Your replies are public and signed as {{ venueName() }}.</p>
 
       @if (summary(); as s) {
-        <section class="mt-5 grid gap-6 rounded-xl border border-border bg-surface p-4 sm:grid-cols-[auto_1fr] lg:p-6" aria-label="Rating">
+        <section class="mt-5 grid gap-6 rounded-md border border-border bg-surface p-4 sm:grid-cols-[auto_1fr] lg:p-6" aria-label="Rating">
           <div>
             <p class="tabular text-4xl font-semibold">{{ s.reviewCount ? (s.averageRating ?? 0).toFixed(1) : '–' }}</p>
             <ng-container [ngTemplateOutlet]="stars" [ngTemplateOutletContext]="{ rating: s.averageRating ?? 0, size: 'size-5' }" />
@@ -43,7 +43,7 @@ import { ago, dayLabel } from '../../shared/format';
         </section>
       }
 
-      <div class="mt-5 flex rounded-lg bg-surface-2 p-1 sm:w-fit" role="radiogroup" aria-label="Show">
+      <div class="mt-5 flex rounded-md bg-surface-2 p-1 sm:w-fit" role="radiogroup" aria-label="Show">
         @for (option of filters; track option.label) {
           <button type="button" role="radio" [attr.aria-checked]="unanswered() === option.value" (click)="unanswered.set(option.value)"
             class="h-9 flex-1 whitespace-nowrap rounded-md px-3 text-sm font-medium text-muted" [class.bg-surface]="unanswered() === option.value" [class.text-text]="unanswered() === option.value">
@@ -53,16 +53,16 @@ import { ago, dayLabel } from '../../shared/format';
       </div>
 
       @if (error(); as message) {
-        <p class="mt-4 rounded-xl border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
+        <p class="mt-4 rounded-md border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
       } @else if (reviews(); as list) {
         @if (list.length === 0) {
-          <p class="mt-4 rounded-xl border border-dashed border-border bg-surface px-6 py-8 text-center text-muted">
+          <p class="mt-4 rounded-md border border-dashed border-border bg-surface px-6 py-8 text-center text-muted">
             {{ unanswered() ? 'You have replied to every review.' : 'No reviews yet. Players are asked for one after they play.' }}
           </p>
         } @else {
           <ul class="mt-4 space-y-3">
             @for (review of list; track review.id) {
-              <li class="rounded-xl border border-border bg-surface p-4">
+              <li class="rounded-md border border-border bg-surface p-4">
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <ng-container [ngTemplateOutlet]="stars" [ngTemplateOutletContext]="{ rating: review.rating, size: 'size-4' }" />
                   <span class="font-medium">{{ review.reviewerName }}</span>
@@ -82,18 +82,18 @@ import { ago, dayLabel } from '../../shared/format';
                     <label [for]="'reply-' + review.id" class="sr-only">Reply to {{ review.reviewerName }}</label>
                     <textarea [id]="'reply-' + review.id" rows="3" maxlength="1000" [value]="draft()" (input)="draft.set($any($event.target).value)"
                       placeholder="Thank them, and say what you'll do about anything they raised."
-                      class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-base"></textarea>
+                      class="w-full rounded-md border border-border bg-surface px-3 py-2 text-base"></textarea>
                     @if (replyError(); as message) {
                       <p class="mt-1 text-sm text-danger" role="alert">{{ message }}</p>
                     }
                     <div class="mt-2 flex gap-2">
-                      <button type="submit" [disabled]="busy()" class="flex h-10 items-center gap-2 rounded-lg bg-ink px-4 text-sm font-medium text-ink-fg disabled:opacity-60">
+                      <button type="submit" [disabled]="busy()" class="flex h-10 items-center gap-2 rounded-md bg-ink px-4 text-sm font-medium text-ink-fg disabled:opacity-60">
                         @if (busy()) {
                           <lucide-icon [img]="icons.LoaderCircle" [size]="16" class="animate-spin" />
                         }
                         Post reply
                       </button>
-                      <button type="button" (click)="editingId.set(null)" class="h-10 rounded-lg border border-border px-3 text-sm font-medium">Cancel</button>
+                      <button type="button" (click)="editingId.set(null)" class="h-10 rounded-md border border-border px-3 text-sm font-medium">Cancel</button>
                     </div>
                   </form>
                 } @else if (review.ownerReply) {
@@ -102,28 +102,28 @@ import { ago, dayLabel } from '../../shared/format';
                     <p class="mt-0.5 whitespace-pre-line text-muted">{{ review.ownerReply }}</p>
                     @if (review.status !== 'REMOVED') {
                       <div class="mt-1 flex gap-1">
-                        <button type="button" (click)="startReply(review)" class="h-9 rounded-lg px-2 text-sm font-medium hover:bg-surface-2">Edit</button>
+                        <button type="button" (click)="startReply(review)" class="h-9 rounded-md px-2 text-sm font-medium hover:bg-surface-2">Edit</button>
                         @if (confirmDelete() === review.id) {
-                          <button type="button" (click)="deleteReply(review)" [disabled]="busy()" class="h-9 rounded-lg px-2 text-sm font-medium text-danger hover:bg-danger-bg">Delete reply?</button>
-                          <button type="button" (click)="confirmDelete.set(null)" class="h-9 rounded-lg px-2 text-sm font-medium hover:bg-surface-2">Keep</button>
+                          <button type="button" (click)="deleteReply(review)" [disabled]="busy()" class="h-9 rounded-md px-2 text-sm font-medium text-danger hover:bg-danger-bg">Delete reply?</button>
+                          <button type="button" (click)="confirmDelete.set(null)" class="h-9 rounded-md px-2 text-sm font-medium hover:bg-surface-2">Keep</button>
                         } @else {
-                          <button type="button" (click)="confirmDelete.set(review.id)" class="h-9 rounded-lg px-2 text-sm font-medium text-muted hover:bg-surface-2">Delete</button>
+                          <button type="button" (click)="confirmDelete.set(review.id)" class="h-9 rounded-md px-2 text-sm font-medium text-muted hover:bg-surface-2">Delete</button>
                         }
                       </div>
                     }
                   </div>
                 } @else if (review.status !== 'REMOVED') {
-                  <button type="button" (click)="startReply(review)" class="mt-3 h-10 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">Reply</button>
+                  <button type="button" (click)="startReply(review)" class="mt-3 h-10 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">Reply</button>
                 }
               </li>
             }
           </ul>
           @if (hasMore()) {
-            <button type="button" (click)="more()" class="mt-3 h-11 w-full rounded-lg border border-border font-medium hover:bg-surface-2">Show more</button>
+            <button type="button" (click)="more()" class="mt-3 h-11 w-full rounded-md border border-border font-medium hover:bg-surface-2">Show more</button>
           }
         }
       } @else {
-        <div class="mt-4 h-40 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-4 h-40 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
       }
     </div>
 

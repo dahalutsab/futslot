@@ -13,14 +13,14 @@ import { FormsModule } from '@angular/forms';
     <form class="space-y-2" (ngSubmit)="submit()">
       <label [for]="id()" class="block font-medium">{{ label() }}@if (optional()) {<span class="font-normal text-subtle"> (optional)</span>}</label>
       <input [id]="id()" name="note" type="text" [attr.maxlength]="maxLength()" [placeholder]="placeholder()"
-        class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" [ngModel]="text()" (ngModelChange)="text.set($event)" />
+        class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" [ngModel]="text()" (ngModelChange)="text.set($event)" />
       @if (problem(); as message) {
         <p class="text-sm text-danger" role="alert">{{ message }}</p>
       }
       <div class="flex gap-2">
-        <button type="submit" [disabled]="busy()" class="h-11 rounded-lg px-4 font-medium disabled:opacity-60"
+        <button type="submit" [disabled]="busy()" class="h-11 rounded-md px-4 font-medium disabled:opacity-60"
           [class]="danger() ? 'bg-danger text-white' : 'bg-ink text-ink-fg'">{{ action() }}</button>
-        <button type="button" (click)="cancelled.emit()" class="h-11 rounded-lg px-4 font-medium">Back</button>
+        <button type="button" (click)="cancelled.emit()" class="h-11 rounded-md px-4 font-medium">Back</button>
       </div>
     </form>
   `,

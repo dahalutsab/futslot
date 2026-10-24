@@ -18,7 +18,7 @@ type Mode = 'book' | 'block';
   template: `
     <fs-sheet [title]="courtName() + ', ' + timeRange()" [subtitle]="rupees(slot().price)" (closed)="closed.emit()">
       @if (canBook() && canBlock()) {
-        <div class="mb-5 flex rounded-lg bg-surface-2 p-1" role="tablist">
+        <div class="mb-5 flex rounded-md bg-surface-2 p-1" role="tablist">
           <button type="button" role="tab" [attr.aria-selected]="mode() === 'book'" (click)="mode.set('book')"
             class="h-10 flex-1 rounded-md font-medium text-muted" [class.bg-surface]="mode() === 'book'" [class.text-text]="mode() === 'book'">Book</button>
           <button type="button" role="tab" [attr.aria-selected]="mode() === 'block'" (click)="mode.set('block')"
@@ -31,21 +31,21 @@ type Mode = 'book' | 'block';
           <div>
             <label for="walk-in-phone" class="mb-1.5 block font-medium">Phone</label>
             <input id="walk-in-phone" name="phone" type="tel" inputmode="numeric" autocomplete="off" placeholder="98XXXXXXXX"
-              class="tabular h-12 w-full rounded-lg border border-border bg-surface px-3 text-base"
+              class="tabular h-12 w-full rounded-md border border-border bg-surface px-3 text-base"
               [ngModel]="phone()" (ngModelChange)="phone.set($event)" />
             <p class="mt-1.5 text-sm text-subtle">If they use FutSlot, the booking shows up in their app.</p>
           </div>
           <div>
             <label for="walk-in-name" class="mb-1.5 block font-medium">Name</label>
             <input id="walk-in-name" name="name" type="text" autocomplete="off"
-              class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base"
+              class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base"
               [ngModel]="name()" (ngModelChange)="name.set($event)" />
           </div>
           <fieldset>
             <legend class="mb-1.5 font-medium">How did they book?</legend>
             <div class="flex gap-2">
               @for (option of sources; track option.value) {
-                <label class="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-lg border font-medium"
+                <label class="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-md border font-medium"
                   [class]="source() === option.value ? 'border-ink bg-surface-2' : 'border-border text-muted'">
                   <input type="radio" name="source" class="sr-only" [value]="option.value"
                     [checked]="source() === option.value" (change)="source.set(option.value)" />
@@ -54,7 +54,7 @@ type Mode = 'book' | 'block';
               }
             </div>
           </fieldset>
-          <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-3">
+          <label class="flex cursor-pointer items-start gap-3 rounded-md border border-border p-3">
             <input type="checkbox" class="mt-1 size-4 accent-current" [checked]="paidCash()" (change)="paidCash.set(!paidCash())" />
             <span>
               <span class="block font-medium">Paid {{ rupees(slot().price) }} in cash now</span>
@@ -64,7 +64,7 @@ type Mode = 'book' | 'block';
           <div>
             <label for="walk-in-notes" class="mb-1.5 block font-medium">Notes <span class="font-normal text-subtle">(optional)</span></label>
             <textarea id="walk-in-notes" name="notes" rows="2" maxlength="500"
-              class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-base"
+              class="w-full rounded-md border border-border bg-surface px-3 py-2 text-base"
               [ngModel]="notes()" (ngModelChange)="notes.set($event)"></textarea>
           </div>
         </form>
@@ -72,7 +72,7 @@ type Mode = 'book' | 'block';
         <form id="walk-in" class="space-y-4" (ngSubmit)="block()">
           <div>
             <label for="block-reason" class="mb-1.5 block font-medium">Why?</label>
-            <select id="block-reason" name="reason" class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base"
+            <select id="block-reason" name="reason" class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base"
               [ngModel]="reason()" (ngModelChange)="reason.set($event)">
               @for (option of reasons; track option.value) {
                 <option [value]="option.value">{{ option.label }}</option>
@@ -82,7 +82,7 @@ type Mode = 'book' | 'block';
           <div>
             <label for="block-note" class="mb-1.5 block font-medium">Note <span class="font-normal text-subtle">(optional)</span></label>
             <input id="block-note" name="note" type="text" maxlength="500" placeholder="e.g. Net repair"
-              class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base"
+              class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base"
               [ngModel]="note()" (ngModelChange)="note.set($event)" />
             <p class="mt-1.5 text-sm text-subtle">Players will see this slot as unavailable.</p>
           </div>
@@ -90,12 +90,12 @@ type Mode = 'book' | 'block';
       }
 
       @if (error(); as message) {
-        <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+        <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
       }
 
       <div sheet-footer class="border-t border-border px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <button type="submit" form="walk-in" [disabled]="busy()"
-          class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+          class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
           @if (busy()) {
             <lucide-icon [img]="spinner" [size]="18" class="animate-spin" />
           }

@@ -49,37 +49,37 @@ interface Editing {
     <div class="mx-auto max-w-3xl px-4 py-4 lg:px-8 lg:py-6">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">Staff</h1>
+          <h1 class="text-3xl lg:text-4xl">Staff</h1>
           <p class="mt-1 text-muted">People who help run {{ venueName() }}. Each signs in with their own phone number.</p>
         </div>
         @if (members()) {
-          <button type="button" (click)="add()" class="flex h-11 items-center gap-2 rounded-lg bg-ink px-4 font-medium text-ink-fg hover:opacity-90">
+          <button type="button" (click)="add()" class="flex h-11 items-center gap-2 rounded-md bg-ink px-4 font-medium text-ink-fg hover:opacity-90">
             <lucide-icon [img]="icons.UserPlus" [size]="18" />Add staff
           </button>
         }
       </div>
 
       @if (invite(); as message) {
-        <section class="mt-5 rounded-xl border border-border bg-surface p-4" role="status">
+        <section class="mt-5 rounded-md border border-border bg-surface p-4" role="status">
           <p class="flex items-center gap-2 font-medium"><lucide-icon [img]="icons.Check" [size]="18" class="text-confirmed-fg" />{{ invitedName() }} can sign in now</p>
           <p class="mt-1 text-sm text-muted">Send them this so they know where to go:</p>
-          <p class="mt-2 rounded-lg bg-surface-2 px-3 py-2">{{ message }}</p>
+          <p class="mt-2 rounded-md bg-surface-2 px-3 py-2">{{ message }}</p>
           <div class="mt-3 flex gap-2">
-            <button type="button" (click)="copy(message)" class="flex h-10 items-center gap-2 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">
+            <button type="button" (click)="copy(message)" class="flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">
               <lucide-icon [img]="copied() ? icons.Check : icons.Copy" [size]="16" />{{ copied() ? 'Copied' : 'Copy message' }}
             </button>
-            <button type="button" (click)="invite.set(null)" class="h-10 rounded-lg px-3 text-sm font-medium hover:bg-surface-2">Done</button>
+            <button type="button" (click)="invite.set(null)" class="h-10 rounded-md px-3 text-sm font-medium hover:bg-surface-2">Done</button>
           </div>
         </section>
       }
 
       @if (error(); as message) {
-        <div class="mt-6 rounded-xl border border-border bg-surface px-6 py-8 text-center">
+        <div class="mt-6 rounded-md border border-border bg-surface px-6 py-8 text-center">
           <p class="text-muted">{{ message }}</p>
-          <button type="button" (click)="retry()" class="mt-3 h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2">Try again</button>
+          <button type="button" (click)="retry()" class="mt-3 h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2">Try again</button>
         </div>
       } @else if (members(); as list) {
-        <ul class="mt-5 divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+        <ul class="mt-5 divide-y divide-border overflow-hidden rounded-md border border-border bg-surface">
           <li class="flex items-center gap-3 px-4 py-3">
             <span class="grid size-10 shrink-0 place-items-center rounded-full bg-surface-2 font-semibold text-muted" aria-hidden="true">{{ initial(session.user()?.fullName) }}</span>
             <span class="min-w-0 flex-1">
@@ -110,7 +110,7 @@ interface Editing {
           <p class="mt-3 text-muted">No staff yet. Add a receptionist so the counter can take bookings without your phone.</p>
         }
       } @else {
-        <div class="mt-6 h-40 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-40 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
       }
     </div>
 
@@ -122,20 +122,20 @@ interface Editing {
             <div>
               <label for="staff-phone" class="mb-1.5 block font-medium">Their phone number</label>
               <input id="staff-phone" type="tel" inputmode="numeric" autocomplete="off" placeholder="98XXXXXXXX" [value]="e.phone"
-                (input)="patch({ phone: $any($event.target).value })" class="tabular h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                (input)="patch({ phone: $any($event.target).value })" class="tabular h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
               <p class="mt-1.5 text-sm text-subtle">They sign in with this number and a code sent to it.</p>
             </div>
             <div>
               <label for="staff-name" class="mb-1.5 block font-medium">Name</label>
               <input id="staff-name" type="text" maxlength="100" autocomplete="off" [value]="e.name"
-                (input)="patch({ name: $any($event.target).value })" class="h-12 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                (input)="patch({ name: $any($event.target).value })" class="h-12 w-full rounded-md border border-border bg-surface px-3 text-base" />
             </div>
           }
           <fieldset>
             <legend class="mb-1.5 font-medium">Role</legend>
             <div class="space-y-2">
               @for (role of roles; track role.value) {
-                <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3" [class]="e.role === role.value ? 'border-ink bg-surface-2' : 'border-border'">
+                <label class="flex cursor-pointer items-start gap-3 rounded-md border p-3" [class]="e.role === role.value ? 'border-ink bg-surface-2' : 'border-border'">
                   <input type="radio" name="role" class="mt-1 size-4 accent-current" [checked]="e.role === role.value" (change)="pickRole(role.value)" />
                   <span>
                     <span class="block font-medium">{{ role.label }}</span>
@@ -147,7 +147,7 @@ interface Editing {
           </fieldset>
           <fieldset>
             <legend class="mb-1.5 font-medium">What they can do</legend>
-            <div class="divide-y divide-border rounded-lg border border-border">
+            <div class="divide-y divide-border rounded-md border border-border">
               @for (permission of permissions; track permission.value) {
                 <label class="flex cursor-pointer items-start gap-3 p-3">
                   <input type="checkbox" class="mt-1 size-4 accent-current" [checked]="e.permissions.includes(permission.value)" (change)="togglePermission(permission.value)" />
@@ -161,7 +161,7 @@ interface Editing {
             <p class="mt-1.5 text-sm text-subtle">Choosing a role sets these to its usual list; change any you like.</p>
           </fieldset>
           @if (e.member) {
-            <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-3">
+            <label class="flex cursor-pointer items-start gap-3 rounded-md border border-border p-3">
               <input type="checkbox" class="mt-1 size-4 accent-current" [checked]="e.active" (change)="patch({ active: !e.active })" />
               <span>
                 <span class="block font-medium">Can sign in</span>
@@ -173,21 +173,21 @@ interface Editing {
                 <p class="font-medium">Remove {{ e.member.fullName }}?</p>
                 <p class="text-sm text-muted">They lose access to {{ venueName() }} straight away. You can add them again later.</p>
                 <div class="mt-3 flex gap-2">
-                  <button type="button" (click)="remove()" [disabled]="saving()" class="h-11 rounded-lg bg-danger px-4 font-medium text-surface disabled:opacity-60">Remove</button>
-                  <button type="button" (click)="confirmRemove.set(false)" class="h-11 rounded-lg border border-border px-4 font-medium">Keep</button>
+                  <button type="button" (click)="remove()" [disabled]="saving()" class="h-11 rounded-md bg-danger px-4 font-medium text-surface disabled:opacity-60">Remove</button>
+                  <button type="button" (click)="confirmRemove.set(false)" class="h-11 rounded-md border border-border px-4 font-medium">Keep</button>
                 </div>
               } @else {
-                <button type="button" (click)="confirmRemove.set(true)" class="h-11 rounded-lg px-1 font-medium text-danger hover:underline">Remove from staff</button>
+                <button type="button" (click)="confirmRemove.set(true)" class="h-11 rounded-md px-1 font-medium text-danger hover:underline">Remove from staff</button>
               }
             </div>
           }
         </form>
         @if (formError(); as message) {
-          <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+          <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
         }
         <div sheet-footer class="border-t border-border px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <button type="submit" form="staff-form" [disabled]="saving()"
-            class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+            class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
             @if (saving()) {
               <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" />
             }

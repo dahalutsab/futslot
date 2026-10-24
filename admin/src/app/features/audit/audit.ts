@@ -14,7 +14,7 @@ import { actionLabel } from '../../shared/labels';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-5xl px-4 py-6 lg:px-8 lg:py-8">
-      <h1 class="text-2xl font-semibold tracking-tight">Audit log</h1>
+      <h1 class="text-3xl lg:text-4xl">Audit log</h1>
       @if (venue()) {
         <p class="mt-2 flex items-center gap-2 text-muted">
           Only <a [routerLink]="['/venues', venue()]" class="font-medium text-text hover:underline">{{ name() ?? 'one venue' }}</a>
@@ -26,9 +26,9 @@ import { actionLabel } from '../../shared/labels';
       }
       @if (entries(); as list) {
         @if (list.length === 0) {
-          <p class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center text-muted">Nothing recorded yet.</p>
+          <p class="mt-6 rounded-md border border-dashed border-border bg-surface px-6 py-12 text-center text-muted">Nothing recorded yet.</p>
         } @else {
-          <div class="mt-4 overflow-x-auto rounded-xl border border-border bg-surface">
+          <div class="mt-4 overflow-x-auto rounded-md border border-border bg-surface">
             <table class="w-full min-w-[640px] text-left text-sm">
               <thead class="border-b border-border text-muted">
                 <tr><th scope="col" class="px-4 py-2.5 font-medium">When</th><th scope="col" class="px-4 py-2.5 font-medium">Who</th><th scope="col" class="px-4 py-2.5 font-medium">What</th><th scope="col" class="px-4 py-2.5 font-medium">Details</th></tr>
@@ -52,12 +52,12 @@ import { actionLabel } from '../../shared/labels';
           </div>
           @if (hasMore()) {
             <div class="mt-4 text-center">
-              <button type="button" (click)="load(page() + 1)" class="h-11 rounded-lg border border-border bg-surface px-6 font-medium hover:bg-surface-2">Show older</button>
+              <button type="button" (click)="load(page() + 1)" class="h-11 rounded-md border border-border bg-surface px-6 font-medium hover:bg-surface-2">Show older</button>
             </div>
           }
         }
       } @else if (!error()) {
-        <div class="mt-6 h-48 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-48 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
       }
     </div>
   `,

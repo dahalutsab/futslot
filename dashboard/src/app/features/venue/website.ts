@@ -34,14 +34,14 @@ interface Draft {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-5xl px-4 py-4 lg:px-8 lg:py-6">
-      <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">Website</h1>
+      <h1 class="text-3xl lg:text-4xl">Website</h1>
       <p class="mt-1 text-muted">Your venue's own website, filled in from FutSlot: free slots, prices, photos, hours and reviews stay up to date by themselves.</p>
 
       @if (error(); as message) {
-        <p class="mt-6 rounded-xl border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
+        <p class="mt-6 rounded-md border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
       } @else if (settings(); as s) {
         <!-- Live or not -->
-        <section class="mt-5 flex flex-wrap items-center gap-4 rounded-xl border border-border bg-surface p-4">
+        <section class="mt-5 flex flex-wrap items-center gap-4 rounded-md border border-border bg-surface p-4">
           <lucide-icon [img]="icons.Globe" [size]="24" class="shrink-0 text-muted" />
           <div class="min-w-0 flex-1">
             @if (s.published) {
@@ -58,10 +58,10 @@ interface Draft {
             }
           </div>
           @if (s.published) {
-            <button type="button" (click)="publish(false)" [disabled]="busy()" class="h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2 disabled:opacity-60">Take offline</button>
+            <button type="button" (click)="publish(false)" [disabled]="busy()" class="h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2 disabled:opacity-60">Take offline</button>
           } @else {
             <button type="button" (click)="publish(true)" [disabled]="busy() || !s.live || !s.saved || dirty()"
-              class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-50">Publish</button>
+              class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-50">Publish</button>
           }
         </section>
         @if (!s.published && s.live && s.saved && dirty()) {
@@ -70,12 +70,12 @@ interface Draft {
 
         <div class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
           <form class="space-y-5" (submit)="$event.preventDefault(); save()">
-            <section class="rounded-xl border border-border bg-surface p-4" aria-labelledby="look-title">
+            <section class="rounded-md border border-border bg-surface p-4" aria-labelledby="look-title">
               <h2 id="look-title" class="font-semibold">Look</h2>
               <div class="mt-3 grid grid-cols-2 gap-3" role="radiogroup" aria-label="Template">
                 @for (t of templates; track t.value) {
                   <button type="button" role="radio" [attr.aria-checked]="draft().template === t.value" (click)="pickTemplate(t.value)"
-                    class="overflow-hidden rounded-lg border-2 text-left" [class]="draft().template === t.value ? 'border-ink' : 'border-border hover:border-muted'">
+                    class="overflow-hidden rounded-md border-2 text-left" [class]="draft().template === t.value ? 'border-ink' : 'border-border hover:border-muted'">
                     <span class="relative block h-28 overflow-hidden bg-surface-2">
                       <iframe [src]="thumbnail(t.value)" title="" tabindex="-1" aria-hidden="true" loading="lazy"
                         class="pointer-events-none absolute left-0 top-0 h-[560px] w-[1280px] origin-top-left scale-[0.2] border-0 lg:scale-[0.17]"></iframe>
@@ -112,15 +112,15 @@ interface Draft {
               <div class="mt-4">
                 <label for="site-headline" class="mb-1.5 block text-sm font-medium">Headline <span class="font-normal text-subtle">(optional)</span></label>
                 <input id="site-headline" type="text" maxlength="120" [value]="draft().headline" (input)="patch({ headline: $any($event.target).value })"
-                  placeholder="e.g. Floodlit futsal in the heart of Baneshwor" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                  placeholder="e.g. Floodlit futsal in the heart of Baneshwor" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
                 <p class="mt-1 text-xs text-subtle">Shown under your name. Without one, your venue description is used.</p>
               </div>
             </section>
 
-            <section class="rounded-xl border border-border bg-surface p-4" aria-labelledby="address-title">
+            <section class="rounded-md border border-border bg-surface p-4" aria-labelledby="address-title">
               <h2 id="address-title" class="font-semibold">Address</h2>
               <label for="site-subdomain" class="mb-1.5 mt-3 block text-sm font-medium">Your FutSlot address</label>
-              <div class="flex h-11 items-stretch overflow-hidden rounded-lg border border-border focus-within:ring-2 focus-within:ring-ring">
+              <div class="flex h-11 items-stretch overflow-hidden rounded-md border border-border focus-within:ring-2 focus-within:ring-ring">
                 <span class="flex items-center bg-surface-2 px-3 text-sm text-muted">{{ scheme() }}</span>
                 <input id="site-subdomain" type="text" maxlength="40" autocomplete="off" spellcheck="false" [value]="draft().subdomain"
                   (input)="typedSubdomain($any($event.target).value)" class="min-w-0 flex-1 bg-surface px-2 text-base outline-none" aria-describedby="subdomain-help" />
@@ -130,12 +130,12 @@ interface Draft {
                 {{ subdomainProblem() ?? 'Lowercase letters, digits and hyphens. Short and easy to say works best.' }}
               </p>
 
-              <details class="mt-4 rounded-lg border border-border" [open]="!!draft().customDomain">
+              <details class="mt-4 rounded-md border border-border" [open]="!!draft().customDomain">
                 <summary class="flex h-11 cursor-pointer items-center px-3 text-sm font-medium">Use your own domain <span class="ml-1 font-normal text-subtle">(optional)</span></summary>
                 <div class="border-t border-border p-3">
                   <label for="site-domain" class="mb-1.5 block text-sm font-medium">Domain</label>
                   <input id="site-domain" type="text" autocomplete="off" spellcheck="false" [value]="draft().customDomain" (input)="patch({ customDomain: $any($event.target).value })"
-                    placeholder="e.g. dhukufutsal.com" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                    placeholder="e.g. dhukufutsal.com" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
                   <p class="mt-2 text-sm text-muted">At the company you bought the domain from, add a <strong>CNAME</strong> record pointing to
                     <code class="rounded bg-surface-2 px-1">{{ s.dnsTarget }}</code>. Once it points here, your site works on it with HTTPS, and search engines are told it's your main address.</p>
                 </div>
@@ -143,10 +143,10 @@ interface Draft {
             </section>
 
             @if (saveError(); as message) {
-              <p class="rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+              <p class="rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
             }
             <div class="flex items-center gap-3">
-              <button type="submit" [disabled]="busy() || !dirty()" class="flex h-11 items-center gap-2 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-50">
+              <button type="submit" [disabled]="busy() || !dirty()" class="flex h-11 items-center gap-2 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-50">
                 @if (busy()) {
                   <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" />
                 }
@@ -161,10 +161,10 @@ interface Draft {
           </form>
 
           <!-- Preview -->
-          <section class="flex min-h-[560px] flex-col overflow-hidden rounded-xl border border-border bg-surface" aria-labelledby="preview-title">
+          <section class="flex min-h-[560px] flex-col overflow-hidden rounded-md border border-border bg-surface" aria-labelledby="preview-title">
             <div class="flex items-center gap-2 border-b border-border px-3 py-2">
               <h2 id="preview-title" class="flex-1 text-sm font-medium">Preview</h2>
-              <div class="flex rounded-lg bg-surface-2 p-0.5" role="radiogroup" aria-label="Preview size">
+              <div class="flex rounded-md bg-surface-2 p-0.5" role="radiogroup" aria-label="Preview size">
                 <button type="button" role="radio" [attr.aria-checked]="device() === 'phone'" (click)="device.set('phone')" aria-label="Phone"
                   class="grid size-9 place-items-center rounded-md text-muted" [class.bg-surface]="device() === 'phone'" [class.text-text]="device() === 'phone'">
                   <lucide-icon [img]="icons.Smartphone" [size]="16" />
@@ -181,7 +181,7 @@ interface Draft {
             @if (s.live) {
               <div class="relative flex-1 overflow-hidden bg-surface-2">
                 @if (device() === 'phone') {
-                  <iframe [src]="preview()" title="Website preview, phone size" class="mx-auto my-4 block h-[640px] w-[375px] max-w-full rounded-xl border border-border bg-white"></iframe>
+                  <iframe [src]="preview()" title="Website preview, phone size" class="mx-auto my-4 block h-[640px] w-[375px] max-w-full rounded-md border border-border bg-white"></iframe>
                 } @else {
                   <!-- A 1280px-wide page, scaled down to fit the panel -->
                   <div #stage class="absolute inset-0 overflow-hidden">
@@ -196,7 +196,7 @@ interface Draft {
           </section>
         </div>
       } @else {
-        <div class="mt-6 h-96 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-96 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
       }
     </div>
   `,

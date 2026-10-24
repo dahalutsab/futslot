@@ -55,7 +55,7 @@ const GAP = 2;
 
       @if (hover() !== null) {
         @if (columns()[hover()!]; as column) {
-          <div class="pointer-events-none absolute top-0 z-10 min-w-36 -translate-x-1/2 rounded-lg border border-border bg-surface px-3 py-2 shadow-lg"
+          <div class="pointer-events-none absolute top-0 z-10 min-w-36 -translate-x-1/2 rounded-md border border-border bg-surface px-3 py-2 shadow-lg"
             [style.left.%]="((bandX(hover()!) + band() / 2) / width) * 100" role="status">
             <p class="text-base font-semibold">{{ money(column.value) }}</p>
             <p class="text-xs text-muted">{{ column.label }}</p>

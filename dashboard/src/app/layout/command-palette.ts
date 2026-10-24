@@ -31,7 +31,7 @@ interface Result {
   template: `
     <div class="fixed inset-0 z-40 bg-black/50" (click)="closed.emit()" aria-hidden="true"></div>
     <div role="dialog" aria-modal="true" aria-label="Search" cdkTrapFocus cdkTrapFocusAutoCapture
-      class="fixed inset-x-3 top-3 z-50 mx-auto flex max-h-[80dvh] max-w-xl flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-2xl sm:top-[12vh]">
+      class="fixed inset-x-3 top-3 z-50 mx-auto flex max-h-[80dvh] max-w-xl flex-col overflow-hidden rounded-md border border-border bg-surface shadow-2xl sm:top-[12vh]">
       <div class="flex items-center gap-3 border-b border-border px-4">
         <lucide-icon [img]="icons.Search" [size]="20" class="shrink-0 text-subtle" />
         <input #input type="text" role="combobox" aria-expanded="true" aria-controls="palette-results" aria-autocomplete="list"
@@ -44,10 +44,10 @@ interface Result {
       <ul id="palette-results" role="listbox" aria-label="Results" class="min-h-0 flex-1 overflow-y-auto p-2">
         @for (result of results(); track result.group + result.id; let i = $index) {
           @if (i === 0 || results()[i - 1].group !== result.group) {
-            <li role="presentation" class="px-2 pb-1 pt-2 text-xs font-medium uppercase tracking-wide text-subtle">{{ result.group }}</li>
+            <li role="presentation" class="px-2 pb-1 pt-2 text-sm font-medium text-subtle">{{ result.group }}</li>
           }
           <li [id]="'palette-' + i" role="option" [attr.aria-selected]="i === active()" (click)="choose(result)" (mousemove)="active.set(i)"
-            class="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2" [class.bg-surface-2]="i === active()">
+            class="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2" [class.bg-surface-2]="i === active()">
             <lucide-icon [img]="result.icon" [size]="18" class="shrink-0 text-muted" />
             <span class="min-w-0 flex-1">
               <span class="block truncate font-medium">{{ result.title }}</span>

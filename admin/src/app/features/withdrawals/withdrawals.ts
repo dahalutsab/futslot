@@ -22,9 +22,9 @@ const NEPAL = 'Asia/Kathmandu';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-4xl px-4 py-6 lg:px-8 lg:py-8">
-      <h1 class="text-2xl font-semibold tracking-tight">Deposits to send</h1>
+      <h1 class="text-3xl lg:text-4xl">Deposits to send</h1>
       <p class="mt-1 text-muted">Players taking their booking deposit back. Send each from FutSlot's account once it's due, then record the reference.</p>
-      <div class="mt-4 flex gap-1 rounded-lg bg-surface-2 p-1" role="tablist" aria-label="Withdrawals">
+      <div class="mt-4 flex gap-1 rounded-md bg-surface-2 p-1" role="tablist" aria-label="Withdrawals">
         @for (t of tabs; track t.value) {
           <button type="button" role="tab" [attr.aria-selected]="tab() === t.value" (click)="tab.set(t.value)"
             class="h-10 flex-1 rounded-md font-medium text-muted" [class.bg-surface]="tab() === t.value" [class.text-text]="tab() === t.value">
@@ -37,14 +37,14 @@ const NEPAL = 'Asia/Kathmandu';
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>
       } @else if (shown(); as list) {
         @if (list.length === 0) {
-          <div class="mt-6 flex flex-col items-center rounded-xl border border-dashed border-border bg-surface px-6 py-14 text-center">
+          <div class="mt-6 flex flex-col items-center rounded-md border border-dashed border-border bg-surface px-6 py-14 text-center">
             <lucide-icon [img]="icons.CircleCheck" [size]="28" class="text-confirmed-line" />
             <p class="mt-3 font-medium">{{ tab() === 'due' ? 'Nothing to send now' : tab() === 'waiting' ? 'Nothing waiting' : 'Nothing sent yet' }}</p>
           </div>
         } @else {
           <ul class="mt-4 space-y-3">
             @for (w of list; track w.id) {
-              <li class="rounded-xl border border-border bg-surface p-4">
+              <li class="rounded-md border border-border bg-surface p-4">
                 <div class="flex flex-wrap items-start gap-x-4 gap-y-1">
                   <div class="min-w-0 flex-1">
                     <p class="font-medium">{{ w.playerName }}</p>
@@ -54,7 +54,7 @@ const NEPAL = 'Asia/Kathmandu';
                   </div>
                   <p class="tabular text-lg font-semibold">{{ fmt.rupees(w.amount) }}</p>
                 </div>
-                <p class="mt-3 rounded-lg bg-surface-2 px-3 py-2">
+                <p class="mt-3 rounded-md bg-surface-2 px-3 py-2">
                   <span class="text-sm text-muted">Send to their {{ fmt.methodLabel(w.method) }}</span>
                   <span class="tabular block select-all font-medium">{{ w.sendTo }}</span>
                 </p>
@@ -71,7 +71,7 @@ const NEPAL = 'Asia/Kathmandu';
                       <fs-note-form [id]="'ref-' + w.id" label="Transfer reference" [action]="'Mark ' + fmt.rupees(w.amount) + ' sent'" [maxLength]="100"
                         [busy]="busy() === w.id" placeholder="Transaction ID from the transfer" (done)="paid(w, $event)" (cancelled)="sending.set(null)" />
                     } @else {
-                      <button type="button" (click)="sending.set(w.id)" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg">I've sent it</button>
+                      <button type="button" (click)="sending.set(w.id)" class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg">I've sent it</button>
                     }
                   </div>
                 }
@@ -80,7 +80,7 @@ const NEPAL = 'Asia/Kathmandu';
           </ul>
         }
       } @else {
-        <div class="mt-6 h-40 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-40 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
       }
     </div>
   `,

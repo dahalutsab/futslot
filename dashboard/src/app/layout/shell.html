@@ -6,15 +6,14 @@
   <div class="flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center">
     <p class="max-w-sm text-muted">{{ message }}</p>
     <button type="button" (click)="retry()"
-      class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg hover:opacity-90">Try again</button>
+      class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg hover:opacity-90">Try again</button>
   </div>
 } @else {
   <div class="min-h-dvh lg:grid lg:grid-cols-[256px_1fr]">
     <!-- Sidebar (wide screens) -->
     <aside class="sticky top-0 hidden h-dvh flex-col border-r border-border bg-surface lg:flex">
       <div class="flex h-14 items-center gap-2 px-5">
-        <span class="grid size-7 place-items-center rounded-md bg-brand text-sm font-bold text-white" aria-hidden="true">F</span>
-        <span class="font-semibold tracking-tight">FutSlot</span>
+        <fs-logo />
       </div>
 
       @if (venues.venues(); as list) {
@@ -22,7 +21,7 @@
           <label for="venue-switcher" class="sr-only">Venue</label>
           <div class="relative">
             <select id="venue-switcher" (change)="switchVenue($event)"
-              class="h-10 w-full cursor-pointer appearance-none rounded-lg border border-border bg-surface-2 pl-3 pr-8 font-medium">
+              class="h-10 w-full cursor-pointer appearance-none rounded-md border border-border bg-surface-2 pl-3 pr-8 font-medium">
               @for (entry of list; track entry.venue.id) {
                 <option [value]="entry.venue.id" [selected]="entry.venue.id === venues.current()?.venue?.id">{{ entry.venue.name }}</option>
               }
@@ -40,7 +39,7 @@
 
       <div class="px-3 pb-2">
         <button type="button" (click)="paletteOpen.set(true)" aria-keyshortcuts="Control+K Meta+K"
-          class="flex h-10 w-full items-center gap-2 rounded-lg border border-border px-3 text-muted hover:bg-surface-2 hover:text-text">
+          class="flex h-10 w-full items-center gap-2 rounded-md border border-border px-3 text-muted hover:bg-surface-2 hover:text-text">
           <lucide-icon [img]="icons.Search" [size]="16" />
           <span class="flex-1 text-left">Search</span>
           <kbd class="rounded border border-border px-1.5 text-xs text-subtle">{{ shortcut }}</kbd>
@@ -49,7 +48,7 @@
 
       <nav class="flex-1 overflow-y-auto px-3 pb-4" aria-label="Main">
         @for (group of groups(); track group.label) {
-          <p class="mb-1 mt-4 px-2 text-xs font-medium uppercase tracking-wide text-subtle first:mt-0">{{ group.label }}</p>
+          <p class="mb-1 mt-4 px-2 text-sm font-medium text-subtle first:mt-0">{{ group.label }}</p>
           <ul>
             @for (item of group.items; track item.path) {
               <li>
@@ -70,7 +69,7 @@
       </nav>
 
       <div class="border-t border-border p-3">
-        <div class="mb-3 flex rounded-lg bg-surface-2 p-1" role="radiogroup" aria-label="Theme">
+        <div class="mb-3 flex rounded-md bg-surface-2 p-1" role="radiogroup" aria-label="Theme">
           @for (option of themes; track option.value) {
             <button type="button" role="radio" [attr.aria-checked]="theme.choice() === option.value" (click)="theme.set(option.value)"
               class="flex h-8 flex-1 items-center justify-center gap-1.5 rounded-md text-xs text-muted"
@@ -95,11 +94,11 @@
 
     <!-- Top bar (phones and tablets) -->
     <header class="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-surface px-4 lg:hidden">
-      <span class="grid size-7 shrink-0 place-items-center rounded-md bg-brand text-sm font-bold text-white" aria-hidden="true">F</span>
+      <fs-logo name="" />
       @if (venues.venues(); as list) {
         <label for="venue-switcher-phone" class="sr-only">Venue</label>
         <select id="venue-switcher-phone" (change)="switchVenue($event)"
-          class="h-10 min-w-0 flex-1 cursor-pointer truncate rounded-lg bg-transparent font-semibold">
+          class="h-10 min-w-0 flex-1 cursor-pointer truncate rounded-md bg-transparent font-semibold">
           @for (entry of list; track entry.venue.id) {
             <option [value]="entry.venue.id" [selected]="entry.venue.id === venues.current()?.venue?.id">{{ entry.venue.name }}</option>
           }
@@ -155,14 +154,14 @@
           @for (item of moreItems(); track item.path) {
             <li>
               <a [routerLink]="item.path" (click)="moreOpen.set(false)"
-                class="flex h-20 flex-col items-center justify-center gap-1.5 rounded-xl bg-surface-2 px-1 text-center text-xs">
+                class="flex h-20 flex-col items-center justify-center gap-1.5 rounded-md bg-surface-2 px-1 text-center text-xs">
                 <lucide-icon [img]="item.icon" [size]="22" [strokeWidth]="1.75" />
                 {{ item.label }}
               </a>
             </li>
           }
         </ul>
-        <div class="mt-4 flex rounded-lg bg-surface-2 p-1" role="radiogroup" aria-label="Theme">
+        <div class="mt-4 flex rounded-md bg-surface-2 p-1" role="radiogroup" aria-label="Theme">
           @for (option of themes; track option.value) {
             <button type="button" role="radio" [attr.aria-checked]="theme.choice() === option.value" (click)="theme.set(option.value)"
               class="h-10 flex-1 rounded-md text-sm text-muted" [class.bg-surface]="theme.choice() === option.value"
@@ -170,9 +169,9 @@
           }
         </div>
         <a routerLink="/account" (click)="moreOpen.set(false)"
-          class="mt-3 flex h-11 w-full items-center justify-center rounded-lg font-medium hover:bg-surface-2">Your account</a>
+          class="mt-3 flex h-11 w-full items-center justify-center rounded-md font-medium hover:bg-surface-2">Your account</a>
         <button type="button" (click)="session.signOut()"
-          class="flex h-11 w-full items-center justify-center gap-2 rounded-lg text-danger hover:bg-danger-bg">
+          class="flex h-11 w-full items-center justify-center gap-2 rounded-md text-danger hover:bg-danger-bg">
           <lucide-icon [img]="icons.LogOut" [size]="18" /> Sign out
         </button>
       </div>

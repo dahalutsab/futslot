@@ -27,17 +27,17 @@ import { decided, isKnockout } from './tournament-model';
             <div>
               <label for="m-date" class="mb-1 block text-sm font-medium">Day</label>
               <input id="m-date" type="date" [min]="tournament().startsOn" [max]="tournament().endsOn" [value]="date()" (input)="date.set($any($event.target).value)"
-                class="h-11 w-full rounded-lg border border-border bg-surface px-2 text-base" />
+                class="h-11 w-full rounded-md border border-border bg-surface px-2 text-base" />
             </div>
             <div>
               <label for="m-time" class="mb-1 block text-sm font-medium">Kick-off</label>
               <input id="m-time" type="time" step="900" [value]="time()" (input)="time.set($any($event.target).value)"
-                class="tabular h-11 w-full rounded-lg border border-border bg-surface px-2 text-base" />
+                class="tabular h-11 w-full rounded-md border border-border bg-surface px-2 text-base" />
             </div>
           </div>
           <div>
             <label for="m-court" class="mb-1 block text-sm font-medium">Court</label>
-            <select id="m-court" (change)="courtId.set($any($event.target).value)" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base">
+            <select id="m-court" (change)="courtId.set($any($event.target).value)" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base">
               @for (court of courts(); track court.id) {
                 <option [value]="court.id" [selected]="courtId() === court.id">{{ court.name }}</option>
               }
@@ -45,11 +45,11 @@ import { decided, isKnockout } from './tournament-model';
           </div>
           <p class="text-sm text-subtle">The court is blocked for {{ tournament().matchMinutes }} minutes so players can't book it.</p>
           <div class="flex flex-wrap gap-2">
-            <button type="submit" [disabled]="busy()" class="h-11 rounded-lg border border-border px-4 font-medium hover:bg-surface-2 disabled:opacity-60">
+            <button type="submit" [disabled]="busy()" class="h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2 disabled:opacity-60">
               {{ m.scheduledAt ? 'Move match' : 'Book court' }}
             </button>
             @if (m.scheduledAt && !decided(m)) {
-              <button type="button" (click)="unschedule()" [disabled]="busy()" class="h-11 rounded-lg px-3 font-medium text-muted hover:bg-surface-2">Free the court</button>
+              <button type="button" (click)="unschedule()" [disabled]="busy()" class="h-11 rounded-md px-3 font-medium text-muted hover:bg-surface-2">Free the court</button>
             }
           </div>
         </form>
@@ -63,26 +63,26 @@ import { decided, isKnockout } from './tournament-model';
               <div>
                 <label for="m-home" class="mb-1 block truncate text-sm font-medium">{{ m.home.name }}</label>
                 <input id="m-home" type="number" inputmode="numeric" min="0" max="99" [value]="home()" (input)="home.set($any($event.target).value)"
-                  class="tabular h-14 w-full rounded-lg border border-border bg-surface text-center text-2xl font-semibold" />
+                  class="tabular h-14 w-full rounded-md border border-border bg-surface text-center text-2xl font-semibold" />
               </div>
               <span class="pb-3 text-muted">–</span>
               <div>
                 <label for="m-away" class="mb-1 block truncate text-sm font-medium">{{ m.away.name }}</label>
                 <input id="m-away" type="number" inputmode="numeric" min="0" max="99" [value]="away()" (input)="away.set($any($event.target).value)"
-                  class="tabular h-14 w-full rounded-lg border border-border bg-surface text-center text-2xl font-semibold" />
+                  class="tabular h-14 w-full rounded-md border border-border bg-surface text-center text-2xl font-semibold" />
               </div>
             </div>
             @if (needsPenalties()) {
               <p class="mt-3 text-sm text-muted">Level in a knockout: who won on penalties?</p>
               <div class="mt-1 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                 <input type="number" inputmode="numeric" min="0" max="99" [value]="homePens()" (input)="homePens.set($any($event.target).value)" [attr.aria-label]="m.home.name + ' penalties'"
-                  class="tabular h-11 w-full rounded-lg border border-border bg-surface text-center text-lg" />
+                  class="tabular h-11 w-full rounded-md border border-border bg-surface text-center text-lg" />
                 <span class="text-muted">pens</span>
                 <input type="number" inputmode="numeric" min="0" max="99" [value]="awayPens()" (input)="awayPens.set($any($event.target).value)" [attr.aria-label]="m.away.name + ' penalties'"
-                  class="tabular h-11 w-full rounded-lg border border-border bg-surface text-center text-lg" />
+                  class="tabular h-11 w-full rounded-md border border-border bg-surface text-center text-lg" />
               </div>
             }
-            <button type="submit" [disabled]="busy()" class="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-60">
+            <button type="submit" [disabled]="busy()" class="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
               @if (busy()) {
                 <lucide-icon [img]="spinner" [size]="18" class="animate-spin" />
               }
@@ -93,8 +93,8 @@ import { decided, isKnockout } from './tournament-model';
             <div class="mt-4">
               <p class="text-sm text-muted">Didn't turn up? Give the other team the match (3–0):</p>
               <div class="mt-2 flex flex-wrap gap-2">
-                <button type="button" (click)="walkover(m.home.registrationId)" [disabled]="busy()" class="h-10 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">{{ m.home.name }} wins</button>
-                <button type="button" (click)="walkover(m.away.registrationId)" [disabled]="busy()" class="h-10 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2">{{ m.away.name }} wins</button>
+                <button type="button" (click)="walkover(m.home.registrationId)" [disabled]="busy()" class="h-10 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">{{ m.home.name }} wins</button>
+                <button type="button" (click)="walkover(m.away.registrationId)" [disabled]="busy()" class="h-10 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">{{ m.away.name }} wins</button>
               </div>
             </div>
           }
@@ -104,7 +104,7 @@ import { decided, isKnockout } from './tournament-model';
       }
 
       @if (error(); as message) {
-        <p class="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
+        <p class="mt-4 rounded-md bg-danger-bg px-3 py-2 text-danger" role="alert">{{ message }}</p>
       }
     </fs-sheet>
   `,

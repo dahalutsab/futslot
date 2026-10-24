@@ -21,13 +21,13 @@ const SEND_METHODS: PaymentMethod[] = ['BANK_TRANSFER', 'ESEWA', 'KHALTI'];
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-4xl px-4 py-6 lg:px-8 lg:py-8">
-      <h1 class="text-2xl font-semibold tracking-tight">Venue payouts</h1>
+      <h1 class="text-3xl lg:text-4xl">Venue payouts</h1>
       <p class="mt-1 text-muted">Deposit fees FutSlot collected for venues, one payout per venue and month. FutSlot keeps none of it.</p>
       @if (error(); as message) {
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>
       } @else if (payouts(); as list) {
         @if (list.length === 0) {
-          <div class="mt-6 flex flex-col items-center rounded-xl border border-dashed border-border bg-surface px-6 py-14 text-center">
+          <div class="mt-6 flex flex-col items-center rounded-md border border-dashed border-border bg-surface px-6 py-14 text-center">
             <lucide-icon [img]="icons.CircleCheck" [size]="28" class="text-confirmed-line" />
             <p class="mt-3 font-medium">Nothing to pay out</p>
             <p class="mt-1 max-w-sm text-muted">After a month ends, its deposit fees show up here the next morning.</p>
@@ -35,7 +35,7 @@ const SEND_METHODS: PaymentMethod[] = ['BANK_TRANSFER', 'ESEWA', 'KHALTI'];
         } @else {
           <ul class="mt-4 space-y-3">
             @for (p of list; track p.id) {
-              <li class="rounded-xl border border-border bg-surface p-4">
+              <li class="rounded-md border border-border bg-surface p-4">
                 <div class="flex flex-wrap items-start gap-x-4 gap-y-1">
                   <div class="min-w-0 flex-1">
                     <a [routerLink]="['/venues', p.venueId]" class="font-medium hover:underline">{{ p.venueName }}</a>
@@ -43,7 +43,7 @@ const SEND_METHODS: PaymentMethod[] = ['BANK_TRANSFER', 'ESEWA', 'KHALTI'];
                   </div>
                   <p class="tabular text-lg font-semibold">{{ fmt.rupees(p.amount) }}</p>
                 </div>
-                <p class="mt-3 rounded-lg bg-surface-2 px-3 py-2">
+                <p class="mt-3 rounded-md bg-surface-2 px-3 py-2">
                   <span class="text-sm text-muted">Send to the venue's</span>
                   <span class="block whitespace-pre-line font-medium">{{ p.paymentInstructions ?? 'No payment details set: ask the venue' }}</span>
                 </p>
@@ -56,31 +56,31 @@ const SEND_METHODS: PaymentMethod[] = ['BANK_TRANSFER', 'ESEWA', 'KHALTI'];
                       <legend class="mb-1.5 font-medium">Sent by</legend>
                       <div class="flex flex-wrap gap-2">
                         @for (m of methods; track m) {
-                          <button type="button" (click)="method.set(m)" [attr.aria-pressed]="method() === m" class="h-10 rounded-lg border px-4 text-sm font-medium"
+                          <button type="button" (click)="method.set(m)" [attr.aria-pressed]="method() === m" class="h-10 rounded-md border px-4 text-sm font-medium"
                             [class]="method() === m ? 'border-ink bg-surface-2' : 'border-border text-muted'">{{ fmt.methodLabel(m) }}</button>
                         }
                       </div>
                     </fieldset>
                     <div>
                       <label [for]="'payout-ref-' + p.id" class="mb-1.5 block font-medium">Transfer reference</label>
-                      <input [id]="'payout-ref-' + p.id" name="reference" type="text" maxlength="100" class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base"
+                      <input [id]="'payout-ref-' + p.id" name="reference" type="text" maxlength="100" class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
                         [ngModel]="reference()" (ngModelChange)="reference.set($event)" />
                     </div>
                     <div class="flex gap-2">
-                      <button type="submit" [disabled]="busy() === p.id" class="h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Mark {{ fmt.rupees(p.amount) }} sent</button>
-                      <button type="button" (click)="sending.set(null)" class="h-11 rounded-lg px-4 font-medium">Back</button>
+                      <button type="submit" [disabled]="busy() === p.id" class="h-11 rounded-md bg-ink px-5 font-medium text-ink-fg disabled:opacity-60">Mark {{ fmt.rupees(p.amount) }} sent</button>
+                      <button type="button" (click)="sending.set(null)" class="h-11 rounded-md px-4 font-medium">Back</button>
                     </div>
                     <p class="text-sm text-subtle">The venue's owner is told it's on its way.</p>
                   </form>
                 } @else {
-                  <button type="button" (click)="start(p)" class="mt-3 h-11 rounded-lg bg-ink px-5 font-medium text-ink-fg">I've sent it</button>
+                  <button type="button" (click)="start(p)" class="mt-3 h-11 rounded-md bg-ink px-5 font-medium text-ink-fg">I've sent it</button>
                 }
               </li>
             }
           </ul>
         }
       } @else {
-        <div class="mt-6 h-40 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-40 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
       }
     </div>
   `,

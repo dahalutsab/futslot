@@ -40,25 +40,25 @@ export function listingDays(listing: Pick<FeaturedListing, 'startsAt' | 'endsAt'
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-3xl px-4 py-4 lg:px-8 lg:py-6">
-      <h1 class="text-xl font-semibold tracking-tight lg:text-2xl">Featured listing</h1>
+      <h1 class="text-3xl lg:text-4xl">Featured listing</h1>
       <p class="mt-1 text-muted">Show {{ venueName() }} first in the app for a few days, like before a festival or when evenings are quiet.</p>
 
       @if (!live()) {
-        <p class="mt-5 rounded-xl border border-border bg-surface px-4 py-3 text-muted">Your venue can be featured once FutSlot has approved it and it's listed.</p>
+        <p class="mt-5 rounded-md border border-border bg-surface px-4 py-3 text-muted">Your venue can be featured once FutSlot has approved it and it's listed.</p>
       } @else {
-        <section class="mt-5 rounded-xl border border-border bg-surface p-4 lg:p-6" aria-labelledby="new-title">
+        <section class="mt-5 rounded-md border border-border bg-surface p-4 lg:p-6" aria-labelledby="new-title">
           <h2 id="new-title" class="text-lg font-semibold">Get featured</h2>
           <div class="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
               <label for="feature-start" class="mb-1.5 block font-medium">Starting</label>
               <input id="feature-start" type="date" [min]="todayKey" [value]="start()" (input)="start.set($any($event.target).value)"
-                class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
             </div>
             <fieldset>
               <legend class="mb-1.5 font-medium">For</legend>
               <div class="flex gap-2">
                 @for (length of lengths; track length) {
-                  <label class="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-lg border text-sm font-medium" [class]="days() === length ? 'border-ink bg-surface-2' : 'border-border text-muted'">
+                  <label class="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-md border text-sm font-medium" [class]="days() === length ? 'border-ink bg-surface-2' : 'border-border text-muted'">
                     <input type="radio" name="days" class="sr-only" [checked]="days() === length" (change)="days.set(length)" />{{ length }} days
                   </label>
                 }
@@ -70,7 +70,7 @@ export function listingDays(listing: Pick<FeaturedListing, 'startsAt' | 'endsAt'
             <div class="space-y-2">
               @for (placement of placements; track placement.value) {
                 @let quote = quotes()[placement.value];
-                <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3" [class]="chosen() === placement.value ? 'border-ink bg-surface-2' : 'border-border'"
+                <label class="flex cursor-pointer items-start gap-3 rounded-md border p-3" [class]="chosen() === placement.value ? 'border-ink bg-surface-2' : 'border-border'"
                   [class.opacity-60]="quote && !quote.available">
                   <input type="radio" name="placement" class="mt-1 size-4 accent-current" [checked]="chosen() === placement.value" (change)="chosen.set(placement.value)" />
                   <span class="min-w-0 flex-1">
@@ -98,7 +98,7 @@ export function listingDays(listing: Pick<FeaturedListing, 'startsAt' | 'endsAt'
             <p class="mt-3 text-sm text-danger" role="alert">{{ message }}</p>
           }
           <button type="button" (click)="book()" [disabled]="busy() || !chosenQuote()?.available"
-            class="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-ink font-medium text-ink-fg disabled:opacity-50 sm:w-auto sm:px-6">
+            class="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-50 sm:w-auto sm:px-6">
             @if (busy()) {
               <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" />
             }
@@ -113,14 +113,14 @@ export function listingDays(listing: Pick<FeaturedListing, 'startsAt' | 'endsAt'
       }
 
       @if (error(); as message) {
-        <p class="mt-5 rounded-xl border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
+        <p class="mt-5 rounded-md border border-border bg-surface px-6 py-8 text-center text-muted">{{ message }}</p>
       } @else if (listings(); as list) {
         @if (list.length > 0) {
           <section class="mt-8" aria-labelledby="listings-title">
             <h2 id="listings-title" class="text-lg font-semibold">Your listings</h2>
             <ul class="mt-3 space-y-3">
               @for (listing of list; track listing.id) {
-                <li class="rounded-xl border border-border bg-surface p-4">
+                <li class="rounded-md border border-border bg-surface p-4">
                   <div class="flex flex-wrap items-baseline justify-between gap-2">
                     <span class="font-medium">{{ placementLabel(listing.placement) }}{{ listing.city ? ', ' + listing.city : '' }}</span>
                     <span class="tabular font-medium">{{ fmt.rupees(listing.price) }}</span>
@@ -128,16 +128,16 @@ export function listingDays(listing: Pick<FeaturedListing, 'startsAt' | 'endsAt'
                   <p class="mt-0.5 text-sm text-muted"><span class="tabular">{{ fmt.listingDays(listing) }}</span> · {{ statusText(listing) }}</p>
                   @if (listing.status === 'PENDING_PAYMENT') {
                     @if (listing.paymentPending || paidIds().includes(listing.id)) {
-                      <p class="mt-3 rounded-lg bg-surface-2 px-3 py-2 text-sm" role="status">Payment sent. FutSlot will confirm it soon.</p>
+                      <p class="mt-3 rounded-md bg-surface-2 px-3 py-2 text-sm" role="status">Payment sent. FutSlot will confirm it soon.</p>
                     } @else {
-                      <div class="mt-3 rounded-lg bg-surface-2 px-3 py-2">
+                      <div class="mt-3 rounded-md bg-surface-2 px-3 py-2">
                         <p class="text-sm font-medium text-muted">Pay FutSlot</p>
                         <p class="mt-0.5 whitespace-pre-line">{{ listing.paymentInstructions || 'Contact FutSlot for payment details.' }}</p>
                       </div>
                       <form class="mt-3 grid gap-2 sm:grid-cols-[auto_1fr_auto] sm:items-end" (submit)="$event.preventDefault(); pay(listing)">
                         <div>
                           <label [for]="'method-' + listing.id" class="mb-1 block text-sm font-medium">Paid with</label>
-                          <select [id]="'method-' + listing.id" (change)="method.set($any($event.target).value)" class="h-11 w-full rounded-lg border border-border bg-surface px-3 text-base">
+                          <select [id]="'method-' + listing.id" (change)="method.set($any($event.target).value)" class="h-11 w-full rounded-md border border-border bg-surface px-3 text-base">
                             @for (wallet of wallets; track wallet) {
                               <option [value]="wallet" [selected]="method() === wallet">{{ fmt.methodLabel(wallet) }}</option>
                             }
@@ -146,16 +146,16 @@ export function listingDays(listing: Pick<FeaturedListing, 'startsAt' | 'endsAt'
                         <div>
                           <label [for]="'txn-' + listing.id" class="mb-1 block text-sm font-medium">Transaction ID</label>
                           <input [id]="'txn-' + listing.id" type="text" maxlength="100" autocomplete="off" [value]="transactionId()" (input)="transactionId.set($any($event.target).value)"
-                            class="tabular h-11 w-full rounded-lg border border-border bg-surface px-3 text-base" />
+                            class="tabular h-11 w-full rounded-md border border-border bg-surface px-3 text-base" />
                         </div>
-                        <button type="submit" [disabled]="busy()" class="h-11 rounded-lg bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">I've paid</button>
+                        <button type="submit" [disabled]="busy()" class="h-11 rounded-md bg-ink px-4 font-medium text-ink-fg disabled:opacity-60">I've paid</button>
                       </form>
                       <div class="mt-2 flex items-center gap-2">
                         @if (confirmCancel() === listing.id) {
-                          <button type="button" (click)="cancel(listing)" [disabled]="busy()" class="h-9 rounded-lg px-2 text-sm font-medium text-danger hover:bg-danger-bg">Cancel this booking?</button>
-                          <button type="button" (click)="confirmCancel.set(null)" class="h-9 rounded-lg px-2 text-sm font-medium hover:bg-surface-2">Keep</button>
+                          <button type="button" (click)="cancel(listing)" [disabled]="busy()" class="h-9 rounded-md px-2 text-sm font-medium text-danger hover:bg-danger-bg">Cancel this booking?</button>
+                          <button type="button" (click)="confirmCancel.set(null)" class="h-9 rounded-md px-2 text-sm font-medium hover:bg-surface-2">Keep</button>
                         } @else {
-                          <button type="button" (click)="confirmCancel.set(listing.id)" class="h-9 rounded-lg px-1 text-sm font-medium text-muted hover:underline">Cancel</button>
+                          <button type="button" (click)="confirmCancel.set(listing.id)" class="h-9 rounded-md px-1 text-sm font-medium text-muted hover:underline">Cancel</button>
                         }
                       </div>
                     }

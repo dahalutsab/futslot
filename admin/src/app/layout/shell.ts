@@ -8,6 +8,7 @@ import {
 import { Queue, QueueCounts } from '../core/queue';
 import { Session } from '../core/session';
 import { Theme, ThemeChoice } from '../core/theme';
+import { Logo } from '../shared/logo';
 
 interface NavItem {
   path: string;
@@ -31,15 +32,14 @@ const NAVIGATION: NavItem[] = [
 /** A sidebar on wide screens; on phones, a top bar with the sections in a row under it. */
 @Component({
   selector: 'fs-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule, Logo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2">Skip to content</a>
     <div class="min-h-dvh lg:grid lg:grid-cols-[240px_1fr]">
       <aside class="sticky top-0 hidden h-dvh flex-col border-r border-border bg-surface lg:flex">
         <div class="flex h-14 items-center gap-2 px-5">
-          <span class="grid size-7 place-items-center rounded-md bg-brand text-sm font-bold text-white" aria-hidden="true">F</span>
-          <span class="font-semibold tracking-tight">FutSlot admin</span>
+          <fs-logo name="FutSlot admin" />
         </div>
         <nav class="flex-1 overflow-y-auto px-3 pb-4" aria-label="Main">
           <ul>
@@ -58,7 +58,7 @@ const NAVIGATION: NavItem[] = [
           </ul>
         </nav>
         <div class="border-t border-border p-3">
-          <div class="mb-3 flex rounded-lg bg-surface-2 p-1" role="radiogroup" aria-label="Theme">
+          <div class="mb-3 flex rounded-md bg-surface-2 p-1" role="radiogroup" aria-label="Theme">
             @for (option of themes; track option.value) {
               <button type="button" role="radio" [attr.aria-checked]="theme.choice() === option.value" (click)="theme.set(option.value)"
                 class="flex h-8 flex-1 items-center justify-center gap-1.5 rounded-md text-xs text-muted"
@@ -82,8 +82,7 @@ const NAVIGATION: NavItem[] = [
 
       <header class="sticky top-0 z-20 border-b border-border bg-surface lg:hidden">
         <div class="flex h-14 items-center gap-2 px-4">
-          <span class="grid size-7 place-items-center rounded-md bg-brand text-sm font-bold text-white" aria-hidden="true">F</span>
-          <span class="flex-1 font-semibold">FutSlot admin</span>
+          <fs-logo name="FutSlot admin" class="flex-1" />
           <button type="button" (click)="session.signOut()" aria-label="Sign out" class="grid size-11 place-items-center rounded-md text-muted">
             <lucide-icon [img]="icons.LogOut" [size]="18" />
           </button>

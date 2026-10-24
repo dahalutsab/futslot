@@ -19,16 +19,16 @@ type Period = 'month' | '30' | 'year';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-5xl px-4 py-6 lg:px-8 lg:py-8">
-      <h1 class="text-2xl font-semibold tracking-tight">Overview</h1>
+      <h1 class="text-3xl lg:text-4xl">Overview</h1>
 
       <section class="mt-5" aria-labelledby="waiting-title">
         <h2 id="waiting-title" class="font-semibold">Waiting on you</h2>
         <ul class="mt-2 grid grid-cols-2 gap-3 lg:grid-cols-4">
           @for (item of waiting; track item.path) {
             <li>
-              <a [routerLink]="item.path" class="block rounded-xl border bg-surface p-4 hover:border-subtle"
+              <a [routerLink]="item.path" class="block rounded-md border bg-surface p-4 hover:border-subtle"
                 [class]="queue.counts()[item.key] ? 'border-verify-line' : 'border-border'">
-                <p class="tabular text-2xl font-semibold" [class.text-subtle]="!queue.counts()[item.key]">{{ queue.counts()[item.key] }}</p>
+                <p class="tabular font-display text-4xl font-semibold leading-none" [class.text-subtle]="!queue.counts()[item.key]">{{ queue.counts()[item.key] }}</p>
                 <p class="text-sm text-muted">{{ item.label }}</p>
               </a>
             </li>
@@ -39,7 +39,7 @@ type Period = 'month' | '30' | 'year';
       <section class="mt-8" aria-labelledby="numbers-title">
         <div class="flex flex-wrap items-center gap-3">
           <h2 id="numbers-title" class="flex-1 font-semibold">How FutSlot is doing</h2>
-          <div class="flex rounded-lg bg-surface-2 p-1" role="radiogroup" aria-label="Period">
+          <div class="flex rounded-md bg-surface-2 p-1" role="radiogroup" aria-label="Period">
             @for (p of periods; track p.value) {
               <button type="button" role="radio" [attr.aria-checked]="period() === p.value" (click)="period.set(p.value)"
                 class="h-9 rounded-md px-3 text-sm font-medium text-muted" [class.bg-surface]="period() === p.value" [class.text-text]="period() === p.value">{{ p.label }}</button>
@@ -52,9 +52,9 @@ type Period = 'month' | '30' | 'year';
           <p class="mt-1 text-sm text-muted">{{ fmt.dayLabel(r.from) }} – {{ fmt.dayLabel(r.to) }}</p>
           <dl class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-3">
             @for (k of kpis(r); track k.label) {
-              <div class="rounded-xl border border-border bg-surface p-4">
+              <div class="rounded-md border border-border bg-surface p-4">
                 <dt class="text-sm text-muted">{{ k.label }}</dt>
-                <dd class="tabular mt-1 text-2xl font-semibold">{{ k.value }}</dd>
+                <dd class="tabular mt-1 font-display text-4xl font-semibold leading-none">{{ k.value }}</dd>
               </div>
             }
           </dl>
@@ -65,7 +65,7 @@ type Period = 'month' | '30' | 'year';
               @if (r.topVenues.length === 0) {
                 <p class="mt-2 text-muted">No bookings in this period.</p>
               } @else {
-                <div class="mt-2 overflow-x-auto rounded-xl border border-border bg-surface">
+                <div class="mt-2 overflow-x-auto rounded-md border border-border bg-surface">
                   <table class="w-full min-w-[420px] text-left text-sm">
                     <thead class="border-b border-border text-muted">
                       <tr><th scope="col" class="px-4 py-2.5 font-medium">Venue</th><th scope="col" class="px-4 py-2.5 text-right font-medium">Bookings</th><th scope="col" class="px-4 py-2.5 text-right font-medium">Booked value</th></tr>
@@ -85,7 +85,7 @@ type Period = 'month' | '30' | 'year';
             </section>
             <section aria-labelledby="venues-title">
               <h3 id="venues-title" class="font-semibold">Venues now</h3>
-              <ul class="mt-2 divide-y divide-border rounded-xl border border-border bg-surface">
+              <ul class="mt-2 divide-y divide-border rounded-md border border-border bg-surface">
                 @for (s of statuses; track s) {
                   <li>
                     <a [routerLink]="'/venues'" [queryParams]="{ status: s }" class="flex items-center justify-between px-4 py-2.5 hover:bg-surface-2">
@@ -97,7 +97,7 @@ type Period = 'month' | '30' | 'year';
             </section>
           </div>
         } @else {
-          <div class="mt-3 h-48 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+          <div class="mt-3 h-48 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
         }
       </section>
     </div>

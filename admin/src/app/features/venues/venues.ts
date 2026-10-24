@@ -15,8 +15,8 @@ const TABS: VenueStatus[] = ['PENDING_APPROVAL', 'ACTIVE', 'SUSPENDED', 'REJECTE
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-5xl px-4 py-6 lg:px-8 lg:py-8">
-      <h1 class="text-2xl font-semibold tracking-tight">Venues</h1>
-      <div class="mt-4 flex gap-1 overflow-x-auto rounded-lg bg-surface-2 p-1 [scrollbar-width:none]" role="tablist" aria-label="Venue status">
+      <h1 class="text-3xl lg:text-4xl">Venues</h1>
+      <div class="mt-4 flex gap-1 overflow-x-auto rounded-md bg-surface-2 p-1 [scrollbar-width:none]" role="tablist" aria-label="Venue status">
         @for (s of tabs; track s) {
           <button type="button" role="tab" [attr.aria-selected]="status() === s" (click)="show(s)"
             class="h-10 shrink-0 rounded-md px-4 font-medium text-muted" [class.bg-surface]="status() === s" [class.text-text]="status() === s">{{ label[s] }}</button>
@@ -26,11 +26,11 @@ const TABS: VenueStatus[] = ['PENDING_APPROVAL', 'ACTIVE', 'SUSPENDED', 'REJECTE
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>
       } @else if (venues(); as list) {
         @if (list.length === 0) {
-          <p class="mt-6 rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center text-muted">
+          <p class="mt-6 rounded-md border border-dashed border-border bg-surface px-6 py-12 text-center text-muted">
             {{ status() === 'PENDING_APPROVAL' ? 'No venues waiting. New ones show up here when owners submit them.' : 'None.' }}
           </p>
         } @else {
-          <div class="mt-4 overflow-x-auto rounded-xl border border-border bg-surface">
+          <div class="mt-4 overflow-x-auto rounded-md border border-border bg-surface">
             <table class="w-full min-w-[520px] text-left">
               <thead class="border-b border-border text-sm text-muted">
                 <tr><th scope="col" class="px-4 py-2.5 font-medium">Venue</th><th scope="col" class="px-4 py-2.5 font-medium">Where</th><th scope="col" class="px-4 py-2.5 text-right font-medium">Courts</th><th scope="col" class="px-4 py-2.5 text-right font-medium">Rating</th></tr>
@@ -52,7 +52,7 @@ const TABS: VenueStatus[] = ['PENDING_APPROVAL', 'ACTIVE', 'SUSPENDED', 'REJECTE
           }
         }
       } @else {
-        <div class="mt-6 h-40 animate-pulse rounded-xl bg-surface" aria-label="Loading"></div>
+        <div class="mt-6 h-40 animate-pulse rounded-md bg-surface" aria-label="Loading"></div>
       }
     </div>
   `,
