@@ -366,7 +366,7 @@ class SitePageService {
 			sentences.add(text.get("seo.openToday", about.todayHours()));
 		}
 		sentences.add(text.get(contact.page().phone() != null ? "seo.bookByPhone" : "seo.book"));
-		String image = (cover != null) ? addresses.origin() + cover : null;
+		String image = (cover == null || cover.startsWith("https://")) ? cover : addresses.origin() + cover;
 		String english = noindex ? null : addresses.english();
 		String nepali = noindex ? null : addresses.nepali();
 		return new SitePage.Seo(title, String.join(" ", sentences), text.nepali() ? addresses.nepali() : addresses.english(),

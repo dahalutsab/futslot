@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+Devanagari:wght@400;600&amp;display=swap">
-  <link rel="stylesheet" th:href="@{/site-assets/futslot.css(v=2)}">
+  <link rel="stylesheet" th:href="@{/site-assets/futslot.css(v=3)}">
   <script>
     // The player app's theme and language, so these pages match it: dark mode before first paint, and a first-time
     // visitor's language is the language of the page they came in on
@@ -125,7 +125,11 @@
         </ul>
       </nav>
     </div>
-    <p class="wrap muted small">© <span th:text="${dir.year}">2026</span> FutSlot</p>
+    <div class="wrap foot-bottom muted small">
+      <p>© <span th:text="${dir.year}">2026</span> FutSlot</p>
+      <p><th:block th:text="#{dir.footer.madeBefore}">Proudly made by </th:block><a href="https://dahalutsab.com.np"
+        th:text="#{dir.footer.maker}">Utsab Dahal</a><th:block th:text="#{dir.footer.madeAfter}"></th:block></p>
+    </div>
   </footer>
 </body>
 </html>

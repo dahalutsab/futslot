@@ -36,6 +36,12 @@ class SiteHostFilter extends OncePerRequestFilter {
 		this.properties = properties;
 	}
 
+	/** Health checks belong to no site, and must not touch the database (a sleeping one would be woken). */
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
+		return request.getRequestURI().startsWith("/actuator/");
+	}
+
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws ServletException, IOException {

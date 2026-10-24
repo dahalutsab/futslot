@@ -4,7 +4,7 @@ import java.util.Optional;
 
 /**
  * Where uploaded files live. {@code key} is a relative path such as {@code venues/<id>/<file>.jpg}; files
- * are served at {@code /media/<key>}. Local disk today; a cloud bucket can implement this later.
+ * are served at {@code /media/<key>}, or by Cloudinary (see {@link MediaConfig}).
  */
 public interface MediaStorage {
 

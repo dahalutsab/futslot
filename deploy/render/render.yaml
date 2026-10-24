@@ -1,0 +1,76 @@
+# FutSlot's API on Render's free plan, as a Render Blueprint (New > Blueprint, Blueprint path deploy/render/render.yaml).
+# The database is on Neon, photos on Cloudinary and the web apps on Vercel, which passes the API's paths here; see
+# deploy/render/README.md. Values marked sync: false are asked for when the Blueprint is created.
+services:
+  - type: web
+    name: futslot-api
+    runtime: docker
+    plan: free
+    # Near Neon's Singapore region, and Nepal
+    region: singapore
+    rootDir: backend
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
+    # Answers without the database, so checks don't keep Neon awake
+    healthCheckPath: /actuator/health/liveness
+    envVars:
+      - key: PORT
+        value: "8080"
+      # Neon's direct connection (not the -pooler one: Flyway needs a whole session), as JDBC:
+      # jdbc:postgresql://ep-....ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      # Cloudinary's API environment variable, cloudinary://key:secret@cloud: Render's disk is wiped whenever it sleeps
+      - key: CLOUDINARY_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: OTP_SECRET
+        generateValue: true
+      - key: SITES_SESSION_SECRET
+        generateValue: true
+      - key: SITES_BASE_DOMAIN
+        value: futslot.dahalutsab.com.np
+      - key: SITES_URL_TEMPLATE
+        value: https://{subdomain}.futslot.dahalutsab.com.np
+      - key: SITES_DNS_TARGET
+        value: cname.vercel-dns.com
+      # No SMS provider: sign-in codes on screen. Made-up venues stay out of search results.
+      - key: SHOW_SIGN_IN_CODES
+        value: "true"
+      - key: SEARCH_INDEXING
+        value: "false"
+      - key: FUTSLOT_PAYMENT_INSTRUCTIONS
+        value: "This is a demo: don't send real money. Enter any transaction ID, like DEMO-123, and an admin approves it."
+      - key: FUTSLOT_PAYMENT_INSTRUCTIONS_NE
+        value: "यो डेमो हो: साँच्चैको पैसा नपठाउनुहोस्। DEMO-123 जस्तो कुनै पनि ट्रान्ज्याक्सन आइडी लेख्नुहोस्, एडमिनले स्वीकृत गर्छ।"
+      # Vercel and Render say the visit was HTTPS and which address it was for (a venue website's, or FutSlot's)
+      - key: SERVER_FORWARD_HEADERS_STRATEGY
+        value: framework
+      - key: SERVER_TOMCAT_THREADS_MAX
+        value: "40"
+      # Neon's free plan has 100 compute hours a month and sleeps after 5 idle minutes; awake all month would be
+      # about 180. So no idle connections are kept, and the background jobs run every 20 minutes (hourly ones every
+      # 6 hours) instead of every minute, letting it sleep in between: about 50 hours a month.
+      - key: SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE
+        value: "5"
+      - key: SPRING_DATASOURCE_HIKARI_MINIMUMIDLE
+        value: "0"
+      - key: SPRING_DATASOURCE_HIKARI_IDLETIMEOUT
+        value: "30000"
+      - key: SPRING_DATASOURCE_HIKARI_KEEPALIVETIME
+        value: "0"
+      - key: FUTSLOT_BOOKINGS_MAINTENANCE_INTERVAL_MS
+        value: "1200000"
+      - key: FUTSLOT_NOTIFICATIONS_REMINDERS_INTERVAL_MS
+        value: "1200000"
+      - key: FUTSLOT_MATCHMAKING_EXPIRY_INTERVAL_MS
+        value: "1200000"
+      - key: FUTSLOT_MEMBERSHIPS_EXPIRY_CRON
+        value: "0 5 */6 * * *"
+      - key: FUTSLOT_BILLING_JOBS_CRON
+        value: "0 15 */6 * * *"

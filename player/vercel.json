@@ -1,0 +1,93 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm ci",
+  "buildCommand": "npx ng build && mv dist/player/browser/index.html dist/player/browser/app.html",
+  "outputDirectory": "dist/player/browser",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://futslot-api.onrender.com/api/:path*"
+    },
+    {
+      "source": "/media/:path*",
+      "destination": "https://futslot-api.onrender.com/media/:path*"
+    },
+    {
+      "source": "/site-assets/:path*",
+      "destination": "https://futslot-api.onrender.com/site-assets/:path*"
+    },
+    {
+      "source": "/site-preview/:path*",
+      "destination": "https://futslot-api.onrender.com/site-preview/:path*"
+    },
+    {
+      "source": "/sites/:path*",
+      "destination": "https://futslot-api.onrender.com/sites/:path*"
+    },
+    {
+      "source": "/",
+      "destination": "https://futslot-api.onrender.com/"
+    },
+    {
+      "source": "/ne",
+      "destination": "https://futslot-api.onrender.com/ne"
+    },
+    {
+      "source": "/ne/",
+      "destination": "https://futslot-api.onrender.com/ne/"
+    },
+    {
+      "source": "/futsal/:city",
+      "destination": "https://futslot-api.onrender.com/futsal/:city"
+    },
+    {
+      "source": "/futsal/:city/:area",
+      "destination": "https://futslot-api.onrender.com/futsal/:city/:area"
+    },
+    {
+      "source": "/venues/:slug",
+      "destination": "https://futslot-api.onrender.com/venues/:slug"
+    },
+    {
+      "source": "/ne/futsal/:city",
+      "destination": "https://futslot-api.onrender.com/ne/futsal/:city"
+    },
+    {
+      "source": "/ne/futsal/:city/:area",
+      "destination": "https://futslot-api.onrender.com/ne/futsal/:city/:area"
+    },
+    {
+      "source": "/ne/venues/:slug",
+      "destination": "https://futslot-api.onrender.com/ne/venues/:slug"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "https://futslot-api.onrender.com/robots.txt"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://futslot-api.onrender.com/sitemap.xml"
+    },
+    {
+      "source": "/v3/api-docs/:path*",
+      "destination": "https://futslot-api.onrender.com/v3/api-docs/:path*"
+    },
+    {
+      "source": "/v3/api-docs",
+      "destination": "https://futslot-api.onrender.com/v3/api-docs"
+    },
+    {
+      "source": "/swagger-ui/:path*",
+      "destination": "https://futslot-api.onrender.com/swagger-ui/:path*"
+    },
+    {
+      "source": "/swagger-ui.html",
+      "destination": "https://futslot-api.onrender.com/swagger-ui.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/app.html"
+    }
+  ]
+}
