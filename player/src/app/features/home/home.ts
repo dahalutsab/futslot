@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signa
 import { RouterLink } from '@angular/router';
 
 import { Api } from '../../core/api';
-import { Booking, Deposit, MatchPost, OwedShare, Split, VenueDetail, WaitlistEntry } from '../../core/api.types';
+import { Booking, Deposit, MatchPost, OwedShare, Split, VenueDetail, VenueSummary, WaitlistEntry } from '../../core/api.types';
 import { Session } from '../../core/session';
 import { digits, l } from '../../i18n/i18n';
 import { bookingChip, cancelOutcome } from '../../shared/booking-model';
@@ -10,6 +10,7 @@ import { dayLabel, localClock, rupees, today, weekdayShort } from '../../shared/
 import { Coins, Hourglass, Icon, IconData, MapPin, ShareNetwork, Star, Wallet } from '../../shared/icon';
 import { skillLabels } from '../../shared/labels';
 import { StatusChip } from '../../shared/status-chip';
+import { VenueCard } from '../../shared/venue-card';
 
 const VALLEY = 'Asia/Kathmandu';
 
@@ -35,12 +36,12 @@ interface Fixture {
 
 /**
  * The signed-in player's home (design_handoff_broadsheet, screens 1b and 1c), set as a front page: the next game
- * is the lead story with its money spelled out, then what needs them, this week's games, open games nearby and
- * their tournament. Everything comes from the API; a part that fails to load is left out.
+ * is the lead story with its money spelled out, then what needs them, venues to book, this week's games, open games
+ * nearby and their tournament. Everything comes from the API; a part that fails to load is left out.
  */
 @Component({
   selector: 'fs-home',
-  imports: [RouterLink, Icon, StatusChip],
+  imports: [RouterLink, Icon, StatusChip, VenueCard],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-[1280px] px-5 lg:px-[72px]">
@@ -179,6 +180,21 @@ interface Fixture {
         </aside>
       </section>
 
+      <!-- Venues to book, so a game is a tap away from home too: featured ones first -->
+      @if (venues().length) {
+        <section class="pt-2 pb-12 lg:pt-6 lg:pb-16" aria-labelledby="venues-title">
+          <div class="mb-6 flex items-baseline justify-between gap-4 lg:mb-7">
+            <h2 id="venues-title" class="kicker">{{ l().homeVenues }}</h2>
+            <a routerLink="/explore" class="text-[15px] text-accent-700 hover:text-accent-800">{{ l().allVenuesLink }}</a>
+          </div>
+          <ul class="grid gap-x-12 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 lg:gap-y-14">
+            @for (venue of venues(); track venue.id; let i = $index) {
+              <li [class.max-sm:hidden]="i >= 3"><fs-venue-card [venue]="venue" /></li>
+            }
+          </ul>
+        </section>
+      }
+
       <!-- Second row: this week, and games looking for players -->
       <section class="hidden gap-[72px] pt-6 pb-12 lg:grid lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
         <div>
@@ -311,6 +327,9 @@ export class Home {
   private readonly unreviewed = signal<Booking[]>([]);
 
   protected readonly openGames = signal<MatchPost[]>([]);
+
+  /** Six venues to book: featured ones first, then the rest as the API orders them. */
+  protected readonly venues = signal<VenueSummary[]>([]);
 
   protected readonly fixture = signal<Fixture | null>(null);
 
@@ -532,6 +551,13 @@ export class Home {
     this.api.matchPosts({ type: 'NEED_PLAYERS' }).then(
       (page) => this.openGames.set(page.content.filter((p) => !p.mine && p.status === 'OPEN').slice(0, 3)), () => undefined);
     void this.loadFixture();
+    void this.loadVenues();
+  }
+
+  private async loadVenues(): Promise<void> {
+    const [featured, page] = await Promise.all([this.api.featured().catch(() => []), this.api.venues({ size: 6 }).catch(() => null)]);
+    const rest = (page?.content ?? []).filter((v) => !featured.some((f) => f.id === v.id));
+    this.venues.set([...featured, ...rest].slice(0, 6));
   }
 
   /** The next scheduled game for one of the player's teams, in a tournament they're in. */

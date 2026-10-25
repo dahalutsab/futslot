@@ -766,6 +766,8 @@ export const en = {
   needReviewDetail: (day: string) => `Played ${day} · a review helps other players`,
   thisWeek: 'This week',
   allBookingsLink: 'All bookings →',
+  homeVenues: 'Futsal venues',
+  allVenuesLink: 'All venues →',
   colDay: 'Day',
   colVenue: 'Venue',
   colTime: 'Time',

@@ -765,6 +765,8 @@ export const ne: Strings = {
   needReviewDetail: (day: string) => `${day} खेलियो · समीक्षाले अरू खेलाडीलाई मद्दत गर्छ`,
   thisWeek: 'यो हप्ता',
   allBookingsLink: 'सबै बुकिङ →',
+  homeVenues: 'फुटसल भेन्यु',
+  allVenuesLink: 'सबै भेन्यु →',
   colDay: 'दिन',
   colVenue: 'भेन्यु',
   colTime: 'समय',
