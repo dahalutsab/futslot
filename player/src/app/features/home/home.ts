@@ -289,14 +289,14 @@ interface Fixture {
       border-color: var(--color-divider);
     }
     .btn-secondary:hover {
-      background: rgb(32 30 29 / 0.07);
+      background: rgb(var(--ink-rgb) / 0.07);
     }
     .btn-ghost {
       padding-inline: 14px;
       color: var(--color-accent-700);
     }
     .btn-ghost:hover {
-      background: rgb(0 136 176 / 0.1);
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
     }
   `,
 })

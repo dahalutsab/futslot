@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
+import { Theme } from './core/theme';
 import { LanguageChoice } from './i18n/language-choice';
 
 @Component({
@@ -11,7 +12,8 @@ import { LanguageChoice } from './i18n/language-choice';
 })
 export class App {
   constructor() {
-    // Keeps the account's language in step
+    // Follows the device's light or dark setting from the start, and keeps the account's language in step
+    inject(Theme);
     inject(LanguageChoice);
   }
 }

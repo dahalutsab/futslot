@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { BadgeCheck, ChevronRight, Coins, Heart, Hourglass, Icon, IconData, LogOut, MessageSquare, Shirt, Star, Wallet } from '../../shared/icon';
+import { BadgeCheck, ChevronRight, Coins, Heart, Hourglass, Icon, IconData, LogOut, MessageSquare, Monitor, Moon, Shirt, Star, Sun, Wallet } from '../../shared/icon';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { Session } from '../../core/session';
+import { Theme, ThemeChoice } from '../../core/theme';
 import { currentLanguage, l, Language } from '../../i18n/i18n';
 import { LanguageChoice } from '../../i18n/language-choice';
 import { phone } from '../../shared/format';
@@ -101,6 +102,19 @@ interface Link {
         </div>
       </section>
 
+      <section class="mt-6 rounded-md border border-border bg-surface p-5" aria-labelledby="theme-title">
+        <h2 id="theme-title" class="font-semibold">{{ l().appearance }}</h2>
+        <p class="mt-1 text-sm text-muted">{{ l().appearanceHelp }}</p>
+        <div class="mt-3 flex rounded-md bg-surface-2 p-1" role="radiogroup" aria-labelledby="theme-title">
+          @for (option of themes(); track option.value) {
+            <button type="button" role="radio" [attr.aria-checked]="theme.choice() === option.value" (click)="theme.set(option.value)"
+              class="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md font-medium text-muted"
+              [class.bg-surface]="theme.choice() === option.value" [class.text-text]="theme.choice() === option.value">
+              <fs-icon [img]="option.icon" [size]="16" /> {{ option.label }}
+            </button>
+          }
+        </div>
+      </section>
 
       <button type="button" (click)="session.signOut()" class="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-md font-medium text-danger hover:bg-danger-bg">
         <fs-icon [img]="icons.LogOut" [size]="18" /> {{ l().signOut }}
@@ -138,6 +152,14 @@ export class Me {
   protected readonly languageOptions: Language[] = ['en', 'ne'];
 
   protected readonly languageNames = LANGUAGE_NAMES;
+
+  protected readonly theme = inject(Theme);
+
+  protected readonly themes = computed<{ value: ThemeChoice; label: string; icon: IconData }[]>(() => [
+    { value: 'system', label: l().themeAuto, icon: Monitor },
+    { value: 'light', label: l().themeLight, icon: Sun },
+    { value: 'dark', label: l().themeDark, icon: Moon },
+  ]);
 
 
   protected readonly fullName = signal(this.session.user()?.fullName ?? '');

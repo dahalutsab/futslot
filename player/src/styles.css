@@ -41,19 +41,19 @@
   --color-flood-ink: var(--flood-ink);
 
   /* The two spot inks and their steps (broadsheet-styles.css): 600 hover, 700 pressed and text, 100 tag fills */
-  --color-accent: #0088b0;
-  --color-accent-100: #e9f8ff;
-  --color-accent-200: #cbeeff;
-  --color-accent-600: #1186ac;
-  --color-accent-700: #006786;
-  --color-accent-800: #004961;
-  --color-accent-2: #d6006c;
-  --color-accent-2-100: #fff1f4;
-  --color-accent-2-700: #aa0b56;
-  --color-accent-2-800: #790e3d;
-  --color-neutral-100: #f8f4f4;
-  --color-neutral-800: #444141;
-  --color-divider: rgb(32 30 29 / 0.16);
+  --color-accent: var(--accent);
+  --color-accent-100: var(--accent-100);
+  --color-accent-200: var(--accent-200);
+  --color-accent-600: var(--accent-600);
+  --color-accent-700: var(--accent-700);
+  --color-accent-800: var(--accent-800);
+  --color-accent-2: var(--accent-2);
+  --color-accent-2-100: var(--accent-2-100);
+  --color-accent-2-700: var(--accent-2-700);
+  --color-accent-2-800: var(--accent-2-800);
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-800: var(--neutral-800);
+  --color-divider: rgb(var(--ink-rgb) / 0.16);
   /* Print treatments only (.cmyk-num), never interface */
   --color-process-yellow: #edbb00;
 
@@ -78,12 +78,26 @@
   --color-noshow-fg: var(--noshow-fg);
 }
 
-/* Paper only: Broadsheet has no dark surfaces */
+/* Paper by day */
 :root {
+  --ink-rgb: 32 30 29;
+  --accent: #0088b0;
+  --accent-100: #e9f8ff;
+  --accent-200: #cbeeff;
+  --accent-600: #1186ac;
+  --accent-700: #006786;
+  --accent-800: #004961;
+  --accent-2: #d6006c;
+  --accent-2-100: #fff1f4;
+  --accent-2-700: #aa0b56;
+  --accent-2-800: #790e3d;
+  --neutral-100: #f8f4f4;
+  --neutral-800: #444141;
+
   --bg: #f3f2f2;
   --surface: #f3f2f2;
   --surface-2: #eae9e9;
-  --border: rgb(32 30 29 / 0.16);
+  --border: rgb(var(--ink-rgb) / 0.16);
   --text: #201e1d;
   --text-muted: #4a4746;
   --text-subtle: #605d5d;
@@ -119,6 +133,64 @@
   --gutter: 20px;
 
   color-scheme: light;
+}
+
+/*
+ * The same page at night (docs/design/broadsheet.md, "Night edition"): warm off-black paper from the ink's own hue,
+ * ink that is paper-white but not glaring, and the spot inks lifted until they read on the dark. Interactive cyan
+ * fills carry dark type; tints become deep washes of their ink. Surfaces step lighter as they rise (a card, a
+ * chosen segment), the other way from paper. Set by .dark on <html> (core/theme.ts).
+ */
+:root.dark {
+  --ink-rgb: 230 228 225;
+  --accent: #2aa9d6;
+  --accent-100: #0e2a35;
+  --accent-200: #143a48;
+  --accent-600: #4ab8e0;
+  --accent-700: #63c4e8;
+  --accent-800: #b3e5f7;
+  --accent-2: #f0559b;
+  --accent-2-100: #35141f;
+  --accent-2-700: #ff86b8;
+  --accent-2-800: #ffc0d8;
+  --neutral-100: #232120;
+  --neutral-800: #d2cfcd;
+
+  --bg: #151413;
+  --surface: #211f1e;
+  --surface-2: #1a1918;
+  --text: #e6e4e1;
+  --text-muted: #b9b6b4;
+  --text-subtle: #9e9a98;
+  --ink: #2aa9d6;
+  --ink-fg: #151413;
+  --ring: #4ab8e0;
+  --danger: #ff86b8;
+  --danger-bg: #35141f;
+  --brand: #e6e4e1;
+  --flood: #0e2a35;
+  --flood-ink: #b3e5f7;
+
+  --confirmed-bg: #0e2a35;
+  --confirmed-line: #2aa9d6;
+  --confirmed-fg: #b3e5f7;
+  --held-bg: #35141f;
+  --held-line: #f0559b;
+  --held-fg: #ffc0d8;
+  --verify-bg: #232120;
+  --verify-line: #77726f;
+  --verify-fg: #d2cfcd;
+  --blocked-bg: #232120;
+  --blocked-line: #77726f;
+  --blocked-fg: #d2cfcd;
+  --tournament-bg: #232120;
+  --tournament-line: #9e9a98;
+  --tournament-fg: #d2cfcd;
+  --noshow-bg: #35141f;
+  --noshow-line: #f0559b;
+  --noshow-fg: #ffc0d8;
+
+  color-scheme: dark;
 }
 
 @media (min-width: 64rem) {
@@ -163,7 +235,7 @@
   }
 
   ::selection {
-    background: rgb(0 136 176 / 0.3);
+    background: color-mix(in srgb, var(--accent) 30%, transparent);
   }
 
   button,
@@ -220,7 +292,7 @@
     line-height: 14px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: rgb(32 30 29 / 0.7);
+    color: rgb(var(--ink-rgb) / 0.7);
   }
 
   /* The front page's head rule: 2px and 1px of full ink, 5px tall, above a dateline */
@@ -236,7 +308,7 @@
     min-width: 24px;
     align-self: flex-end;
     margin-bottom: 0.4em;
-    border-bottom: 1px dotted rgb(32 30 29 / 0.45);
+    border-bottom: 1px dotted rgb(var(--ink-rgb) / 0.45);
   }
 
   /*
@@ -263,6 +335,11 @@
     inset: 0.12em;
     mix-blend-mode: multiply;
     text-box: trim-both cap alphabetic;
+  }
+
+  /* At night the plates are light on dark: they add up (screen) to a pale core instead of multiplying to ink */
+  .dark .cmyk-num .plate {
+    mix-blend-mode: screen;
   }
 
   .cmyk-num .plate-c {
@@ -294,6 +371,11 @@
     background-image: radial-gradient(circle, rgb(0 0 0 / 0.22) 30%, transparent 32%);
     background-size: 3px 3px;
     mix-blend-mode: multiply;
+  }
+
+  /* Photographs sit a little lower at night, so a bright court doesn't glare off the dark page */
+  .dark .halftone {
+    filter: grayscale(0.35) contrast(1.1) brightness(0.85);
   }
 
   /* A chosen star or a saved heart: Phosphor's tinted half filled in */

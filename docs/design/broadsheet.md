@@ -24,6 +24,19 @@ FutSlot is set like a newspaper front page: near-black Source Serif 4 on paper w
 - Never both accents in one small component. Process yellow is for print treatments only.
 - Status: Confirmed → cyan tag; Held / share due / no-show → magenta tag; Checking / waitlist / played / cancelled → neutral tag.
 
+## Night edition (dark)
+The handoff had no dark surfaces; this is FutSlot's own, the same page printed for a dark room. It follows the device
+unless the reader picks Light or Dark (player app: Me → Appearance; public pages: the moon/sun in the masthead). One
+choice, `localStorage` `futslot.theme`, covers the app and the public pages on the same address; `.dark` on `<html>`
+switches the tokens (player `src/styles.css`, `site-assets/futslot.css` + `theme.js`), set before first paint.
+- Paper `#151413` (the ink's own warm hue), ink `#e6e4e1`. Muted ink keeps its alpha steps over `--ink-rgb`.
+- Surfaces step lighter as they rise: card / chosen segment `#211f1e`, track / hover `#1a1918`.
+- Cyan lifted to `#2aa9d6` for fills, with dark type on it; links and pressed `#63c4e8`; tints `#0e2a35` / `#143a48`
+  with `#b3e5f7` type. Magenta `#f0559b`, text `#ff86b8`, tint `#35141f`. Every pairing is at least 6.5:1.
+- Plates add instead of multiply (`.cmyk-num` screen blend: a pale core with cyan and magenta fringes); photographs
+  sit at 85% brightness.
+- Never pure black or white, and no new colors: every value is a step of an existing ink.
+
 ## Imagery and numerals
 - Hero photos: `.cmyk` (four misregistered process plates). Listing/interface photos: `.halftone`.
 - Big moment numbers (countdown, step numbers): `.cmyk-num`.

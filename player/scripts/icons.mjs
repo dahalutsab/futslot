@@ -11,7 +11,7 @@ const ICONS = {
   House: 'house', LoaderCircle: 'circle-notch', LogIn: 'sign-in', LogOut: 'sign-out', MapPin: 'map-pin',
   MessageSquare: 'chat-circle', Minus: 'minus', Phone: 'phone', Plus: 'plus', Search: 'magnifying-glass',
   SendHorizontal: 'paper-plane-right', ShareNetwork: 'share-network', ShieldCheck: 'shield-check', Shirt: 't-shirt',
-  Star: 'star', TimerOff: 'timer', Trash2: 'trash', Trophy: 'trophy', Users: 'users', Wallet: 'wallet', X: 'x',
+  Monitor: 'monitor', Moon: 'moon', Star: 'star', Sun: 'sun', TimerOff: 'timer', Trash2: 'trash', Trophy: 'trophy', Users: 'users', Wallet: 'wallet', X: 'x',
 };
 
 const root = new URL('../node_modules/@phosphor-icons/core/assets/duotone/', import.meta.url);

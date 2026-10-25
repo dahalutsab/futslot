@@ -8,7 +8,16 @@
   <meta name="description" content="Find a futsal court near you, book it and pay with eSewa or Khalti.">
   <!-- The app's screens aren't for search results: FutSlot's public pages (/, /futsal/..., /venues/...) come whole from the server -->
   <meta name="robots" content="noindex">
-  <meta name="theme-color" content="#f3f2f2">
+  <meta name="theme-color" content="#f3f2f2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#151413" media="(prefers-color-scheme: dark)">
+  <script>
+    // Apply the saved theme before first paint, so the night page doesn't flash paper-white (core/theme.ts)
+    try {
+      const theme = localStorage.getItem('futslot.theme') ?? 'system';
+      const dark = theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.classList.toggle('dark', dark);
+    } catch {}
+  </script>
   <link rel="icon" href="favicon.ico" sizes="32x32">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">

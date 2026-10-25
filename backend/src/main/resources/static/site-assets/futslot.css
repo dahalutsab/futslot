@@ -1,9 +1,11 @@
 /*
  * FutSlot's own public pages (templates/futslot): "Broadsheet" (docs/design/broadsheet.md, design_handoff_broadsheet/,
  * screen 1a). Set like a newspaper front page: near-black Source Serif 4 on paper, left-aligned, no boxes. Cyan is
- * what you can act on and what's settled; magenta is rarer, for what needs you. The player app uses the same tokens.
+ * what you can act on and what's settled; magenta is rarer, for what needs you. The player app uses the same tokens,
+ * and the same night edition below (:root.dark, set by theme.js).
  */
 :root {
+  --ink-rgb: 32 30 29;
   --bg: #f3f2f2;
   --surface: #eae9e9;
   --text: #201e1d;
@@ -16,14 +18,14 @@
   --accent-2: #d6006c;
   --accent-2-700: #aa0b56;
   --process-yellow: #edbb00;
-  --divider: rgb(32 30 29 / 0.16);
-  --ink-82: rgb(32 30 29 / 0.82);
-  --ink-80: rgb(32 30 29 / 0.8);
-  --ink-78: rgb(32 30 29 / 0.78);
-  --ink-70: rgb(32 30 29 / 0.7);
-  --ink-62: rgb(32 30 29 / 0.62);
-  --ink-60: rgb(32 30 29 / 0.6);
-  --ink-45: rgb(32 30 29 / 0.45);
+  --divider: rgb(var(--ink-rgb) / 0.16);
+  --ink-82: rgb(var(--ink-rgb) / 0.82);
+  --ink-80: rgb(var(--ink-rgb) / 0.8);
+  --ink-78: rgb(var(--ink-rgb) / 0.78);
+  --ink-70: rgb(var(--ink-rgb) / 0.7);
+  --ink-62: rgb(var(--ink-rgb) / 0.62);
+  --ink-60: rgb(var(--ink-rgb) / 0.6);
+  --ink-45: rgb(var(--ink-rgb) / 0.45);
   /* The mockups are drawn at 1280 with a 72px gutter; wider screens keep that proportion (5.625%) up to 1760 */
   --wrap: 1760px;
   --gutter: clamp(40px, 5.625vw, 99px);
@@ -32,6 +34,27 @@
   color: var(--text);
   background: var(--bg);
   -webkit-text-size-adjust: 100%;
+  color-scheme: light;
+}
+
+/*
+ * The night edition: warm off-black paper from the ink's own hue, ink that is paper-white but not glaring, the spot
+ * inks lifted until they read on the dark. Cyan fills carry dark type; tints become deep washes of their ink.
+ */
+:root.dark {
+  --ink-rgb: 230 228 225;
+  --bg: #151413;
+  --surface: #201e1d;
+  --text: #e6e4e1;
+  --accent: #2aa9d6;
+  --accent-100: #0e2a35;
+  --accent-200: #143a48;
+  --accent-600: #4ab8e0;
+  --accent-700: #63c4e8;
+  --accent-800: #b3e5f7;
+  --accent-2: #f0559b;
+  --accent-2-700: #ff86b8;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -51,7 +74,7 @@ figure { margin: 0; }
 .tabular { font-feature-settings: "tnum" 1; }
 :focus { outline: none; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-::selection { background: rgb(0 136 176 / 0.3); }
+::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); }
 
 /* Labels: 13px, uppercase, tracked, at 70% ink */
 .kicker { display: block; font-size: 13px; line-height: 14px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-70); }
@@ -67,8 +90,8 @@ figure { margin: 0; }
 .btn-primary:hover, .btn-ink:hover { background: var(--accent-600); color: var(--bg); }
 .btn-primary:active, .btn-ink:active { background: var(--accent-700); }
 .btn-secondary, .btn-outline { border-color: var(--divider); background: transparent; color: var(--text); }
-.btn-secondary:hover, .btn-outline:hover { background: rgb(32 30 29 / 0.07); color: var(--text); }
-.btn-secondary:active, .btn-outline:active { background: rgb(32 30 29 / 0.14); }
+.btn-secondary:hover, .btn-outline:hover { background: rgb(var(--ink-rgb) / 0.07); color: var(--text); }
+.btn-secondary:active, .btn-outline:active { background: rgb(var(--ink-rgb) / 0.14); }
 
 /* Links in a row, for cities and areas: "Futsal in Kathmandu 10" */
 .chips { list-style: none; margin: 24px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 28px; font-size: 15px; }
@@ -90,6 +113,15 @@ figure { margin: 0; }
 .lang-switch .current { color: var(--text); }
 .lang-switch a { color: inherit; }
 .lang-switch a:hover { color: var(--accent-700); }
+/* Day or night edition: the moon by day, the sun at night */
+.theme-switch {
+  display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin: 0 -10px;
+  padding: 0; border: 0; border-radius: 2px; background: none; color: var(--ink-70); cursor: pointer;
+}
+.theme-switch:hover { color: var(--text); background: rgb(var(--ink-rgb) / 0.07); }
+.theme-switch svg { width: 20px; height: 20px; fill: currentColor; }
+.theme-switch .sun, .dark .theme-switch .moon { display: none; }
+.dark .theme-switch .sun { display: block; }
 
 /* Breadcrumbs */
 .crumbs ol { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-70); }
@@ -108,7 +140,7 @@ figure { margin: 0; }
   flex: 1; min-width: 0; min-height: 44px; padding: 6px 10px; border-radius: 2px; border: 1px solid var(--divider);
   background: var(--surface); color: var(--text); font: inherit; font-size: 16px; caret-color: var(--accent);
 }
-.search input::placeholder { color: rgb(32 30 29 / 0.65); opacity: 1; }
+.search input::placeholder { color: rgb(var(--ink-rgb) / 0.65); opacity: 1; }
 .search input:hover { border-color: var(--ink-45); }
 .search input:focus-visible { border-color: var(--accent); outline-offset: 0; }
 .hero-photo .cmyk { display: block; }
@@ -137,6 +169,12 @@ figure { margin: 0; }
 }
 .cmyk-num .paper { color: var(--bg); text-shadow: 0.036em 0.025em 0 var(--bg), -0.031em -0.023em 0 var(--bg); }
 .cmyk-num .plate { position: absolute; inset: 0.12em; mix-blend-mode: multiply; text-box: trim-both cap alphabetic; }
+/* At night the plates are light on dark: they add up (screen) to a pale core instead of multiplying to ink */
+.dark .cmyk-num .plate { mix-blend-mode: screen; }
+/* Photographs sit a little lower at night, so a printed court doesn't glare off the dark page */
+.dark .cmyk .print { filter: url(#sep-all) brightness(0.85); }
+.dark .halftone { filter: grayscale(0.35) contrast(1.1) brightness(0.85); }
+.dark .map { filter: grayscale(0.6) invert(0.9) hue-rotate(180deg); }
 .cmyk-num .plate-c { color: var(--accent); }
 .cmyk-num .plate-m { color: var(--accent-2); translate: 0.036em 0.025em; }
 .cmyk-num .plate-y { color: var(--process-yellow); translate: -0.031em -0.023em; }
@@ -254,12 +292,12 @@ ul.grid-2 { list-style: none; margin: 0; padding: 0; }
 .stars { display: inline-flex; gap: 2px; vertical-align: middle; }
 .stars svg { width: 16px; height: 16px; }
 .stars .on { fill: var(--text); }
-.stars .off { fill: rgb(32 30 29 / 0.2); }
+.stars .off { fill: rgb(var(--ink-rgb) / 0.2); }
 .rating-line { display: inline-flex; align-items: center; gap: 8px; }
 .reply { margin-top: 8px; padding-left: 12px; border-left: 2px solid var(--divider); }
 .hours { border-collapse: collapse; margin-top: 6px; min-width: 260px; }
 .hours caption { text-align: left; padding-bottom: 4px; }
-.hours th, .hours td { padding: 5px 0; text-align: left; font-weight: 400; border-bottom: 1px solid rgb(32 30 29 / 0.08); }
+.hours th, .hours td { padding: 5px 0; text-align: left; font-weight: 400; border-bottom: 1px solid rgb(var(--ink-rgb) / 0.08); }
 .hours td { padding-left: 24px; font-feature-settings: "tnum" 1; }
 .hours .is-today th, .hours .is-today td { font-weight: 600; }
 .map { width: 100%; min-height: 320px; border: 0; background: var(--surface); filter: grayscale(0.6); }
