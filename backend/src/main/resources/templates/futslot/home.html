@@ -1,75 +1,99 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en" th:lang="${dir.lang}">
-<!-- FutSlot's front page: what people searching "futsal booking" land on. Every venue, by city, and how booking works. -->
+<!-- FutSlot's front page, set as a newspaper's (design_handoff_broadsheet, screen 1a): what people searching "futsal
+     booking" land on. The lead, the dateline and the next free hours, every venue, how booking works, questions. -->
 <head th:replace="~{futslot/parts :: head(${dir.seo}, ${dir.lang}, null)}"></head>
 <body>
+  <svg th:replace="~{futslot/parts :: plates}"></svg>
   <header th:replace="~{futslot/parts :: header}"></header>
 
-  <main>
-    <section class="hero">
-      <svg th:replace="~{futslot/parts :: pitch}"></svg>
-      <div class="wrap hero-grid">
-        <div>
-          <h1 th:text="${dir.heading}">Book a futsal court</h1>
-          <p class="lede" th:text="${dir.intro}">Free slots and prices.</p>
-          <form class="search" action="/explore" method="get" role="search">
-            <label for="q" class="sr-only" th:text="#{dir.search.label}">Venue name or area</label>
-            <input id="q" name="q" type="search" th:placeholder="#{dir.search.label}" autocomplete="off">
-            <button type="submit" class="btn btn-ink" th:text="#{dir.search.button}">Search</button>
-          </form>
-          <ul th:if="${!dir.places.isEmpty()}" class="chips" th:aria-label="#{dir.byCity}">
-            <li th:each="city : ${dir.places}">
-              <a class="chip" th:href="${city.href}"><span th:text="#{dir.place.heading(${city.name})}">Futsal in Kathmandu</span>
-                <span class="muted" th:text="${city.count}">3 venues</span></a>
-            </li>
-          </ul>
-        </div>
-        <th:block th:replace="~{futslot/parts :: board(${dir.venues})}"></th:block>
+  <main class="wrap">
+    <section class="hero" th:with="lead=${dir.venues.^[cover != null and freeWhen != null] ?: dir.venues.^[cover != null]}">
+      <div>
+        <h1><span th:text="#{dir.home.headingLead}">Book a futsal court.</span><span class="tail" th:text="#{dir.home.headingTail}">Tonight, if you like.</span></h1>
+        <p class="lede" th:text="${dir.intro}">Free slots and prices.</p>
+        <form class="search" action="/explore" method="get" role="search">
+          <label for="q" class="sr-only" th:text="#{dir.search.label}">Venue name or area</label>
+          <input id="q" name="q" type="search" th:placeholder="#{dir.search.label}" autocomplete="off">
+          <button type="submit" class="btn btn-primary" th:text="#{dir.search.button}">Search</button>
+        </form>
+        <ul th:if="${!dir.places.isEmpty()}" class="chips" th:aria-label="#{dir.byCity}">
+          <li th:each="city : ${dir.places}">
+            <a class="chip" th:href="${city.href}" th:aria-label="#{dir.place.heading(${city.name})} + ', ' + ${city.count}"><span
+              th:text="#{dir.place.heading(${city.name})}">Futsal in Kathmandu</span> <span class="muted" th:text="${city.number}">10</span></a>
+          </li>
+        </ul>
       </div>
+      <figure th:if="${lead}" class="hero-photo">
+        <a class="cmyk" th:href="${lead.href}" tabindex="-1">
+          <div class="print" style="aspect-ratio:4/5"><img th:src="${lead.cover}" th:alt="${lead.alt}" style="width:100%;height:100%;object-fit:cover"></div>
+        </a>
+        <figcaption th:text="${lead.freeWhen != null} ? #{dir.hero.caption(${lead.name}, ${lead.area}, ${lead.freeWhen}, ${lead.free[0].time})} : ${lead.name + ', ' + lead.area}">
+          Dhuku Futsal Hub, Maharajgunj. Free today from 5 PM.</figcaption>
+      </figure>
+    </section>
+
+    <!-- The front-page rail, then the next free hours as an index -->
+    <section class="section" aria-labelledby="free-title">
+      <div class="rail"></div>
+      <p class="dateline"><span th:each="part : ${dir.dateline}" th:text="${part}">Saturday 25 October 2026</span></p>
+      <th:block th:if="${!dir.freeNext.isEmpty()}">
+        <div class="index-head">
+          <h2 id="free-title" th:text="${dir.freeNextTitle}">Free next</h2>
+          <a href="#venues-title" th:text="#{dir.board.allLink}">All venues →</a>
+        </div>
+        <ul class="index">
+          <li th:each="row : ${dir.freeNext}">
+            <a th:href="${row.book}" th:aria-label="#{dir.freeHour(${row.time}, ${row.venue})}">
+              <span class="time" th:text="${row.time}">7 PM</span>
+              <span><th:block th:text="${row.venue}">Dhuku Futsal Hub</th:block><span class="area" th:text="${', ' + row.area}">, Maharajgunj</span></span>
+              <span class="leader"></span>
+              <span class="price" th:text="${row.price}">Rs 1,900</span>
+            </a>
+          </li>
+        </ul>
+        <div class="index-end"></div>
+      </th:block>
     </section>
 
     <section class="section" aria-labelledby="venues-title">
-      <div class="wrap">
-        <h2 id="venues-title" th:text="#{dir.allVenues}">Futsal venues</h2>
-        <ul th:replace="~{futslot/parts :: cards(${dir.venues})}"></ul>
-        <p th:if="${dir.venues.isEmpty()}" class="muted" th:text="#{dir.noVenues}">No venues here yet.</p>
-      </div>
+      <h2 id="venues-title" class="kicker" style="margin-bottom:28px" th:text="#{dir.allVenues}">Futsal venues</h2>
+      <ul th:replace="~{futslot/parts :: cards(${dir.venues})}"></ul>
+      <p th:if="${dir.venues.isEmpty()}" class="muted" th:text="#{dir.noVenues}">No venues here yet.</p>
     </section>
 
-    <section class="section section-tint" aria-labelledby="how-title">
-      <div class="wrap">
-        <h2 id="how-title" th:text="#{dir.how.title}">How booking works</h2>
-        <ol class="steps">
-          <li><h3 th:text="#{dir.how.find}">Find a court</h3><p class="muted" th:text="#{dir.how.findBody}">Browse.</p></li>
-          <li><h3 th:text="#{dir.how.pick}">Pick a free slot</h3><p class="muted" th:text="#{dir.how.pickBody}">Slots.</p></li>
-          <li><h3 th:text="#{dir.how.play}">Pay the advance and play</h3><p class="muted" th:text="#{dir.how.playBody}">Pay.</p></li>
-        </ol>
-      </div>
+    <section class="section how" aria-labelledby="how-title" style="padding-top:40px">
+      <h2 id="how-title" th:text="#{dir.how.title}">How booking works</h2>
+      <ol class="steps">
+        <li th:each="step : ${ {'find', 'pick', 'play'} }" th:with="n=${stepStat.count}">
+          <span class="cmyk-num"><span class="paper" th:text="${n}">1</span><span class="plate plate-c" aria-hidden="true" th:text="${n}">1</span><span
+            class="plate plate-m" aria-hidden="true" th:text="${n}">1</span><span class="plate plate-y" aria-hidden="true" th:text="${n}">1</span></span>
+          <h3 th:text="#{'dir.how.' + ${step}}">Find a court</h3>
+          <p th:text="#{'dir.how.' + ${step} + 'Body'}">Browse.</p>
+        </li>
+      </ol>
     </section>
 
-    <section class="section" aria-labelledby="faq-title">
-      <div class="wrap narrow">
-        <h2 id="faq-title" th:text="#{dir.faq.title}">Questions players ask</h2>
-        <div class="faq">
-          <details th:if="${dir.cheapest}" open>
-            <summary th:text="#{dir.faq.cost}">How much does futsal cost?</summary>
-            <p th:text="#{dir.faq.costBody(${dir.cheapest})}">From Rs 1,200.</p>
-          </details>
-          <details>
-            <summary th:text="#{dir.faq.online}">Can I book futsal online?</summary>
-            <p th:text="#{dir.faq.onlineBody}">Yes.</p>
-          </details>
-          <details>
-            <summary th:text="#{dir.faq.cancel}">What if I can't make it?</summary>
-            <p th:text="#{dir.faq.cancelBody}">Each venue sets its own rules.</p>
-          </details>
-        </div>
+    <section class="faq-grid" aria-labelledby="faq-title">
+      <h2 id="faq-title" th:text="#{dir.faq.title}">Questions players ask</h2>
+      <div class="faq">
+        <details th:if="${dir.cheapest}" open>
+          <summary th:text="#{dir.faq.cost}">How much does futsal cost?</summary>
+          <p th:text="#{dir.faq.costBody(${dir.cheapest})}">From Rs 1,200.</p>
+        </details>
+        <details open>
+          <summary th:text="#{dir.faq.online}">Can I book futsal online?</summary>
+          <p th:text="#{dir.faq.onlineBody}">Yes.</p>
+        </details>
+        <details open>
+          <summary th:text="#{dir.faq.cancel}">What if I can't make it?</summary>
+          <p th:text="#{dir.faq.cancelBody}">Each venue sets its own rules.</p>
+        </details>
       </div>
     </section>
-
-    <section th:replace="~{futslot/parts :: owners}"></section>
   </main>
 
+  <section th:replace="~{futslot/parts :: owners}"></section>
   <footer th:replace="~{futslot/parts :: footer}"></footer>
 </body>
 </html>

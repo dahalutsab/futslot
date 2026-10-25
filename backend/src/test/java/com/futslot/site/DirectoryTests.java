@@ -39,14 +39,14 @@ class DirectoryTests {
 		this.mvc.perform(get("/"))
 			.andExpect(status().isOk())
 			.andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
-			.andExpect(content().string(containsString("<h1>Book a futsal court</h1>")))
+			.andExpect(content().string(containsString("<h1><span>Book a futsal court.</span><span class=\"tail\">Tonight, if you like.</span></h1>")))
 			.andExpect(content().string(containsString("<link rel=\"canonical\" href=\"" + home + "/\">")))
 			.andExpect(content().string(containsString("<link rel=\"alternate\" hreflang=\"ne\" href=\"" + home + "/ne/\">")))
 			.andExpect(content().string(containsString("\"@type\":\"WebSite\"")))
 			.andExpect(content().string(containsString("href=\"/futsal/dirpur\"")))
 			.andExpect(content().string(containsString("href=\"/venues/" + venue.slug() + "\"")))
-			// Its next free hours, which book straight away
-			.andExpect(content().string(containsString("class=\"lit\" href=\"/venues/" + venue.slug() + "/book?court=" + venue.courtId())))
+			// Its next free hour, in the "Free next" index, which books straight away
+			.andExpect(content().string(containsString("<a href=\"/venues/" + venue.slug() + "/book?court=" + venue.courtId())))
 			.andExpect(content().string(containsString("<meta property=\"og:image\" content=\"" + home + "/site-assets/futslot-share.jpg\">")))
 			.andExpect(content().string(not(containsString("noindex"))));
 

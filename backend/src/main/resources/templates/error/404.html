@@ -9,8 +9,8 @@
   <title th:text="#{notFound.title}">Page not found | FutSlot</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Khand:wght@600;700&amp;family=Mukta:wght@400;500;600;700&amp;display=swap">
-  <link rel="stylesheet" href="/site-assets/futslot.css?v=7">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;1,400&amp;family=Noto+Serif+Devanagari:wght@400;600&amp;display=swap">
+  <link rel="stylesheet" href="/site-assets/futslot.css?v=8">
   <link rel="icon" href="/site-assets/favicon.ico" sizes="32x32">
   <link rel="icon" href="/site-assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/site-assets/apple-touch-icon.png">
@@ -18,17 +18,18 @@
 <body th:with="home=${futslotHome ?: '/'}">
   <header class="top">
     <div class="wrap top-inner">
-      <a class="logo" th:href="${home}"><svg th:replace="~{futslot/parts :: mark}"></svg><span>FutSlot</span></a>
+      <a class="logo" th:href="${home}">FutSlot</a>
     </div>
   </header>
-  <main class="hero not-found">
-    <svg th:replace="~{futslot/parts :: pitch}"></svg>
+  <main class="not-found">
     <div class="wrap">
-      <h1 th:text="#{notFound.heading}">We couldn't find that page</h1>
+      <div class="rail"></div>
+      <p class="dateline"><span>404</span></p>
+      <h1 style="margin-top:56px" th:text="#{notFound.heading}">We couldn't find that page</h1>
       <p class="lede" th:text="#{notFound.body}">The address may be mistyped.</p>
       <div class="actions">
-        <a class="btn btn-light" th:href="${home + 'explore'}" th:text="#{notFound.explore}">Find a futsal court</a>
-        <a class="btn btn-on-turf" th:href="${home}" th:text="#{notFound.home}">FutSlot's front page</a>
+        <a class="btn btn-primary" th:href="${home + 'explore'}" th:text="#{notFound.explore}">Find a futsal court</a>
+        <a class="btn btn-secondary" th:href="${home}" th:text="#{notFound.home}">FutSlot's front page</a>
       </div>
     </div>
   </main>

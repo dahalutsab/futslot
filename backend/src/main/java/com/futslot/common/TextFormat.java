@@ -104,6 +104,17 @@ public final class TextFormat {
 		return this.nepali ? Nepali.weekday(day) : day.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
 	}
 
+	/** "Saturday 25 October 2026", for a dateline; "शनिबार, ८ कात्तिक २०८३" in Nepali. */
+	public String longDate(LocalDate date) {
+		Optional<Nepali.BsDate> bs = this.nepali ? Nepali.bs(date) : Optional.empty();
+		if (bs.isPresent()) {
+			return Nepali.weekday(date.getDayOfWeek()) + ", " + Nepali.digits(bs.get().day()) + " " + bs.get().monthName() + " "
+					+ Nepali.digits(bs.get().year());
+		}
+		return weekday(date.getDayOfWeek()) + " " + date.getDayOfMonth() + " "
+				+ date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + date.getYear();
+	}
+
 	/** The year {@code date} falls in: Bikram Sambat in Nepali. */
 	public String year(LocalDate date) {
 		return this.nepali ? Nepali.bs(date).map(bs -> Nepali.digits(bs.year())).orElse(number(date.getYear()))

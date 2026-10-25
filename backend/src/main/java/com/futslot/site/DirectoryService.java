@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -52,6 +54,9 @@ class DirectoryService {
 
 	private static final int FREE_HOURS = 4;
 
+	/** Rows in the front page's "Free next" index. */
+	private static final int FREE_NEXT = 8;
+
 	private final VenueService venues;
 
 	private final AvailabilityService availability;
@@ -64,14 +69,17 @@ class DirectoryService {
 
 	private final Clock clock;
 
+	private final VenueSiteRepository sites;
+
 	DirectoryService(VenueService venues, AvailabilityService availability, SitePageService pages, SiteProperties properties,
-			JsonMapper json, Clock clock) {
+			JsonMapper json, Clock clock, VenueSiteRepository sites) {
 		this.venues = venues;
 		this.availability = availability;
 		this.pages = pages;
 		this.properties = properties;
 		this.json = json;
 		this.clock = clock;
+		this.sites = sites;
 	}
 
 	DirectoryPage home(Wording text) {
@@ -92,9 +100,27 @@ class DirectoryService {
 		site.put("inLanguage", text.code());
 		SitePage.Seo seo = new SitePage.Seo(title, description, home + base + "/", home + "/", home + "/ne/", shareImage(),
 				write(site), false);
+		List<DirectoryPage.Card> cards = cards(all.venues(), base, text);
+		int courtTotal = all.venues().stream().mapToInt(VenueSummaryResponse::courtCount).sum();
+		String cheapest = lowest(all.venues()).map(format::rupees).orElse(null);
+		List<String> dateline = new ArrayList<>(List.of(format.longDate(today()), text.get("dir.valley"),
+				count(text, "dir.count", all.venues().size()) + " · " + count(text, "dir.courts", courtTotal)));
+		if (cheapest != null) {
+			dateline.add(text.get("dir.gamesFrom", cheapest));
+		}
+		// Each venue's soonest free hour, today's if any venue has one left, else tomorrow's
+		String freeToday = text.get("dir.freeToday");
+		boolean today = cards.stream().anyMatch(card -> freeToday.equals(card.freeWhen()));
+		List<DirectoryPage.Next> next = cards.stream()
+			.filter(card -> card.freeWhen() != null && card.freeWhen().equals(today ? freeToday : text.get("dir.freeTomorrow")))
+			.sorted(Comparator.comparing((DirectoryPage.Card card) -> card.free().getFirst().startsAt()))
+			.limit(FREE_NEXT)
+			.map(card -> new DirectoryPage.Next(card.free().getFirst().time(), card.name(), card.area(), card.free().getFirst().price(),
+					card.free().getFirst().book()))
+			.toList();
 		return new DirectoryPage(text.code(), base, other(text, "/"), seo, null, List.of(), text.get("dir.home.heading"),
-				text.get("dir.home.intro", count, where), lowest(all.venues()).map(format::rupees).orElse(null), cityPlaces(all, base, text), cards(all.venues(), base, text),
-				cityPlaces(all, base, text), owners(), format.year(today()));
+				text.get("dir.home.intro", count, where), cheapest, cityPlaces(all, base, text), cards, cityPlaces(all, base, text),
+				owners(), format.year(today()), List.copyOf(dateline), text.get(today ? "dir.board.title" : "dir.freeTomorrow"), next);
 	}
 
 	Optional<DirectoryPage> city(String citySlug, Wording text) {
@@ -108,7 +134,8 @@ class DirectoryService {
 		List<DirectoryPage.Place> areas = city.areas()
 			.values()
 			.stream()
-			.map(area -> new DirectoryPage.Place(area.name(), base + path + "/" + area.slug(), count(text, "dir.count", area.venues().size())))
+			.map(area -> new DirectoryPage.Place(area.name(), base + path + "/" + area.slug(), count(text, "dir.count", area.venues().size()),
+					text.format().number(area.venues().size())))
 			.toList();
 		List<DirectoryPage.Crumb> crumbs = List.of(root(text), new DirectoryPage.Crumb(city.name(), null));
 		return Optional.of(place(all, city.name(), city.venues(), areas, path, crumbs, text));
@@ -163,7 +190,7 @@ class DirectoryService {
 		crumbs.add(new DirectoryPage.Crumb(venue.name(), null));
 		DirectoryPage chrome = new DirectoryPage(text.code(), base, page.switchHref(), page.seo(), breadcrumbs(crumbs),
 				List.copyOf(crumbs), venue.name(), null, null, List.of(), List.of(), cityPlaces(all, base, text), owners(),
-				text.format().year(today()));
+				text.format().year(today()), List.of(), null, List.of());
 		return Optional.of(new VenuePage(page, chrome, path + "/slots"));
 	}
 
@@ -230,7 +257,7 @@ class DirectoryService {
 				noindex);
 		return new DirectoryPage(text.code(), base, other(text, path), seo, null, crumbs, text.get("dir.place.heading", name),
 				text.get("dir.place.intro", name, count, courts, from), lowest(venues).map(text.format()::rupees).orElse(null), areas, cards(venues, base, text), cityPlaces(all, base, text),
-				owners(), text.format().year(today()));
+				owners(), text.format().year(today()), List.of(), null, List.of());
 	}
 
 	/** Live venues, best rated first, grouped by city and area; cities with the most venues first. */
@@ -273,6 +300,7 @@ class DirectoryService {
 	private List<DirectoryPage.Card> cards(List<VenueSummaryResponse> venues, String base, Wording text) {
 		TextFormat format = text.format();
 		AtomicInteger looked = new AtomicInteger();
+		Map<UUID, String> headlines = headlines();
 		return venues.stream().map(venue -> {
 			Free free = (looked.getAndIncrement() < FREE_FOR) ? free(venue.slug(), text) : Free.NONE;
 			String place = StringUtils.hasText(venue.area()) ? venue.area() + ", " + venue.city() : venue.city();
@@ -281,7 +309,8 @@ class DirectoryService {
 					? format.number(venue.averageRating().setScale(1, RoundingMode.HALF_UP).toPlainString()) + " ("
 							+ format.number(venue.reviewCount()) + ")"
 					: null;
-			return new DirectoryPage.Card(venue.name(), base + "/venues/" + venue.slug(), place, from,
+			String area = StringUtils.hasText(venue.area()) ? venue.area() : venue.city();
+			return new DirectoryPage.Card(venue.name(), base + "/venues/" + venue.slug(), place, area, headlines.get(venue.id()), from,
 					count(text, "dir.courts", venue.courtCount()), rating, venue.coverPhotoUrl(),
 					text.get("dir.coverAlt", venue.name(), place), free.when(), free.hours());
 		}).toList();
@@ -304,20 +333,32 @@ class DirectoryService {
 				.flatMap(court -> court.slots()
 					.stream()
 					.filter(slot -> slot.status() == SlotStatus.AVAILABLE && slot.startsAt().toInstant().isAfter(now))
-					.map(slot -> Map.entry(slot.startsAt(), court.courtId())))
+					.map(slot -> Map.entry(slot.startsAt(), Map.entry(court.courtId(), slot.price()))))
 				// One chip an hour: the first court free then
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, TreeMap::new))
 				.entrySet()
 				.stream()
 				.limit(FREE_HOURS)
 				.map(e -> new DirectoryPage.Hour(text.format().clock(e.getKey().toLocalTime()), "/venues/" + slug + "/book?court="
-						+ e.getValue() + "&start=" + URLEncoder.encode(e.getKey().toString(), StandardCharsets.UTF_8)))
+						+ e.getValue().getKey() + "&start=" + URLEncoder.encode(e.getKey().toString(), StandardCharsets.UTF_8),
+						text.format().rupees(e.getValue().getValue()), e.getKey()))
 				.toList();
 			if (!hours.isEmpty()) {
 				return new Free(text.get((day == 0) ? "dir.freeToday" : "dir.freeTomorrow"), hours);
 			}
 		}
 		return Free.NONE;
+	}
+
+	/** Venue websites' headlines ("Two courts off the ring road"), by venue, for the published ones that have one. */
+	private Map<UUID, String> headlines() {
+		Map<UUID, String> headlines = new HashMap<>();
+		for (VenueSite site : this.sites.findAll()) {
+			if (site.isPublished() && StringUtils.hasText(site.getHeadline())) {
+				headlines.put(site.getVenueId(), site.getHeadline());
+			}
+		}
+		return headlines;
 	}
 
 	private record Free(String when, List<DirectoryPage.Hour> hours) {
@@ -330,7 +371,8 @@ class DirectoryService {
 		return all.cities()
 			.values()
 			.stream()
-			.map(city -> new DirectoryPage.Place(city.name(), base + "/futsal/" + city.slug(), count(text, "dir.count", city.venues().size())))
+			.map(city -> new DirectoryPage.Place(city.name(), base + "/futsal/" + city.slug(), count(text, "dir.count", city.venues().size()),
+					text.format().number(city.venues().size())))
 			.toList();
 	}
 

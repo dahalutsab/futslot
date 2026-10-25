@@ -22,21 +22,17 @@
   <meta property="og:locale" th:content="${lang == 'ne' ? 'ne_NP' : 'en_US'}">
   <meta th:if="${seo.image}" property="og:image" th:content="${seo.image}">
   <meta name="twitter:card" th:content="${seo.image != null ? 'summary_large_image' : 'summary'}">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0f1012" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f3f2f2">
   <link rel="icon" href="/site-assets/favicon.ico" sizes="32x32">
   <link rel="icon" href="/site-assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/site-assets/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Khand:wght@600;700&amp;family=Mukta:wght@400;500;600;700&amp;display=swap">
-  <link rel="stylesheet" th:href="@{/site-assets/futslot.css(v=7)}">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;1,400&amp;family=Noto+Serif+Devanagari:wght@400;600&amp;display=swap">
+  <link rel="stylesheet" th:href="@{/site-assets/futslot.css(v=8)}">
   <script>
-    // The player app's theme and language, so these pages match it: dark mode before first paint, and a first-time
-    // visitor's language is the language of the page they came in on
+    // A first-time visitor's language in the player app is the language of the page they came in on
     try {
-      const theme = localStorage.getItem('futslot.theme') ?? 'system';
-      document.documentElement.classList.toggle('dark', theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches));
       if (!localStorage.getItem('futslot.language')) localStorage.setItem('futslot.language', document.documentElement.lang);
     } catch {}
   </script>
@@ -47,23 +43,25 @@
 <body>
   <header th:fragment="header" class="top">
     <div class="wrap top-inner">
-      <a class="logo" th:href="${dir.base + '/'}" th:aria-label="#{dir.nav.home}">
-        <svg th:replace="~{futslot/parts :: mark}"></svg><span>FutSlot</span>
-      </a>
+      <a class="logo" th:href="${dir.base + '/'}" th:aria-label="#{dir.nav.home}">FutSlot</a>
       <nav class="top-nav" th:aria-label="#{dir.nav.main}">
         <a href="/explore" th:text="#{dir.nav.explore}">Explore</a>
+        <a href="/tournaments" th:text="#{dir.nav.tournaments}">Tournaments</a>
         <a th:href="${dir.owners}" th:text="#{dir.nav.owners}">For venues</a>
       </nav>
-      <a class="lang-switch" th:href="${dir.switchHref}" th:hreflang="${dir.lang == 'ne' ? 'en' : 'ne'}"
-        th:lang="${dir.lang == 'ne' ? 'en' : 'ne'}" th:title="#{lang.switchTitle}" th:text="#{lang.switch}"
-        onclick="try { localStorage.setItem('futslot.language', this.hreflang) } catch {}">नेपाली</a>
-      <a class="btn btn-light btn-small" href="/login" id="account" th:data-mine="#{dir.nav.mine}" th:text="#{dir.nav.signIn}">Sign in</a>
+      <span class="lang-switch">
+        <th:block th:if="${dir.lang == 'en'}"><span class="current">EN</span><span aria-hidden="true">·</span><a th:href="${dir.switchHref}"
+          hreflang="ne" lang="ne" th:title="#{lang.switchTitle}" onclick="try { localStorage.setItem('futslot.language', 'ne') } catch {}">नेपाली</a></th:block>
+        <th:block th:if="${dir.lang == 'ne'}"><a th:href="${dir.switchHref}" hreflang="en" lang="en" th:title="#{lang.switchTitle}"
+          onclick="try { localStorage.setItem('futslot.language', 'en') } catch {}">EN</a><span aria-hidden="true">·</span><span class="current">नेपाली</span></th:block>
+      </span>
+      <a class="btn btn-secondary btn-small" href="/login" id="account" th:data-mine="#{dir.nav.mine}" th:text="#{dir.nav.signIn}">Sign in</a>
       <script>
         // Signed in to the player app: its bookings, not "Sign in"
         try {
           if (localStorage.getItem('futslot.player.session')) {
             const account = document.getElementById('account');
-            account.href = '/bookings';
+            account.href = '/home';
             account.textContent = account.dataset.mine;
           }
         } catch {}
@@ -71,20 +69,39 @@
     </div>
   </header>
 
-  <!-- FutSlot's mark: a pitch from above -->
-  <svg th:fragment="mark" class="logo-mark" viewBox="0 0 30 20" aria-hidden="true">
-    <rect width="30" height="20" rx="3" fill="currentColor"/>
-    <path d="M15 2.5v15M2.5 6.5h3a3.5 3.5 0 0 1 0 7h-3M27.5 6.5h-3a3.5 3.5 0 0 0 0 7h3" stroke="#fff" stroke-width="1.4" fill="none"/>
-    <circle cx="15" cy="10" r="3.2" stroke="#fff" stroke-width="1.4" fill="none"/>
+
+  <!-- The four process plates a .cmyk photograph is printed in (design_handoff_broadsheet, print-plates): each
+       separated from the image, nudged out of register and multiplied back together -->
+  <svg th:fragment="plates" width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <filter id="sep-all" color-interpolation-filters="sRGB">
+        <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0.467 0 0 0 0.533  0.310 0 0 0 0.690  0 0 0 0 1" result="c0"/>
+        <feComposite in="c0" in2="SourceAlpha" operator="in" result="c"/>
+        <feColorMatrix in="SourceGraphic" type="matrix" values="0 0.161 0 0 0.839  0 1 0 0 0  0 0.576 0 0 0.424  0 0 0 0 1" result="m0"/>
+        <feComposite in="m0" in2="SourceAlpha" operator="in" result="m1"/>
+        <feOffset in="m1" dx="5" dy="3" result="m"/>
+        <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0.071 0 0.929  0 0 0.267 0 0.733  0 0 1 0 0  0 0 0 0 1" result="y0"/>
+        <feComposite in="y0" in2="SourceAlpha" operator="in" result="y1"/>
+        <feOffset in="y1" dx="-5" dy="-3" result="y"/>
+        <feColorMatrix in="SourceGraphic" type="matrix" values="0.112 0.375 0.038 0 0.475  0.113 0.379 0.038 0 0.471  0.113 0.380 0.038 0 0.468  0 0 0 0 1" result="k0"/>
+        <feComposite in="k0" in2="SourceAlpha" operator="in" result="k1"/>
+        <feOffset in="k1" dx="3" dy="6" result="k"/>
+        <feBlend in="m" in2="c" mode="multiply" result="s1"/>
+        <feBlend in="y" in2="s1" mode="multiply" result="s2"/>
+        <feBlend in="k" in2="s2" mode="multiply"/>
+      </filter>
+    </defs>
   </svg>
 
-  <!-- The court's lines in chalk, behind the front page's heading: penalty area, half-way line, centre circle -->
-  <svg th:fragment="pitch" class="pitch" viewBox="0 0 1200 560" preserveAspectRatio="xMidYMid slice" fill="none"
-    stroke="currentColor" stroke-width="3" aria-hidden="true">
-    <path d="M920 40v480"/>
-    <circle cx="920" cy="280" r="118"/>
-    <circle cx="920" cy="280" r="5" fill="currentColor"/>
-    <path d="M-200 150h90a130 130 0 0 1 0 260h-90"/>
+  <!-- A venue with no photo yet: its court from above, the surface one of three by its name's length (the player app
+       picks the same), like the venues' own uploads -->
+  <svg th:fragment="court(seed)" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true"
+    th:style="${seed % 3 == 0 ? 'background:#2c6a44' : (seed % 3 == 1 ? 'background:#122e54' : 'background:#6b5640')}">
+    <g fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1.5">
+      <rect x="15" y="4" width="270" height="192"/>
+      <path d="M150 4v192"/>
+      <circle cx="150" cy="100" r="36"/>
+    </g>
   </svg>
 
   <nav th:fragment="crumbs" th:if="${!dir.crumbs.isEmpty()}" class="crumbs" th:aria-label="#{dir.crumbs}">
@@ -97,82 +114,47 @@
   </nav>
 
   <ul th:fragment="cards(cards)" class="cards">
-    <li th:each="card : ${cards}" class="card">
-      <a class="card-photo" th:href="${card.href}" tabindex="-1" aria-hidden="true">
-        <img th:if="${card.cover}" th:src="${card.cover}" th:alt="${card.alt}" loading="lazy">
+    <li th:each="card, row : ${cards}" class="card">
+      <a th:href="${card.href}">
+        <div class="card-photo halftone">
+          <img th:if="${card.cover}" th:src="${card.cover}" th:alt="${card.alt}" loading="lazy">
+          <svg th:unless="${card.cover}" th:replace="~{futslot/parts :: court(${card.name.length()})}"></svg>
+        </div>
+        <span class="kicker"><th:block th:text="${card.area}">Maharajgunj</th:block> · <th:block th:text="${card.courts}">2 courts</th:block></span>
+        <h3 class="card-name" th:text="${card.name}">Venue</h3>
+        <p th:if="${card.headline}" class="card-headline" th:text="${card.headline}">Two courts off the ring road</p>
+        <p class="card-meta">
+          <span th:if="${card.from}" class="tabular" th:text="${card.from}">From Rs 1,200</span>
+          <span th:if="${card.freeWhen}" class="card-free tabular" th:text="${card.freeWhen + ' ' + card.free[0].time}">Free today 7 PM</span>
+          <span th:if="${card.rating}" class="muted" th:text="${'★ ' + card.rating}">★ 4.5 (12)</span>
+        </p>
       </a>
-      <a class="card-name" th:href="${card.href}" th:text="${card.name}">Venue</a>
-      <span class="card-place" th:text="${card.place}">Area, City</span>
-      <span class="card-meta">
-        <span th:if="${card.from}" class="card-from" th:text="${card.from}">From Rs 1,200</span>
-        <span th:text="${card.courts}">2 courts</span>
-        <span th:if="${card.rating}" class="card-rating" th:text="${'★ ' + card.rating}">★ 4.5 (12)</span>
-      </span>
-      <div th:if="${card.freeWhen}" class="free">
-        <span class="free-when" th:text="${card.freeWhen}">Free today</span>
-        <ul class="hours-free">
-          <li th:each="hour : ${card.free}"><a class="lit" th:href="${hour.book}" th:text="${hour.time}"
-            th:aria-label="#{dir.freeHour(${hour.time}, ${card.name})}">7 PM</a></li>
-        </ul>
+    </li>
+  </ul>
       </div>
     </li>
   </ul>
 
-  <!-- The front page's board: the venues with the soonest free hours, which book straight away -->
-  <th:block th:fragment="board(cards)" th:with="lit=${cards.?[freeWhen != null]}">
-    <aside th:if="${!lit.isEmpty()}" class="board" aria-labelledby="board-title">
-      <h2 id="board-title" th:text="#{dir.board.title}">Free next</h2>
-      <ol class="board-rows">
-        <li th:each="card, row : ${lit}" th:if="${row.index < 4}">
-          <div class="board-venue">
-            <a th:href="${card.href}" th:text="${card.name}">Venue</a>
-            <span><th:block th:text="${card.place}">Area, City</th:block>. <th:block th:text="${card.freeWhen}">Free today</th:block></span>
-          </div>
-          <ul class="hours-free">
-            <li th:each="hour, h : ${card.free}" th:if="${h.index < 3}"><a class="lit" th:href="${hour.book}" th:text="${hour.time}"
-              th:aria-label="#{dir.freeHour(${hour.time}, ${card.name})}">7 PM</a></li>
-          </ul>
-        </li>
-      </ol>
-      <a class="board-all" href="#venues-title" th:text="#{dir.board.all}">All venues</a>
-    </aside>
-  </th:block>
-
   <section th:fragment="owners" class="owners" aria-labelledby="owners-title">
-    <div class="wrap owners-inner">
-      <div>
-        <h2 id="owners-title" th:text="#{dir.owners.title}">Run a futsal?</h2>
-        <p th:text="#{dir.owners.body}">Take bookings online.</p>
-      </div>
-      <a class="btn btn-outline" th:href="${dir.owners}" th:text="#{dir.owners.button}">List your futsal</a>
+    <div class="wrap">
+      <h2 id="owners-title"><th:block th:text="#{dir.owners.titleLead}">Run a</th:block> <em th:text="#{dir.owners.titleTail}">futsal?</em></h2>
+      <p th:text="#{dir.owners.body}">Take bookings online.</p>
+      <a class="btn btn-primary" th:href="${dir.owners}" th:text="#{dir.owners.button}">List your futsal</a>
     </div>
   </section>
 
-  <footer th:fragment="footer" class="foot">
-    <div class="wrap foot-inner">
-      <div>
-        <p class="logo"><svg th:replace="~{futslot/parts :: mark}"></svg><span>FutSlot</span></p>
-        <p class="muted" th:text="#{dir.footer.tagline}">Book futsal across Nepal.</p>
-      </div>
+  <footer th:fragment="footer" class="wrap foot">
+    <div>
+      <a class="logo" th:href="${dir.base + '/'}">FutSlot</a>
+      <p class="foot-maker"><th:block th:text="#{dir.footer.tagline}">Book futsal across Nepal.</th:block>
+        <th:block th:text="#{dir.footer.madeBefore}">Proudly made by </th:block><a href="https://dahalutsab.com.np"
+        th:text="#{dir.footer.maker}">Utsab Dahal</a><th:block th:text="#{dir.footer.madeAfter}"></th:block>.</p>
       <nav th:if="${!dir.cities.isEmpty()}" th:aria-label="#{dir.byCity}">
-        <h2 class="foot-title" th:text="#{dir.byCity}">Futsal by city</h2>
-        <ul>
-          <li th:each="city : ${dir.cities}"><a th:href="${city.href}" th:text="#{dir.place.heading(${city.name})}">Futsal in Kathmandu</a></li>
-        </ul>
-      </nav>
-      <nav th:aria-label="#{dir.footer.forVenues}">
-        <h2 class="foot-title" th:text="#{dir.footer.forVenues}">For venues</h2>
-        <ul>
-          <li><a th:href="${dir.owners}" th:text="#{dir.owners.button}">List your futsal</a></li>
-        </ul>
+        <a th:each="city : ${dir.cities}" th:href="${city.href}" th:text="#{dir.place.heading(${city.name})}">Futsal in Kathmandu</a>
+        <a th:href="${dir.owners}" th:text="#{dir.owners.button}">List your futsal</a>
       </nav>
     </div>
-    <p th:if="${demo}" class="wrap foot-demo muted small" th:text="#{dir.demo}">A portfolio demo.</p>
-    <div class="wrap foot-bottom muted small">
-      <p>© <span th:text="${dir.year}">2026</span> FutSlot</p>
-      <p><th:block th:text="#{dir.footer.madeBefore}">Proudly made by </th:block><a href="https://dahalutsab.com.np"
-        th:text="#{dir.footer.maker}">Utsab Dahal</a><th:block th:text="#{dir.footer.madeAfter}"></th:block></p>
-    </div>
+    <p th:if="${demo}" class="foot-demo" th:text="#{dir.demo}">A portfolio demo.</p>
   </footer>
 </body>
 </html>

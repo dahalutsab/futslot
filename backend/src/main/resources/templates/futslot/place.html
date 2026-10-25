@@ -22,7 +22,7 @@
 
     <section class="section" aria-labelledby="venues-title">
       <div class="wrap">
-        <h2 id="venues-title" th:text="#{dir.allVenues}">Futsal venues</h2>
+        <h2 id="venues-title" class="kicker" style="margin-bottom:28px" th:text="#{dir.allVenues}">Futsal venues</h2>
         <ul th:replace="~{futslot/parts :: cards(${dir.venues})}"></ul>
       </div>
     </section>
