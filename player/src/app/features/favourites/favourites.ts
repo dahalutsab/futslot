@@ -13,7 +13,7 @@ import { VenueCard } from '../../shared/venue-card';
   imports: [RouterLink, VenueCard],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mx-auto max-w-6xl px-4 py-6 lg:px-8 lg:py-10">
+    <div class="mx-auto max-w-[1280px] px-5 py-6 lg:px-[72px] lg:py-10">
       <h1 class="text-4xl">{{ l().meFavourites }}</h1>
       @if (error(); as message) {
         <p class="mt-6 text-muted">{{ message }}</p>

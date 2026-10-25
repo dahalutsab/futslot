@@ -53,7 +53,7 @@ public final class TextFormat {
 		return (this.nepali ? "रु " : "Rs ") + number((value.signum() < 0 ? "-" : "") + grouped + fraction);
 	}
 
-	/** "6 AM", "6:30 PM", "12 AM" for midnight; "बिहान ६ बजे", "बेलुका ६:३० बजे" in Nepali, as the player app says them. */
+	/** "18:00", "06:30", "00:00" for midnight, the 24-hour clock; "बिहान ६ बजे", "बेलुका ६:३० बजे" in Nepali, as the player app says them. */
 	public String clock(LocalTime time) {
 		int hour = time.getHour() % 12 == 0 ? 12 : time.getHour() % 12;
 		String text = time.getMinute() == 0 ? String.valueOf(hour) : "%d:%02d".formatted(hour, time.getMinute());
@@ -62,10 +62,10 @@ public final class TextFormat {
 			String part = (h >= 4 && h < 12) ? "बिहान" : (h >= 12 && h < 16) ? "दिउँसो" : (h >= 16 && h < 20) ? "बेलुका" : "राति";
 			return part + " " + Nepali.digits(text) + " बजे";
 		}
-		return text + (time.getHour() < 12 ? " AM" : " PM");
+		return "%02d:%02d".formatted(time.getHour(), time.getMinute());
 	}
 
-	/** "6 AM – 10 PM"; an end at the last minute of the day reads as midnight. */
+	/** "06:00 – 22:00"; an end at the last minute of the day reads as midnight. */
 	public String span(LocalTime from, LocalTime to) {
 		LocalTime end = (to.getHour() == 23 && to.getMinute() == 59) ? LocalTime.MIDNIGHT : to;
 		return clock(from) + " – " + clock(end);

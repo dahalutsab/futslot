@@ -184,9 +184,23 @@
     color: var(--color-bg);
   }
 
+  /* A page's column: left-aligned on the masthead's edge (20px in on phones, the 1280px frame's 72px gutter on
+     desktop), never centred; the max-w-* beside it sets how wide it runs */
+  .page-col {
+    margin-inline: 20px;
+  }
+
+  @media (min-width: 64rem) {
+    .page-col {
+      margin-left: max(72px, calc((100% - 1280px) / 2 + 72px));
+      margin-right: 72px;
+    }
+  }
+
   /* Labels: 13px, uppercase, tracked, at 70% ink */
   .kicker {
     font-size: 13px;
+    font-weight: 400;
     line-height: 14px;
     letter-spacing: 0.08em;
     text-transform: uppercase;

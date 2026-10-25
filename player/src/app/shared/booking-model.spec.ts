@@ -67,7 +67,7 @@ describe('booking model', () => {
   });
 
   it('labels opening hours', () => {
-    expect(hoursLabel({ day: 'SUNDAY', openTime: '06:00:00', closeTime: '22:30:00', closed: false })).toBe('6 AM – 10:30 PM');
+    expect(hoursLabel({ day: 'SUNDAY', openTime: '06:00:00', closeTime: '22:30:00', closed: false })).toBe('06:00 – 22:30');
     expect(hoursLabel({ day: 'SUNDAY', openTime: null, closeTime: null, closed: true })).toBe('Closed');
     expect(hoursLabel(undefined)).toBe('Closed');
   });

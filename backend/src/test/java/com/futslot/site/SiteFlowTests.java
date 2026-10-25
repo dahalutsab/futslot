@@ -167,8 +167,8 @@ class SiteFlowTests {
 			.andExpect(status().isCreated());
 
 		this.mvc.perform(get("/site-preview/" + venue.slug()))
-			.andExpect(content().string(containsString("Fridays, 10 PM – 1 AM")))
-			.andExpect(content().string(not(containsString("Fridays, 12 AM – 1 AM"))));
+			.andExpect(content().string(containsString("Fridays, 22:00 – 01:00")))
+			.andExpect(content().string(not(containsString("Fridays, 00:00 – 01:00"))));
 		this.mvc.perform(get("/site-preview/" + venue.slug()).param("lang", "ne"))
 			.andExpect(content().string(containsString("हरेक शुक्रबार, राति १० बजे – राति १ बजे")));
 	}

@@ -24,7 +24,7 @@ interface Link {
   imports: [FormsModule, RouterLink, Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mx-auto max-w-xl px-4 py-6 lg:py-10">
+    <div class="page-col max-w-xl py-6 lg:py-10">
       <h1 class="text-4xl">{{ session.user()?.fullName }}</h1>
       <p class="tabular text-muted">{{ fmt.phone(session.user()?.phone) }}</p>
 

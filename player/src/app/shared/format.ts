@@ -24,8 +24,8 @@ export function rupees(value: number | null | undefined): string {
 }
 
 /**
- * "6 PM", "6:30 PM" from minutes past midnight (values past 1440 roll into the next day). In Nepali the part of the
- * day comes first, as it's said: "बिहान ६ बजे", "बेलुका ६:३० बजे".
+ * "18:00", "06:30" from minutes past midnight (values past 1440 roll into the next day), on the 24-hour clock as
+ * Broadsheet sets times. In Nepali the part of the day comes first, as it's said: "बिहान ६ बजे", "बेलुका ६:३० बजे".
  */
 export function clock(minutes: number): string {
   const inDay = ((minutes % 1440) + 1440) % 1440;
@@ -37,10 +37,10 @@ export function clock(minutes: number): string {
     const part = hours >= 4 && hours < 12 ? 'बिहान' : hours >= 12 && hours < 16 ? 'दिउँसो' : hours >= 16 && hours < 20 ? 'बेलुका' : 'राति';
     return `${part} ${digits(time)} बजे`;
   }
-  return `${time} ${hours < 12 ? 'AM' : 'PM'}`;
+  return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
 }
 
-/** "6 PM" from a venue-local timestamp such as 2026-10-09T18:00:00+05:45, read as written (no zone maths). */
+/** "18:00" from a venue-local timestamp such as 2026-10-09T18:00:00+05:45, read as written (no zone maths). */
 export function localClock(iso: string): string {
   const [hours, minutes] = iso.slice(11, 16).split(':').map(Number);
   return clock(hours * 60 + minutes);
@@ -129,6 +129,13 @@ export function calendarParts(day: string): { weekday: string; day: string; mont
     return { weekday: date.weekday, day: digits(date.date), month: date.month };
   }
   return { weekday: gregorian(day, { weekday: 'short' }), day: gregorian(day, { day: 'numeric' }), month: gregorian(day, { month: 'short' }) };
+}
+
+/** "Saturday 25 October 2026", for a dateline; "शनिबार, ८ कात्तिक २०८३" in Nepali. */
+export function longDate(day: string): string {
+  const date = inNepali() ? bs(day) : null;
+  return date ? `${date.weekday}, ${digits(date.date)} ${date.month} ${digits(date.year)}`
+    : gregorian(day, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).replace(',', '');
 }
 
 /** "9 Oct 2026" for a YYYY-MM-DD; "२३ आश्विन २०८३" in Nepali. */

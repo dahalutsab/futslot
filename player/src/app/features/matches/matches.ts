@@ -20,7 +20,7 @@ const NEPAL = 'Asia/Kathmandu';
   imports: [RouterLink, Icon, PlayNav, MatchSummary],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mx-auto max-w-3xl px-4 py-6 lg:py-10">
+    <div class="page-col max-w-3xl py-6 lg:py-10">
       <fs-play-nav />
       <div class="mt-6 flex items-center gap-3">
         <h1 class="flex-1 text-4xl">{{ l().playGames }}</h1>

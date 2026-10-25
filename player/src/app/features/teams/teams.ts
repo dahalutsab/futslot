@@ -16,7 +16,7 @@ import { PlayNav } from '../../shared/play-nav';
   imports: [FormsModule, RouterLink, Icon, PlayNav],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mx-auto max-w-3xl px-4 py-6 lg:py-10">
+    <div class="page-col max-w-3xl py-6 lg:py-10">
       <fs-play-nav />
       @if (error(); as message) {
         <p class="mt-4 text-danger" role="alert">{{ message }}</p>

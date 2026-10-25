@@ -26,7 +26,7 @@ const DAYS_AHEAD = 30;
   imports: [FormsModule, RouterLink, PlayNav, DayStrip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mx-auto max-w-xl px-4 py-6 lg:py-10">
+    <div class="page-col max-w-xl py-6 lg:py-10">
       <fs-play-nav />
       <a routerLink="/matches" class="mt-4 inline-block text-sm text-muted hover:text-text">← {{ l().playGames }}</a>
       <h1 class="mt-2 text-4xl">{{ l().postAGame }}</h1>

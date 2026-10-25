@@ -22,10 +22,10 @@ class TextFormatTests {
 
 	@Test
 	void writesTimesTheWayPeopleSayThem() {
-		assertThat(TextFormat.ENGLISH.clock(LocalTime.of(18, 0))).isEqualTo("6 PM");
-		assertThat(TextFormat.ENGLISH.clock(LocalTime.of(6, 30))).isEqualTo("6:30 AM");
-		assertThat(TextFormat.ENGLISH.clock(LocalTime.MIDNIGHT)).isEqualTo("12 AM");
-		assertThat(TextFormat.ENGLISH.span(LocalTime.of(22, 0), LocalTime.of(23, 59, 59))).isEqualTo("10 PM – 12 AM");
+		assertThat(TextFormat.ENGLISH.clock(LocalTime.of(18, 0))).isEqualTo("18:00");
+		assertThat(TextFormat.ENGLISH.clock(LocalTime.of(6, 30))).isEqualTo("06:30");
+		assertThat(TextFormat.ENGLISH.clock(LocalTime.MIDNIGHT)).isEqualTo("00:00");
+		assertThat(TextFormat.ENGLISH.span(LocalTime.of(22, 0), LocalTime.of(23, 59, 59))).isEqualTo("22:00 – 00:00");
 		assertThat(TextFormat.ENGLISH.day(LocalDate.of(2026, 10, 9))).isEqualTo("Fri 9 Oct");
 	}
 

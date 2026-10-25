@@ -16,7 +16,7 @@ import { notificationLink } from '../../shared/notification-link';
   imports: [Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mx-auto max-w-2xl px-4 py-6 lg:py-10">
+    <div class="page-col max-w-2xl py-6 lg:py-10">
       <div class="flex items-center gap-3">
         <h1 class="flex-1 text-4xl">{{ l().notifications }}</h1>
         @if (hasUnread()) {

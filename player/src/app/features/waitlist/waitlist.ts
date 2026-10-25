@@ -13,7 +13,7 @@ import { dayLabel, localClock } from '../../shared/format';
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mx-auto max-w-2xl px-4 py-6 lg:py-10">
+    <div class="page-col max-w-2xl py-6 lg:py-10">
       <h1 class="text-4xl">{{ l().meWaitlist }}</h1>
       <p class="mt-1 text-muted">{{ l().waitlistIntro }}</p>
       @if (error(); as message) {

@@ -105,7 +105,7 @@ export function cancellable(booking: Booking, now = new Date()): boolean {
     && new Date(booking.startsAt).getTime() > now.getTime();
 }
 
-/** "6 AM – 10 PM", "Closed", for one day's opening hours. */
+/** "06:00 – 22:00", "Closed", for one day's opening hours. */
 export function hoursLabel(hours: DayHours | undefined): string {
   if (!hours || hours.closed || !hours.openTime || !hours.closeTime) {
     return l().closed;
@@ -113,7 +113,7 @@ export function hoursLabel(hours: DayHours | undefined): string {
   return `${timeLabel(hours.openTime)} – ${timeLabel(hours.closeTime)}`;
 }
 
-/** "6 AM", "6:30 PM" from "HH:mm:ss". */
+/** "06:00", "18:30" from "HH:mm:ss". */
 export function timeLabel(time: string): string {
   const [h, m] = time.split(':').map(Number);
   return clock(h * 60 + m);

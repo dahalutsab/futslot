@@ -53,7 +53,7 @@ figure { margin: 0; }
 ::selection { background: rgb(0 136 176 / 0.3); }
 
 /* Labels: 13px, uppercase, tracked, at 70% ink */
-.kicker { display: block; font-size: 13px; line-height: 14px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-70); }
+.kicker { display: block; font-size: 13px; line-height: 14px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-70); }
 
 /* Buttons */
 .btn {
@@ -71,7 +71,7 @@ figure { margin: 0; }
 
 /* Links in a row, for cities and areas: "Futsal in Kathmandu 10" */
 .chips { list-style: none; margin: 24px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 28px; font-size: 15px; }
-.chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--accent-700); }
+.chip { display: inline-flex; align-items: center; gap: 6px; color: var(--accent-700); }
 .chip .muted { color: var(--ink-60); }
 .chip.is-selected { color: var(--text); text-decoration: underline; }
 .chip-static { color: var(--text); min-height: 0; }
@@ -82,7 +82,7 @@ figure { margin: 0; }
 .logo { margin-right: auto; font-size: 24px; font-weight: 600; letter-spacing: -0.01em; line-height: 1; color: var(--text); }
 .logo:hover { color: var(--text); }
 .top-nav { display: flex; gap: 28px; }
-.top-nav a { display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; color: var(--text); }
+.top-nav a { display: inline-flex; align-items: center; font-size: 15px; color: var(--text); }
 .top-nav a:hover { color: var(--accent-700); }
 .lang-switch { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 13px; letter-spacing: 0.08em; color: var(--ink-70); }
 .lang-switch .current { color: var(--text); }
@@ -290,6 +290,7 @@ ul.grid-2 { list-style: none; margin: 0; padding: 0; }
   .hero h1, .not-found h1 { font-size: 48px; line-height: 1; }
   .lede { margin-top: 20px; font-size: 17px; line-height: 28px; }
   .search { margin-top: 24px; }
+  .chip, .top-nav a, .lang-switch { min-height: 44px; }
   .index { grid-template-columns: minmax(0, 1fr); }
   .index .area { display: none; }
   .cards { grid-template-columns: minmax(0, 1fr); gap: 48px; }

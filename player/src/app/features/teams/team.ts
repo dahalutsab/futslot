@@ -21,7 +21,7 @@ type Member = Team['members'][number];
   imports: [FormsModule, RouterLink, PlayNav],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mx-auto max-w-3xl px-4 py-6 lg:py-10">
+    <div class="page-col max-w-3xl py-6 lg:py-10">
       <fs-play-nav />
       <a routerLink="/teams" class="mt-4 inline-block text-sm text-muted hover:text-text">← {{ l().playTeams }}</a>
       @if (error(); as message) {

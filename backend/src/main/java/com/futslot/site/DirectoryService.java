@@ -119,7 +119,7 @@ class DirectoryService {
 					card.free().getFirst().book()))
 			.toList();
 		return new DirectoryPage(text.code(), base, other(text, "/"), seo, null, List.of(), text.get("dir.home.heading"),
-				text.get("dir.home.intro", count, where), cheapest, cityPlaces(all, base, text), cards, cityPlaces(all, base, text),
+				text.get("dir.home.intro", count, text.get("dir.valley")), cheapest, cityPlaces(all, base, text), cards, cityPlaces(all, base, text),
 				owners(), format.year(today()), List.copyOf(dateline), text.get(today ? "dir.board.title" : "dir.freeTomorrow"), next);
 	}
 
@@ -333,15 +333,15 @@ class DirectoryService {
 				.flatMap(court -> court.slots()
 					.stream()
 					.filter(slot -> slot.status() == SlotStatus.AVAILABLE && slot.startsAt().toInstant().isAfter(now))
-					.map(slot -> Map.entry(slot.startsAt(), Map.entry(court.courtId(), slot.price()))))
+					.map(slot -> Map.entry(slot.startsAt(), new FreeCourt(court.courtId(), court.name(), slot.price()))))
 				// One chip an hour: the first court free then
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, TreeMap::new))
 				.entrySet()
 				.stream()
 				.limit(FREE_HOURS)
 				.map(e -> new DirectoryPage.Hour(text.format().clock(e.getKey().toLocalTime()), "/venues/" + slug + "/book?court="
-						+ e.getValue().getKey() + "&start=" + URLEncoder.encode(e.getKey().toString(), StandardCharsets.UTF_8),
-						text.format().rupees(e.getValue().getValue()), e.getKey()))
+						+ e.getValue().id() + "&start=" + URLEncoder.encode(e.getKey().toString(), StandardCharsets.UTF_8),
+						text.format().rupees(e.getValue().price()), e.getValue().name(), e.getKey()))
 				.toList();
 			if (!hours.isEmpty()) {
 				return new Free(text.get((day == 0) ? "dir.freeToday" : "dir.freeTomorrow"), hours);
@@ -359,6 +359,10 @@ class DirectoryService {
 			}
 		}
 		return headlines;
+	}
+
+	/** The first court free at an hour, and its price then. */
+	private record FreeCourt(UUID id, String name, BigDecimal price) {
 	}
 
 	private record Free(String when, List<DirectoryPage.Hour> hours) {

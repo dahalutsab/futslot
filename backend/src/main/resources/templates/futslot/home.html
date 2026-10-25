@@ -28,8 +28,10 @@
         <a class="cmyk" th:href="${lead.href}" tabindex="-1">
           <div class="print" style="aspect-ratio:4/5"><img th:src="${lead.cover}" th:alt="${lead.alt}" style="width:100%;height:100%;object-fit:cover"></div>
         </a>
-        <figcaption th:text="${lead.freeWhen != null} ? #{dir.hero.caption(${lead.name}, ${lead.area}, ${lead.freeWhen}, ${lead.free[0].time})} : ${lead.name + ', ' + lead.area}">
-          Dhuku Futsal Hub, Maharajgunj. Free today from 5 PM.</figcaption>
+        <figcaption th:if="${lead.freeWhen == null}" th:text="${lead.name + ', ' + lead.area}">Dhuku Futsal Hub, Maharajgunj.</figcaption>
+        <figcaption th:if="${lead.freeWhen != null}" th:with="hour=${lead.free[0]}"
+          th:text="${lead.freeWhen == #messages.msg('dir.freeToday')} ? #{dir.hero.caption(${lead.name}, ${lead.area}, ${hour.court}, ${hour.time})} : #{dir.hero.captionTomorrow(${lead.name}, ${lead.area}, ${hour.court}, ${hour.time})}">
+          Dhuku Futsal Hub, Maharajgunj. Court A free from 17:00.</figcaption>
       </figure>
     </section>
 

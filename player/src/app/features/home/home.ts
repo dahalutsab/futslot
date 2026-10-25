@@ -6,13 +6,16 @@ import { Booking, Deposit, MatchPost, OwedShare, Split, VenueDetail, VenueSummar
 import { Session } from '../../core/session';
 import { digits, l } from '../../i18n/i18n';
 import { bookingChip, cancelOutcome } from '../../shared/booking-model';
-import { dayLabel, localClock, rupees, today, weekdayShort } from '../../shared/format';
+import { dayLabel, localClock, longDate, methodLabel, rupees, today, weekdayShort } from '../../shared/format';
 import { Coins, Hourglass, Icon, IconData, MapPin, ShareNetwork, Star, Wallet } from '../../shared/icon';
 import { skillLabels } from '../../shared/labels';
 import { StatusChip } from '../../shared/status-chip';
 import { VenueCard } from '../../shared/venue-card';
 
 const VALLEY = 'Asia/Kathmandu';
+
+/** Words in venue names that say what it is, not which one: left out of the headline's "at Dhuku." */
+const GENERIC = new Set(['futsal', 'hub', 'arena', 'recreation', 'recreational', 'centre', 'center', 'sports', 'ground', 'club', '&', 'and']);
 
 /** Something waiting on the player: magenta when it's theirs to do, cyan while it's in hand, plain when optional. */
 interface Need {
@@ -47,7 +50,7 @@ interface Fixture {
     <div class="mx-auto max-w-[1280px] px-5 lg:px-[72px]">
       <!-- The head rule and dateline -->
       <div class="rule-thick-thin lg:mt-3"></div>
-      <p class="kicker flex justify-between gap-x-7 gap-y-3 border-b border-text py-2.5 !text-xs lg:py-3.5 lg:!text-[13px]">
+      <p class="kicker flex justify-between gap-x-7 gap-y-3 border-b border-text py-2.5 max-lg:!text-[12px] lg:py-3.5">
         <span class="lg:hidden">{{ shortDate() }}</span>
         <span class="hidden lg:inline">{{ longDate() }}</span>
         <span class="hidden lg:inline">{{ greeting() }}</span>
@@ -63,11 +66,11 @@ interface Fixture {
           @if (bookings() === null) {
             <div class="h-72 animate-pulse bg-surface-2" [attr.aria-label]="l().loading"></div>
           } @else if (next(); as b) {
-            <p class="kicker mb-2.5 flex items-center gap-2 !text-xs lg:mb-[18px] lg:gap-2.5 lg:!text-[13px]">
+            <p class="kicker mb-2.5 flex items-center gap-2 max-lg:!text-[12px] lg:mb-[18px] lg:gap-2.5">
               {{ l().yourNextGame }} <fs-status-chip class="normal-case tracking-normal" [value]="chip(b)" />
             </p>
             <h1 class="ml-[-0.03em] text-[40px] leading-[44px] tracking-[-0.02em] lg:ml-[-0.035em] lg:text-[72px] lg:leading-[76px] lg:tracking-[-0.025em]">
-              {{ when(b) }}<span class="font-normal italic">{{ l().atVenue(b.venue.name) }}</span>
+              {{ when(b) }}<span class="font-normal italic">{{ l().atVenue(shortName(b.venue.name)) }}</span>
             </h1>
             <p class="mt-2 text-[15px] leading-[23px] text-text/78 lg:hidden">{{ placeShort(b) }}</p>
             <p class="mt-4 hidden text-[19px] leading-[30px] text-text/80 lg:block">{{ place(b) }}</p>
@@ -98,7 +101,7 @@ interface Fixture {
                 <p class="mt-4 text-[15px] text-text/70">{{ countdown().label }}</p>
               </div>
               <div class="tabular text-base leading-7">
-                <p class="flex gap-2.5"><span>{{ l().moneyCourt }}</span><span class="leader"></span><span>{{ rupees(b.priceAmount) }}</span></p>
+                <p class="flex gap-2.5"><span>{{ peak() ? l().moneyCourtPeak : l().moneyCourt }}</span><span class="leader"></span><span>{{ rupees(b.priceAmount) }}</span></p>
                 @if (b.addOnsAmount > 0) {
                   <p class="flex gap-2.5"><span>{{ extras(b) }}</span><span class="leader"></span><span>{{ rupees(b.addOnsAmount) }}</span></p>
                 }
@@ -106,7 +109,7 @@ interface Fixture {
                   <p class="flex gap-2.5 text-accent-700"><span>{{ l().moneyDiscount }}</span><span class="leader !border-current"></span><span>− {{ rupees(b.discountAmount) }}</span></p>
                 }
                 @if (b.paidAmount > 0) {
-                  <p class="flex gap-2.5 text-accent-700"><span>{{ l().moneyPaid }}</span><span class="leader !border-current"></span><span>− {{ rupees(b.paidAmount) }}</span></p>
+                  <p class="flex gap-2.5 text-accent-700"><span>{{ paidWith() ? l().moneyPaidWith(paidWith()!) : l().moneyPaid }}</span><span class="leader !border-current"></span><span>− {{ rupees(b.paidAmount) }}</span></p>
                 }
                 <p class="mt-1.5 flex gap-2.5 border-t border-text pt-1.5 font-semibold">
                   <span>{{ l().moneyPayAtVenue }}</span><span class="flex-1"></span><span>{{ rupees(left(b)) }}</span>
@@ -335,6 +338,12 @@ export class Home {
 
   protected readonly copied = signal(false);
 
+  /** Whether the next game is at the court's peak price. */
+  protected readonly peak = signal(false);
+
+  /** How the advance for the next game was paid: "eSewa". */
+  protected readonly paidWith = signal<string | null>(null);
+
   /** Ticks every half minute, for the countdown. */
   private readonly now = signal(new Date());
 
@@ -359,10 +368,7 @@ export class Home {
     return hour < 12 ? l().greetMorning(name) : hour < 17 ? l().greetAfternoon(name) : l().greetEvening(name);
   });
 
-  protected readonly longDate = computed(() => {
-    const day = today(VALLEY, this.now());
-    return `${dayLabel(day)} ${digits(day.slice(0, 4))}`;
-  });
+  protected readonly longDate = computed(() => longDate(today(VALLEY, this.now())));
 
   protected readonly shortDate = computed(() => dayLabel(today(VALLEY, this.now())));
 
@@ -433,6 +439,12 @@ export class Home {
     return `${word}, ${localClock(b.startsAt)}`;
   }
 
+  /** "Dhuku" for "Dhuku Futsal Hub": the name without the words every venue has, as people say it. */
+  protected shortName(name: string): string {
+    const short = name.split(/\s+/).filter((word) => !GENERIC.has(word.toLowerCase())).join(' ');
+    return short || name;
+  }
+
   /** "Dhuku Futsal Hub, Sital Marg, Maharajgunj · Court A · 6 PM – 7 PM". */
   protected place(b: Booking): string {
     return [[b.venue.name, this.street()].filter(Boolean).join(', '), b.court.name, this.time(b)].join(' · ');
@@ -478,7 +490,7 @@ export class Home {
     const outcome = cancelOutcome(b, v.policy, this.now());
     const freeHours = Math.max(0, ...v.policy.cancellationTiers.map((t) => t.withinHours));
     const freeUntil = freeHours > 0 ? new Date(new Date(b.startsAt).getTime() - freeHours * 3_600_000).toISOString() : null;
-    const untilLabel = freeUntil ? this.shortWhen(this.inValley(freeUntil)) : null;
+    const untilLabel = freeUntil ? this.relative(this.inValley(freeUntil)) : null;
     return outcome.fee > 0 ? l().cancelNowCosts(rupees(outcome.fee), untilLabel) : l().cancelFree(untilLabel);
   }
 
@@ -515,6 +527,15 @@ export class Home {
     return today(VALLEY, new Date(this.now().getTime() + 86_400_000));
   }
 
+  /** "18:00 yesterday", "18:00 today", "18:00 tomorrow", else "Sun 18:00". */
+  private relative(iso: string): string {
+    const day = iso.slice(0, 10);
+    const today_ = today(VALLEY, this.now());
+    const yesterday = today(VALLEY, new Date(this.now().getTime() - 86_400_000));
+    const word = day === today_ ? l().wordToday : day === yesterday ? l().wordYesterday : day === this.tomorrow() ? l().wordTomorrow : null;
+    return word ? l().timeOnDay(localClock(iso), word) : this.shortWhen(iso);
+  }
+
   /** "Sun, 7 AM": a day and time for a list row (venue-local times carry their offset). */
   private shortWhen(iso: string): string {
     return `${weekdayShort(iso.slice(0, 10))} ${localClock(iso)}`;
@@ -543,6 +564,16 @@ export class Home {
     if (b) {
       this.api.venue(b.venue.slug).then((v) => this.venue.set(v), () => undefined);
       this.api.split(b.id).then((s) => this.split.set(s), () => undefined);
+      this.api.availability(b.venue.slug, b.startsAt.slice(0, 10)).then((a) => {
+        const slot = a.courts.find((c) => c.courtId === b.court.id)?.slots.find((x) => x.startsAt === b.startsAt);
+        this.peak.set(slot?.label === 'PEAK');
+      }, () => undefined);
+      if (b.paidAmount > 0) {
+        this.api.bookingPayments(b.id).then((p) => {
+          const paid = p.payments.find((x) => x.status === 'SUCCEEDED');
+          this.paidWith.set(paid ? methodLabel(paid.method) : null);
+        }, () => undefined);
+      }
     }
     this.api.deposit().then((d) => this.deposit.set(d), () => undefined);
     this.api.splitDues().then((d) => this.dues.set(d), () => undefined);

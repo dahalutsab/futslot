@@ -35,8 +35,8 @@ public record DirectoryPage(String lang, String base, String switchHref, SitePag
 			String rating, String cover, String alt, String freeWhen, List<Hour> free) {
 	}
 
-	/** A free hour: "7 PM", where booking it starts, its price ("Rs 1,800") and when it starts, for ordering. */
-	public record Hour(String time, String book, String price, OffsetDateTime startsAt) {
+	/** A free hour: "19:00", where booking it starts, its price ("Rs 1,800"), the court free then and when it starts. */
+	public record Hour(String time, String book, String price, String court, OffsetDateTime startsAt) {
 	}
 
 	/** A row of the front page's "Free next" index: "7 PM", the venue, its area, the hour's price and booking it. */
