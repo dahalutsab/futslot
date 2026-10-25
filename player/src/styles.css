@@ -116,7 +116,15 @@
   --noshow-line: #d6006c;
   --noshow-fg: #790e3d;
 
+  --gutter: 20px;
+
   color-scheme: light;
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --gutter: clamp(40px, 5.625vw, 99px);
+  }
 }
 
 @layer base {
@@ -184,16 +192,24 @@
     color: var(--color-bg);
   }
 
-  /* A page's column: left-aligned on the masthead's edge (20px in on phones, the 1280px frame's 72px gutter on
-     desktop), never centred; the max-w-* beside it sets how wide it runs */
+  /*
+   * The page frame: the mockups are drawn at 1280 with a 72px gutter; wider screens keep that proportion (5.625%)
+   * up to 1760, so a big screen isn't mostly margin. 20px on phones.
+   */
+  .frame {
+    margin-inline: auto;
+    max-width: 1760px;
+    padding-inline: var(--gutter);
+  }
+
+  /* A page's column: left-aligned on the frame's edge, never centred; the max-w-* beside it sets how wide it runs */
   .page-col {
-    margin-inline: 20px;
+    margin-inline: var(--gutter);
   }
 
   @media (min-width: 64rem) {
     .page-col {
-      margin-left: max(72px, calc((100% - 1280px) / 2 + 72px));
-      margin-right: 72px;
+      margin-left: max(var(--gutter), calc((100% - 1760px) / 2 + var(--gutter)));
     }
   }
 
@@ -290,6 +306,108 @@
   /* Money, times and counts line up and don't jiggle as they change */
   .tabular {
     font-variant-numeric: tabular-nums;
+  }
+}
+
+/*
+ * Motion, in the page's own print grammar and only where it says something: a screen's lead sets once on arrival,
+ * plate figures come into register, a screened photo clears to the photograph under the pointer, buttons give
+ * under a press. Off for reduced motion.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes set-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes register-m {
+    from {
+      translate: 0.16em 0.11em;
+    }
+  }
+
+  @keyframes register-y {
+    from {
+      translate: -0.14em -0.1em;
+    }
+  }
+
+  @keyframes register-c {
+    from {
+      translate: 0.05em -0.08em;
+    }
+  }
+
+  /* A screen's lead: add .set-in, and --set (0, 1, 2...) to stagger */
+  .set-in {
+    animation: set-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--set, 0) * 80ms);
+  }
+
+  .cmyk-num .plate-m {
+    animation: register-m 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s both;
+  }
+
+  .cmyk-num .plate-y {
+    animation: register-y 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s both;
+  }
+
+  .cmyk-num .plate-c {
+    animation: register-c 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s both;
+  }
+
+  /* Screened photos clear to the photograph under the pointer */
+  .halftone,
+  .halftone::after {
+    transition: filter 0.5s ease, opacity 0.5s ease;
+  }
+
+  .halftone img {
+    transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .group:hover .halftone {
+    filter: none;
+  }
+
+  .group:hover .halftone::after {
+    opacity: 0;
+  }
+
+  .group:hover .halftone img {
+    transform: scale(1.035);
+  }
+
+  a,
+  button {
+    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  }
+
+  button:active:not(:disabled),
+  a[class*="bg-accent"]:active,
+  a[class*="btn-"]:active {
+    transform: translateY(1px);
+  }
+
+  /* Screens cross-fade, the new one rising a little */
+  ::view-transition-old(root) {
+    animation: 120ms ease both fade-out;
+  }
+
+  ::view-transition-new(root) {
+    animation: 260ms cubic-bezier(0.2, 0.7, 0.2, 1) both set-in;
+  }
+
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
   }
 }
 

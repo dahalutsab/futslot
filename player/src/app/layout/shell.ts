@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { Bell, CalendarDays, CircleUser, Compass, House, Icon, IconData, LogIn, MessageSquare, Trophy } from '../shared/icon';
@@ -43,8 +43,8 @@ const NAVIGATION: NavItem[] = [
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2">{{ l().skipToContent }}</a>
 
     <!-- The masthead: the name in the serif on paper, sections beside it, no rule (the pages draw their own) -->
-    <header class="sticky top-0 z-20 bg-bg">
-      <div class="mx-auto flex h-16 max-w-[1280px] items-center gap-2 px-5 lg:h-[76px] lg:px-[72px]">
+    <header class="sticky top-0 z-20 bg-bg transition-shadow duration-200" [style.box-shadow]="scrolled() ? '0 1px 0 var(--color-divider)' : null">
+      <div class="frame flex h-16 items-center gap-2 lg:h-[76px]">
         <a routerLink="/" class="mr-auto flex min-h-11 items-center lg:mr-7" [attr.aria-label]="l().futSlotHome">
           <fs-logo class="text-[21px] lg:text-2xl" />
         </a>
@@ -116,6 +116,15 @@ export class Shell {
   protected readonly digits = digits;
 
   private readonly router = inject(Router);
+
+  /** Once the page has scrolled, the masthead gets a hairline under it. */
+  protected readonly scrolled = signal(false);
+
+  constructor() {
+    const onScroll = () => this.scrolled.set(scrollY > 4);
+    addEventListener('scroll', onScroll, { passive: true });
+    inject(DestroyRef).onDestroy(() => removeEventListener('scroll', onScroll));
+  }
 
   private readonly url = toSignal(this.router.events.pipe(filter((e) => e instanceof NavigationEnd), map(() => this.router.url)),
     { initialValue: this.router.url });

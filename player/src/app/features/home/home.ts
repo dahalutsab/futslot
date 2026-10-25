@@ -47,7 +47,7 @@ interface Fixture {
   imports: [RouterLink, Icon, StatusChip, VenueCard],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mx-auto max-w-[1280px] px-5 lg:px-[72px]">
+    <div class="frame">
       <!-- The head rule and dateline -->
       <div class="rule-thick-thin lg:mt-3"></div>
       <p class="kicker flex justify-between gap-x-7 gap-y-3 border-b border-text py-2.5 max-lg:!text-[12px] lg:py-3.5">
@@ -69,11 +69,11 @@ interface Fixture {
             <p class="kicker mb-2.5 flex items-center gap-2 max-lg:!text-[12px] lg:mb-[18px] lg:gap-2.5">
               {{ l().yourNextGame }} <fs-status-chip class="normal-case tracking-normal" [value]="chip(b)" />
             </p>
-            <h1 class="ml-[-0.03em] text-[40px] leading-[44px] tracking-[-0.02em] lg:ml-[-0.035em] lg:text-[72px] lg:leading-[76px] lg:tracking-[-0.025em]">
+            <h1 class="set-in ml-[-0.03em] text-[40px] leading-[44px] tracking-[-0.02em] lg:ml-[-0.035em] lg:text-[72px] lg:leading-[76px] lg:tracking-[-0.025em]">
               {{ when(b) }}<span class="font-normal italic">{{ l().atVenue(shortName(b.venue.name)) }}</span>
             </h1>
-            <p class="mt-2 text-[15px] leading-[23px] text-text/78 lg:hidden">{{ placeShort(b) }}</p>
-            <p class="mt-4 hidden text-[19px] leading-[30px] text-text/80 lg:block">{{ place(b) }}</p>
+            <p class="set-in mt-2 text-[15px] leading-[23px] text-text/78 lg:hidden" style="--set: 1">{{ placeShort(b) }}</p>
+            <p class="set-in mt-4 hidden text-[19px] leading-[30px] text-text/80 lg:block" style="--set: 1">{{ place(b) }}</p>
 
             <!-- Phone: the countdown beside one line of money -->
             <div class="mt-[22px] flex items-end gap-[18px] lg:hidden">
@@ -168,10 +168,10 @@ interface Fixture {
           <ul>
             @for (need of needs(); track need.link + need.title; let i = $index) {
               <li [class.max-lg:hidden]="i >= 3">
-                <a [routerLink]="need.link" class="flex min-h-11 gap-3 border-t border-divider py-3 text-text hover:text-accent-700 lg:gap-3.5 lg:py-4">
+                <a [routerLink]="need.link" class="group/need flex min-h-11 gap-3 border-t border-divider py-3 text-text hover:text-accent-700 lg:gap-3.5 lg:py-4">
                   <fs-icon [img]="need.icon" [size]="22" class="mt-0.5 lg:mt-[3px]"
                     [class]="need.ink === 'act' ? 'text-accent-2-700' : need.ink === 'progress' ? 'text-accent-700' : 'text-text/60'" />
-                  <span class="min-w-0 flex-1">
+                  <span class="min-w-0 flex-1 transition-transform duration-200 group-hover/need:translate-x-1">
                     <span class="block text-[15px] leading-[22px] font-semibold lg:text-base lg:leading-6">{{ need.title }}</span>
                     <span class="block text-[13px] leading-5 text-text/70 lg:text-sm lg:leading-[22px]">{{ need.detail }}</span>
                   </span>

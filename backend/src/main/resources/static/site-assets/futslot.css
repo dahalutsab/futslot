@@ -24,8 +24,9 @@
   --ink-62: rgb(32 30 29 / 0.62);
   --ink-60: rgb(32 30 29 / 0.6);
   --ink-45: rgb(32 30 29 / 0.45);
-  --wrap: 1280px;
-  --gutter: 72px;
+  /* The mockups are drawn at 1280 with a 72px gutter; wider screens keep that proportion (5.625%) up to 1760 */
+  --wrap: 1760px;
+  --gutter: clamp(40px, 5.625vw, 99px);
   --serif: "Source Serif 4", "Noto Serif Devanagari", Georgia, serif;
   font-family: var(--serif);
   color: var(--text);
@@ -77,7 +78,8 @@ figure { margin: 0; }
 .chip-static { color: var(--text); min-height: 0; }
 
 /* Header: the masthead on paper */
-.top { background: var(--bg); }
+.top { position: sticky; top: 0; z-index: 30; background: var(--bg); transition: box-shadow 0.2s ease; }
+.top.is-scrolled { box-shadow: 0 1px 0 var(--divider); }
 .top-inner { display: flex; align-items: center; gap: 28px; min-height: 80px; }
 .logo { margin-right: auto; font-size: 24px; font-weight: 600; letter-spacing: -0.01em; line-height: 1; color: var(--text); }
 .logo:hover { color: var(--text); }
@@ -97,7 +99,7 @@ figure { margin: 0; }
 
 /* The front page's lead: the heading flush left, a photograph printed in four plates beside it */
 .hero { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 64px; align-items: end; padding: 72px 0 64px; }
-.hero h1 { margin-left: -0.035em; font-size: 84px; line-height: 0.98; letter-spacing: -0.025em; text-wrap: balance; }
+.hero h1 { margin-left: -0.035em; font-size: clamp(56px, 6.5625vw, 115px); line-height: 0.98; letter-spacing: -0.025em; text-wrap: balance; }
 .hero h1 span { display: block; }
 .hero h1 .tail { font-style: italic; font-weight: 400; }
 .lede { margin-top: 32px; max-width: 50ch; font-size: 19px; line-height: 30px; color: var(--ink-82); }
@@ -110,6 +112,7 @@ figure { margin: 0; }
 .search input:hover { border-color: var(--ink-45); }
 .search input:focus-visible { border-color: var(--accent); outline-offset: 0; }
 .hero-photo .cmyk { display: block; }
+.hero-photo .print { max-height: 76vh; }
 .hero-photo figcaption { margin-top: 12px; font-size: 13px; line-height: 20px; color: var(--ink-70); }
 
 /* A city or area's page: the same heading, smaller, with its crumbs above */
@@ -307,6 +310,56 @@ ul.grid-2 { list-style: none; margin: 0; padding: 0; }
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+/* Wide screens: the lede and index scale with the frame, and venues run four across */
+@media (min-width: 1600px) {
+  .cards { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .lede { font-size: 21px; line-height: 33px; }
+}
+
+/*
+ * Motion, in the page's own print grammar and only where it says something: the lead sets once on arrival, plates
+ * come into register, a screened photo clears to the photograph under the pointer. Off for reduced motion.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes set-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+  .hero h1 span, .hero .lede, .hero .search, .hero .chips, .hero-photo { animation: set-in 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .hero h1 .tail { animation-delay: 0.1s; }
+  .hero .lede { animation-delay: 0.2s; }
+  .hero .search { animation-delay: 0.28s; }
+  .hero .chips { animation-delay: 0.34s; }
+  .hero-photo { animation-delay: 0.06s; }
+
+  /* Plate numerals print out of register, then settle as they come into view */
+  .cmyk-num .plate { transition: translate 1.1s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .js .cmyk-num:not(.inked) .plate-m { translate: 0.16em 0.11em; }
+  .js .cmyk-num:not(.inked) .plate-y { translate: -0.14em -0.1em; }
+  .js .cmyk-num:not(.inked) .plate-c { translate: 0.05em -0.08em; }
+
+  /* The index sets row by row the first time it's seen */
+  .js .index li { opacity: 0; transform: translateY(8px); transition: opacity 0.5s ease, transform 0.5s ease; transition-delay: calc(var(--row, 0) * 45ms); }
+  .js .index.inked li { opacity: 1; transform: none; }
+
+  /* Hover: rows step forward, links underline, screened photos clear to the photograph */
+  .index .time, .index .price { transition: transform 0.2s ease; }
+  .index a:hover .time { transform: translateX(4px); }
+  .index a:hover .leader { border-bottom-color: currentColor; }
+  .top-nav a, .foot nav a, .chip > span:first-child {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size 0.25s ease, color 0.15s ease;
+  }
+  .top-nav a:hover, .foot nav a:hover, .chip:hover > span:first-child { background-size: 100% 1px; }
+  .card-photo { transition: filter 0.5s ease; }
+  .card-photo img { transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .card-photo::after { transition: opacity 0.5s ease; }
+  .card > a:hover .card-photo { filter: none; }
+  .card > a:hover .card-photo::after { opacity: 0; }
+  .card > a:hover .card-photo img { transform: scale(1.035); }
+  .card-name { transition: color 0.15s ease; }
+  .btn { transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease; }
+  .btn:active { transform: translateY(1px); }
+  .lit, .slot { transition: background-color 0.15s ease, transform 0.1s ease; }
+  .lit:active, .slot:active { transform: translateY(1px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after { transition-duration: .01ms !important; }
+  *, ::before, ::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }

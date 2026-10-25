@@ -4,7 +4,7 @@
     <a routerLink="/explore" class="mt-4 inline-flex h-11 items-center rounded-md bg-ink px-5 font-medium text-ink-fg">{{ l().seeAllVenues }}</a>
   </div>
 } @else if (venue(); as v) {
-  <div class="mx-auto max-w-[1280px] lg:px-[72px] lg:pt-6">
+  <div class="lg:mx-auto lg:max-w-[1760px] lg:px-(--gutter) lg:pt-6">
     <!-- Photos -->
     @if (v.photos.length) {
       <div class="relative aspect-[16/9] bg-surface-2 lg:aspect-[21/8] lg:overflow-hidden lg:rounded-md">
@@ -23,7 +23,7 @@
     }
   </div>
 
-  <div class="mx-auto max-w-[1280px] px-5 py-5 lg:grid lg:grid-cols-[1fr_340px] lg:gap-10 lg:px-[72px]">
+  <div class="frame py-5 lg:grid lg:grid-cols-[1fr_340px] lg:gap-10">
     <div class="min-w-0">
       <div class="flex items-start gap-3">
         <h1 class="min-w-0 flex-1 text-5xl font-bold leading-[.92] lg:text-7xl">{{ v.name }}</h1>
@@ -201,7 +201,7 @@
     </aside>
   </div>
 } @else {
-  <div class="mx-auto max-w-[1280px] px-5 py-6 lg:px-[72px]" [attr.aria-label]="l().loading">
+  <div class="frame py-6" [attr.aria-label]="l().loading">
     <div class="aspect-[16/9] animate-pulse rounded-md bg-surface lg:aspect-[21/8]"></div>
     <div class="mt-5 h-8 w-64 animate-pulse rounded bg-surface"></div>
   </div>

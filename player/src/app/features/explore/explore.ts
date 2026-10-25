@@ -15,11 +15,11 @@ import { VenueCard } from '../../shared/venue-card';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- The front page's hero, on paper: the heading flush left, search, then the cities as links -->
-    <div class="mx-auto max-w-[1280px] px-5 pt-8 pb-10 lg:px-[72px] lg:pt-14 lg:pb-14">
-      <h1 class="ml-[-0.035em] max-w-[16ch] text-[40px] leading-[44px] tracking-[-0.02em] lg:text-[72px] lg:leading-[76px] lg:tracking-[-0.025em]">{{ l().exploreTitle }}</h1>
-      <p class="mt-4 max-w-[50ch] text-[17px] leading-7 text-text/82 lg:mt-6 lg:text-[19px] lg:leading-[30px]">{{ l().exploreSubtitle }}</p>
+    <div class="frame pt-8 pb-10 lg:pt-14 lg:pb-14">
+      <h1 class="set-in ml-[-0.035em] max-w-[16ch] text-[40px] leading-[44px] tracking-[-0.02em] lg:text-[72px] lg:leading-[76px] lg:tracking-[-0.025em]">{{ l().exploreTitle }}</h1>
+      <p style="--set: 1" class="set-in mt-4 max-w-[50ch] text-[17px] leading-7 text-text/82 lg:mt-6 lg:text-[19px] lg:leading-[30px]">{{ l().exploreSubtitle }}</p>
 
-      <form class="mt-6 flex max-w-[520px] gap-2.5 lg:mt-8" role="search" (ngSubmit)="search()">
+      <form style="--set: 2" class="set-in mt-6 flex max-w-[520px] gap-2.5 lg:mt-8" role="search" (ngSubmit)="search()">
         <label for="q" class="sr-only">{{ l().venueSearchHint }}</label>
         <input id="q" name="q" type="search" [placeholder]="l().venueSearchHint" autocomplete="off"
           class="min-h-11 min-w-0 flex-1 rounded-md border border-divider bg-surface-2 px-2.5 text-base caret-accent placeholder:text-text/65 hover:border-text/45 focus-visible:border-accent focus-visible:outline-offset-0"
@@ -39,12 +39,12 @@ import { VenueCard } from '../../shared/venue-card';
       }
     </div>
 
-    <div class="mx-auto max-w-[1280px] px-5 pb-6 lg:px-[72px] lg:pb-10">
+    <div class="frame pb-6 lg:pb-10">
 
       @if (featured().length && !filtered()) {
         <section class="mt-6" aria-labelledby="featured-title">
           <h2 id="featured-title" class="kicker">{{ l().featured }}</h2>
-          <ul class="mt-7 grid gap-x-12 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+          <ul class="mt-7 grid gap-x-12 gap-y-14 sm:grid-cols-2 lg:grid-cols-3 min-[1600px]:grid-cols-4">
             @for (venue of featured(); track venue.id) {
               <li><fs-venue-card [venue]="venue" /></li>
             }
@@ -68,7 +68,7 @@ import { VenueCard } from '../../shared/venue-card';
               <p class="mt-1 text-muted">{{ l().noVenuesFoundBody }}</p>
             </div>
           } @else {
-            <ul class="mt-7 grid gap-x-12 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+            <ul class="mt-7 grid gap-x-12 gap-y-14 sm:grid-cols-2 lg:grid-cols-3 min-[1600px]:grid-cols-4">
               @for (venue of list; track venue.id) {
                 <li><fs-venue-card [venue]="venue" /></li>
               }

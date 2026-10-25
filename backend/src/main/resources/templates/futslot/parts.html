@@ -29,12 +29,29 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;1,400&amp;family=Noto+Serif+Devanagari:wght@400;600&amp;display=swap">
-  <link rel="stylesheet" th:href="@{/site-assets/futslot.css(v=9)}">
+  <link rel="stylesheet" th:href="@{/site-assets/futslot.css(v=11)}">
   <script>
     // A first-time visitor's language in the player app is the language of the page they came in on
     try {
       if (!localStorage.getItem('futslot.language')) localStorage.setItem('futslot.language', document.documentElement.lang);
     } catch {}
+    // Motion (futslot.css): the masthead's hairline once the page scrolls, plates and the index setting as they come
+    // into view, the hero photo's plates drifting into register. Nothing moves for reduced motion.
+    document.documentElement.classList.add('js');
+    document.addEventListener('DOMContentLoaded', () => {
+      const top = document.querySelector('.top');
+      const scrolled = () => top?.classList.toggle('is-scrolled', scrollY > 4);
+      addEventListener('scroll', scrolled, { passive: true });
+      scrolled();
+      document.querySelectorAll('.index li').forEach((row, i) => row.style.setProperty('--row', i));
+      const seen = new IntersectionObserver((entries) => entries.forEach((e) => {
+        if (e.isIntersecting) { e.target.classList.add('inked'); seen.unobserve(e.target); }
+      }), { threshold: 0.35 });
+      document.querySelectorAll('.cmyk-num, .index').forEach((el) => seen.observe(el));
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelectorAll('#sep-all animate').forEach((a) => a.beginElement());
+      }
+    });
   </script>
   <script th:if="${seo.jsonLd}" type="application/ld+json" th:utext="${seo.jsonLd}"></script>
   <script th:if="${jsonLd}" type="application/ld+json" th:utext="${jsonLd}"></script>
@@ -79,13 +96,13 @@
         <feComposite in="c0" in2="SourceAlpha" operator="in" result="c"/>
         <feColorMatrix in="SourceGraphic" type="matrix" values="0 0.161 0 0 0.839  0 1 0 0 0  0 0.576 0 0 0.424  0 0 0 0 1" result="m0"/>
         <feComposite in="m0" in2="SourceAlpha" operator="in" result="m1"/>
-        <feOffset in="m1" dx="5" dy="3" result="m"/>
+        <feOffset in="m1" dx="5" dy="3" result="m"><animate attributeName="dx" values="26;5" dur="1.6s" begin="indefinite" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.2 0.7 0.2 1"/><animate attributeName="dy" values="16;3" dur="1.6s" begin="indefinite" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.2 0.7 0.2 1"/></feOffset>
         <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0.071 0 0.929  0 0 0.267 0 0.733  0 0 1 0 0  0 0 0 0 1" result="y0"/>
         <feComposite in="y0" in2="SourceAlpha" operator="in" result="y1"/>
-        <feOffset in="y1" dx="-5" dy="-3" result="y"/>
+        <feOffset in="y1" dx="-5" dy="-3" result="y"><animate attributeName="dx" values="-24;-5" dur="1.6s" begin="indefinite" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.2 0.7 0.2 1"/><animate attributeName="dy" values="-14;-3" dur="1.6s" begin="indefinite" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.2 0.7 0.2 1"/></feOffset>
         <feColorMatrix in="SourceGraphic" type="matrix" values="0.112 0.375 0.038 0 0.475  0.113 0.379 0.038 0 0.471  0.113 0.380 0.038 0 0.468  0 0 0 0 1" result="k0"/>
         <feComposite in="k0" in2="SourceAlpha" operator="in" result="k1"/>
-        <feOffset in="k1" dx="3" dy="6" result="k"/>
+        <feOffset in="k1" dx="3" dy="6" result="k"><animate attributeName="dx" values="14;3" dur="1.6s" begin="indefinite" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.2 0.7 0.2 1"/><animate attributeName="dy" values="22;6" dur="1.6s" begin="indefinite" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.2 0.7 0.2 1"/></feOffset>
         <feBlend in="m" in2="c" mode="multiply" result="s1"/>
         <feBlend in="y" in2="s1" mode="multiply" result="s2"/>
         <feBlend in="k" in2="s2" mode="multiply"/>
