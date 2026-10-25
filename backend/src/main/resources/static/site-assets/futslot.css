@@ -80,16 +80,26 @@ a.chip:hover { border-color: var(--turf); }
 .chip.is-selected { background: var(--text); border-color: var(--text); color: var(--bg); }
 .chip-static { min-height: 34px; }
 
-/* Header */
-.top { background: var(--bg); border-bottom: 1px solid var(--line); }
-.top-inner { display: flex; align-items: center; gap: 16px; min-height: 64px; }
+/* Header: on the turf, so on the front page it and the turf band below are one pitch */
+.top { position: sticky; top: 0; z-index: 20; background: var(--turf); color: #fff; box-shadow: 0 1px 0 rgba(0, 0, 0, .12); }
+.top-inner { display: flex; align-items: center; gap: 12px; min-height: 68px; }
 .logo { display: inline-flex; align-items: center; gap: 10px; font-family: var(--display); font-size: 26px; font-weight: 700; text-decoration: none; line-height: 1; }
 .logo-mark { width: 30px; height: 20px; flex: none; color: var(--turf); }
-.top-nav { flex: 1; display: flex; gap: 4px; margin-left: 8px; }
-.top-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; color: var(--muted); font-weight: 500; text-decoration: none; }
-.top-nav a:hover { color: var(--text); text-decoration: underline; text-underline-offset: 6px; }
-.lang-switch { display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; color: var(--muted); text-decoration: none; }
-.lang-switch:hover { color: var(--text); }
+.top .logo-mark { color: #fff; }
+.top .logo-mark path, .top .logo-mark circle { stroke: var(--turf); }
+.top-nav { flex: 1; display: flex; gap: 4px; margin-left: 20px; }
+.top-nav a {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; color: rgba(255, 255, 255, .84);
+  font-weight: 500; text-decoration: none;
+}
+.top-nav a:hover { color: #fff; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 8px; }
+.lang-switch {
+  display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .38); color: #fff; font-size: 15px; text-decoration: none;
+}
+.lang-switch:hover { border-color: #fff; background: rgba(255, 255, 255, .08); }
+.top .btn-light { color: var(--turf-deep); }
+.dark .top .btn-light { color: #0b4d2b; }
 
 /* Breadcrumbs */
 .crumbs ol { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 20px 0 0; font-size: 15px; color: var(--muted); }
@@ -97,7 +107,7 @@ a.chip:hover { border-color: var(--turf); }
 .crumbs a { display: inline-flex; min-height: 24px; align-items: center; }
 
 /* The front page's turf band, with the court's lines in chalk */
-.hero { position: relative; overflow: hidden; padding: 56px 0 48px; background: var(--turf); color: var(--turf-fg); isolation: isolate; }
+.hero { position: relative; overflow: hidden; padding: 48px 0 56px; background: var(--turf); color: var(--turf-fg); isolation: isolate; }
 .pitch { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; color: rgba(255, 255, 255, .16); }
 .hero h1 { max-width: 12ch; font-size: clamp(52px, 8.5vw, 104px); font-weight: 700; line-height: .9; }
 .hero .lede { margin-top: 18px; color: rgba(255, 255, 255, .86); }
@@ -113,9 +123,25 @@ a.chip:hover { border-color: var(--turf); }
 .hero .chip { background: transparent; border-color: rgba(255, 255, 255, .45); color: #fff; }
 .hero a.chip:hover { border-color: #fff; background: rgba(255, 255, 255, .08); }
 .hero .chip .muted { color: rgba(255, 255, 255, .72); }
+.hero-grid { display: grid; gap: 40px; align-items: center; }
+.hero-grid:has(.board) { grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); }
+
+/* The board beside the heading: the soonest free hours, like the results board at a ground */
+.board { padding: 20px 20px 12px; border-radius: 6px; background: var(--turf-deep); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1); }
+.board h2 { font-size: 30px; }
+.board-rows { list-style: none; margin: 10px 0 0; padding: 0; }
+.board-rows > li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, .12); }
+.board-venue { display: flex; flex-direction: column; min-width: 0; }
+.board-venue a { font-family: var(--display); font-size: 22px; font-weight: 600; line-height: 1.1; text-decoration: none; }
+.board-venue a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.board-venue span { font-size: 14px; color: rgba(255, 255, 255, .72); }
+.board .hours-free { margin: 0; }
+.board .lit { min-height: 34px; padding: 0 10px; font-size: 18px; }
+.board-all { display: inline-flex; align-items: center; min-height: 40px; color: rgba(255, 255, 255, .84); font-size: 15px; font-weight: 500; }
+.board-all:hover { color: #fff; }
 
 /* A page that isn't there: the turf band fills the screen, with the way out */
-.not-found { min-height: calc(100dvh - 65px); display: flex; align-items: center; }
+.not-found { min-height: calc(100dvh - 68px); display: flex; align-items: center; }
 .not-found .wrap { width: 100%; }
 .not-found .actions { margin-top: 28px; }
 .btn-on-turf { border-color: rgba(255, 255, 255, .6); color: #fff; }
@@ -141,6 +167,13 @@ a.chip:hover { border-color: var(--turf); }
 .cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 40px 24px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
 .card { display: flex; flex-direction: column; gap: 4px; }
 .card-photo { display: block; aspect-ratio: 3 / 2; overflow: hidden; border-radius: 6px; background: var(--surface-2); margin-bottom: 10px; }
+/* No photo yet: the court from above, mown in stripes */
+.card-photo:not(:has(img)) {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200' fill='none' stroke='%23fff' stroke-opacity='.45' stroke-width='2'%3E%3Crect x='14' y='14' width='272' height='172' rx='2'/%3E%3Cpath d='M150 14v172M14 64h28a36 36 0 0 1 0 72H14M286 64h-28a36 36 0 0 0 0 72h28'/%3E%3Ccircle cx='150' cy='100' r='30'/%3E%3C/svg%3E") center / contain no-repeat,
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, .05) 0 10%, transparent 10% 20%),
+    var(--turf);
+}
 .card-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
 .card-photo:hover img { transform: scale(1.03); }
 .card-name { font-family: var(--display); font-size: 28px; font-weight: 600; line-height: 1; text-decoration: none; }
@@ -248,18 +281,29 @@ ul.grid-2 { list-style: none; margin: 0; padding: 0; }
 .foot ul { list-style: none; margin: 0; padding: 0; }
 .foot li a { display: inline-flex; align-items: center; min-height: 34px; color: var(--muted); text-decoration: none; }
 .foot li a:hover { color: var(--text); text-decoration: underline; }
+.foot-demo { margin-bottom: 16px; }
 .foot-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 24px; }
 .foot-bottom a { color: var(--text); font-weight: 600; }
 
 /* Devanagari's vowel signs reach above and below the letters: tight Latin leading would make lines collide */
 :lang(ne) h1, :lang(ne) h2, :lang(ne) h3, :lang(ne) .hero h1, :lang(ne) .venue-head h1, :lang(ne) .card-name { line-height: 1.25; }
 
+@media (max-width: 960px) {
+  .hero-grid:has(.board) { grid-template-columns: minmax(0, 1fr); }
+}
+
 @media (max-width: 560px) {
   body { font-size: 16px; }
   .top-nav { display: none; }
-  .top-inner { justify-content: space-between; }
-  .hero { padding: 40px 0 36px; }
-  .search { flex-direction: column; }
+  .top-inner { min-height: 60px; }
+  .top .logo { margin-right: auto; }
+  .hero { padding: 32px 0 40px; }
+  .hero .pitch { display: none; }
+  .search .btn { padding: 0 16px; }
+  .hero .chips { flex-wrap: nowrap; overflow-x: auto; margin-inline: -16px; padding-inline: 16px; scrollbar-width: none; }
+  .hero .chips li { flex: none; }
+  .board { padding: 16px 16px 8px; }
+  .not-found { min-height: calc(100dvh - 60px); }
   .cover { aspect-ratio: 16 / 9; }
   .actions .btn { flex: 1 1 auto; }
 }

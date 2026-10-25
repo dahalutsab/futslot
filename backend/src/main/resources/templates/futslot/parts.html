@@ -24,11 +24,13 @@
   <meta name="twitter:card" th:content="${seo.image != null ? 'summary_large_image' : 'summary'}">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0f1012" media="(prefers-color-scheme: dark)">
-  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" href="/site-assets/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/site-assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/site-assets/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Khand:wght@600;700&amp;family=Mukta:wght@400;500;600;700&amp;display=swap">
-  <link rel="stylesheet" th:href="@{/site-assets/futslot.css(v=5)}">
+  <link rel="stylesheet" th:href="@{/site-assets/futslot.css(v=6)}">
   <script>
     // The player app's theme and language, so these pages match it: dark mode before first paint, and a first-time
     // visitor's language is the language of the page they came in on
@@ -50,11 +52,12 @@
       </a>
       <nav class="top-nav" th:aria-label="#{dir.nav.main}">
         <a href="/explore" th:text="#{dir.nav.explore}">Explore</a>
+        <a th:href="${dir.owners}" th:text="#{dir.nav.owners}">For venues</a>
       </nav>
       <a class="lang-switch" th:href="${dir.switchHref}" th:hreflang="${dir.lang == 'ne' ? 'en' : 'ne'}"
         th:lang="${dir.lang == 'ne' ? 'en' : 'ne'}" th:title="#{lang.switchTitle}" th:text="#{lang.switch}"
         onclick="try { localStorage.setItem('futslot.language', this.hreflang) } catch {}">नेपाली</a>
-      <a class="btn btn-ink btn-small" href="/login" id="account" th:data-mine="#{dir.nav.mine}" th:text="#{dir.nav.signIn}">Sign in</a>
+      <a class="btn btn-light btn-small" href="/login" id="account" th:data-mine="#{dir.nav.mine}" th:text="#{dir.nav.signIn}">Sign in</a>
       <script>
         // Signed in to the player app: its bookings, not "Sign in"
         try {
@@ -116,6 +119,26 @@
     </li>
   </ul>
 
+  <!-- The front page's board: the venues with the soonest free hours, which book straight away -->
+  <th:block th:fragment="board(cards)" th:with="lit=${cards.?[freeWhen != null]}">
+    <aside th:if="${!lit.isEmpty()}" class="board" aria-labelledby="board-title">
+      <h2 id="board-title" th:text="#{dir.board.title}">Free next</h2>
+      <ol class="board-rows">
+        <li th:each="card, row : ${lit}" th:if="${row.index < 5}">
+          <div class="board-venue">
+            <a th:href="${card.href}" th:text="${card.name}">Venue</a>
+            <span><th:block th:text="${card.place}">Area, City</th:block>. <th:block th:text="${card.freeWhen}">Free today</th:block></span>
+          </div>
+          <ul class="hours-free">
+            <li th:each="hour, h : ${card.free}" th:if="${h.index < 3}"><a class="lit" th:href="${hour.book}" th:text="${hour.time}"
+              th:aria-label="#{dir.freeHour(${hour.time}, ${card.name})}">7 PM</a></li>
+          </ul>
+        </li>
+      </ol>
+      <a class="board-all" href="#venues-title" th:text="#{dir.board.all}">All venues</a>
+    </aside>
+  </th:block>
+
   <section th:fragment="owners" class="owners" aria-labelledby="owners-title">
     <div class="wrap owners-inner">
       <div>
@@ -145,6 +168,7 @@
         </ul>
       </nav>
     </div>
+    <p th:if="${demo}" class="wrap foot-demo muted small" th:text="#{dir.demo}">A portfolio demo.</p>
     <div class="wrap foot-bottom muted small">
       <p>© <span th:text="${dir.year}">2026</span> FutSlot</p>
       <p><th:block th:text="#{dir.footer.madeBefore}">Proudly made by </th:block><a href="https://dahalutsab.com.np"

@@ -8,20 +8,23 @@
   <main>
     <section class="hero">
       <svg th:replace="~{futslot/parts :: pitch}"></svg>
-      <div class="wrap">
-        <h1 th:text="${dir.heading}">Book a futsal court</h1>
-        <p class="lede" th:text="${dir.intro}">Free slots and prices.</p>
-        <form class="search" action="/explore" method="get" role="search">
-          <label for="q" class="sr-only" th:text="#{dir.search.label}">Venue name or area</label>
-          <input id="q" name="q" type="search" th:placeholder="#{dir.search.label}" autocomplete="off">
-          <button type="submit" class="btn btn-ink" th:text="#{dir.search.button}">Search</button>
-        </form>
-        <ul th:if="${!dir.places.isEmpty()}" class="chips" th:aria-label="#{dir.byCity}">
-          <li th:each="city : ${dir.places}">
-            <a class="chip" th:href="${city.href}"><span th:text="#{dir.place.heading(${city.name})}">Futsal in Kathmandu</span>
-              <span class="muted" th:text="${city.count}">3 venues</span></a>
-          </li>
-        </ul>
+      <div class="wrap hero-grid">
+        <div>
+          <h1 th:text="${dir.heading}">Book a futsal court</h1>
+          <p class="lede" th:text="${dir.intro}">Free slots and prices.</p>
+          <form class="search" action="/explore" method="get" role="search">
+            <label for="q" class="sr-only" th:text="#{dir.search.label}">Venue name or area</label>
+            <input id="q" name="q" type="search" th:placeholder="#{dir.search.label}" autocomplete="off">
+            <button type="submit" class="btn btn-ink" th:text="#{dir.search.button}">Search</button>
+          </form>
+          <ul th:if="${!dir.places.isEmpty()}" class="chips" th:aria-label="#{dir.byCity}">
+            <li th:each="city : ${dir.places}">
+              <a class="chip" th:href="${city.href}"><span th:text="#{dir.place.heading(${city.name})}">Futsal in Kathmandu</span>
+                <span class="muted" th:text="${city.count}">3 venues</span></a>
+            </li>
+          </ul>
+        </div>
+        <th:block th:replace="~{futslot/parts :: board(${dir.venues})}"></th:block>
       </div>
     </section>
 

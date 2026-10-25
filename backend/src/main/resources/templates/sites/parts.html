@@ -22,6 +22,9 @@
   <meta th:if="${page.seo.image}" property="og:image" th:content="${page.seo.image}">
   <meta name="twitter:card" th:content="${page.seo.image != null ? 'summary_large_image' : 'summary'}">
   <meta name="theme-color" th:content="${page.accent}">
+  <link rel="icon" href="/site-assets/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/site-assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/site-assets/apple-touch-icon.png">
   <th:block th:if="${fonts != null}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,6 +49,11 @@
   </svg>
 
   <!-- The page in the other language, named in that language -->
+  <!-- On a demo: this isn't the venue's own website, and nothing here is a real booking -->
+  <p th:fragment="demo" th:if="${demo}" class="demo-note" th:text="#{site.demo}"
+    style="margin:0;padding:8px 16px;background:#14231a;color:#f8faf6;font-size:14px;line-height:1.4;text-align:center">
+    A FutSlot demo, not this venue's own website.</p>
+
   <a th:fragment="language" class="lang-switch" th:href="${page.switchHref}" th:hreflang="${page.lang == 'ne' ? 'en' : 'ne'}"
     th:lang="${page.lang == 'ne' ? 'en' : 'ne'}" th:title="#{lang.switchTitle}" th:text="#{lang.switch}">नेपाली</a>
 
