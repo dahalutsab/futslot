@@ -1,0 +1,598 @@
+[
+ {
+  "name": "Dhuku Futsal Hub",
+  "area": "Maharajgunj",
+  "city": "Kathmandu",
+  "street": "Sital Marg",
+  "lat": 27.7345,
+  "lng": 85.332,
+  "description": "Two turf courts on Sital Marg in Maharajgunj, a short walk from the ring road. A demo listing: FutSlot isn't linked to this venue, and its prices and free hours here are made up.",
+  "amenities": [
+   "PARKING",
+   "DRINKING_WATER",
+   "FLOODLIGHTS",
+   "CHANGING_ROOM",
+   "CAFE"
+  ],
+  "courts": [
+   {
+    "name": "Court A",
+    "format": "FIVE_A_SIDE"
+   },
+   {
+    "name": "Court B",
+    "format": "FIVE_A_SIDE"
+   }
+  ],
+  "prices": [
+   {
+    "startTime": "06:00",
+    "endTime": "17:00",
+    "price": 1400
+   },
+   {
+    "label": "PEAK",
+    "startTime": "17:00",
+    "endTime": "21:00",
+    "price": 1900,
+    "priority": 1
+   }
+  ],
+  "deposit": false,
+  "template": "TURF",
+  "subdomain": "dhuku",
+  "accent": "#1f7a3a",
+  "headline": "Two courts off the ring road"
+ },
+ {
+  "name": "Dhanyentari Futsal",
+  "area": "Hadigaun",
+  "city": "Kathmandu",
+  "street": "Hadigaun Marg",
+  "lat": 27.7235,
+  "lng": 85.344,
+  "description": "A Hadigaun favourite with a cafe, showers and wifi, and a pool next door for after the game. A demo listing: FutSlot isn't linked to this venue, and its prices and free hours here are made up.",
+  "amenities": [
+   "PARKING",
+   "DRINKING_WATER",
+   "FLOODLIGHTS",
+   "CHANGING_ROOM",
+   "SHOWER",
+   "CAFE",
+   "WIFI"
+  ],
+  "courts": [
+   {
+    "name": "Court A",
+    "format": "FIVE_A_SIDE"
+   }
+  ],
+  "prices": [
+   {
+    "startTime": "06:00",
+    "endTime": "17:00",
+    "price": 1000
+   },
+   {
+    "label": "PEAK",
+    "startTime": "17:00",
+    "endTime": "21:00",
+    "price": 1700,
+    "priority": 1
+   }
+  ],
+  "deposit": false,
+  "template": "FLOODLIGHT",
+  "subdomain": "dhanyentari",
+  "accent": "#f59e0b",
+  "headline": "Play, then a swim"
+ },
+ {
+  "name": "Grassroots Recreational Center",
+  "area": "Mandikatar",
+  "city": "Kathmandu",
+  "street": "Mandikatar Road",
+  "lat": 27.733,
+  "lng": 85.347,
+  "description": "Two fields with big parking, a cafe, wifi and a swimming pool. A demo listing: FutSlot isn't linked to this venue, and its prices and free hours here are made up.",
+  "amenities": [
+   "PARKING",
+   "DRINKING_WATER",
+   "FLOODLIGHTS",
+   "CHANGING_ROOM",
+   "SHOWER",
+   "CAFE",
+   "WIFI",
+   "SPECTATOR_SEATING"
+  ],
+  "courts": [
+   {
+    "name": "Court A",
+    "format": "FIVE_A_SIDE"
+   },
+   {
+    "name": "Court B",
+    "format": "FIVE_A_SIDE"
+   }
+  ],
+  "prices": [
+   {
+    "startTime": "06:00",
+    "endTime": "17:00",
+    "price": 1300
+   },
+   {
+    "label": "PEAK",
+    "startTime": "17:00",
+    "endTime": "21:00",
+    "price": 1800,
+    "priority": 1
+   }
+  ],
+  "deposit": false,
+  "template": "TURF",
+  "subdomain": "grassroots",
+  "accent": "#15803d",
+  "headline": "Two fields and a pool in Mandikatar"
+ },
+ {
+  "name": "X-Cel Recreation Centre",
+  "area": "Baluwatar",
+  "city": "Kathmandu",
+  "street": "Baluwatar Road",
+  "lat": 27.7265,
+  "lng": 85.3305,
+  "description": "Two fields in Baluwatar, close to the city centre. A demo listing: FutSlot isn't linked to this venue, and its prices and free hours here are made up.",
+  "amenities": [
+   "PARKING",
+   "DRINKING_WATER",
+   "FLOODLIGHTS",
+   "CHANGING_ROOM",
+   "FIRST_AID"
+  ],
+  "courts": [
+   {
+    "name": "Court A",
+    "format": "FIVE_A_SIDE"
+   },
+   {
+    "name": "Court B",
+    "format": "FIVE_A_SIDE"
+   }
+  ],
+  "prices": [
+   {
+    "startTime": "06:00",
+    "endTime": "17:00",
+    "price": 1300
+   },
+   {
+    "label": "PEAK",
+    "startTime": "17:00",
+    "endTime": "21:00",
+    "price": 1800,
+    "priority": 1
+   }
+  ],
+  "deposit": false,
+  "template": "FLOODLIGHT",
+  "subdomain": "xcel",
+  "accent": "#2563eb",
+  "headline": "Two fields in Baluwatar"
+ },
+ {
+  "name": "Maidan Futsal",
+  "area": "Battisputali",
+  "city": "Kathmandu",
+  "street": "Battisputali Road",
+  "lat": 27.7055,
+  "lng": 85.345,
+  "description": "One court in Battisputali with free wifi and a cafe. A demo listing: FutSlot isn't linked to this venue, and its prices and free hours here are made up.",
+  "amenities": [
+   "PARKING",
+   "DRINKING_WATER",
+   "FLOODLIGHTS",
+   "CAFE",
+   "WIFI"
+  ],
+  "courts": [
+   {
+    "name": "Court A",
+    "format": "FIVE_A_SIDE"
+   }
+  ],
+  "prices": [
+   {
+    "startTime": "06:00",
+    "endTime": "17:00",
+    "price": 1200
+   },
+   {
+    "label": "PEAK",
+    "startTime": "17:00",
+    "endTime": "21:00",
+    "price": 1600,
+    "priority": 1
+   }
+  ],
+  "deposit": false,
+  "template": "TURF",
+  "subdomain": "maidan",
+  "accent": "#0f766e",
+  "headline": "Your court in Battisputali"
+ },
+ {
+  "name": "Velocity Arena",
+  "area": "Ratopul",
+  "city": "Kathmandu",
+  "street": "Ratopul",
+  "lat": 27.7075,
+  "lng": 85.3345,
+  "description": "A court at Ratopul, between Gaushala and Old Baneshwor. A demo listing: FutSlot isn't linked to this venue, and its prices and free hours here are made up.",
+  "amenities": [
+   "PARKING",
+   "DRINKING_WATER",
+   "FLOODLIGHTS",
+   "CHANGING_ROOM",
+   "EQUIPMENT_RENTAL"
+  ],
+  "courts": [
+   {
+    "name": "Court A",
+    "format": "FIVE_A_SIDE"
+   }
+  ],
+  "prices": [
+   {
+    "startTime": "06:00",
+    "endTime": "17:00",
+    "price": 1500
+   },
+   {
+    "label": "PEAK",
+    "startTime": "17:00",
+    "endTime": "21:00",
+    "price": 1800,
+    "priority": 1
+   }
+  ],
+  "deposit": false,
+  "template": "FLOODLIGHT",
+  "subdomain": "velocity",
+  "accent": "#dc2626",
+  "headline": "Fast games at Ratopul"
+ },
+ {
+  "name": "Royal Futsal",
+  "area": "Anamnagar",
+  "city": "Kathmandu",
+  "street": "Thapagaun",
+  "lat": 27.6975,
+  "lng": 85.3285,
+  "description": "One court in Thapagaun, Anamnagar, with changing rooms and a cafeteria. A demo listing: FutSlot isn't linked to this venue, and its prices and free hours here are made up.",
+  "amenities": [
+   "PARKING",
+   "DRINKING_WATER",
+   "FLOODLIGHTS",
+   "CHANGING_ROOM",
+   "CAFE"
+  ],
+  "courts": [
+   {
+    "name": "Court A",
+    "format": "FIVE_A_SIDE"
+   }
+  ],
+  "prices": [
+   {
+    "startTime": "06:00",
+    "endTime": "17:00",
+    "price": 1200
+   },
+   {
+    "label": "PEAK",
+    "startTime": "17:00",
+    "endTime": "21:00",
+    "price": 1700,
+    "priority": 1
+   }
+  ],
+  "deposit": false,
+  "template": "TURF",
+  "subdomain": "royal",
+  "accent": "#7c3aed",
+  "headline": "Thapagaun's own court"
+ },
+ {
+  "name": "Shankhamul Futsal",
+  "area": "Shankhamul",
+  "city": "Kathmandu",
+  "street": "Shankhamul Road",
+  "lat": 27.6825,
+  "lng": 85.3325,
+  "description": "One of Kathmandu's biggest futsal grounds, by the river at Shankhamul. A demo listing: FutSlot isn't linked to this venue, and its prices and free hours here are made up.",
+  "amenities": [
+   "PARKING",
+   "DRINKING_WATER",
+   "FLOODLIGHTS",
+   "CHANGING_ROOM",
+   "SPECTATOR_SEATING",
+   "FIRST_AID"
+  ],
+  "courts": [
+   {
+    "name": "Court A",
+    "format": "FIVE_A_SIDE"
+   }
+  ],
+  "prices": [
+   {
+    "startTime": "06:00",
+    "endTime": "17:00",
+    "price": 1500
+   },
+   {
+    "label": "PEAK",
+    "startTime": "17:00",
+    "endTime": "21:00",
+    "price": 1700,
+    "priority": 1
+   }
+  ],
+  "deposit": false,
+  "template": "FLOODLIGHT",
+  "subdomain": "shankhamul",
+  "accent": "#f59e0b",
+  "headline": "A big ground by the river"
+ },
+ {
+  "name": "Hardik Futsal",
+  "area": "Koteshwor",
+  "city": "Kathmandu",
+  "street": "Chyasal Road",
+  "lat": 27.6775,
+  "lng": 85.3485,
+  "description": "A court in Koteshwor, near the Chyasal football ground. A demo listing: FutSlot isn't linked to this venue, and its prices and free hours here are made up.",
+  "amenities": [
+   "PARKING",
+   "DRINKING_WATER",
+   "FLOODLIGHTS",
+   "CHANGING_ROOM"
+  ],
+  "courts": [
+   {
+    "name": "Court A",
+    "format": "FIVE_A_SIDE"
+   }
+  ],
+  "prices": [
+   {
+    "startTime": "06:00",
+    "endTime": "17:00",
+    "price": 1000
+   },
+   {
+    "label": "PEAK",
+    "startTime": "17:00",
+    "endTime": "21:00",
+    "price": 1400,
+    "priority": 1
+   }
+  ],
+  "deposit": false,
+  "template": "TURF",
+  "subdomain": "hardik",
+  "accent": "#1f7a3a",
+  "headline": "Kick off in Koteshwor"
+ },
+ {
+  "name": "Kirtipur Futsal",
+  "area": "Kirtipur",
+  "city": "Kathmandu",
+  "street": "Kirtipur",
+  "lat": 27.6785,
+  "lng": 85.2775,
+  "description": "Kirtipur's court, with cheaper early mornings. A demo listing: FutSlot isn't linked to this venue, and its prices and free hours here are made up.",
+  "amenities": [
+   "PARKING",
+   "DRINKING_WATER",
+   "FLOODLIGHTS",
+   "CHANGING_ROOM"
+  ],
+  "courts": [
+   {
+    "name": "Court A",
+    "format": "FIVE_A_SIDE"
+   }
+  ],
+  "prices": [
+   {
+    "startTime": "06:00",
+    "endTime": "10:00",
+    "price": 800
+   },
+   {
+    "startTime": "10:00",
+    "endTime": "17:00",
+    "price": 1000
+   },
+   {
+    "label": "PEAK",
+    "startTime": "17:00",
+    "endTime": "21:00",
+    "price": 1200,
+    "priority": 1
+   }
+  ],
+  "deposit": false,
+  "template": "TURF",
+  "subdomain": "kirtipur",
+  "accent": "#b45309",
+  "headline": "Early games for less"
+ },
+ {
+  "name": "Prismatic Futsal & Recreation Center",
+  "area": "Sanepa",
+  "city": "Lalitpur",
+  "street": "Sanepa",
+  "lat": 27.6855,
+  "lng": 85.3035,
+  "description": "One court in Sanepa. It asks for the FutSlot booking deposit, so you can try topping it up (no real money). A demo listing: FutSlot isn't linked to this venue, and its prices and free hours here are made up.",
+  "amenities": [
+   "PARKING",
+   "DRINKING_WATER",
+   "FLOODLIGHTS",
+   "CHANGING_ROOM",
+   "SHOWER",
+   "WIFI"
+  ],
+  "courts": [
+   {
+    "name": "Court A",
+    "format": "FIVE_A_SIDE"
+   }
+  ],
+  "prices": [
+   {
+    "startTime": "06:00",
+    "endTime": "17:00",
+    "price": 1300
+   },
+   {
+    "label": "PEAK",
+    "startTime": "17:00",
+    "endTime": "21:00",
+    "price": 1800,
+    "priority": 1
+   }
+  ],
+  "deposit": true,
+  "template": "FLOODLIGHT",
+  "subdomain": "prismatic",
+  "accent": "#db2777",
+  "headline": "Late games in Sanepa"
+ },
+ {
+  "name": "Best Futsal Arena",
+  "area": "Lagankhel",
+  "city": "Lalitpur",
+  "street": "Lagankhel",
+  "lat": 27.6665,
+  "lng": 85.3225,
+  "description": "A court in Lagankhel, by the bus park. A demo listing: FutSlot isn't linked to this venue, and its prices and free hours here are made up.",
+  "amenities": [
+   "PARKING",
+   "DRINKING_WATER",
+   "FLOODLIGHTS",
+   "CHANGING_ROOM",
+   "FIRST_AID"
+  ],
+  "courts": [
+   {
+    "name": "Court A",
+    "format": "FIVE_A_SIDE"
+   }
+  ],
+  "prices": [
+   {
+    "startTime": "06:00",
+    "endTime": "17:00",
+    "price": 1100
+   },
+   {
+    "label": "PEAK",
+    "startTime": "17:00",
+    "endTime": "21:00",
+    "price": 1600,
+    "priority": 1
+   }
+  ],
+  "deposit": false,
+  "template": "TURF",
+  "subdomain": "bestarena",
+  "accent": "#2563eb",
+  "headline": "Your game in Lagankhel"
+ },
+ {
+  "name": "Goalpost Futsal",
+  "area": "Bhainsepati",
+  "city": "Lalitpur",
+  "street": "Bhainsepati",
+  "lat": 27.6555,
+  "lng": 85.3035,
+  "description": "A court in Bhainsepati, south of the ring road. A demo listing: FutSlot isn't linked to this venue, and its prices and free hours here are made up.",
+  "amenities": [
+   "PARKING",
+   "DRINKING_WATER",
+   "FLOODLIGHTS",
+   "CHANGING_ROOM",
+   "EQUIPMENT_RENTAL"
+  ],
+  "courts": [
+   {
+    "name": "Court A",
+    "format": "FIVE_A_SIDE"
+   }
+  ],
+  "prices": [
+   {
+    "startTime": "06:00",
+    "endTime": "17:00",
+    "price": 1100
+   },
+   {
+    "label": "PEAK",
+    "startTime": "17:00",
+    "endTime": "21:00",
+    "price": 1500,
+    "priority": 1
+   }
+  ],
+  "deposit": false,
+  "template": "FLOODLIGHT",
+  "subdomain": "goalpost",
+  "accent": "#16a34a",
+  "headline": "Bhainsepati after dark"
+ },
+ {
+  "name": "Bhaktapur Futsal",
+  "area": "Suryabinayak",
+  "city": "Bhaktapur",
+  "street": "Suryabinayak",
+  "lat": 27.663,
+  "lng": 85.426,
+  "description": "A court in Suryabinayak, on the way into Bhaktapur. A demo listing: FutSlot isn't linked to this venue, and its prices and free hours here are made up.",
+  "amenities": [
+   "PARKING",
+   "DRINKING_WATER",
+   "FLOODLIGHTS",
+   "CHANGING_ROOM",
+   "SPECTATOR_SEATING"
+  ],
+  "courts": [
+   {
+    "name": "Court A",
+    "format": "FIVE_A_SIDE"
+   }
+  ],
+  "prices": [
+   {
+    "startTime": "06:00",
+    "endTime": "17:00",
+    "price": 1000
+   },
+   {
+    "label": "PEAK",
+    "startTime": "17:00",
+    "endTime": "21:00",
+    "price": 1500,
+    "priority": 1
+   }
+  ],
+  "deposit": false,
+  "template": "TURF",
+  "subdomain": "bhaktapur",
+  "accent": "#b91c1c",
+  "headline": "Futsal in Bhaktapur"
+ }
+]

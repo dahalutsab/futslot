@@ -48,8 +48,10 @@ The Vercel settings are in each project's `vercel.json`, the Render ones in `ren
    - Two `NS` records named `_acme-challenge.futslot`, to `ns1.vercel-dns.com` and `ns2.vercel-dns.com`: Vercel
      can only get a certificate for `*.futslot` by answering that name itself. Only that one name moves to Vercel.
 7. **Demo data**: on your own computer, in `deploy/`, make a `.env` with `FUTSLOT_DOMAIN=futslot.dahalutsab.com.np`
-   and `DEMO_PASSWORD=...`, then run `./seed-demo.sh` (needs curl and jq). It makes the demo venues and the
-   admin, owner and player accounts. Add venue photos from the owner dashboard.
+   and `DEMO_PASSWORD=...`, then run `DATABASE_URL='<Neon connection string>' ./seed-demo.sh` (needs curl, jq and
+   psql; the database address only makes the admin an admin). It makes the venues in `demo-venues.json`, real
+   futsals around the valley with made-up prices, and the admin, owner and player accounts. Add venue photos from
+   the owner dashboard.
 
 ## What to expect
 
