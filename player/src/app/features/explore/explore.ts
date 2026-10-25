@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LucideAngularModule, Search } from 'lucide-angular';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -12,52 +11,40 @@ import { VenueCard } from '../../shared/venue-card';
 /** Finding a venue: search by name or area, narrow to a city, and featured venues first. */
 @Component({
   selector: 'fs-explore',
-  imports: [FormsModule, LucideAngularModule, VenueCard],
+  imports: [FormsModule, VenueCard],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <!-- The turf band, as on FutSlot's front page: the court's half-way line and centre circle in chalk -->
-    <div class="relative isolate overflow-hidden bg-turf text-white">
-      <svg class="absolute inset-0 -z-10 size-full text-white/15" viewBox="0 0 1200 420" preserveAspectRatio="xMidYMid slice"
-        fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true">
-        <path d="M920 30v360" />
-        <circle cx="920" cy="210" r="96" />
-        <circle cx="920" cy="210" r="5" fill="currentColor" />
-      </svg>
-      <div class="mx-auto max-w-6xl px-4 py-8 lg:px-8 lg:py-12">
-        <h1 class="max-w-[14ch] text-5xl font-bold leading-[.9] lg:text-7xl">{{ l().exploreTitle }}</h1>
-        <p class="mt-3 max-w-[60ch] text-white/85">{{ l().exploreSubtitle }}</p>
+    <!-- The front page's hero, on paper: the heading flush left, search, then the cities as links -->
+    <div class="mx-auto max-w-[1280px] px-5 pt-8 pb-10 lg:px-[72px] lg:pt-14 lg:pb-14">
+      <h1 class="ml-[-0.035em] max-w-[16ch] text-[40px] leading-[44px] tracking-[-0.02em] lg:text-[72px] lg:leading-[76px] lg:tracking-[-0.025em]">{{ l().exploreTitle }}</h1>
+      <p class="mt-4 max-w-[50ch] text-[17px] leading-7 text-text/82 lg:mt-6 lg:text-[19px] lg:leading-[30px]">{{ l().exploreSubtitle }}</p>
 
-        <form class="mt-6 flex max-w-2xl gap-2" role="search" (ngSubmit)="search()">
-          <label for="q" class="sr-only">{{ l().venueSearchHint }}</label>
-          <div class="flex h-12 min-w-0 flex-1 items-center gap-2 rounded-md bg-white px-3 text-turf-ink focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-white">
-            <lucide-icon [img]="icons.Search" [size]="18" class="text-turf-hint" />
-            <input id="q" name="q" type="search" [placeholder]="l().venueSearchHint" autocomplete="off"
-              class="h-full min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-turf-hint" [ngModel]="query()" (ngModelChange)="query.set($event)" />
-          </div>
-          <button type="submit" class="h-12 rounded-md bg-turf-ink px-5 font-semibold text-white hover:bg-black">{{ l().search }}</button>
-        </form>
+      <form class="mt-6 flex max-w-[520px] gap-2.5 lg:mt-8" role="search" (ngSubmit)="search()">
+        <label for="q" class="sr-only">{{ l().venueSearchHint }}</label>
+        <input id="q" name="q" type="search" [placeholder]="l().venueSearchHint" autocomplete="off"
+          class="min-h-11 min-w-0 flex-1 rounded-md border border-divider bg-surface-2 px-2.5 text-base caret-accent placeholder:text-text/65 hover:border-text/45 focus-visible:border-accent focus-visible:outline-offset-0"
+          [ngModel]="query()" (ngModelChange)="query.set($event)" />
+        <button type="submit" class="min-h-11 rounded-md bg-accent px-[22px] text-[15px] font-semibold text-bg hover:bg-accent-600 active:bg-accent-700">{{ l().search }}</button>
+      </form>
 
-        @if (cities().length > 1) {
-          <div class="mt-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]" role="group" [attr.aria-label]="l().city">
-            <button type="button" (click)="pickCity(null)" [attr.aria-pressed]="city() === null"
-              class="h-10 shrink-0 rounded-full border px-4 text-sm font-medium"
-              [class]="city() === null ? 'border-white bg-white text-turf-deep' : 'border-white/45 text-white hover:border-white'">{{ l().allCities }}</button>
-            @for (name of cities(); track name) {
-              <button type="button" (click)="pickCity(name)" [attr.aria-pressed]="city() === name"
-                class="h-10 shrink-0 rounded-full border px-4 text-sm font-medium"
-                [class]="city() === name ? 'border-white bg-white text-turf-deep' : 'border-white/45 text-white hover:border-white'">{{ name }}</button>
-            }
-          </div>
-        }
-      </div>
+      @if (cities().length > 1) {
+        <div class="mt-4 flex flex-wrap gap-x-7 text-[15px]" role="group" [attr.aria-label]="l().city">
+          <button type="button" (click)="pickCity(null)" [attr.aria-pressed]="city() === null"
+            class="min-h-11" [class]="city() === null ? 'text-text underline decoration-1 underline-offset-[5px]' : 'text-accent-700 hover:text-accent-800'">{{ l().allCities }}</button>
+          @for (name of cities(); track name) {
+            <button type="button" (click)="pickCity(name)" [attr.aria-pressed]="city() === name"
+              class="min-h-11" [class]="city() === name ? 'text-text underline decoration-1 underline-offset-[5px]' : 'text-accent-700 hover:text-accent-800'">{{ name }}</button>
+          }
+        </div>
+      }
     </div>
 
-    <div class="mx-auto max-w-6xl px-4 pb-6 lg:px-8 lg:pb-10">
+    <div class="mx-auto max-w-[1280px] px-5 pb-6 lg:px-[72px] lg:pb-10">
 
       @if (featured().length && !filtered()) {
-        <section class="mt-8" aria-labelledby="featured-title">
-          <h2 id="featured-title" class="text-3xl">{{ l().featured }}</h2>
-          <ul class="mt-4 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+        <section class="mt-6" aria-labelledby="featured-title">
+          <h2 id="featured-title" class="kicker">{{ l().featured }}</h2>
+          <ul class="mt-7 grid gap-x-12 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
             @for (venue of featured(); track venue.id) {
               <li><fs-venue-card [venue]="venue" /></li>
             }
@@ -65,8 +52,8 @@ import { VenueCard } from '../../shared/venue-card';
         </section>
       }
 
-      <section class="mt-8" aria-labelledby="venues-title">
-        <h2 id="venues-title" class="text-3xl lg:text-4xl">
+      <section class="mt-14" aria-labelledby="venues-title">
+        <h2 id="venues-title" class="kicker">
           {{ filtered() ? l().venueCount(total()) : l().allVenues }}
         </h2>
         @if (error(); as message) {
@@ -81,7 +68,7 @@ import { VenueCard } from '../../shared/venue-card';
               <p class="mt-1 text-muted">{{ l().noVenuesFoundBody }}</p>
             </div>
           } @else {
-            <ul class="mt-4 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            <ul class="mt-7 grid gap-x-12 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
               @for (venue of list; track venue.id) {
                 <li><fs-venue-card [venue]="venue" /></li>
               }
@@ -114,8 +101,6 @@ export class Explore {
   private readonly router = inject(Router);
 
   private readonly route = inject(ActivatedRoute);
-
-  protected readonly icons = { Search };
 
   /** What's typed; {@link q} is what was searched. */
   protected readonly query = signal('');

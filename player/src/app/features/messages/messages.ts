@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ArrowLeft, CalendarDays, LucideAngularModule, MessageSquare, Search, SendHorizontal } from 'lucide-angular';
+import { ArrowLeft, CalendarDays, Icon, MessageSquare, Search, SendHorizontal } from '../../shared/icon';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -27,7 +27,7 @@ const POLL_MS = 15_000;
  */
 @Component({
   selector: 'fs-messages',
-  imports: [LucideAngularModule, RouterLink, StatusChip],
+  imports: [Icon, RouterLink, StatusChip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './messages.html',
 })

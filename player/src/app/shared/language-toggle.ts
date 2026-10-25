@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { currentLanguage, Language } from '../i18n/i18n';
 import { LanguageChoice } from '../i18n/language-choice';
@@ -7,26 +7,37 @@ import { LanguageChoice } from '../i18n/language-choice';
 export const LANGUAGE_NAMES: Record<Language, string> = { en: 'English', ne: 'नेपाली' };
 
 /**
- * A top-bar button for the other language, for when the player isn't signed in (signed in, it's under Me).
- * {@code onTurf} draws it as a white outline, for the turf top bar.
+ * The top bar's "EN · नेपाली" for a player who isn't signed in (signed in, it's under Me): the language in use in
+ * full ink, the other one a button.
  */
 @Component({
   selector: 'fs-language-toggle',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'inline-flex items-center gap-1.5 text-[13px] tracking-[0.08em] text-text/70' },
   template: `
-    <button type="button" (click)="choice.set(other())" [attr.lang]="other()"
-      [class]="onTurf() ? 'h-9 rounded-full border border-white/40 px-3.5 text-[15px] text-white hover:border-white hover:bg-white/10'
-        : 'h-10 rounded-md px-3 font-medium text-muted hover:bg-surface-2 hover:text-text'">{{ names[other()] }}</button>
+    @for (language of languages; track language; let last = $last) {
+      @if (language === current()) {
+        <span [attr.lang]="language" class="text-text">{{ labels[language] }}</span>
+      } @else {
+        <button type="button" (click)="choice.set(language)" [attr.lang]="language" [attr.aria-label]="names[language]"
+          class="min-h-11 px-0.5 hover:text-accent-700">{{ labels[language] }}</button>
+      }
+      @if (!last) {
+        <span aria-hidden="true">·</span>
+      }
+    }
   `,
 })
 export class LanguageToggle {
-  readonly onTurf = input(false);
-
   protected readonly choice = inject(LanguageChoice);
 
   protected readonly names = LANGUAGE_NAMES;
 
-  protected other(): Language {
-    return currentLanguage() === 'en' ? 'ne' : 'en';
+  protected readonly languages: Language[] = ['en', 'ne'];
+
+  protected readonly labels: Record<Language, string> = { en: 'EN', ne: 'नेपाली' };
+
+  protected current(): Language {
+    return currentLanguage();
   }
 }

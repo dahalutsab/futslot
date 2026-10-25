@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, Plus, Search } from 'lucide-angular';
+import { Icon, Plus, Search } from '../../shared/icon';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -13,7 +13,7 @@ import { PlayNav } from '../../shared/play-nav';
 /** The player's teams and invitations, starting a team, and finding public teams. */
 @Component({
   selector: 'fs-teams',
-  imports: [FormsModule, RouterLink, LucideAngularModule, PlayNav],
+  imports: [FormsModule, RouterLink, Icon, PlayNav],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-3xl px-4 py-6 lg:py-10">
@@ -41,7 +41,7 @@ import { PlayNav } from '../../shared/play-nav';
         <div class="flex items-center gap-3">
           <h2 id="mine-title" class="flex-1 font-semibold">{{ l().yourTeams }}</h2>
           <button type="button" (click)="creating.set(!creating())" class="flex h-11 items-center gap-1.5 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">
-            <lucide-icon [img]="icons.Plus" [size]="16" /> {{ l().newTeam }}
+            <fs-icon [img]="icons.Plus" [size]="16" /> {{ l().newTeam }}
           </button>
         </div>
         @if (creating()) {
@@ -79,7 +79,7 @@ import { PlayNav } from '../../shared/play-nav';
             @for (team of active(); track team.id) {
               <li>
                 <a [routerLink]="['/teams', team.slug]" class="flex items-center gap-3 rounded-md border border-border bg-surface p-4 hover:border-subtle">
-                  <span class="grid size-10 shrink-0 place-items-center rounded-md bg-brand font-bold text-white" aria-hidden="true">{{ team.name.charAt(0) }}</span>
+                  <span class="grid size-10 shrink-0 place-items-center rounded-md bg-brand font-semibold text-bg" aria-hidden="true">{{ team.name.charAt(0) }}</span>
                   <span class="min-w-0 flex-1">
                     <span class="block font-medium">{{ team.name }}</span>
                     <span class="block text-sm text-muted">{{ l().players(team.memberCount) }}{{ team.myRole ? ' · ' + role()[team.myRole] : '' }}</span>
@@ -96,7 +96,7 @@ import { PlayNav } from '../../shared/play-nav';
         <form class="mt-2 flex gap-2" role="search" (ngSubmit)="search()">
           <label for="team-q" class="sr-only">{{ l().teamName }}</label>
           <div class="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-md border border-border bg-surface px-3">
-            <lucide-icon [img]="icons.Search" [size]="16" class="text-subtle" />
+            <fs-icon [img]="icons.Search" [size]="16" class="text-subtle" />
             <input id="team-q" name="q" type="search" [placeholder]="l().teamName" class="h-full min-w-0 flex-1 bg-transparent text-base outline-none" [ngModel]="q()" (ngModelChange)="q.set($event)" />
           </div>
           <button type="submit" class="h-11 rounded-md border border-border px-4 font-medium hover:bg-surface-2">{{ l().search }}</button>

@@ -1,26 +1,20 @@
 <div class="grid min-h-dvh lg:grid-cols-2">
-  <section class="relative isolate hidden flex-col justify-between overflow-hidden bg-turf p-12 text-white lg:flex" aria-hidden="true">
-    <!-- The court's lines in chalk, as on FutSlot's front page -->
-    <svg class="absolute inset-0 -z-10 size-full text-white/15" viewBox="0 0 640 800" preserveAspectRatio="xMidYMid slice"
-      fill="none" stroke="currentColor" stroke-width="3">
-      <rect x="40" y="-100" width="560" height="1000" />
-      <path d="M40 560h560" />
-      <circle cx="320" cy="560" r="96" />
-      <circle cx="320" cy="560" r="5" fill="currentColor" />
-    </svg>
-    <fs-logo [onTurf]="true" />
-    <div>
-      <p class="max-w-[16ch] font-display text-6xl font-bold leading-[.9]">{{ l().signInPitch }}</p>
-      <p class="mt-5 max-w-md text-white/85">{{ l().signInPitchBody }}</p>
+  <!-- The front page's lead, on paper: masthead, head rule, then the pitch as a headline -->
+  <section class="hidden flex-col px-[72px] py-10 lg:flex" aria-hidden="true">
+    <fs-logo class="text-2xl" />
+    <div class="rule-thick-thin mt-10"></div>
+    <p class="kicker border-b border-text py-3.5">{{ l().futsalAcrossNepal }}</p>
+    <div class="mt-auto pb-6">
+      <p class="ml-[-0.035em] max-w-[14ch] text-[72px] font-semibold leading-[76px] tracking-[-0.025em]">{{ l().signInPitch }}</p>
+      <p class="mt-6 max-w-[46ch] text-[19px] leading-[30px] text-text/82">{{ l().signInPitchBody }}</p>
     </div>
-    <p class="text-sm text-white/70">{{ l().futsalAcrossNepal }}</p>
   </section>
 
-  <section class="relative flex items-center justify-center px-5 py-12">
-    <div class="absolute right-3 top-3"><fs-language-toggle /></div>
+  <section class="relative flex items-center justify-center px-5 py-12 lg:border-l lg:border-divider">
+    <div class="absolute right-5 top-3"><fs-language-toggle /></div>
     <div class="w-full max-w-sm">
       <a routerLink="/explore" class="mb-8 block w-fit lg:hidden" [attr.aria-label]="l().futSlotHome">
-        <fs-logo />
+        <fs-logo class="text-[21px]" />
       </a>
 
       <h1 class="text-4xl">{{ title() }}</h1>
@@ -55,7 +49,7 @@
                 [ngModel]="password()" (ngModelChange)="password.set($event)" required />
               <button type="button" class="grid size-11 place-items-center text-muted hover:text-text" (click)="showPassword.set(!showPassword())"
                 [attr.aria-label]="showPassword() ? l().hidePassword : l().showPassword" [attr.aria-pressed]="showPassword()">
-                <lucide-icon [img]="showPassword() ? icons.EyeOff : icons.Eye" [size]="18" />
+                <fs-icon [img]="showPassword() ? icons.EyeOff : icons.Eye" [size]="18" />
               </button>
             </div>
           </div>
@@ -65,9 +59,9 @@
           <button type="submit" [disabled]="busy()"
             class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60 aria-disabled:opacity-40">
             @if (busy()) {
-              <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> {{ l().signingIn }}
+              <fs-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> {{ l().signingIn }}
             } @else {
-              <lucide-icon [img]="icons.ShieldCheck" [size]="18" /> {{ l().signIn }}
+              <fs-icon [img]="icons.ShieldCheck" [size]="18" /> {{ l().signIn }}
             }
           </button>
         </form>
@@ -98,9 +92,9 @@
           <button type="submit" [disabled]="busy()" [attr.aria-disabled]="!phoneValid()"
             class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60 aria-disabled:opacity-40">
             @if (busy()) {
-              <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> {{ l().sending }}
+              <fs-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> {{ l().sending }}
             } @else {
-              {{ l().sendCode }} <lucide-icon [img]="icons.ArrowRight" [size]="18" />
+              {{ l().sendCode }} <fs-icon [img]="icons.ArrowRight" [size]="18" />
             }
           </button>
         </form>
@@ -136,7 +130,7 @@
                   [ngModel]="password()" (ngModelChange)="password.set($event)" required />
                 <button type="button" class="grid size-11 place-items-center text-muted hover:text-text" (click)="showPassword.set(!showPassword())"
                   [attr.aria-label]="showPassword() ? l().hidePassword : l().showPassword" [attr.aria-pressed]="showPassword()">
-                  <lucide-icon [img]="showPassword() ? icons.EyeOff : icons.Eye" [size]="18" />
+                  <fs-icon [img]="showPassword() ? icons.EyeOff : icons.Eye" [size]="18" />
                 </button>
               </div>
               <p id="password-help" class="mt-1.5 text-sm text-subtle">{{ l().passwordHelp(minPassword) }}</p>
@@ -148,9 +142,9 @@
           <button type="submit" [disabled]="busy()"
             class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60 aria-disabled:opacity-40">
             @if (busy()) {
-              <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> {{ l().checking }}
+              <fs-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> {{ l().checking }}
             } @else {
-              <lucide-icon [img]="icons.ShieldCheck" [size]="18" /> {{ mode() === 'signUp' ? l().createAccount : mode() === 'reset' ? l().savePasswordSignIn : l().continueAction }}
+              <fs-icon [img]="icons.ShieldCheck" [size]="18" /> {{ mode() === 'signUp' ? l().createAccount : mode() === 'reset' ? l().savePasswordSignIn : l().continueAction }}
             }
           </button>
           <p class="text-center text-sm text-subtle">

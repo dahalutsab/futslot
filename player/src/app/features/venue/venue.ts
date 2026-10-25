@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
-import { Heart, LucideAngularModule, MapPin, MessageSquare, Phone, Star } from 'lucide-angular';
+import { Heart, Icon, MapPin, MessageSquare, Phone, Star } from '../../shared/icon';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -24,7 +24,7 @@ const DAYS_SHOWN = 14;
 /** One venue: photos and details, free slots by day and court, the booking rules, and reviews. */
 @Component({
   selector: 'fs-venue',
-  imports: [RouterLink, LucideAngularModule, VenuePlans, DayStrip],
+  imports: [RouterLink, Icon, VenuePlans, DayStrip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './venue.html',
 })

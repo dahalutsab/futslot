@@ -1,23 +1,28 @@
 /*
- * FutSlot player web design tokens: "floodlights on" (docs/design/floodlights.md), the same as FutSlot's public
- * pages. Turf green is the brand and the primary button (bg-ink), floodlight yellow marks a free hour and nothing
- * else, Khand sets headings, prices and hours (font-display), Mukta the rest; both cover Devanagari. Each booking
- * state has one colour used everywhere (see docs/design/player-web.md). Components use these tokens through
- * Tailwind classes (bg-surface, text-muted, bg-flood...), never raw hex.
+ * FutSlot player web design tokens: "Broadsheet" (docs/design/broadsheet.md, design_handoff_broadsheet/). Set like a
+ * newspaper front page: near-black Source Serif 4 on paper, and two spot inks used sparingly. Cyan (bg-ink, accent)
+ * is interactive and settled; magenta (accent-2) is rarer and means "needs your action". The token names are the
+ * app's old ones, so components didn't change: bg-surface, text-muted, bg-ink... never raw hex.
  */
 @import "tailwindcss";
-/* Each weight's file covers Latin and Devanagari by unicode-range, so Nepali only downloads where it's shown */
-@import "@fontsource/khand/600.css";
-@import "@fontsource/khand/700.css";
-@import "@fontsource/mukta/400.css";
-@import "@fontsource/mukta/500.css";
-@import "@fontsource/mukta/600.css";
-
-@custom-variant dark (&:where(.dark, .dark *));
+/* Source Serif 4 has no Devanagari: Nepali falls to Noto Serif Devanagari, whose files load only where it's shown */
+@import "@fontsource/source-serif-4/400.css";
+@import "@fontsource/source-serif-4/400-italic.css";
+@import "@fontsource/source-serif-4/600.css";
+@import "@fontsource/noto-serif-devanagari/400.css";
+@import "@fontsource/noto-serif-devanagari/600.css";
 
 @theme inline {
-  --font-sans: Mukta, ui-sans-serif, system-ui, sans-serif;
-  --font-display: Khand, Mukta, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Source Serif 4", "Noto Serif Devanagari", Georgia, serif;
+  --font-display: "Source Serif 4", "Noto Serif Devanagari", Georgia, serif;
+
+  /* Square corners: a printed page has none to speak of */
+  --radius-xs: 1px;
+  --radius-sm: 1px;
+  --radius-md: 2px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+  --radius-2xl: 4px;
 
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -34,13 +39,25 @@
   --color-brand: var(--brand);
   --color-flood: var(--flood);
   --color-flood-ink: var(--flood-ink);
-  /* The turf band (explore's header), the same in both themes: turf, its deep shade, and dark text on chalk white */
-  --color-turf: #11673a;
-  --color-turf-deep: #0b4d2b;
-  --color-turf-ink: #14231a;
-  --color-turf-hint: #6b7a70;
 
-  /* Booking states: -bg fills, -line borders and accents, -fg text on the fill */
+  /* The two spot inks and their steps (broadsheet-styles.css): 600 hover, 700 pressed and text, 100 tag fills */
+  --color-accent: #0088b0;
+  --color-accent-100: #e9f8ff;
+  --color-accent-200: #cbeeff;
+  --color-accent-600: #1186ac;
+  --color-accent-700: #006786;
+  --color-accent-800: #004961;
+  --color-accent-2: #d6006c;
+  --color-accent-2-100: #fff1f4;
+  --color-accent-2-700: #aa0b56;
+  --color-accent-2-800: #790e3d;
+  --color-neutral-100: #f8f4f4;
+  --color-neutral-800: #444141;
+  --color-divider: rgb(32 30 29 / 0.16);
+  /* Print treatments only (.cmyk-num), never interface */
+  --color-process-yellow: #edbb00;
+
+  /* Booking states, two inks and a neutral: confirmed is cyan, held / share due / no-show magenta, the rest neutral */
   --color-confirmed-bg: var(--confirmed-bg);
   --color-confirmed-line: var(--confirmed-line);
   --color-confirmed-fg: var(--confirmed-fg);
@@ -59,88 +76,47 @@
   --color-noshow-bg: var(--noshow-bg);
   --color-noshow-line: var(--noshow-line);
   --color-noshow-fg: var(--noshow-fg);
-
 }
 
+/* Paper only: Broadsheet has no dark surfaces */
 :root {
-  --bg: #f8faf6;
-  --surface: #ffffff;
-  --surface-2: #eef2ec;
-  --border: #dce3db;
-  --text: #14231a;
-  --text-muted: #4d5d53;
-  --text-subtle: #6b7a70;
-  --ink: #11673a;
-  --ink-fg: #ffffff;
-  --ring: #1d4ed8;
-  --danger: #b91c1c;
-  --danger-bg: #fef2f2;
-  --brand: #11673a;
-  --flood: #ffd23f;
-  --flood-ink: #1d1a05;
+  --bg: #f3f2f2;
+  --surface: #f3f2f2;
+  --surface-2: #eae9e9;
+  --border: rgb(32 30 29 / 0.16);
+  --text: #201e1d;
+  --text-muted: #4a4746;
+  --text-subtle: #605d5d;
+  --ink: #0088b0;
+  --ink-fg: #f3f2f2;
+  --ring: #0088b0;
+  --danger: #aa0b56;
+  --danger-bg: #fff1f4;
+  --brand: #201e1d;
+  /* A free hour: cyan, it's something to tap */
+  --flood: #e9f8ff;
+  --flood-ink: #004961;
 
-  --confirmed-bg: #ecfdf5;
-  --confirmed-line: #10b981;
-  --confirmed-fg: #065f46;
-  --held-bg: #fffbeb;
-  --held-line: #f59e0b;
-  --held-fg: #92400e;
-  --verify-bg: #f5f3ff;
-  --verify-line: #8b5cf6;
-  --verify-fg: #5b21b6;
-  --blocked-bg: #f4f4f5;
-  --blocked-line: #a1a1aa;
-  --blocked-fg: #3f3f46;
-  --tournament-bg: #f0f9ff;
-  --tournament-line: #0ea5e9;
-  --tournament-fg: #075985;
-  --noshow-bg: #fef2f2;
-  --noshow-line: #ef4444;
-  --noshow-fg: #991b1b;
-
+  --confirmed-bg: #e9f8ff;
+  --confirmed-line: #0088b0;
+  --confirmed-fg: #004961;
+  --held-bg: #fff1f4;
+  --held-line: #d6006c;
+  --held-fg: #790e3d;
+  --verify-bg: #f8f4f4;
+  --verify-line: #9b9797;
+  --verify-fg: #444141;
+  --blocked-bg: #f8f4f4;
+  --blocked-line: #9b9797;
+  --blocked-fg: #444141;
+  --tournament-bg: #f8f4f4;
+  --tournament-line: #605d5d;
+  --tournament-fg: #444141;
+  --noshow-bg: #fff1f4;
+  --noshow-line: #d6006c;
+  --noshow-fg: #790e3d;
 
   color-scheme: light;
-}
-
-/* Turf at night: a very dark green, not black */
-.dark {
-  --bg: #0c1611;
-  --surface: #13201a;
-  --surface-2: #1a2a22;
-  --border: #24342b;
-  --text: #e8efe9;
-  --text-muted: #a7b5ac;
-  --text-subtle: #87968c;
-  --ink: #1e8c50;
-  --ink-fg: #ffffff;
-  --ring: #7aa7ff;
-  --danger: #f87171;
-  --danger-bg: rgb(248 113 113 / 0.12);
-  --brand: #4cc27f;
-  --flood: #ffd23f;
-  --flood-ink: #1d1a05;
-
-  --confirmed-bg: rgb(16 185 129 / 0.14);
-  --confirmed-line: #34d399;
-  --confirmed-fg: #6ee7b7;
-  --held-bg: rgb(245 158 11 / 0.14);
-  --held-line: #fbbf24;
-  --held-fg: #fcd34d;
-  --verify-bg: rgb(139 92 246 / 0.16);
-  --verify-line: #a78bfa;
-  --verify-fg: #c4b5fd;
-  --blocked-bg: rgb(161 161 170 / 0.12);
-  --blocked-line: #71717a;
-  --blocked-fg: #d4d4d8;
-  --tournament-bg: rgb(14 165 233 / 0.14);
-  --tournament-line: #38bdf8;
-  --tournament-fg: #7dd3fc;
-  --noshow-bg: rgb(239 68 68 / 0.14);
-  --noshow-line: #f87171;
-  --noshow-fg: #fca5a5;
-
-
-  color-scheme: dark;
 }
 
 @layer base {
@@ -154,18 +130,23 @@
     line-height: 1.55;
   }
 
-  /* Headings speak in the scoreboard face */
   h1,
-  h2 {
-    font-family: var(--font-display);
+  h2,
+  h3,
+  h4 {
     font-weight: 600;
-    line-height: 1.05;
-    letter-spacing: 0;
+    line-height: 1.12;
+    letter-spacing: -0.015em;
   }
 
   /* Devanagari's vowel signs reach above and below the letters: tight Latin leading would make lines collide */
   :lang(ne) :is(h1, h2, h3, .font-display) {
-    line-height: 1.25 !important;
+    line-height: 1.3 !important;
+    letter-spacing: 0 !important;
+  }
+
+  a {
+    text-underline-offset: 3px;
   }
 
   :focus-visible {
@@ -173,27 +154,121 @@
     outline-offset: 2px;
   }
 
+  ::selection {
+    background: rgb(0 136 176 / 0.3);
+  }
+
   button,
   [role="button"],
   a {
     touch-action: manipulation;
   }
+
+  button:disabled {
+    opacity: 0.45;
+  }
 }
 
 @layer components {
-  /* A free hour, wherever it appears: lit, the one use of floodlight yellow */
+  /* A free hour, wherever it appears: a cyan tint, tap it to book */
   .lit {
     @apply bg-flood text-flood-ink;
-    box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.12);
   }
 
   .lit:hover {
-    background: #ffe27a;
+    background: var(--color-accent-200);
   }
 
   .lit:active {
-    box-shadow: none;
-    transform: translateY(1px);
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+
+  /* Labels: 13px, uppercase, tracked, at 70% ink */
+  .kicker {
+    font-size: 13px;
+    line-height: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(32 30 29 / 0.7);
+  }
+
+  /* The front page's head rule: 2px and 1px of full ink, 5px tall, above a dateline */
+  .rule-thick-thin {
+    height: 5px;
+    border-top: 2px solid var(--color-text);
+    border-bottom: 1px solid var(--color-text);
+  }
+
+  /* An index row: label, dotted leader, value */
+  .leader {
+    flex: 1;
+    min-width: 24px;
+    align-self: flex-end;
+    margin-bottom: 0.4em;
+    border-bottom: 1px dotted rgb(32 30 29 / 0.45);
+  }
+
+  /*
+   * Big moment numbers as misregistered process plates (broadsheet-styles.css): a .paper span carries the text,
+   * three aria-hidden .plate spans repeat it in cyan, magenta and yellow, multiplied into a dark core
+   */
+  .cmyk-num {
+    position: relative;
+    width: fit-content;
+    line-height: 0.9;
+    font-feature-settings: "pnum" 1;
+    background: var(--color-bg);
+    padding: 0.12em;
+    margin: -0.12em;
+  }
+
+  .cmyk-num .paper {
+    color: var(--color-bg);
+    text-shadow: 0.036em 0.025em 0 var(--color-bg), -0.031em -0.023em 0 var(--color-bg);
+  }
+
+  .cmyk-num .plate {
+    position: absolute;
+    inset: 0.12em;
+    mix-blend-mode: multiply;
+    text-box: trim-both cap alphabetic;
+  }
+
+  .cmyk-num .plate-c {
+    color: var(--color-accent);
+  }
+
+  .cmyk-num .plate-m {
+    color: var(--color-accent-2);
+    translate: 0.036em 0.025em;
+  }
+
+  .cmyk-num .plate-y {
+    color: var(--color-process-yellow);
+    translate: -0.031em -0.023em;
+  }
+
+  /* Listing photos, screened like newsprint */
+  .halftone {
+    position: relative;
+    filter: grayscale(0.35) contrast(1.15);
+    overflow: hidden;
+  }
+
+  .halftone::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle, rgb(0 0 0 / 0.22) 30%, transparent 32%);
+    background-size: 3px 3px;
+    mix-blend-mode: multiply;
+  }
+
+  /* A chosen star or a saved heart: Phosphor's tinted half filled in */
+  .fill-current svg [opacity] {
+    opacity: 1;
   }
 }
 

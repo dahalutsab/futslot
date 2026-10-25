@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Bell, LucideAngularModule } from 'lucide-angular';
+import { Bell, Icon } from '../../shared/icon';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -13,7 +13,7 @@ import { notificationLink } from '../../shared/notification-link';
 /** Everything FutSlot told the player: newest first, unread marked, each opening what it's about. */
 @Component({
   selector: 'fs-notifications',
-  imports: [LucideAngularModule],
+  imports: [Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-2xl px-4 py-6 lg:py-10">
@@ -29,7 +29,7 @@ import { notificationLink } from '../../shared/notification-link';
       } @else if (items(); as list) {
         @if (list.length === 0) {
           <div class="mt-6 rounded-md border border-dashed border-border bg-surface px-6 py-12 text-center">
-            <lucide-icon [img]="icons.Bell" [size]="28" class="mx-auto text-subtle" />
+            <fs-icon [img]="icons.Bell" [size]="28" class="mx-auto text-subtle" />
             <p class="mt-3 font-medium">{{ l().nothingYet }}</p>
             <p class="mt-1 text-muted">{{ l().notificationsEmpty }}</p>
           </div>

@@ -1,56 +1,42 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideAngularModule, MapPin, Star } from 'lucide-angular';
 
 import { VenueSummary } from '../core/api.types';
 import { rupees } from './format';
 import { digits, l } from '../i18n/i18n';
 
-/** A venue in a list: photo, where it is, rating and the lowest price. */
+/** A venue in a list, as on the front page: its photo screened like newsprint, where it is, its name and lowest price. */
 @Component({
   selector: 'fs-venue-card',
-  imports: [RouterLink, LucideAngularModule],
+  imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let v = venue();
-    <a [routerLink]="['/venues', v.slug, 'slots']" class="group block">
-      <div class="aspect-[3/2] overflow-hidden rounded-md bg-surface-2">
+    <a [routerLink]="['/venues', v.slug, 'slots']" class="group flex flex-col gap-1.5 text-text hover:text-text">
+      <div class="halftone mb-3.5 aspect-[3/2]">
         @if (v.coverPhotoUrl) {
-          <img [src]="v.coverPhotoUrl" alt="" loading="lazy" class="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+          <img [src]="v.coverPhotoUrl" alt="" loading="lazy" class="size-full object-cover" />
         } @else {
-          <!-- No photo yet: the court from above, mown in stripes, as on FutSlot's public pages -->
-          <svg class="size-full bg-turf" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-            @for (x of stripes; track x) {
-              <rect [attr.x]="x" y="0" width="30" height="200" fill="#fff" fill-opacity=".05" />
-            }
-            <g fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2">
-              <rect x="14" y="14" width="272" height="172" rx="2" />
-              <path d="M150 14v172M14 64h28a36 36 0 0 1 0 72H14M286 64h-28a36 36 0 0 0 0 72h28" />
-              <circle cx="150" cy="100" r="30" />
+          <!-- No photo yet: the court from above, its surface one of three, as in the venues' own uploads -->
+          <svg class="size-full" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" [style.background]="surface()">
+            <g fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1.5">
+              <rect x="15" y="4" width="270" height="192" />
+              <path d="M150 4v192" />
+              <circle cx="150" cy="100" r="36" />
             </g>
           </svg>
         }
       </div>
-      <div class="pt-3">
-        <div class="flex items-start gap-3">
-          <h3 class="min-w-0 flex-1 font-display text-[28px] font-semibold leading-none decoration-2 underline-offset-4 group-hover:underline">{{ v.name }}</h3>
-          @if (v.reviewCount > 0) {
-            <span class="tabular flex shrink-0 items-center gap-1 pt-1 text-sm font-medium" [attr.aria-label]="l().ratingFrom(v.averageRating, l().reviews(v.reviewCount))">
-              <lucide-icon [img]="icons.Star" [size]="14" class="fill-current text-held-line" />{{ digits(v.averageRating.toFixed(1)) }}
-              <span class="font-normal text-subtle">({{ digits(v.reviewCount) }})</span>
-            </span>
-          }
-        </div>
-        <p class="mt-1 flex items-center gap-1 text-muted">
-          <lucide-icon [img]="icons.MapPin" [size]="15" />{{ v.area ? v.area + ', ' : '' }}{{ v.city }}
-        </p>
-        <p class="mt-1 flex flex-wrap items-baseline gap-x-3 text-[15px] text-muted">
-          @if (v.fromPrice !== null) {
-            <span class="tabular font-display text-[22px] font-semibold text-text">{{ l().fromPrice }}{{ rupees(v.fromPrice) }}</span>
-          }
-          <span>{{ l().courts(v.courtCount) }}</span>
-        </p>
-      </div>
+      <span class="kicker">{{ v.area || v.city }} · {{ l().courts(v.courtCount) }}</span>
+      <h3 class="text-2xl leading-7 tracking-[-0.01em] group-hover:text-accent-700">{{ v.name }}</h3>
+      <p class="mt-1.5 flex flex-wrap gap-x-4 text-[15px]">
+        @if (v.fromPrice !== null) {
+          <span class="tabular">{{ l().fromPrice }}{{ rupees(v.fromPrice) }}</span>
+        }
+        @if (v.reviewCount > 0) {
+          <span class="tabular text-text/70" [attr.aria-label]="l().ratingFrom(v.averageRating, l().reviews(v.reviewCount))">★ {{ digits(v.averageRating.toFixed(1)) }} ({{ digits(v.reviewCount) }})</span>
+        }
+      </p>
     </a>
   `,
 })
@@ -59,12 +45,10 @@ export class VenueCard {
 
   readonly venue = input.required<VenueSummary>();
 
-  protected readonly icons = { MapPin, Star };
-
   protected readonly rupees = rupees;
 
   protected readonly digits = digits;
 
-  /** Where the lighter mown stripes start, every other 30 of the drawn court's 300 */
-  protected readonly stripes = [0, 60, 120, 180, 240];
+  /** Turf green, a hard court's blue or a clay brown, by the name's length: the same as on FutSlot's public pages */
+  protected readonly surface = computed(() => ['#2c6a44', '#122e54', '#6b5640'][this.venue().name.length % 3]);
 }

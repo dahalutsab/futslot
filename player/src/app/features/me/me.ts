@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { BadgeCheck, ChevronRight, Coins, Heart, Hourglass, LogOut, LucideAngularModule, LucideIconData, Monitor, Moon, Shirt, Star, Sun, Wallet } from 'lucide-angular';
+import { BadgeCheck, ChevronRight, Coins, Heart, Hourglass, Icon, IconData, LogOut, MessageSquare, Shirt, Star, Wallet } from '../../shared/icon';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
 import { Session } from '../../core/session';
-import { Theme, ThemeChoice } from '../../core/theme';
 import { currentLanguage, l, Language } from '../../i18n/i18n';
 import { LanguageChoice } from '../../i18n/language-choice';
 import { phone } from '../../shared/format';
@@ -16,13 +15,13 @@ interface Link {
   path: string;
   label: string;
   detail: string;
-  icon: LucideIconData;
+  icon: IconData;
 }
 
-/** The player's account: their details, everything else they keep with FutSlot, language, theme and signing out. */
+/** The player's account: their details, everything else they keep with FutSlot, language and signing out. */
 @Component({
   selector: 'fs-me',
-  imports: [FormsModule, RouterLink, LucideAngularModule],
+  imports: [FormsModule, RouterLink, Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-xl px-4 py-6 lg:py-10">
@@ -33,9 +32,9 @@ interface Link {
         @for (link of links(); track link.path) {
           <li>
             <a [routerLink]="link.path" class="flex min-h-14 items-center gap-3 px-4 py-3 hover:bg-surface-2">
-              <lucide-icon [img]="link.icon" [size]="20" [strokeWidth]="1.75" class="text-muted" />
+              <fs-icon [img]="link.icon" [size]="20" [strokeWidth]="1.75" class="text-muted" />
               <span class="min-w-0 flex-1"><span class="block font-medium">{{ link.label }}</span><span class="block text-sm text-muted">{{ link.detail }}</span></span>
-              <lucide-icon [img]="icons.ChevronRight" [size]="18" class="text-subtle" />
+              <fs-icon [img]="icons.ChevronRight" [size]="18" class="text-subtle" />
             </a>
           </li>
         }
@@ -102,21 +101,9 @@ interface Link {
         </div>
       </section>
 
-      <section class="mt-6 rounded-md border border-border bg-surface p-5" aria-labelledby="theme-title">
-        <h2 id="theme-title" class="font-semibold">{{ l().appearance }}</h2>
-        <div class="mt-3 flex rounded-md bg-surface-2 p-1" role="radiogroup" aria-labelledby="theme-title">
-          @for (option of themes(); track option.value) {
-            <button type="button" role="radio" [attr.aria-checked]="theme.choice() === option.value" (click)="theme.set(option.value)"
-              class="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md text-sm font-medium text-muted"
-              [class.bg-surface]="theme.choice() === option.value" [class.text-text]="theme.choice() === option.value">
-              <lucide-icon [img]="option.icon" [size]="15" />{{ option.label }}
-            </button>
-          }
-        </div>
-      </section>
 
       <button type="button" (click)="session.signOut()" class="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-md font-medium text-danger hover:bg-danger-bg">
-        <lucide-icon [img]="icons.LogOut" [size]="18" /> {{ l().signOut }}
+        <fs-icon [img]="icons.LogOut" [size]="18" /> {{ l().signOut }}
       </button>
     </div>
   `,
@@ -126,7 +113,6 @@ export class Me {
 
   protected readonly session = inject(Session);
 
-  protected readonly theme = inject(Theme);
 
   private readonly api = inject(Api);
 
@@ -136,6 +122,7 @@ export class Me {
 
   protected readonly links = computed<Link[]>(() => [
     { path: '/me/profile', label: l().meProfile, detail: l().meProfileDetail, icon: Shirt },
+    { path: '/messages', label: l().tabMessages, detail: l().meMessagesDetail, icon: MessageSquare },
     { path: '/deposit', label: l().meDeposit, detail: l().meDepositDetail, icon: Wallet },
     { path: '/memberships', label: l().meMemberships, detail: l().meMembershipsDetail, icon: BadgeCheck },
     { path: '/splits', label: l().meDues, detail: l().meDuesDetail, icon: Coins },
@@ -152,11 +139,6 @@ export class Me {
 
   protected readonly languageNames = LANGUAGE_NAMES;
 
-  protected readonly themes = computed<{ value: ThemeChoice; label: string; icon: LucideIconData }[]>(() => [
-    { value: 'light', label: l().themeLight, icon: Sun },
-    { value: 'dark', label: l().themeDark, icon: Moon },
-    { value: 'system', label: l().themeAuto, icon: Monitor },
-  ]);
 
   protected readonly fullName = signal(this.session.user()?.fullName ?? '');
 

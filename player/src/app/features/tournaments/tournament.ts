@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, Trophy, Wallet } from 'lucide-angular';
+import { Icon, Trophy, Wallet } from '../../shared/icon';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -19,7 +19,7 @@ import { PlayNav } from '../../shared/play-nav';
  */
 @Component({
   selector: 'fs-tournament',
-  imports: [FormsModule, RouterLink, LucideAngularModule, PayForm, PlayNav],
+  imports: [FormsModule, RouterLink, Icon, PayForm, PlayNav],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tournament.html',
 })

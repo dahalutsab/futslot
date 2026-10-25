@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ArrowRight, Eye, EyeOff, LoaderCircle, LucideAngularModule, ShieldCheck } from 'lucide-angular';
+import { ArrowRight, Eye, EyeOff, Icon, LoaderCircle, ShieldCheck } from '../../shared/icon';
 
 import { problemOf } from '../../core/api-error';
 import { CodePurpose } from '../../core/api.types';
@@ -24,7 +24,7 @@ const MIN_PASSWORD = 8;
 /** Sign in with a phone number and password, or with Google; create an account; or reset a forgotten password. */
 @Component({
   selector: 'fs-login',
-  imports: [FormsModule, LucideAngularModule, RouterLink, GoogleButton, LanguageToggle, Logo],
+  imports: [FormsModule, Icon, RouterLink, GoogleButton, LanguageToggle, Logo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.html',
 })

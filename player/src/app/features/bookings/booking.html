@@ -6,7 +6,7 @@
   } @else if (booking(); as b) {
     @if (booked() && b.status !== 'CANCELLED') {
       <p class="mt-4 flex items-center gap-2 rounded-md bg-confirmed-bg px-3 py-2 text-confirmed-fg" role="status">
-        <lucide-icon [img]="icons.CircleCheck" [size]="18" />
+        <fs-icon [img]="icons.CircleCheck" [size]="18" />
         {{ b.status === 'CONFIRMED' ? l().bookedSeeYou : l().bookedPayBelow }}
       </p>
     }
@@ -23,14 +23,14 @@
       </p>
       @if (venue(); as v) {
         <p class="mt-1 flex items-center gap-1 text-sm text-muted">
-          <lucide-icon [img]="icons.MapPin" [size]="14" />{{ v.addressLine }}{{ v.area ? ', ' + v.area : '' }}, {{ v.city }}
+          <fs-icon [img]="icons.MapPin" [size]="14" />{{ v.addressLine }}{{ v.area ? ', ' + v.area : '' }}, {{ v.city }}
         </p>
       }
       <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
         <p class="tabular flex-1 whitespace-nowrap text-sm text-subtle">{{ l().bookingRef(b.reference) }}</p>
         <a routerLink="/messages" [queryParams]="{ venue: b.venue.id, name: b.venue.name, booking: b.id }"
           class="flex h-11 items-center gap-1.5 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">
-          <lucide-icon [img]="icons.MessageSquare" [size]="16" /> {{ l().messageTheVenue }}
+          <fs-icon [img]="icons.MessageSquare" [size]="16" /> {{ l().messageTheVenue }}
         </a>
       </div>
     </section>
@@ -40,13 +40,13 @@
       <section class="mt-4 rounded-md border p-5" [class]="checking() ? 'border-verify-line bg-verify-bg' : 'border-held-line bg-surface'" aria-labelledby="pay-title">
         @if (checking()) {
           <h2 id="pay-title" class="flex items-center gap-2 font-semibold text-verify-fg">
-            <lucide-icon [img]="icons.Wallet" [size]="18" /> {{ l().paymentSent }}
+            <fs-icon [img]="icons.Wallet" [size]="18" /> {{ l().paymentSent }}
           </h2>
           <p class="mt-1 text-verify-fg">{{ l().venueChecking(b.venue.name) }}</p>
         } @else if (canPay()) {
           <h2 id="pay-title" class="font-semibold">{{ l().payToConfirm(fmt.rupees(b.advanceRequired - b.paidAmount)) }}</h2>
           <p class="mt-1 flex items-center gap-1.5 text-held-fg">
-            <lucide-icon [img]="icons.Clock" [size]="16" />
+            <fs-icon [img]="icons.Clock" [size]="16" />
             <span class="tabular">{{ l().heldFor(minutesLeft(), fmt.clockAt(b.holdExpiresAt!, venue()?.timezone ?? 'Asia/Kathmandu')) }}</span>
           </p>
           <div class="mt-4">
@@ -110,7 +110,7 @@
 
     @if (b.status === 'CONFIRMED' || b.status === 'PENDING_PAYMENT' || b.status === 'COMPLETED') {
       <a [routerLink]="['/bookings', b.id, 'split']" class="mt-4 flex min-h-14 items-center gap-3 rounded-md border border-border bg-surface px-5 py-3 hover:border-subtle">
-        <lucide-icon [img]="icons.Users" [size]="20" class="text-muted" />
+        <fs-icon [img]="icons.Users" [size]="20" class="text-muted" />
         <span class="min-w-0 flex-1"><span class="block font-medium">{{ l().splitTheCost }}</span><span class="block text-sm text-muted">{{ l().splitTheCostDetail }}</span></span>
         <span aria-hidden="true" class="text-subtle">›</span>
       </a>
@@ -194,7 +194,7 @@
           }
           <div class="mt-3 flex gap-2">
             <button type="button" (click)="cancel()" [disabled]="cancelling()"
-              class="h-11 flex-1 rounded-md bg-danger font-medium text-white disabled:opacity-60">{{ cancelling() ? l().cancelling : l().cancelBooking }}</button>
+              class="h-11 flex-1 rounded-md bg-danger font-medium text-bg disabled:opacity-60">{{ cancelling() ? l().cancelling : l().cancelBooking }}</button>
             <button type="button" (click)="cancelOpen.set(false)" class="h-11 rounded-md bg-surface px-4 font-medium text-text">{{ l().keepIt }}</button>
           </div>
         </section>

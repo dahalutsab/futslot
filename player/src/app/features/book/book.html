@@ -34,12 +34,12 @@
               <div class="flex items-center gap-1">
                 <button type="button" (click)="change(item, -1)" [disabled]="!picked()[item.id]" [attr.aria-label]="l().oneLess(item.name)"
                   class="grid size-11 place-items-center rounded-md border border-border disabled:opacity-40">
-                  <lucide-icon [img]="icons.Minus" [size]="16" />
+                  <fs-icon [img]="icons.Minus" [size]="16" />
                 </button>
                 <span class="tabular w-8 text-center font-medium" aria-live="polite">{{ digits(picked()[item.id] ?? 0) }}</span>
                 <button type="button" (click)="change(item, 1)" [attr.aria-label]="l().oneMore(item.name)"
                   class="grid size-11 place-items-center rounded-md border border-border">
-                  <lucide-icon [img]="icons.Plus" [size]="16" />
+                  <fs-icon [img]="icons.Plus" [size]="16" />
                 </button>
               </div>
             </li>
@@ -138,9 +138,9 @@
         <button type="button" (click)="confirm()" [disabled]="busy()"
           class="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
           @if (busy()) {
-            <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> {{ l().booking_ }}
+            <fs-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> {{ l().booking_ }}
           } @else {
-            <lucide-icon [img]="icons.ShieldCheck" [size]="18" />
+            <fs-icon [img]="icons.ShieldCheck" [size]="18" />
             {{ q.advanceRequired > 0 ? l().bookAndPay(fmt.rupees(q.advanceRequired)) : l().book }}
           }
         </button>

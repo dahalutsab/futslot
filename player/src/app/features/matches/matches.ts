@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, Plus } from 'lucide-angular';
+import { Icon, Plus } from '../../shared/icon';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -17,7 +17,7 @@ const NEPAL = 'Asia/Kathmandu';
 /** Pickup games: teams short of players, and teams looking for an opponent. Plus the player's own posts and requests. */
 @Component({
   selector: 'fs-matches',
-  imports: [RouterLink, LucideAngularModule, PlayNav, MatchSummary],
+  imports: [RouterLink, Icon, PlayNav, MatchSummary],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-3xl px-4 py-6 lg:py-10">
@@ -25,7 +25,7 @@ const NEPAL = 'Asia/Kathmandu';
       <div class="mt-6 flex items-center gap-3">
         <h1 class="flex-1 text-4xl">{{ l().playGames }}</h1>
         <a routerLink="/matches/new" class="flex h-11 items-center gap-1.5 rounded-md bg-ink px-4 font-medium text-ink-fg">
-          <lucide-icon [img]="icons.Plus" [size]="18" /> {{ l().postAGame }}
+          <fs-icon [img]="icons.Plus" [size]="18" /> {{ l().postAGame }}
         </a>
       </div>
       <p class="mt-1 text-muted">{{ l().gamesIntro }}</p>

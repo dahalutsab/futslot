@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LoaderCircle, LucideAngularModule, Minus, Plus, ShieldCheck } from 'lucide-angular';
+import { Icon, LoaderCircle, Minus, Plus, ShieldCheck } from '../../shared/icon';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -14,7 +14,7 @@ import { planTerms } from '../../shared/labels';
 /** Booking one slot: extras, a discount code, what it costs and what to pay now, then confirm. */
 @Component({
   selector: 'fs-book',
-  imports: [FormsModule, RouterLink, LucideAngularModule],
+  imports: [FormsModule, RouterLink, Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './book.html',
 })

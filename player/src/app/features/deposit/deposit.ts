@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LoaderCircle, LucideAngularModule, ShieldCheck } from 'lucide-angular';
+import { Icon, LoaderCircle, ShieldCheck } from '../../shared/icon';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -16,7 +16,7 @@ import { PayForm } from '../../shared/pay-form';
  */
 @Component({
   selector: 'fs-deposit',
-  imports: [FormsModule, LucideAngularModule, PayForm],
+  imports: [FormsModule, Icon, PayForm],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './deposit.html',
 })

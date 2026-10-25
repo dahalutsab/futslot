@@ -7,7 +7,7 @@
       @if ((conversations()?.length ?? 0) > 6) {
         <label class="relative mt-3 block">
           <span class="sr-only">{{ l().findAConversation }}</span>
-          <lucide-icon [img]="icons.Search" [size]="18" class="pointer-events-none absolute left-3 top-1/2 flex -translate-y-1/2 text-subtle" />
+          <fs-icon [img]="icons.Search" [size]="18" class="pointer-events-none absolute left-3 top-1/2 flex -translate-y-1/2 text-subtle" />
           <input type="search" [value]="filter()" (input)="filter.set($any($event.target).value)" autocomplete="off" [placeholder]="l().findAVenue"
             class="h-11 w-full rounded-md border border-border bg-surface pl-11 pr-3 text-base lg:h-10 [&::-webkit-search-cancel-button]:hidden" />
         </label>
@@ -23,7 +23,7 @@
       } @else if (conversations(); as list) {
         @if (list.length === 0) {
           <div class="px-6 py-10 text-center">
-            <lucide-icon [img]="icons.MessageSquare" [size]="28" class="mx-auto text-subtle" />
+            <fs-icon [img]="icons.MessageSquare" [size]="28" class="mx-auto text-subtle" />
             <p class="mt-3 font-medium">{{ l().noMessagesYet }}</p>
             <p class="mt-1 text-sm text-muted">{{ l().noMessagesBody }}</p>
           </div>
@@ -75,7 +75,7 @@
       <header class="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface px-2 lg:h-16 lg:px-6">
         <button type="button" (click)="back()" [attr.aria-label]="l().backToConversations"
           class="grid size-11 place-items-center rounded-md text-muted hover:bg-surface-2 lg:hidden">
-          <lucide-icon [img]="icons.ArrowLeft" [size]="20" />
+          <fs-icon [img]="icons.ArrowLeft" [size]="20" />
         </button>
         <h2 class="min-w-0 flex-1 truncate font-semibold">{{ title() }}</h2>
         @if (selected(); as c) {
@@ -125,7 +125,7 @@
                       @if (booking) {
                         <a [routerLink]="['/bookings', booking.id]"
                           class="mb-1 inline-flex max-w-full items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 text-left text-sm hover:bg-surface-2">
-                          <lucide-icon [img]="icons.CalendarDays" [size]="16" class="shrink-0 text-muted" />
+                          <fs-icon [img]="icons.CalendarDays" [size]="16" class="shrink-0 text-muted" />
                           <span class="tabular min-w-0 truncate">{{ fmt.dayLabel(booking.startsAt.slice(0, 10)) }} · {{ fmt.localClock(booking.startsAt) }} · {{ booking.court.name }}</span>
                           <fs-status-chip [value]="chip(booking)" />
                         </a>
@@ -158,14 +158,14 @@
             class="max-h-40 min-h-11 flex-1 resize-none rounded-md border border-border bg-surface px-3 py-2.5 text-base [field-sizing:content]"></textarea>
           <button type="submit" [disabled]="sending()" [attr.aria-label]="l().send"
             class="grid size-11 shrink-0 place-items-center rounded-md bg-ink text-ink-fg hover:opacity-90 disabled:opacity-60">
-            <lucide-icon [img]="icons.SendHorizontal" [size]="20" />
+            <fs-icon [img]="icons.SendHorizontal" [size]="20" />
           </button>
         </div>
         <p class="mt-1.5 hidden text-xs text-subtle lg:block">{{ l().enterToSend }}</p>
       </form>
     } @else {
       <div class="m-auto max-w-xs px-6 text-center">
-        <lucide-icon [img]="icons.MessageSquare" [size]="28" class="mx-auto text-subtle" />
+        <fs-icon [img]="icons.MessageSquare" [size]="28" class="mx-auto text-subtle" />
         <p class="mt-3 text-muted">{{ l().pickAConversation }}</p>
       </div>
     }

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { MapPin, LucideAngularModule, Users } from 'lucide-angular';
+import { Icon, MapPin, Users } from '../../shared/icon';
 
 import { MatchPost } from '../../core/api.types';
 import { l } from '../../i18n/i18n';
@@ -9,7 +9,7 @@ import { skillLabels } from '../../shared/labels';
 /** What a game post asks for, where and when: shared by the list and the post's page. */
 @Component({
   selector: 'fs-match-summary',
-  imports: [LucideAngularModule],
+  imports: [Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let p = post();
@@ -27,10 +27,10 @@ import { skillLabels } from '../../shared/labels';
     <p class="mt-2 text-lg font-semibold">{{ headline() }}</p>
     <p class="tabular text-muted">{{ fmt.dayLabel(p.startsAt.slice(0, 10)) }} · {{ fmt.localClock(p.startsAt) }}</p>
     <p class="mt-1 flex items-center gap-1 text-sm text-muted">
-      <lucide-icon [img]="icons.MapPin" [size]="14" />{{ p.venue?.name ?? p.city ?? l().placeToBeAgreed }}
+      <fs-icon [img]="icons.MapPin" [size]="14" />{{ p.venue?.name ?? p.city ?? l().placeToBeAgreed }}
     </p>
     <p class="mt-1 flex items-center gap-1 text-sm text-muted">
-      <lucide-icon [img]="icons.Users" [size]="14" />{{ p.team ? p.team.name : p.postedBy.name }}
+      <fs-icon [img]="icons.Users" [size]="14" />{{ p.team ? p.team.name : p.postedBy.name }}
       @if (p.costPerPlayer) { · <span class="tabular">{{ l().priceEach(fmt.rupees(p.costPerPlayer)) }}</span> }
     </p>
   `,

@@ -1,6 +1,8 @@
+import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
 
 import { signedIn, signedOut } from './core/guards';
+import { Session } from './core/session';
 import { l } from './i18n/i18n';
 
 export const routes: Routes = [
@@ -16,7 +18,14 @@ export const routes: Routes = [
     children: [
       // The server owns / and /venues/:slug (whole pages for search engines, see the API's DirectoryController);
       // inside the app they lead to the app's own explore and venue screens
-      { path: '', pathMatch: 'full', redirectTo: 'explore' },
+      // A signed-in player starts at their home; anyone else at explore
+      { path: '', pathMatch: 'full', redirectTo: () => (inject(Session).signedIn() ? 'home' : 'explore') },
+      {
+        path: 'home',
+        title: () => l().titlePlayerHome,
+        canActivate: [signedIn],
+        loadComponent: () => import('./features/home/home').then((m) => m.Home),
+      },
       {
         path: 'explore',
         title: () => l().titleHome,

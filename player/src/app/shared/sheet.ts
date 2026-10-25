@@ -1,6 +1,6 @@
 import { A11yModule } from '@angular/cdk/a11y';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { LucideAngularModule, X } from 'lucide-angular';
+import { Icon, X } from './icon';
 
 import { l } from '../i18n/i18n';
 
@@ -10,7 +10,7 @@ import { l } from '../i18n/i18n';
  */
 @Component({
   selector: 'fs-sheet',
-  imports: [A11yModule, LucideAngularModule],
+  imports: [A11yModule, Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown.escape)': 'closed.emit()' },
   template: `
@@ -27,7 +27,7 @@ import { l } from '../i18n/i18n';
         </div>
         <button type="button" (click)="closed.emit()" [attr.aria-label]="l().close"
           class="-mr-2 grid size-11 shrink-0 place-items-center rounded-md text-muted hover:bg-surface-2 hover:text-text">
-          <lucide-icon [img]="close" [size]="20" />
+          <fs-icon [img]="close" [size]="20" />
         </button>
       </header>
       <div class="flex-1 overflow-y-auto px-5 py-4">

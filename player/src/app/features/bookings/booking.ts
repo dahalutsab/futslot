@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, OnDestroy, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { CircleCheck, Clock, LucideAngularModule, MapPin, MessageSquare, Users, Wallet } from 'lucide-angular';
+import { CircleCheck, Clock, Icon, MapPin, MessageSquare, Users, Wallet } from '../../shared/icon';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -16,7 +16,7 @@ import { StatusChip } from '../../shared/status-chip';
 /** One booking: when and where, paying the advance, the money so far, and cancelling. */
 @Component({
   selector: 'fs-booking',
-  imports: [FormsModule, RouterLink, LucideAngularModule, PayForm, ReviewForm, StatusChip],
+  imports: [FormsModule, RouterLink, Icon, PayForm, ReviewForm, StatusChip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './booking.html',
 })

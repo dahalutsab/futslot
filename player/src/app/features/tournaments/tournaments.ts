@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, effect, inject, signal, untracked } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, MapPin, Trophy } from 'lucide-angular';
+import { Icon, MapPin, Trophy } from '../../shared/icon';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -16,7 +16,7 @@ type Tab = 'upcoming' | 'past' | 'mine';
 /** Tournaments venues run: coming up, finished, and the ones the player's teams entered. */
 @Component({
   selector: 'fs-tournaments',
-  imports: [RouterLink, LucideAngularModule, PlayNav],
+  imports: [RouterLink, Icon, PlayNav],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mx-auto max-w-3xl px-4 py-6 lg:py-10">
@@ -62,13 +62,13 @@ type Tab = 'upcoming' | 'past' | 'mine';
                   @if (t.bannerUrl) {
                     <img [src]="t.bannerUrl" alt="" loading="lazy" class="size-full object-cover" />
                   } @else {
-                    <div class="grid size-full place-items-center text-tournament-fg"><lucide-icon [img]="icons.Trophy" [size]="32" /></div>
+                    <div class="grid size-full place-items-center text-tournament-fg"><fs-icon [img]="icons.Trophy" [size]="32" /></div>
                   }
                 </div>
                 <div class="p-4">
                   <p class="text-xs font-medium text-tournament-fg">{{ status()[t.status] }}</p>
                   <p class="mt-1 font-semibold">{{ t.name }}</p>
-                  <p class="mt-1 flex items-center gap-1 text-sm text-muted"><lucide-icon [img]="icons.MapPin" [size]="14" />{{ t.venue.name }}, {{ t.venue.city }}</p>
+                  <p class="mt-1 flex items-center gap-1 text-sm text-muted"><fs-icon [img]="icons.MapPin" [size]="14" />{{ t.venue.name }}, {{ t.venue.city }}</p>
                   <p class="tabular mt-2 text-sm">{{ fmt.dayLabel(t.startsOn) }}{{ t.endsOn !== t.startsOn ? ' – ' + fmt.dayLabel(t.endsOn) : '' }} · {{ format()[t.format] }}</p>
                   <p class="tabular text-sm text-muted">{{ t.entryFee > 0 ? l().perTeam(fmt.rupees(t.entryFee)) : l().freeToEnter }} · {{ l().teamsOfMax(t.teamsIn, t.maxTeams) }}</p>
                 </div>

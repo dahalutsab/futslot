@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Star } from 'lucide-angular';
+import { Icon, Star } from './icon';
 
 import { ReviewWrite } from '../core/api.types';
 import { l } from '../i18n/i18n';
@@ -8,7 +8,7 @@ import { l } from '../i18n/i18n';
 /** Stars (required) and a comment (optional). */
 @Component({
   selector: 'fs-review-form',
-  imports: [FormsModule, LucideAngularModule],
+  imports: [FormsModule, Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <form class="space-y-3" (ngSubmit)="submit()">
@@ -18,7 +18,7 @@ import { l } from '../i18n/i18n';
           @for (n of [1, 2, 3, 4, 5]; track n) {
             <button type="button" role="radio" [attr.aria-checked]="rating() === n" [attr.aria-label]="l().starsOutOf5(n, words()[n])"
               (click)="rating.set(n)" class="grid size-11 place-items-center rounded-md hover:bg-surface-2">
-              <lucide-icon [img]="star" [size]="26" [class]="n <= rating() ? 'fill-current text-held-line' : 'text-subtle'" />
+              <fs-icon [img]="star" [size]="26" [class]="n <= rating() ? 'fill-current text-held-line' : 'text-subtle'" />
             </button>
           }
           <span class="ml-2 text-sm text-muted">{{ words()[rating()] }}</span>

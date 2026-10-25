@@ -20,7 +20,7 @@
 
     @if (t.champion) {
       <p class="mt-4 flex items-center gap-2 rounded-md bg-tournament-bg px-4 py-3 font-semibold text-tournament-fg">
-        <lucide-icon [img]="icons.Trophy" [size]="20" /> {{ l().championWon(t.champion.name) }}
+        <fs-icon [img]="icons.Trophy" [size]="20" /> {{ l().championWon(t.champion.name) }}
       </p>
     }
 
@@ -56,7 +56,7 @@
         <p class="mt-2 text-sm text-muted">{{ l().squadList(entry.squad.map(squadName).join(', ')) }}</p>
         @if (entry.status === 'PENDING_PAYMENT' && checking(entry)) {
           <div class="mt-4 rounded-md border border-verify-line bg-verify-bg p-4">
-            <p class="flex items-center gap-2 font-semibold text-verify-fg"><lucide-icon [img]="icons.Wallet" [size]="18" /> {{ l().paymentSent }}</p>
+            <p class="flex items-center gap-2 font-semibold text-verify-fg"><fs-icon [img]="icons.Wallet" [size]="18" /> {{ l().paymentSent }}</p>
             <p class="mt-1 text-verify-fg">{{ l().venueCheckingPlace(t.venue.name) }}</p>
           </div>
         } @else if (entry.status === 'PENDING_PAYMENT' && t.entryFee > 0) {

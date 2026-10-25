@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, effect, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LoaderCircle, LucideAngularModule } from 'lucide-angular';
+import { Icon, LoaderCircle } from './icon';
 
 import { PaymentClaim, PaymentMethod } from '../core/api.types';
 import { methodLabel, rupees } from './format';
@@ -15,7 +15,7 @@ export const CLAIMABLE: PaymentMethod[] = ['ESEWA', 'KHALTI', 'FONEPAY', 'BANK_T
  */
 @Component({
   selector: 'fs-pay-form',
-  imports: [FormsModule, LucideAngularModule],
+  imports: [FormsModule, Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (instructions()) {
@@ -58,7 +58,7 @@ export const CLAIMABLE: PaymentMethod[] = ['ESEWA', 'KHALTI', 'FONEPAY', 'BANK_T
       <button type="submit" [disabled]="busy()"
         class="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink font-medium text-ink-fg disabled:opacity-60">
         @if (busy()) {
-          <lucide-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> {{ l().sending }}
+          <fs-icon [img]="icons.LoaderCircle" [size]="18" class="animate-spin" /> {{ l().sending }}
         } @else {
           {{ label() ?? l().sendForChecking }}
         }

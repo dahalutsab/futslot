@@ -195,16 +195,16 @@
                   @if (s.result) {
                     <button type="button" (click)="paid(p)" [disabled]="busy()" [attr.aria-pressed]="p.settled" [attr.aria-label]="p.settled ? l().paidName(p.name) : l().markPaidName(p.name)"
                       class="grid size-11 place-items-center rounded-md border" [class]="p.settled ? 'border-confirmed-line bg-confirmed-bg text-confirmed-fg' : 'border-border text-subtle hover:text-text'">
-                      <lucide-icon [img]="icons.Check" [size]="16" />
+                      <fs-icon [img]="icons.Check" [size]="16" />
                     </button>
                   } @else {
                     <button type="button" (click)="move(p)" [disabled]="busy()" [attr.aria-label]="l().moveToOtherSide(p.name)"
                       class="grid size-11 place-items-center rounded-md text-subtle hover:bg-surface-2 hover:text-text">
-                      <lucide-icon [img]="icons.ArrowLeftRight" [size]="16" />
+                      <fs-icon [img]="icons.ArrowLeftRight" [size]="16" />
                     </button>
                     <button type="button" (click)="remove(p)" [disabled]="busy()" [attr.aria-label]="l().removeName(p.name)"
                       class="grid size-11 place-items-center rounded-md text-subtle hover:bg-surface-2 hover:text-danger">
-                      <lucide-icon [img]="icons.Trash2" [size]="16" />
+                      <fs-icon [img]="icons.Trash2" [size]="16" />
                     </button>
                   }
                 }

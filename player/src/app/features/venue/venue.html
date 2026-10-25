@@ -29,28 +29,28 @@
         <h1 class="min-w-0 flex-1 text-5xl font-bold leading-[.92] lg:text-7xl">{{ v.name }}</h1>
         <button type="button" (click)="toggleSaved()" [attr.aria-pressed]="saved()"
           class="flex h-11 shrink-0 items-center gap-1.5 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">
-          <lucide-icon [img]="icons.Heart" [size]="16" [class]="saved() ? 'fill-current text-noshow-line' : ''" />{{ saved() ? l().saved_ : l().saveVenue }}
+          <fs-icon [img]="icons.Heart" [size]="16" [class]="saved() ? 'fill-current text-noshow-line' : ''" />{{ saved() ? l().saved_ : l().saveVenue }}
         </button>
         @if (session.signedIn()) {
           <button type="button" (click)="message()"
             class="flex h-11 shrink-0 items-center gap-1.5 rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-2">
-            <lucide-icon [img]="icons.MessageSquare" [size]="16" /><span class="sr-only sm:not-sr-only">{{ l().message }}</span>
+            <fs-icon [img]="icons.MessageSquare" [size]="16" /><span class="sr-only sm:not-sr-only">{{ l().message }}</span>
           </button>
         }
       </div>
       <p class="mt-3 flex items-center gap-1 text-muted">
-        <lucide-icon [img]="icons.MapPin" [size]="16" />{{ v.addressLine }}{{ v.area ? ', ' + v.area : '' }}, {{ v.city }}
+        <fs-icon [img]="icons.MapPin" [size]="16" />{{ v.addressLine }}{{ v.area ? ', ' + v.area : '' }}, {{ v.city }}
       </p>
       <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
         @if (v.reviewCount > 0) {
           <span class="tabular flex items-center gap-1 font-medium">
-            <lucide-icon [img]="icons.Star" [size]="15" class="fill-current text-held-line" />{{ digits(v.averageRating.toFixed(1)) }}
+            <fs-icon [img]="icons.Star" [size]="15" class="fill-current text-held-line" />{{ digits(v.averageRating.toFixed(1)) }}
             <span class="font-normal text-muted">· {{ l().reviews(v.reviewCount) }}</span>
           </span>
         }
         @if (v.phone) {
           <a [href]="'tel:' + v.phone" class="flex min-h-11 items-center gap-1 text-muted hover:text-text">
-            <lucide-icon [img]="icons.Phone" [size]="15" /><span class="tabular">{{ fmt.phone(v.phone) }}</span>
+            <fs-icon [img]="icons.Phone" [size]="15" /><span class="tabular">{{ fmt.phone(v.phone) }}</span>
           </a>
         }
       </div>

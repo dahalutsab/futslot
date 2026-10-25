@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ArrowLeftRight, Check, LucideAngularModule, Trash2 } from 'lucide-angular';
+import { ArrowLeftRight, Check, Icon, Trash2 } from '../../shared/icon';
 
 import { Api } from '../../core/api';
 import { problemOf } from '../../core/api-error';
@@ -17,7 +17,7 @@ import { resultLabel, splitRules } from '../../shared/labels';
  */
 @Component({
   selector: 'fs-split',
-  imports: [FormsModule, RouterLink, LucideAngularModule],
+  imports: [FormsModule, RouterLink, Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './split.html',
 })

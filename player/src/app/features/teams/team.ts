@@ -29,7 +29,7 @@ type Member = Team['members'][number];
       }
       @if (team(); as t) {
         <div class="mt-2 flex items-center gap-4">
-          <span class="grid size-14 shrink-0 place-items-center rounded-md bg-brand text-2xl font-bold text-white" aria-hidden="true">{{ t.name.charAt(0) }}</span>
+          <span class="grid size-14 shrink-0 place-items-center rounded-md bg-brand text-2xl font-semibold text-bg" aria-hidden="true">{{ t.name.charAt(0) }}</span>
           <div class="min-w-0 flex-1">
             <h1 class="text-4xl">{{ t.name }}</h1>
             <p class="text-muted">{{ details() }}</p>
