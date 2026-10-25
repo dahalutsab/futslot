@@ -30,7 +30,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Khand:wght@600;700&amp;family=Mukta:wght@400;500;600;700&amp;display=swap">
-  <link rel="stylesheet" th:href="@{/site-assets/futslot.css(v=6)}">
+  <link rel="stylesheet" th:href="@{/site-assets/futslot.css(v=7)}">
   <script>
     // The player app's theme and language, so these pages match it: dark mode before first paint, and a first-time
     // visitor's language is the language of the page they came in on
@@ -78,10 +78,9 @@
     <circle cx="15" cy="10" r="3.2" stroke="#fff" stroke-width="1.4" fill="none"/>
   </svg>
 
-  <!-- The court's lines in chalk, behind the front page's heading: goal line, penalty area, half-way line, centre circle -->
+  <!-- The court's lines in chalk, behind the front page's heading: penalty area, half-way line, centre circle -->
   <svg th:fragment="pitch" class="pitch" viewBox="0 0 1200 560" preserveAspectRatio="xMidYMid slice" fill="none"
     stroke="currentColor" stroke-width="3" aria-hidden="true">
-    <rect x="-200" y="40" width="1700" height="480"/>
     <path d="M920 40v480"/>
     <circle cx="920" cy="280" r="118"/>
     <circle cx="920" cy="280" r="5" fill="currentColor"/>
@@ -124,7 +123,7 @@
     <aside th:if="${!lit.isEmpty()}" class="board" aria-labelledby="board-title">
       <h2 id="board-title" th:text="#{dir.board.title}">Free next</h2>
       <ol class="board-rows">
-        <li th:each="card, row : ${lit}" th:if="${row.index < 5}">
+        <li th:each="card, row : ${lit}" th:if="${row.index < 4}">
           <div class="board-venue">
             <a th:href="${card.href}" th:text="${card.name}">Venue</a>
             <span><th:block th:text="${card.place}">Area, City</th:block>. <th:block th:text="${card.freeWhen}">Free today</th:block></span>

@@ -39,31 +39,32 @@ const NAVIGATION: NavItem[] = [
   template: `
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2">{{ l().skipToContent }}</a>
 
-    <header class="sticky top-0 z-20 border-b border-border bg-bg/95 backdrop-blur">
+    <!-- On the turf, like FutSlot's front page, so it and explore's turf band are one pitch -->
+    <header class="sticky top-0 z-20 bg-turf text-white shadow-[0_1px_0_rgba(0,0,0,.12)]">
       <div class="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 lg:px-8">
         <a routerLink="/explore" [attr.aria-label]="l().futSlotHome">
-          <fs-logo />
+          <fs-logo [onTurf]="true" />
         </a>
         <nav class="hidden flex-1 items-center gap-1 lg:flex" [attr.aria-label]="l().mainNav">
           @for (item of desktopItems(); track item.path) {
-            <a [routerLink]="item.path" [attr.aria-current]="current(item) ? 'page' : null" [class.bg-surface-2]="current(item)" [class.text-text]="current(item)"
-              class="flex h-9 items-center gap-2 rounded-md px-3 font-medium text-muted hover:bg-surface-2 hover:text-text">
+            <a [routerLink]="item.path" [attr.aria-current]="current(item) ? 'page' : null" [class.bg-white/15]="current(item)" [class.text-white]="current(item)"
+              class="flex h-9 items-center gap-2 rounded-md px-3 font-medium text-white/80 hover:bg-white/10 hover:text-white">
               <lucide-icon [img]="item.icon" [size]="17" [strokeWidth]="1.75" />{{ item.label(l()) }}
               @if (item.badge && badges.messages()) {
-                <span class="tabular rounded-full bg-ink px-1.5 text-xs text-ink-fg" [attr.aria-label]="l().unreadCount(badges.messages())">{{ digits(badges.messages()) }}</span>
+                <span class="tabular rounded-full bg-white px-1.5 text-xs text-turf-deep" [attr.aria-label]="l().unreadCount(badges.messages())">{{ digits(badges.messages()) }}</span>
               }
             </a>
           }
         </nav>
         <div class="ml-auto flex items-center gap-2">
           @if (!session.signedIn()) {
-            <fs-language-toggle />
-            <a routerLink="/login" class="flex h-10 items-center gap-2 rounded-md bg-ink px-4 font-medium text-ink-fg">
+            <fs-language-toggle [onTurf]="true" />
+            <a routerLink="/login" class="flex h-10 items-center gap-2 rounded-md bg-white px-4 font-semibold text-turf-deep hover:bg-white/90">
               <lucide-icon [img]="icons.LogIn" [size]="17" /> {{ l().signIn }}
             </a>
           } @else {
-            <span class="hidden truncate text-sm text-muted lg:inline">{{ session.user()?.fullName }}</span>
-            <a routerLink="/notifications" class="relative -mr-2 grid size-11 place-items-center rounded-md text-muted hover:bg-surface-2 hover:text-text"
+            <span class="hidden truncate text-sm text-white/75 lg:inline">{{ session.user()?.fullName }}</span>
+            <a routerLink="/notifications" class="relative -mr-2 grid size-11 place-items-center rounded-md text-white/85 hover:bg-white/10 hover:text-white"
               [attr.aria-label]="badges.notifications() ? l().notificationsUnread(badges.notifications()) : l().notifications">
               <lucide-icon [img]="icons.Bell" [size]="20" [strokeWidth]="1.75" />
               @if (badges.notifications()) {

@@ -18,7 +18,17 @@ import { digits, l } from '../i18n/i18n';
         @if (v.coverPhotoUrl) {
           <img [src]="v.coverPhotoUrl" alt="" loading="lazy" class="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
         } @else {
-          <div class="grid size-full place-items-center font-display text-5xl font-bold text-subtle" aria-hidden="true">{{ v.name.charAt(0) }}</div>
+          <!-- No photo yet: the court from above, mown in stripes, as on FutSlot's public pages -->
+          <svg class="size-full bg-turf" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            @for (x of stripes; track x) {
+              <rect [attr.x]="x" y="0" width="30" height="200" fill="#fff" fill-opacity=".05" />
+            }
+            <g fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2">
+              <rect x="14" y="14" width="272" height="172" rx="2" />
+              <path d="M150 14v172M14 64h28a36 36 0 0 1 0 72H14M286 64h-28a36 36 0 0 0 0 72h28" />
+              <circle cx="150" cy="100" r="30" />
+            </g>
+          </svg>
         }
       </div>
       <div class="pt-3">
@@ -54,4 +64,7 @@ export class VenueCard {
   protected readonly rupees = rupees;
 
   protected readonly digits = digits;
+
+  /** Where the lighter mown stripes start, every other 30 of the drawn court's 300 */
+  protected readonly stripes = [0, 60, 120, 180, 240];
 }

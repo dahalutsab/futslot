@@ -303,6 +303,7 @@ ul.grid-2 { list-style: none; margin: 0; padding: 0; }
   .hero .chips { flex-wrap: nowrap; overflow-x: auto; margin-inline: -16px; padding-inline: 16px; scrollbar-width: none; }
   .hero .chips li { flex: none; }
   .board { padding: 16px 16px 8px; }
+  .board-rows > li:nth-child(n+4) { display: none; }
   .not-found { min-height: calc(100dvh - 60px); }
   .cover { aspect-ratio: 16 / 9; }
   .actions .btn { flex: 1 1 auto; }

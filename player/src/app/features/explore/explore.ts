@@ -19,7 +19,6 @@ import { VenueCard } from '../../shared/venue-card';
     <div class="relative isolate overflow-hidden bg-turf text-white">
       <svg class="absolute inset-0 -z-10 size-full text-white/15" viewBox="0 0 1200 420" preserveAspectRatio="xMidYMid slice"
         fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true">
-        <rect x="-200" y="30" width="1700" height="360" />
         <path d="M920 30v360" />
         <circle cx="920" cy="210" r="96" />
         <circle cx="920" cy="210" r="5" fill="currentColor" />
