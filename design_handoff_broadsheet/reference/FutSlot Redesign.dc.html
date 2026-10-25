@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/broadsheet-24cca2c3-8e20-449b-9fb3-45a1d08ebaf3/styles.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css">
+<script src="_ds/broadsheet-24cca2c3-8e20-449b-9fb3-45a1d08ebaf3/_ds_bundle.js"></script>
+<style>body{margin:0;background:#dcdad8;font-family:var(--font-body)}a{color:var(--color-accent-700);text-decoration:none}a:hover{color:var(--color-accent-800)}.dv-turn{padding:40px 44px 32px;scroll-margin-top:16px}.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}.dv-card{max-width:100%;background:var(--color-bg);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden}.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}.dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}.dv-notes{max-width:760px;font:13px/1.55 system-ui,sans-serif;color:rgba(0,0,0,.7);margin:0 0 24px}.dv-notes li{margin:2px 0}</style>
+</helmet>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">FutSlot in Broadsheet: front page and the player's home</span></div>
+<ul class="dv-notes">
+<li>Current product: turf-green bar, Inter, boxed cards, and the signed-in "Me" screen is a list of links plus forms. There is no screen that tells a player what's next.</li>
+<li><a class="dv-oid" href="#1a">1a</a> keeps the existing home sections (search, cities, free next, venues, how it works, FAQ, owners) and copy from <code>sites.properties</code>, set as a front page: the "Free next" board becomes a fixture index with dot leaders.</li>
+<li><a class="dv-oid" href="#1b">1b</a> <a class="dv-oid" href="#1c">1c</a> are a new player home: the next game as the lead story (money spelled out, per player-web.md), then a "Needs you" index pulling from dues, payments, reviews and waitlist. Status colours map to the two spot inks: cyan = settled, magenta = needs action.</li>
+<li>Photos are the real venue uploads from <code>backend/media</code>. Names and areas from <code>demo-venues.json</code>; times and prices are illustrative.</li>
+</ul>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Landing, desktop 1280</div>
+<div class="dv-card" style="width:1280px" data-screen-label="Landing">
+<nav class="nav" style="padding:20px 72px;gap:28px">
+<span class="nav-brand" style="font-size:24px;letter-spacing:-0.01em">FutSlot</span>
+<a href="#" style="font-size:15px;color:var(--color-text)">Explore</a>
+<a href="#" style="font-size:15px;color:var(--color-text)">Tournaments</a>
+<a href="#" style="font-size:15px;color:var(--color-text)">For venues</a>
+<span style="font-size:13px;letter-spacing:0.08em;color:color-mix(in srgb,var(--color-text) 70%,transparent)">EN · नेपाली</span>
+<button type="button" class="btn btn-secondary">Sign in</button>
+</nav>
+<div style="padding:0 72px">
+<section style="display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:64px;align-items:end;padding:72px 0 64px">
+<div>
+<h1 style="font-size:84px;line-height:0.98;letter-spacing:-0.025em;margin:0 0 0 -0.035em;text-wrap:balance"><span style="display:block">Book a futsal court.</span><span style="display:block;font-style:italic;font-weight:400">Tonight, if you like.</span></h1>
+<p style="font-size:19px;line-height:30px;max-width:50ch;margin:32px 0 0;color:color-mix(in srgb,var(--color-text) 82%,transparent)">Free slots and prices at 14 futsal venues in Kathmandu Valley. Pick a time and book it in a minute.</p>
+<form style="display:flex;gap:10px;max-width:520px;margin-top:32px" role="search">
+<input class="input" type="search" placeholder="Venue name or area" style="flex:1;min-height:44px;font-size:16px">
+<button type="button" class="btn btn-primary" style="min-height:44px;padding-inline:22px;font-size:15px">Search</button>
+</form>
+<div style="display:flex;gap:28px;flex-wrap:wrap;margin-top:24px;font-size:15px">
+<a href="#">Futsal in Kathmandu <span style="color:color-mix(in srgb,var(--color-text) 60%,transparent)">10</span></a>
+<a href="#">Futsal in Lalitpur <span style="color:color-mix(in srgb,var(--color-text) 60%,transparent)">3</span></a>
+<a href="#">Futsal in Bhaktapur <span style="color:color-mix(in srgb,var(--color-text) 60%,transparent)">1</span></a>
+</div>
+</div>
+<figure class="cmyk" style="margin:0;overflow:visible">
+<div class="print" style="aspect-ratio:4/5"><img src="assets/v1.jpg" alt="Dhuku Futsal Hub, Maharajgunj" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+<figcaption style="font-size:13px;line-height:20px;margin-top:12px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Dhuku Futsal Hub, Maharajgunj. Court A free from 17:00.</figcaption>
+</figure>
+</section>
+
+<section style="padding:24px 0 72px">
+<div style="height:5px;border-top:2px solid var(--color-text);border-bottom:1px solid var(--color-text)"></div>
+<p style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px 28px;margin:0;padding:14px 0;font-size:13px;line-height:14px;letter-spacing:0.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 70%,transparent)"><span>Saturday 25 October 2026</span><span>Kathmandu Valley</span><span>14 venues · 23 courts</span><span>Games from Rs 1,000</span></p>
+<div style="border-top:1px solid var(--color-text)"></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding:28px 0 8px">
+<h2 style="font-size:30px;margin:0;letter-spacing:-0.01em">Free next</h2>
+<a href="#" style="font-size:15px">All venues →</a>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;column-gap:72px">
+<sc-for list="{{ freeNext }}" as="s" hint-placeholder-count="8">
+<a href="#" style="display:flex;align-items:baseline;gap:10px;padding:10px 0;color:var(--color-text);font-size:16px;line-height:28px" style-hover="color:var(--color-accent-700)">
+<span style="font-family:var(--font-heading);font-weight:600;font-size:19px;min-width:56px;font-feature-settings:'tnum' 1">{{ s.time }}</span>
+<span>{{ s.venue }}<span style="color:color-mix(in srgb,var(--color-text) 62%,transparent)">, {{ s.area }}</span></span>
+<span style="flex:1;min-width:24px;align-self:flex-end;margin-bottom:0.4em;border-bottom:1px dotted color-mix(in srgb,var(--color-text) 45%,transparent)"></span>
+<span style="font-feature-settings:'tnum' 1">{{ s.price }}</span>
+</a>
+</sc-for>
+</div>
+<div style="border-top:1px solid var(--color-text);margin-top:18px"></div>
+</section>
+
+<section style="padding:24px 0 72px">
+<span style="display:block;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 70%,transparent);margin-bottom:28px">Futsal venues</span>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:56px 48px">
+<sc-for list="{{ venues }}" as="v" hint-placeholder-count="6">
+<a href="#" style="display:flex;flex-direction:column;gap:6px;color:var(--color-text)">
+<div class="halftone" style="aspect-ratio:3/2;margin-bottom:14px"><img src="{{ v.img }}" alt="{{ v.name }}" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+<span style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 70%,transparent)">{{ v.area }} · {{ v.courts }}</span>
+<h3 style="font-size:24px;line-height:28px;margin:0;letter-spacing:-0.01em">{{ v.name }}</h3>
+<p style="font-size:16px;line-height:26px;margin:0;font-style:italic;color:color-mix(in srgb,var(--color-text) 78%,transparent)">{{ v.headline }}</p>
+<p style="display:flex;gap:16px;font-size:15px;margin:6px 0 0"><span>From {{ v.from }}</span><span style="color:var(--color-accent-700)">Free today {{ v.free }}</span></p>
+</a>
+</sc-for>
+</div>
+</section>
+
+<section style="padding:40px 0 72px">
+<h2 style="font-size:40px;line-height:44px;margin:0 0 40px;letter-spacing:-0.015em">How booking works</h2>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:56px">
+<sc-for list="{{ steps }}" as="st" hint-placeholder-count="3">
+<div>
+<span class="cmyk-num" style="font-family:var(--font-heading);font-weight:600;font-size:96px;display:block;margin-bottom:24px"><span class="paper">{{ st.n }}</span><span class="plate plate-c" aria-hidden="true">{{ st.n }}</span><span class="plate plate-m" aria-hidden="true">{{ st.n }}</span><span class="plate plate-y" aria-hidden="true">{{ st.n }}</span></span>
+<h3 style="font-size:24px;line-height:28px;margin:0">{{ st.title }}</h3>
+<p style="font-size:16px;line-height:27px;margin:12px 0 0;max-width:34ch;color:color-mix(in srgb,var(--color-text) 80%,transparent)">{{ st.body }}</p>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section style="display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:64px;padding:40px 0 72px">
+<h2 style="font-size:40px;line-height:44px;margin:0;letter-spacing:-0.015em">Questions players ask</h2>
+<div style="display:flex;flex-direction:column;gap:36px">
+<sc-for list="{{ faq }}" as="q" hint-placeholder-count="3">
+<div>
+<h3 style="font-size:21px;line-height:28px;margin:0">{{ q.q }}</h3>
+<p style="font-size:16px;line-height:27px;margin:8px 0 0;max-width:60ch;color:color-mix(in srgb,var(--color-text) 80%,transparent)">{{ q.a }}</p>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section style="padding:56px 0 64px">
+<h2 style="font-size:56px;line-height:60px;margin:0 0 0 -0.03em;letter-spacing:-0.02em">Run a <span style="font-style:italic;font-weight:400">futsal?</span></h2>
+<p style="font-size:18px;line-height:29px;max-width:52ch;margin:20px 0 0;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Take bookings online, keep walk-ins and phone bookings in one schedule, and get a website of your own.</p>
+<button type="button" class="btn btn-primary" style="margin-top:28px;min-height:44px;padding-inline:22px;font-size:15px">List your futsal</button>
+</section>
+
+<footer style="display:flex;justify-content:space-between;gap:40px;padding:32px 0 48px;font-size:13px;line-height:22px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">
+<div><span style="font-family:var(--font-heading);font-weight:600;font-size:17px;color:var(--color-text)">FutSlot</span><br>Book futsal across Nepal. Proudly made by Utsab Dahal.</div>
+<p style="max-width:56ch;margin:0;font-style:italic">A portfolio demo. The venues are real places around the valley, but their prices and free hours are made up, and nothing here books a real court.</p>
+</footer>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Player home, desktop 1280 (signed in)</div>
+<div class="dv-card" style="width:1280px" data-screen-label="Player home desktop">
+<nav class="nav" style="padding:20px 72px;gap:8px">
+<span class="nav-brand" style="font-size:24px;letter-spacing:-0.01em;margin-right:28px">FutSlot</span>
+<a href="#" style="display:flex;align-items:center;gap:6px;padding:8px 12px;font-size:15px;color:var(--color-text)"><i class="ph-duotone ph-house"></i>Home</a>
+<a href="#" style="display:flex;align-items:center;gap:6px;padding:8px 12px;font-size:15px;color:color-mix(in srgb,var(--color-text) 72%,transparent)"><i class="ph-duotone ph-compass"></i>Explore</a>
+<a href="#" style="display:flex;align-items:center;gap:6px;padding:8px 12px;font-size:15px;color:color-mix(in srgb,var(--color-text) 72%,transparent)"><i class="ph-duotone ph-calendar-dots"></i>Bookings</a>
+<a href="#" style="display:flex;align-items:center;gap:6px;padding:8px 12px;font-size:15px;color:color-mix(in srgb,var(--color-text) 72%,transparent)"><i class="ph-duotone ph-trophy"></i>Play</a>
+<a href="#" style="display:flex;align-items:center;gap:6px;padding:8px 12px;font-size:15px;color:color-mix(in srgb,var(--color-text) 72%,transparent)"><i class="ph-duotone ph-chat-circle"></i>Messages<span class="tag tag-accent" style="padding:1px 7px">2</span></a>
+<span style="margin-left:auto"></span>
+<button type="button" class="btn btn-ghost btn-icon" aria-label="Notifications, 3 unread" style="font-size:20px"><i class="ph-duotone ph-bell"></i></button>
+<a href="#" style="font-size:15px;color:var(--color-text)">Aarav Shrestha</a>
+</nav>
+<div style="padding:0 72px 64px">
+<div style="height:5px;border-top:2px solid var(--color-text);border-bottom:1px solid var(--color-text);margin-top:12px"></div>
+<p style="display:flex;justify-content:space-between;gap:12px 28px;margin:0;padding:14px 0;font-size:13px;line-height:14px;letter-spacing:0.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 70%,transparent)"><span>Saturday 25 October 2026</span><span>Good afternoon, Aarav</span><span>3 games this week</span><span>Deposit Rs 2,000</span></p>
+<div style="border-top:1px solid var(--color-text)"></div>
+
+<section style="display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:72px;padding:56px 0 64px">
+<div>
+<span style="display:flex;align-items:center;gap:10px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 70%,transparent);margin-bottom:18px">Your next game <span class="tag tag-accent" style="letter-spacing:0.02em;text-transform:none;font-size:12px"><i class="ph-duotone ph-check-circle" style="margin-right:4px"></i>Confirmed</span></span>
+<h1 style="font-size:72px;line-height:76px;margin:0 0 0 -0.035em;letter-spacing:-0.025em">Tonight, 18:00<span style="font-style:italic;font-weight:400"> at Dhuku.</span></h1>
+<p style="font-size:19px;line-height:30px;margin:16px 0 0;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Dhuku Futsal Hub, Sital Marg, Maharajgunj · Court A · 18:00 – 19:00</p>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);gap:56px;align-items:start;margin-top:44px">
+<sc-if value="{{ showCountdown }}" hint-placeholder-val="{{ true }}">
+<div>
+<span class="cmyk-num" style="font-family:var(--font-heading);font-weight:600;font-size:132px;display:block"><span class="paper">2:14</span><span class="plate plate-c" aria-hidden="true">2:14</span><span class="plate plate-m" aria-hidden="true">2:14</span><span class="plate plate-y" aria-hidden="true">2:14</span></span>
+<p style="font-size:15px;margin:16px 0 0;color:color-mix(in srgb,var(--color-text) 70%,transparent)">hours to kick-off</p>
+</div>
+</sc-if>
+<div style="font-size:16px;line-height:28px">
+<p style="display:flex;gap:10px;margin:0"><span>Court, peak hour</span><span style="flex:1;align-self:flex-end;margin-bottom:0.4em;border-bottom:1px dotted color-mix(in srgb,var(--color-text) 45%,transparent)"></span><span>Rs 1,900</span></p>
+<p style="display:flex;gap:10px;margin:0"><span>Bibs and ball</span><span style="flex:1;align-self:flex-end;margin-bottom:0.4em;border-bottom:1px dotted color-mix(in srgb,var(--color-text) 45%,transparent)"></span><span>Rs 100</span></p>
+<p style="display:flex;gap:10px;margin:0;color:var(--color-accent-700)"><span>Advance paid with eSewa</span><span style="flex:1;align-self:flex-end;margin-bottom:0.4em;border-bottom:1px dotted currentColor"></span><span>− Rs 500</span></p>
+<p style="display:flex;gap:10px;margin:6px 0 0;padding-top:6px;border-top:1px solid var(--color-text);font-weight:600"><span>Pay at the venue</span><span style="flex:1"></span><span>Rs 1,500</span></p>
+<p style="font-size:15px;line-height:24px;margin:14px 0 0;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Split ten ways: <strong style="font-weight:600;color:var(--color-text)">7 of 10 paid</strong> Rs 200 each. Cancelling now costs Rs 950; it was free until 18:00 yesterday.</p>
+</div>
+</div>
+<div style="display:flex;gap:10px;margin-top:36px">
+<button type="button" class="btn btn-primary" style="min-height:44px;padding-inline:20px;font-size:15px"><i class="ph-duotone ph-share-network"></i>Remind the 3 who owe</button>
+<button type="button" class="btn btn-secondary" style="min-height:44px;padding-inline:20px;font-size:15px"><i class="ph-duotone ph-map-pin"></i>Directions</button>
+<button type="button" class="btn btn-ghost" style="min-height:44px;padding-inline:14px;font-size:15px">Booking details</button>
+</div>
+</div>
+<aside>
+<h2 style="font-size:28px;line-height:32px;margin:0 0 8px">Needs you</h2>
+<p style="font-size:15px;margin:0 0 16px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Four things, most urgent first.</p>
+<sc-for list="{{ needs }}" as="n" hint-placeholder-count="4">
+<a href="#" style="display:flex;gap:14px;padding:16px 0;color:var(--color-text);border-top:1px solid var(--color-divider)" style-hover="color:var(--color-accent-700)">
+<i class="ph-duotone {{ n.icon }}" style="font-size:22px;margin-top:3px;color:{{ n.ink }}"></i>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-weight:600;font-size:16px;line-height:24px">{{ n.title }}</span>
+<span style="display:block;font-size:14px;line-height:22px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">{{ n.detail }}</span>
+</span>
+<span style="font-size:16px;line-height:24px;font-feature-settings:'tnum' 1">{{ n.amount }}</span>
+</a>
+</sc-for>
+</aside>
+</section>
+
+<section style="display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:72px;padding:24px 0 48px">
+<div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
+<h2 style="font-size:28px;line-height:32px;margin:0">This week</h2>
+<a href="#" style="font-size:15px">All bookings →</a>
+</div>
+<table class="table" style="font-size:15px">
+<thead><tr><th>Day</th><th>Venue</th><th>Time</th><th>Status</th><th style="text-align:right">Total</th></tr></thead>
+<tbody>
+<sc-for list="{{ week }}" as="w" hint-placeholder-count="4">
+<tr><td style="font-weight:600">{{ w.day }}</td><td>{{ w.venue }}</td><td style="font-feature-settings:'tnum' 1">{{ w.time }}</td><td><span class="tag {{ w.tag }}">{{ w.status }}</span></td><td style="text-align:right;font-feature-settings:'tnum' 1">{{ w.total }}</td></tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+<div>
+<h2 style="font-size:28px;line-height:32px;margin:0 0 12px">Games looking for players</h2>
+<sc-for list="{{ openGames }}" as="g" hint-placeholder-count="3">
+<div style="display:flex;gap:16px;align-items:center;padding:14px 0;border-top:1px solid var(--color-divider)">
+<span style="flex:1;min-width:0">
+<span style="display:block;font-weight:600;font-size:16px;line-height:24px">{{ g.venue }}, {{ g.when }}</span>
+<span style="display:block;font-size:14px;line-height:22px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">{{ g.detail }}</span>
+</span>
+<button type="button" class="btn btn-secondary">Join</button>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section style="padding:32px 0 0">
+<span style="display:block;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 70%,transparent);margin-bottom:14px">Valley Futsal Cup · Group B</span>
+<p style="font-family:var(--font-heading);font-size:32px;line-height:40px;margin:0;max-width:30ch;letter-spacing:-0.01em">Maharajgunj United play Koteshwor FC <span style="font-style:italic;font-weight:400">on Saturday 1 November, 16:00, at Hardik Futsal.</span></p>
+<a href="#" style="display:inline-block;font-size:15px;margin-top:14px">Fixtures and table →</a>
+</section>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Player home, phone 390</div>
+<div class="dv-card" style="width:390px;height:844px;position:relative;display:flex;flex-direction:column" data-screen-label="Player home phone">
+<div style="display:flex;align-items:center;gap:8px;padding:14px 20px 10px">
+<span style="font-family:var(--font-heading);font-weight:600;font-size:21px;flex:1">FutSlot</span>
+<button type="button" class="btn btn-ghost btn-icon" aria-label="Notifications" style="width:44px;height:44px;font-size:22px"><i class="ph-duotone ph-bell"></i></button>
+</div>
+<div style="flex:1;overflow:hidden;padding:0 20px">
+<div style="height:4px;border-top:2px solid var(--color-text);border-bottom:1px solid var(--color-text)"></div>
+<p style="display:flex;justify-content:space-between;margin:0;padding:10px 0;font-size:12px;line-height:14px;letter-spacing:0.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 70%,transparent);border-bottom:1px solid var(--color-text)"><span>Sat 25 Oct</span><span>Deposit Rs 2,000</span></p>
+<span style="display:flex;align-items:center;gap:8px;margin:24px 0 10px;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Your next game <span class="tag tag-accent" style="letter-spacing:0.02em;text-transform:none">Confirmed</span></span>
+<h1 style="font-size:40px;line-height:44px;margin:0 0 0 -0.03em;letter-spacing:-0.02em">Tonight, 18:00 <span style="font-style:italic;font-weight:400">at Dhuku.</span></h1>
+<p style="font-size:15px;line-height:23px;margin:8px 0 0;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Court A · Sital Marg, Maharajgunj</p>
+<div style="display:flex;align-items:flex-end;gap:18px;margin-top:22px">
+<sc-if value="{{ showCountdown }}" hint-placeholder-val="{{ true }}">
+<span class="cmyk-num" style="font-family:var(--font-heading);font-weight:600;font-size:72px"><span class="paper">2:14</span><span class="plate plate-c" aria-hidden="true">2:14</span><span class="plate plate-m" aria-hidden="true">2:14</span><span class="plate plate-y" aria-hidden="true">2:14</span></span>
+</sc-if>
+<p style="font-size:14px;line-height:21px;margin:0 0 4px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Rs 1,500 left to pay at the venue. 7 of 10 have paid their share.</p>
+</div>
+<div style="display:flex;gap:8px;margin-top:20px">
+<button type="button" class="btn btn-primary" style="flex:1;min-height:44px;font-size:15px">Remind the 3</button>
+<button type="button" class="btn btn-secondary" style="min-height:44px;font-size:15px"><i class="ph-duotone ph-map-pin"></i>Directions</button>
+</div>
+<h2 style="font-size:22px;line-height:28px;margin:32px 0 4px">Needs you</h2>
+<sc-for list="{{ needsShort }}" as="n" hint-placeholder-count="3">
+<a href="#" style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;min-height:44px;color:var(--color-text);border-top:1px solid var(--color-divider)">
+<i class="ph-duotone {{ n.icon }}" style="font-size:20px;margin-top:2px;color:{{ n.ink }}"></i>
+<span style="flex:1;min-width:0"><span style="display:block;font-weight:600;font-size:15px;line-height:22px">{{ n.title }}</span><span style="display:block;font-size:13px;line-height:20px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">{{ n.detail }}</span></span>
+<span style="font-size:15px;line-height:22px">{{ n.amount }}</span>
+</a>
+</sc-for>
+</div>
+<nav style="display:grid;grid-template-columns:repeat(5,1fr);background:var(--color-bg);box-shadow:0 -1px 0 var(--color-divider);padding-bottom:18px">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+<a href="#" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:60px;font-size:12px;color:{{ t.color }}"><i class="ph-duotone {{ t.icon }}" style="font-size:24px"></i>{{ t.label }}</a>
+</sc-for>
+</nav>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "venue page with the slot grid in this style" · "booking flow and pay form" · "<a class="dv-oid" href="#1a">1a</a> on a phone"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showCountdown&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Player home&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const accent = 'var(--color-accent-700)', mag = 'var(--color-accent-2-700)', mute = 'color-mix(in srgb,var(--color-text) 60%,transparent)';
+    const needs = [
+      { icon: 'ph-coins', ink: mag, title: 'Pay your share', detail: 'Velocity Arena, Sun 07:00 · Sujan split it', amount: 'Rs 180' },
+      { icon: 'ph-wallet', ink: accent, title: 'Payment being checked', detail: 'Maidan Futsal, Tue 19:00 · Khalti ID 8F3K…', amount: 'Rs 500' },
+      { icon: 'ph-hourglass', ink: accent, title: 'Second on the waitlist', detail: 'X-Cel Recreation Centre, Fri 19:00', amount: '' },
+      { icon: 'ph-star', ink: mute, title: 'How was Grassroots?', detail: 'Played Thursday · a review helps other players', amount: '' },
+    ];
+    return {
+      showCountdown: this.props.showCountdown ?? true,
+      freeNext: [
+        { time: '17:00', venue: 'Dhuku Futsal Hub', area: 'Maharajgunj', price: 'Rs 1,900' },
+        { time: '17:00', venue: 'Maidan Futsal', area: 'Battisputali', price: 'Rs 1,600' },
+        { time: '18:00', venue: 'Velocity Arena', area: 'Ratopul', price: 'Rs 1,800' },
+        { time: '18:00', venue: 'Prismatic Futsal', area: 'Sanepa', price: 'Rs 1,700' },
+        { time: '19:00', venue: 'X-Cel Recreation Centre', area: 'Baluwatar', price: 'Rs 2,000' },
+        { time: '19:00', venue: 'Best Futsal Arena', area: 'Lagankhel', price: 'Rs 1,500' },
+        { time: '20:00', venue: 'Goalpost Futsal', area: 'Bhainsepati', price: 'Rs 1,400' },
+        { time: '20:00', venue: 'Bhaktapur Futsal', area: 'Suryabinayak', price: 'Rs 1,200' },
+      ],
+      venues: [
+        { img: 'assets/v1.jpg', name: 'Dhuku Futsal Hub', area: 'Maharajgunj', courts: '2 courts', headline: 'Two courts off the ring road', from: 'Rs 1,400', free: '17:00' },
+        { img: 'assets/v2.jpg', name: 'Dhanyentari Futsal', area: 'Hadigaun', courts: '1 court', headline: 'Play, then a swim', from: 'Rs 1,000', free: '19:00' },
+        { img: 'assets/v3.jpg', name: 'Grassroots Recreational Center', area: 'Mandikatar', courts: '2 courts', headline: 'Two fields and a pool in Mandikatar', from: 'Rs 1,300', free: '20:00' },
+        { img: 'assets/v4.jpg', name: 'X-Cel Recreation Centre', area: 'Baluwatar', courts: '2 courts', headline: 'Two fields in Baluwatar', from: 'Rs 1,500', free: '19:00' },
+        { img: 'assets/v5.jpg', name: 'Maidan Futsal', area: 'Battisputali', courts: '1 court', headline: 'Your court in Battisputali', from: 'Rs 1,200', free: '17:00' },
+        { img: 'assets/v6.jpg', name: 'Velocity Arena', area: 'Ratopul', courts: '1 court', headline: 'Fast games at Ratopul', from: 'Rs 1,300', free: '18:00' },
+      ],
+      steps: [
+        { n: '1', title: 'Find a court', body: 'Browse the venues in your city or search by area: prices, photos, opening hours and reviews.' },
+        { n: '2', title: 'Pick a free slot', body: "Slots show what's free right now, so there's no calling around." },
+        { n: '3', title: 'Pay the advance and play', body: 'Send the advance the venue asks for with eSewa or Khalti, and the court is yours.' },
+      ],
+      faq: [
+        { q: 'How much does futsal cost?', a: 'It depends on the venue and the time. Games on FutSlot start from Rs 1,000, and evenings often cost more.' },
+        { q: 'Can I book futsal online?', a: 'Yes. Pick a venue, tap a free time and sign in with your mobile number. Your bookings are in FutSlot, where you can also cancel them.' },
+        { q: "What if I can't make it?", a: 'Each venue sets its own cancellation rules and shows them before you book. Cancelling a day or more ahead is free.' },
+      ],
+      needs,
+      needsShort: needs.slice(0, 3),
+      week: [
+        { day: 'Sat 25', venue: 'Dhuku Futsal Hub', time: '18:00 – 19:00', status: 'Confirmed', tag: 'tag-accent', total: 'Rs 2,000' },
+        { day: 'Sun 26', venue: 'Velocity Arena', time: '07:00 – 08:00', status: 'Your share due', tag: 'tag-accent-2', total: 'Rs 1,800' },
+        { day: 'Tue 28', venue: 'Maidan Futsal', time: '19:00 – 20:00', status: 'Payment being checked', tag: 'tag-neutral', total: 'Rs 1,600' },
+        { day: 'Fri 31', venue: 'X-Cel Recreation Centre', time: '19:00 – 20:00', status: 'Waitlist, 2nd', tag: 'tag-neutral', total: '—' },
+      ],
+      openGames: [
+        { venue: 'Royal Futsal', when: 'Sun 19:00', detail: '5-a-side, friendly · 3 spots · Rs 200 each' },
+        { venue: 'Shankhamul Futsal', when: 'Mon 06:00', detail: '5-a-side, competitive · 1 spot · Rs 180 each' },
+        { venue: 'Kirtipur Futsal', when: 'Wed 18:00', detail: '7-a-side · 4 spots · Rs 150 each' },
+      ],
+      tabs: [
+        { icon: 'ph-house', label: 'Home', color: 'var(--color-text)' },
+        { icon: 'ph-compass', label: 'Explore', color: mute },
+        { icon: 'ph-calendar-dots', label: 'Bookings', color: mute },
+        { icon: 'ph-trophy', label: 'Play', color: mute },
+        { icon: 'ph-user-circle', label: 'Me', color: mute },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

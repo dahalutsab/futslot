@@ -1,5 +1,7 @@
 # FutSlot's look: floodlights on
 
+> Superseded on 2026-10-25 by [broadsheet.md](broadsheet.md) (the "Broadsheet" redesign). Kept for the record.
+
 Futsal in the Kathmandu valley is mostly played after work and college, on rented artificial-turf courts under
 floodlights, booked by the hour, usually by phoning around. FutSlot's job is to show which hours are free and book
 one. So the hour is the hero: a free hour is lit, floodlight yellow, and everything around it stays quiet.
